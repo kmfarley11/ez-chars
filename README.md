@@ -18,22 +18,23 @@ Core Intents / Philosophies
 
 - TTRPG gaming should be essentially free and easy for players
 - TTRPG gaming should allow for you & your table to do _whatever_ it wants (within & without the official rule system)
-    - Character sheets should be less opinionated overall, providing guidance but flexibility to the player
+  - Character sheets should be less opinionated overall, providing guidance but flexibility to the player
 - Managing TTRPG characters should be straightforward from a phone or computer
 
 Initial approach...
 
 1. [ ] design a flexible & mobile UI for...
-    1. [ ] 5e 2014
-    1. [ ] a5e
-    1. [ ] shadowdark
-    1. [ ] etc.
+   1. [x] 5e 2014
+   1. [ ] a5e
+   1. [ ] shadowdark
+   1. [ ] etc.
 1. [ ] consider how to be intentional with UI implementations to make character sheet data & components modular across systems
 1. [ ] implement after deciding on a lib/framework
-    - vanilla html, css, js is attractive to enable custom & local hosting
-    - component based frameworks such as React or Svelte are attractive to augment modular code design...
-    - hosting on github pages is the goal, with a client-based integration to import & export data (preferably to dropbox or drive etc. eventually)
-        - supporting markdown import/export may be a goal as well
+   - vanilla html, css, js is attractive to enable custom & local hosting
+   - component based frameworks such as React or Svelte are attractive to augment modular code design...
+1. [ ] host on github pages
+   - client-based integration to import & export data (preferably to dropbox or drive etc. eventually)
+   - supporting markdown import/export may be a goal as well
 
 The rest of the readme is generated / WIP etc. as i play with UI frameworks etc.
 
@@ -75,7 +76,6 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
-
 
 ## Tailwind?
 
