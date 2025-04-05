@@ -1,0 +1,44 @@
+<!doctype html>
+
+<html lang="en">
+
+    <!-- setup - styling etc. -->
+    <style>
+        /* ... */
+    </style>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/6cbb5733-660c-4f28-b021-4b50d01361fe/d5fajns-ddea2ca2-2766-4fba-a1f2-23e797efa171.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzZjYmI1NzMzLTY2MGMtNGYyOC1iMDIxLTRiNTBkMDEzNjFmZVwvZDVmYWpucy1kZGVhMmNhMi0yNzY2LTRmYmEtYTFmMi0yM2U3OTdlZmExNzEucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.j4Ih18BSaI_Y-HOFDSV-u2iiMtCJKkUbdCbW3-C_clw" />
+        <link rel="stylesheet" href="5e.css">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+        <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> -->
+        <script src="./5e.js"></script>
+	</head>
+
+    <!-- behavior - assigned on window load... -->
+    <script>
+        window.onload = () => {
+            document.getElementById("do-alert").addEventListener("click", doAlert)
+        }
+    </script>
+
+    <!-- content - raw form with ids -->
+	<body data-sveltekit-preload-data="hover">
+        <button id="do-alert" type="button" class="clean">
+            <!-- onclick="doAlert()"> -->
+            just a button
+        </button>
+        <!-- <button id="do-alert" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-small rounded-lg text-sm px-5 py-2.5 me-2 mb-2">
+            just a button
+        </button> -->
+
+        <div style="display: contents">
+            <!-- <p>STFUFFFFF HERERERE</p> -->
+            <h1 class="text-3xl font-bold underline">
+                Hello world!
+            </h1>
+        </div>
+	</body>
+
+</html>
