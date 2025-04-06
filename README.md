@@ -26,12 +26,18 @@ Initial approach...
 1. [ ] design a flexible & mobile UI for...
    1. [x] 5e 2014
    1. [ ] a5e
-   1. [ ] shadowdark
-   1. [ ] etc.
-1. [ ] consider how to be intentional with UI implementations to make character sheet data & components modular across systems
+   1. [x] shadowdark
+   1. [x] cairn 1e
+1. [x] consider how to be intentional with UI implementations to make character sheet data & components modular across systems
 1. [ ] implement after deciding on a lib/framework
    - vanilla html, css, js is attractive to enable custom & local hosting
    - component based frameworks such as React or Svelte are attractive to augment modular code design...
+   - [ ] shadowdark
+   - [ ] cairn v1
+   - [ ] 5e 2014
+   - [ ] a5e
+   - [ ] cairn v2
+   - [ ] 5e 2024
 1. [ ] host on github pages
    - client-based integration to import & export data (preferably to dropbox or drive etc. eventually)
    - supporting markdown import/export may be a goal as well
