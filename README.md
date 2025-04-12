@@ -56,8 +56,8 @@ If you're seeing this, you've probably already done this step. Congrats!
 # create a new project in the current directory
 npx sv create
 
-# create a new project in ez-chars
-npx sv create ez-chars
+# create a new project in my-app
+npx sv create my-app
 ```
 
 ## Developing
@@ -82,16 +82,6 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
-
-## Tailwind?
-
-```bash
-npx @tailwindcss/cli -i ./src/input.css -o ./src/output.css --watch
-```
-
-```bash
-npx @tailwindcss/cli -o tailwind4.min.css --minify
-```
 
 ## Deploying
 
