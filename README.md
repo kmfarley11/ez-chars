@@ -92,3 +92,12 @@ npx @tailwindcss/cli -i ./src/input.css -o ./src/output.css --watch
 ```bash
 npx @tailwindcss/cli -o tailwind4.min.css --minify
 ```
+
+## Deploying
+
+Using gh-pages...
+
+```bash
+npm run build
+npm run deploy
+```
