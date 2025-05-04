@@ -40,3 +40,4 @@ _allow for player annotations / notes_
   - i.e. stick to flat text fields to start and expect business logic, tool tips, etc. to provide system-based guidance
 - **Build out concept of player-based annotation as simply and robustly as possible**
   - i.e. simple & custom "Notes" section added to each container to provide custom tooltips etc.
+  - maybe a questionmark button with an editable textarea on every container?
