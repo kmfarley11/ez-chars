@@ -1,0 +1,844 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DnD 5E Sidekick Character Sheet",
+  "type": "object",
+  "properties": {
+    "abilityscores": {
+      "type": "object",
+      "title": "Ability Scores",
+      "properties": {
+        "str": {
+          "type": "string",
+          "description": "Field for STR",
+          "savingthrowproficient": {
+            "type": "boolean",
+            "description": "Indicates if proficient in STR saving throw"
+          }
+        },
+        "dex": {
+          "type": "string",
+          "description": "Field for DEX",
+          "savingthrowproficient": {
+            "type": "boolean",
+            "description": "Indicates if proficient in DEX saving throw"
+          }
+        },
+        "con": {
+          "type": "string",
+          "description": "Field for CON",
+          "savingthrowproficient": {
+            "type": "boolean",
+            "description": "Indicates if proficient in CON saving throw"
+          }
+        },
+        "int": {
+          "type": "string",
+          "description": "Field for INT",
+          "savingthrowproficient": {
+            "type": "boolean",
+            "description": "Indicates if proficient in INT saving throw"
+          }
+        },
+        "wis": {
+          "type": "string",
+          "description": "Field for WIS",
+          "savingthrowproficient": {
+            "type": "boolean",
+            "description": "Indicates if proficient in WIS saving throw"
+          }
+        },
+        "cha": {
+          "type": "string",
+          "description": "Field for CHA",
+          "savingthrowproficient": {
+            "type": "boolean",
+            "description": "Indicates if proficient in CHA saving throw"
+          }
+        }
+      }
+    },
+    "weapons": {
+      "type": "array",
+      "title": "Weapons",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Weapon name"
+          },
+          "attackbonus": {
+            "type": "string",
+            "description": "Attack bonus"
+          },
+          "damage": {
+            "type": "string",
+            "description": "Damage value"
+          }
+        }
+      }
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of features"
+    },
+    "traits": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of traits"
+    },
+    "vitalstats": {
+      "type": "object",
+      "title": "Vital Stats",
+      "properties": {
+        "hd": {
+          "type": "string",
+          "description": "Field for HD"
+        },
+        "hdtotal": {
+          "type": "string",
+          "description": "Field for HDTotal"
+        },
+        "hpcurrent": {
+          "type": "integer",
+          "description": "Field for HPCurrent",
+          "title": "Hit Points"
+        },
+        "hpmax": {
+          "type": "integer",
+          "description": "Field for HPMax",
+          "title": "Hit Points"
+        }
+      }
+    },
+    "spellcasting": {
+      "type": "object",
+      "title": "Spellcasting",
+      "properties": {
+        "cantrips": {
+          "type": "object",
+          "properties": {
+            "spells": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "slots": {
+              "type": "object",
+              "properties": {
+                "current": {
+                  "type": "integer"
+                },
+                "max": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "level1": {
+          "type": "object",
+          "properties": {
+            "spells": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "slots": {
+              "type": "object",
+              "properties": {
+                "current": {
+                  "type": "integer"
+                },
+                "max": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "level2": {
+          "type": "object",
+          "properties": {
+            "spells": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "slots": {
+              "type": "object",
+              "properties": {
+                "current": {
+                  "type": "integer"
+                },
+                "max": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "level3": {
+          "type": "object",
+          "properties": {
+            "spells": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "slots": {
+              "type": "object",
+              "properties": {
+                "current": {
+                  "type": "integer"
+                },
+                "max": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "level4": {
+          "type": "object",
+          "properties": {
+            "spells": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "slots": {
+              "type": "object",
+              "properties": {
+                "current": {
+                  "type": "integer"
+                },
+                "max": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "level5": {
+          "type": "object",
+          "properties": {
+            "spells": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "slots": {
+              "type": "object",
+              "properties": {
+                "current": {
+                  "type": "integer"
+                },
+                "max": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "level6": {
+          "type": "object",
+          "properties": {
+            "spells": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "slots": {
+              "type": "object",
+              "properties": {
+                "current": {
+                  "type": "integer"
+                },
+                "max": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "level7": {
+          "type": "object",
+          "properties": {
+            "spells": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "slots": {
+              "type": "object",
+              "properties": {
+                "current": {
+                  "type": "integer"
+                },
+                "max": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "level8": {
+          "type": "object",
+          "properties": {
+            "spells": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "slots": {
+              "type": "object",
+              "properties": {
+                "current": {
+                  "type": "integer"
+                },
+                "max": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "level9": {
+          "type": "object",
+          "properties": {
+            "spells": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "slots": {
+              "type": "object",
+              "properties": {
+                "current": {
+                  "type": "integer"
+                },
+                "max": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "spellattackbonus": {
+          "type": "string",
+          "description": "Field for SpellAtkBonus",
+          "title": "Attack Bonus"
+        },
+        "spellsavedc": {
+          "type": "string",
+          "description": "Field for SpellSaveDC"
+        }
+      }
+    },
+    "sidekickname": {
+      "type": "string",
+      "description": "Field for SidekickName"
+    },
+    "classlevel": {
+      "type": "string",
+      "description": "Field for ClassLevel"
+    },
+    "race": {
+      "type": "string",
+      "description": "Field for Race"
+    },
+    "speed": {
+      "type": "string",
+      "description": "Field for Speed"
+    },
+    "initiative": {
+      "type": "integer",
+      "description": "Field for Initiative",
+      "title": "Initiative"
+    },
+    "ac": {
+      "type": "integer",
+      "description": "Field for AC",
+      "title": "Armor Class"
+    },
+    "proficiencybonus": {
+      "type": "integer",
+      "description": "Field for ProficiencyBonus",
+      "title": "Proficiency Bonus"
+    },
+    "proficienciesandlanguages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Other proficiencies and known languages"
+    },
+    "equipment": {
+      "type": "object",
+      "properties": {
+        "cp": {
+          "type": "integer",
+          "description": "Copper pieces"
+        },
+        "sp": {
+          "type": "integer",
+          "description": "Silver pieces"
+        },
+        "ep": {
+          "type": "integer",
+          "description": "Electrum pieces"
+        },
+        "gp": {
+          "type": "integer",
+          "description": "Gold pieces"
+        },
+        "pp": {
+          "type": "integer",
+          "description": "Platinum pieces"
+        },
+        "inventory": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Items in inventory"
+        }
+      }
+    },
+    "skills": {
+      "type": "object",
+      "properties": {
+        "acrobatics": {
+          "type": "object",
+          "properties": {
+            "proficient": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "abilityscore": {
+              "type": "string",
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ],
+              "default": "DEX"
+            }
+          }
+        },
+        "animalhandling": {
+          "type": "object",
+          "properties": {
+            "proficient": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "abilityscore": {
+              "type": "string",
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ],
+              "default": "WIS"
+            }
+          }
+        },
+        "arcana": {
+          "type": "object",
+          "properties": {
+            "proficient": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "abilityscore": {
+              "type": "string",
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ],
+              "default": "INT"
+            }
+          }
+        },
+        "athletics": {
+          "type": "object",
+          "properties": {
+            "proficient": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "abilityscore": {
+              "type": "string",
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ],
+              "default": "STR"
+            }
+          }
+        },
+        "deception": {
+          "type": "object",
+          "properties": {
+            "proficient": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "abilityscore": {
+              "type": "string",
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ],
+              "default": "CHA"
+            }
+          }
+        },
+        "history": {
+          "type": "object",
+          "properties": {
+            "proficient": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "abilityscore": {
+              "type": "string",
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ],
+              "default": "INT"
+            }
+          }
+        },
+        "insight": {
+          "type": "object",
+          "properties": {
+            "proficient": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "abilityscore": {
+              "type": "string",
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ],
+              "default": "WIS"
+            }
+          }
+        },
+        "intimidation": {
+          "type": "object",
+          "properties": {
+            "proficient": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "abilityscore": {
+              "type": "string",
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ],
+              "default": "CHA"
+            }
+          }
+        },
+        "investigation": {
+          "type": "object",
+          "properties": {
+            "proficient": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "abilityscore": {
+              "type": "string",
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ],
+              "default": "INT"
+            }
+          }
+        },
+        "medicine": {
+          "type": "object",
+          "properties": {
+            "proficient": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "abilityscore": {
+              "type": "string",
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ],
+              "default": "WIS"
+            }
+          }
+        },
+        "nature": {
+          "type": "object",
+          "properties": {
+            "proficient": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "abilityscore": {
+              "type": "string",
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ],
+              "default": "INT"
+            }
+          }
+        },
+        "perception": {
+          "type": "object",
+          "properties": {
+            "proficient": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "abilityscore": {
+              "type": "string",
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ],
+              "default": "WIS"
+            }
+          }
+        },
+        "performance": {
+          "type": "object",
+          "properties": {
+            "proficient": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "abilityscore": {
+              "type": "string",
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ],
+              "default": "CHA"
+            }
+          }
+        },
+        "persuasion": {
+          "type": "object",
+          "properties": {
+            "proficient": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "abilityscore": {
+              "type": "string",
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ],
+              "default": "CHA"
+            }
+          }
+        },
+        "religion": {
+          "type": "object",
+          "properties": {
+            "proficient": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "abilityscore": {
+              "type": "string",
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ],
+              "default": "INT"
+            }
+          }
+        },
+        "sleightofhand": {
+          "type": "object",
+          "properties": {
+            "proficient": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "abilityscore": {
+              "type": "string",
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ],
+              "default": "DEX"
+            }
+          }
+        },
+        "stealth": {
+          "type": "object",
+          "properties": {
+            "proficient": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "abilityscore": {
+              "type": "string",
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ],
+              "default": "DEX"
+            }
+          }
+        },
+        "survival": {
+          "type": "object",
+          "properties": {
+            "proficient": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "abilityscore": {
+              "type": "string",
+              "enum": [
+                "STR",
+                "DEX",
+                "CON",
+                "INT",
+                "WIS",
+                "CHA"
+              ],
+              "default": "WIS"
+            }
+          }
+        }
+      }
+    }
+  }
+}
