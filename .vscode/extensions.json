@@ -8,11 +8,8 @@
 		"svelte.svelte-vscode",
 		"ardenivanov.svelte-intellisense",
 		"bradlc.vscode-tailwindcss",
-		"austenc.tailwind-docs",
-
+		"austenc.tailwind-docs"
 	],
 	// List of extensions recommended by VS Code that should not be recommended for users of this workspace.
-	"unwantedRecommendations": [
-		
-	]
+	"unwantedRecommendations": []
 }

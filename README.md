@@ -4,14 +4,17 @@ TODO : make a better readme someday 🙂
 
 In gist: this repo is meant to house web app(s) for filling, loading, & saving TTRPG character sheets. Mostly for me & my games/tables to avoid needing to use comprehensive VTTs or paid options when ppl simply wanna manage a character on their phone...
 
+The preference is to leverage free rules only in-app with guidance, but support free-text/freeform inputs abound.
+
 Intended game systems to support:
 
-1. D&D 5e 2014
-1. Level Up Advanced 5e (a5e)
-1. Shadowdark RPG
-1. Cairn v1
-1. Cairn v2
-1. D&D 5e 2024
+1. [D&D 5e 2014](https://media.dndbeyond.com/compendium-images/srd/5.1/SRD_CC_v5.1.pdf)
+   - [sidekicks](https://media.wizards.com/2018/dnd/downloads/UA_Sidekicks.pdf)
+1. [Level Up Advanced 5e (a5e)](https://a5esrd.com/a5esrd)
+1. [Shadowdark RPG](https://www.thearcanelibrary.com/products/shadowdark-rpg-quickstart-set-pdf?srsltid=AfmBOoo2tasd5Vmqw4pQUZeBqLUxPHC6KcsXaV30qGvyYOpLgMt2FQwu) (i.e. [shadowdarklings.net](https://shadowdarklings.net/characters#!))
+1. [Cairn v1](https://cairnrpg.com/first-edition/cairn-srd/)
+1. [Cairn v2](https://cairnrpg.com/second-edition/)
+1. [D&D 5e 2024](https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf)
 1. other? (atla, numenara, daggerheart, etc.?)
 
 Core Intents / Philosophies
@@ -30,64 +33,53 @@ Initial approach...
    1. [x] cairn 1e
 1. [x] consider how to be intentional with UI implementations to make character sheet data & components modular across systems
 1. [ ] implement after deciding on a lib/framework
-   - vanilla html, css, js is attractive to enable custom & local hosting
-   - component based frameworks such as React or Svelte are attractive to augment modular code design...
+   - ~~vanilla html, css, js is attractive to enable custom & local hosting~~
+   - component based frameworks such as ~~React or~~ Svelte are attractive to augment modular code design...
+   - [ ] 5e 2014 sidekicks
+   - [ ] 5e 2014
    - [ ] shadowdark
    - [ ] cairn v1
-   - [ ] 5e 2014
    - [ ] a5e
    - [ ] cairn v2
    - [ ] 5e 2024
-1. [ ] host on github pages
-   - client-based integration to import & export data (preferably to dropbox or drive etc. eventually)
-   - supporting markdown import/export may be a goal as well
+1. [x] host somewhere...
+   - [x] on github pages to start?
+1. [ ] support import / export
+   - client-based integration to start (preferably to dropbox or drive etc. eventually)
+     - [ ] json
+     - [ ] editable charsheet pdf would be lit
+     - markdown import/export may be a goal as well?
+   - support a backup tool
+     - external cloud?: gdrive, dropbox?
+     - integrated db?: mongo / postgres? (would likely require deployment migration to AWS, cloudflare, etc.)
 
-The rest of the readme is generated / WIP etc. as i play with UI frameworks etc.
+The rest of the readme is WIP as i play with UI frameworks etc.
 
-# sv
-
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
-
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
+## maintaining
 
 ```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+npm i  # prefer node 18
 ```
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+### running dev
 
 ```bash
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
-
-To create a production version of your app:
+### running "prod"
 
 ```bash
 npm run build
 ```
 
-You can preview the production build with `npm run preview`.
+Open build/index.html in local browser. May require disabling of CORS?
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
-
-## Deploying
-
-Using gh-pages...
+### deploying
 
 ```bash
-npm run build
 npm run deploy
 ```
+
+FTODO: use github actions for cicd instead of manual with gh-pages?
+https://github.com/svelterust/counter/blob/main/.github/workflows/deploy.yml
