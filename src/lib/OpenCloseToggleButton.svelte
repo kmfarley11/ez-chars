@@ -1,9 +1,22 @@
 <script>
-	let { text, useChevrons, isOpen, handleClick } = $props();
+	let { text, useChevrons, isOpen, handleClick, variant = "light" } = $props();
+
+	let fill = $state('#000000');
+	if (variant === 'dark') {
+		fill = '#ffffff';
+	}
+
+	let bgColor = $state("bg-white")
+	let hoverBgColor = $state("hover:bg-slate-100")
+
+	if (variant === "dark") {
+		bgColor = "bg-slate-700"
+		hoverBgColor = "hover:bg-slate-900"
+	}
 </script>
 
 <button
-	class="btn m-2 rounded-lg bg-white p-2 shadow-lg ring-2 ring-black/5 focus:outline-hidden"
+	class="btn m-2 rounded-lg {bgColor} {hoverBgColor} p-2 shadow-lg ring-2 ring-black/5 focus:outline-hidden"
 	onclick={handleClick}
 >
 	<span>
@@ -21,7 +34,7 @@
 				{#if useChevrons}
 					<path
 						d="M6 15L12 9L18 15"
-						stroke="#000000"
+						stroke={fill}
 						stroke-width="2"
 						stroke-linecap="round"
 						stroke-linejoin="round"

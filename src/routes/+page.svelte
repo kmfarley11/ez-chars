@@ -31,5 +31,9 @@
 
 	<!-- TODO use TS or lean into jsdoc... -->
 	<!-- TODO add an onSelect pass-in to navigate after clicking into row -->
-	<Table tableData={$charsArray} variant={redVariant} />
+	<Table
+		tableData={$charsArray}
+		variant={redVariant}
+		onSelect={(char) => (location.href = `/charsheets/5e/${char.id}`)}
+	/>
 </div>

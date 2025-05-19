@@ -2,7 +2,7 @@
 <script>
 	import OpenCloseToggleButton from './OpenCloseToggleButton.svelte';
 
-	let { children, text = undefined, useChevrons = false } = $props();
+	let { children = undefined, text = undefined, useChevrons = false, variant = "light" } = $props();
 
 	let isDropdownOpen = $state(false); // default state (dropdown close)
 
@@ -15,6 +15,14 @@
 		if (relatedTarget instanceof HTMLElement && currentTarget.contains(relatedTarget)) return; // check if the new focus target doesn't present in the dropdown tree (exclude ul\li padding area because relatedTarget, in this case, will be null)
 		isDropdownOpen = false;
 	};
+
+	let bgColor = $state("bg-white")
+	let hoverBgColor = $state("hover:bg-slate-100")
+
+	if (variant === "dark") {
+		bgColor = "bg-slate-700"
+		hoverBgColor = "hover:bg-slate-900"
+	}
 </script>
 
 <div class="flex justify-start text-left">
@@ -31,10 +39,11 @@
 			isOpen={isDropdownOpen}
 			{useChevrons}
 			handleClick={handleDropdownClick}
+			{variant}
 		/>
 		{#if isDropdownOpen}
 			<div
-				class="dropdown-content menu rounded-box fixed z-10 m-2 divide-y divide-gray-100 rounded-lg bg-slate-100 shadow-sm ring-1"
+				class="dropdown-content menu rounded-box fixed z-10 m-2 divide-y rounded-lg {bgColor} {hoverBgColor} shadow-sm ring-1"
 			>
 				<!-- the following will reserve blank space even when hidden -->
 				<!-- style:visibility={isDropdownOpen ? 'visible' : 'hidden'} -->

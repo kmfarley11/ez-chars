@@ -1,8 +1,10 @@
 <script>
 	import '../../../app.css';
-
-	/** @type {import('./$types').PageProps} */
-	let { data } = $props();
 </script>
 
-<p>Test page 5e...</p>
+<div class="flex flex-col justify-between p-2">
+	<div class="p-2">
+		<p>Test page 5e...</p>
+		<!-- TODO? rules? pdf? whut? -->
+	</div>
+</div>

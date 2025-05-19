@@ -1,5 +1,16 @@
 import { writable } from 'svelte/store';
 
+// TODO: use typescript or fix the jsdoc setup here...
+/**
+ * @typedef CharData
+ * @property {Number} id
+ * @property {String} name
+ * @property {Object} metadata
+ * @property {Array<String>} classLevels
+ * @property {Object} ancestry
+ * @property {String} alignment
+ * @property {String} appearance
+ */
 export let charsArray = writable([
 	{
 		id: 1,
@@ -11,10 +22,10 @@ export let charsArray = writable([
 		classLevels: ['warrior 8'],
 		ancestry: {
 			race: 'hill dwarf',
-			background: '...'
+			background: '???'
 		},
 		alignment: 'NG',
-		appearance: '...'
+		appearance: '???'
 	},
 	{
 		id: 2,
@@ -26,9 +37,9 @@ export let charsArray = writable([
 		classLevels: ['expert 8'],
 		ancestry: {
 			race: 'wood elf',
-			background: '...'
+			background: '???'
 		},
 		alignment: 'NG',
-		appearance: '...'
+		appearance: '???'
 	}
 ]);

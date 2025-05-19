@@ -3,7 +3,7 @@
 	let { children = undefined, text = undefined, variant = 'xl' } = $props();
 </script>
 
-<div class="p-2 leading-none tracking-tight text-gray-900 dark:text-white">
+<div class="p-2 leading-none tracking-tight">
 	{#if variant === 'xl' || !variant}
 		<h1 class="mb-4 text-4xl font-extrabold md:text-5xl lg:text-6xl">
 			{text}{@render children?.()}
