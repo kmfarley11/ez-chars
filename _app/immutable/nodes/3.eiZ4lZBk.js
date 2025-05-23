@@ -1,1 +1,0 @@
-import{t,a}from"../chunks/C7LQVh7Q.js";import"../chunks/zMz1rQl8.js";/* empty css                */var o=t('<div class="flex flex-col justify-between p-2"><div class="p-2"><p>Test page 5e...</p></div></div>');function v(e){var p=o();a(e,p)}export{v as component};
