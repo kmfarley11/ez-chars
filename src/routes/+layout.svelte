@@ -11,6 +11,8 @@
 
 <div>
 	<!-- TODO: abstract into navbar? -->
+	<!-- TODO: why is routing broken in prod? (404 err) turn off SPA? -->
+	<!-- TODO: why does home btn route to my resume site? -->
 	<nav>
 		<div class="flex w-full flex-wrap items-center justify-between border bg-slate-700 text-white">
 			<div class="items-center">

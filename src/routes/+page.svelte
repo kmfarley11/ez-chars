@@ -1,4 +1,5 @@
 <script>
+	import { base } from '$app/paths'
 	import { charsArray } from '../data.js';
 
 	import Table from '$lib/Table.svelte';
@@ -22,7 +23,7 @@
 		<DropDownMenu text="System Selection!" useChevrons={true}>
 			<MenuItemButton
 				onclick={() => {
-					location.href = '/charsheets/5e';
+					location.href = `${base}/charsheets/5e`;
 				}}>2014 5e Character (sidekick)</MenuItemButton
 			>
 			<MenuItemButton onclick={() => alert('todo')}>2014 5e Character</MenuItemButton>
@@ -30,10 +31,9 @@
 	</div>
 
 	<!-- TODO use TS or lean into jsdoc... -->
-	<!-- TODO add an onSelect pass-in to navigate after clicking into row -->
 	<Table
 		tableData={$charsArray}
 		variant={redVariant}
-		onSelect={(char) => (location.href = `/charsheets/5e/${char.id}`)}
+		onSelect={(char) => (location.href = `${base}/charsheets/5e?id=${char.id}`)}
 	/>
 </div>

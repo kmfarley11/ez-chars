@@ -11,6 +11,21 @@ import { writable } from 'svelte/store';
  * @property {String} alignment
  * @property {String} appearance
  */
+
+/** @type {CharData} */
+export const emptyChar = {
+	id: 0,
+	name: '',
+	metadata: { sources: { system: '2014-5e' } },
+	classLevels: [''],
+	ancestry: {
+		race: '',
+		background: ''
+	},
+	alignment: '',
+	appearance: ''
+};
+
 export let charsArray = writable([
 	{
 		id: 1,
