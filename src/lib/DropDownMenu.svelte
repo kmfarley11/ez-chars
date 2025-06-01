@@ -16,12 +16,10 @@
 		isDropdownOpen = false;
 	};
 
-	let bgColor = $state("bg-white")
-	let hoverBgColor = $state("hover:bg-slate-100")
+	let colors = $state("bg-white hover:bg-slate-100 text-black")
 
 	if (variant === "dark") {
-		bgColor = "bg-slate-700"
-		hoverBgColor = "hover:bg-slate-900"
+		colors = "bg-slate-700 hover:bg-slate-900 text-white"
 	}
 </script>
 
@@ -43,7 +41,7 @@
 		/>
 		{#if isDropdownOpen}
 			<div
-				class="dropdown-content menu rounded-box fixed z-10 m-2 divide-y rounded-lg {bgColor} {hoverBgColor} shadow-sm ring-1"
+				class="dropdown-content menu rounded-box fixed z-10 m-2 divide-y rounded-lg {colors} shadow-sm ring-1"
 			>
 				<!-- the following will reserve blank space even when hidden -->
 				<!-- style:visibility={isDropdownOpen ? 'visible' : 'hidden'} -->

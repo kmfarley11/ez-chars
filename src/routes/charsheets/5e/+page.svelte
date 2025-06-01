@@ -1,4 +1,6 @@
 <script>
+	import GridColumn from '$lib/GridColumn.svelte';
+	import GridRow from '$lib/GridRow.svelte';
 	import '../../../app.css';
 	import { charsArray, emptyChar } from '../../../data.js';
 
@@ -14,39 +16,32 @@
 
 <p>Test page 5e...</p>
 
-<div class="grid grid-flow-row grid-rows-3 border rounded-lg grid-parent m-2 p-2">
-	<div class="text-center row-span-1 flex-1/2">Meta / Top level info</div>
-	<!-- TODO: why is there so much space here?... -->
-	<div class="row-span-1 border rounded-md m-2 p-2">
-		<div class="grid grid-parent grid-child grid-flow-col grid-cols-3">
-			<div class="col-span-1">
-				<div class="grid grid-child grid-flow-row grid-rows-2">
-					<div class="row-span-1">
-						name: {char.name}
-					</div>
-					<div class="row-span-1">
-						class levels: {JSON.stringify(char.classLevels)}
-					</div>
-				</div>
-			</div>
-			<div class="col-span-1">
-				ancestry: {JSON.stringify(char.ancestry)}
-			</div>
-			<div class="col-span-1">
-				<div class="grid grid-child grid-flow-row grid-rows-2">
-					<div class="row-span-1">
-						alignment: {char.alignment}
-					</div>
-					<div class="row-span-1">
-						appearance: {char.appearance}
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="row-span-1 border rounded-md m-2 p-2">
-		TODO: stat / quickref info
-	</div>
-</div>
+<GridColumn parent={true} pad={true} classes="rounded-lg" border={true}>
+	<GridRow classes="text-center">Meta / Top level info</GridRow>
+	<GridRow border={true} pad={true} parent={true} child={true} colCount={3}>
+		<GridColumn>
+			<GridRow>
+				name: {char.name}
+			</GridRow>
+			<GridRow>
+				class levels: {JSON.stringify(char.classLevels)}
+			</GridRow>
+		</GridColumn>
+		<GridColumn>
+			<GridRow>
+				ancestry: {JSON.stringify(char.ancestry, null, 1)}
+			</GridRow>
+		</GridColumn>
+		<GridColumn child={true} rowCount={2}>
+			<GridRow>
+				alignment: {char.alignment}
+			</GridRow>
+			<GridRow>
+				appearance: {char.appearance}
+			</GridRow>
+		</GridColumn>
+	</GridRow>
+	<GridRow border={true} pad={true} classes="text-center">TODO: stat / quickref info</GridRow>
+</GridColumn>
 
 TODO: all the rest of the info...

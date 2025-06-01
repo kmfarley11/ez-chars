@@ -6,17 +6,15 @@
 		fill = '#ffffff';
 	}
 
-	let bgColor = $state("bg-white")
-	let hoverBgColor = $state("hover:bg-slate-100")
+	let colors = $state("bg-white hover:bg-slate-100 text-black")
 
 	if (variant === "dark") {
-		bgColor = "bg-slate-700"
-		hoverBgColor = "hover:bg-slate-900"
+		colors = "bg-slate-700 hover:bg-slate-900 text-white"
 	}
 </script>
 
 <button
-	class="btn m-2 rounded-lg {bgColor} {hoverBgColor} p-2 shadow-lg ring-2 ring-black/5 focus:outline-hidden"
+	class="btn m-2 rounded-lg {colors} p-2 shadow-lg ring-2 ring-black/5 focus:outline-hidden"
 	onclick={handleClick}
 >
 	<span>
