@@ -4,6 +4,8 @@ Documentation for maintenance or hosting. Wip...
 
 General / initial intent is to save excalidraw design files here
 
+PRD-vX.md -> Product Requirements Document to help distill fundamental design concepts and facilitate AI assistive technology.
+
 # Design
 
 ## system comparison & design insights
