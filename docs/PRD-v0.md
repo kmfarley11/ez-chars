@@ -29,6 +29,7 @@ ez-chars focuses on **structured character data**, **fast reference during play*
 ### Core Philosophy
 
 - Support multiple game systems I actually run
+  - 5e 2014, 2024
   - A5E
   - Shadowdark
   - Other SRD / Black Flag systems
