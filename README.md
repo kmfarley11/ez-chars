@@ -58,7 +58,7 @@ The rest of the readme is WIP as i play with UI frameworks etc.
 ## maintaining
 
 ```bash
-npm i  # prefer node 18
+npm i  # prefer node 20
 ```
 
 ### running dev
