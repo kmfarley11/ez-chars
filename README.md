@@ -57,6 +57,8 @@ The rest of the readme is WIP as i play with UI frameworks etc.
 
 ## maintaining
 
+NOTE: you'll need git-lfs installed to get the pdfs as well for local builds.
+
 ```bash
 npm i  # prefer node 20
 ```

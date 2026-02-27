@@ -1,9 +1,9 @@
 <script>
-	import { base } from '$app/paths'
+	import { resolve } from '$app/paths'
 	let { href, text, title, variant = "light", target = null, children } = $props();
 
 	// if href defined, and is a local url, prepend with base. else use as-is, else redefine to base
-	let siteHref = $derived(href ? (href.startsWith('/') ? `${base}${href}` : href) : base);
+	let siteHref = $derived(href ? (href.startsWith('/') ? resolve(href) : href) : resolve('/'));
 	let colors = $derived(variant === 'dark'
 		? 'bg-slate-700 hover:bg-slate-900 text-white'
 		: 'bg-white hover:bg-slate-100 text-black');
