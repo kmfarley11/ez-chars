@@ -11,7 +11,7 @@
 	} = $props();
 </script>
 
-<div class="p-2">
+<div class="max-w-full overflow-x-auto p-2">
 	<table
 		class="{variant} border-tools-table-outline border-slate w-full table-auto border-separate justify-between rounded-sm border-2 text-left"
 	>
@@ -29,7 +29,7 @@
 					onclick={() => onSelect(row)}
 				>
 					{#each Object.values(row) as cell}
-						<td class="rounded-sm border p-2 text-left">
+						<td class="rounded-sm border p-2 text-left align-top break-words">
 							<!-- TODO: better renderings once typings implemented etc. -->
 							{#if Array.isArray(cell)}
 								{arrToString(cell)}
