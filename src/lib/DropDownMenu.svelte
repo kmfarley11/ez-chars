@@ -10,17 +10,22 @@
 		isDropdownOpen = !isDropdownOpen; // togle state on click
 	};
 
-	const handleDropdownFocusLoss = ({ relatedTarget, currentTarget }) => {
+	/** @param {FocusEvent} event */
+	const handleDropdownFocusLoss = (event) => {
+		const { relatedTarget, currentTarget } = event;
 		// use "focusout" event to ensure that we can close the dropdown when clicking outside or when we leave the dropdown with the "Tab" button
-		if (relatedTarget instanceof HTMLElement && currentTarget.contains(relatedTarget)) return; // check if the new focus target doesn't present in the dropdown tree (exclude ul\li padding area because relatedTarget, in this case, will be null)
+		if (
+			relatedTarget instanceof HTMLElement &&
+			currentTarget instanceof HTMLElement &&
+			currentTarget.contains(relatedTarget)
+		)
+			return; // check if the new focus target doesn't present in the dropdown tree (exclude ul\li padding area because relatedTarget, in this case, will be null)
 		isDropdownOpen = false;
 	};
 
-	let colors = $state("bg-white hover:bg-slate-100 text-black")
-
-	if (variant === "dark") {
-		colors = "bg-slate-700 hover:bg-slate-900 text-white"
-	}
+	let colors = $derived(variant === 'dark'
+		? 'bg-slate-700 hover:bg-slate-900 text-white'
+		: 'bg-white hover:bg-slate-100 text-black');
 </script>
 
 <div class="flex justify-start text-left">

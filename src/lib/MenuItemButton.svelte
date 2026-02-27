@@ -1,11 +1,12 @@
 <script>
-	let { children, onclick = () => {}, variant = "light" } = $props();
+	const defaultClick = /** @type {(event: MouseEvent) => void} */ (() => {});
+	let { children, onclick = defaultClick, variant = "light" } = $props();
 
-	let colors = $state("bg-white hover:bg-slate-100 text-black")
-
-	if (variant === "dark") {
-		colors = "bg-slate-700 hover:bg-slate-900 text-white"
-	}
+	let colors = $derived(
+		variant === 'dark'
+			? 'bg-slate-700 hover:bg-slate-900 text-white'
+			: 'bg-white hover:bg-slate-100 text-black'
+	);
 </script>
 
 <div class="border-1 rounded-md p-1 px-2 py-2 {colors}" role="none">

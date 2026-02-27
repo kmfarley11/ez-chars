@@ -4,14 +4,16 @@
 	import '../../../app.css';
 	import { charsArray, emptyChar } from '../../../data.js';
 
-	/** @type {import('./$types').PageProps} */
-	let { data } = $props();
-	console.log(data);
+	const props = $props();
+	/** @type {import('./$types').PageProps['data']} */
+	const data = $derived(props.data);
 
-	const charId = parseInt(data.id);
-	const charIdx = charId > 0 ? charId - 1 : -1;
+	const charId = $derived(parseInt(data.id));
+	const charIdx = $derived(charId > 0 ? charId - 1 : -1);
 
-	const char = $state(charIdx === -1 ? emptyChar : $charsArray[charIdx]);
+	const char = $derived(
+		charIdx === -1 ? emptyChar : $charsArray[charIdx] ?? emptyChar
+	);
 </script>
 
 <p>Test page 5e...</p>

@@ -8,6 +8,11 @@
 	import Heading from '$lib/Heading.svelte';
 
 	let redVariant = 'redTable';
+
+	/** @param {import('../data.js').CharData} char */
+	const handleCharSelect = (char) => {
+		location.href = `${base}/charsheets/5e?id=${char.id}`;
+	};
 </script>
 
 <Heading variant="xl">Welcome to ez-chars!</Heading>
@@ -34,6 +39,6 @@
 	<Table
 		tableData={$charsArray}
 		variant={redVariant}
-		onSelect={(char) => (location.href = `${base}/charsheets/5e?id=${char.id}`)}
+		onSelect={handleCharSelect}
 	/>
 </div>

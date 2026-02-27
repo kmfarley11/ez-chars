@@ -1,16 +1,13 @@
 <script>
 	let { text, useChevrons, isOpen, handleClick, variant = "light" } = $props();
 
-	let fill = $state('#000000');
-	if (variant === 'dark') {
-		fill = '#ffffff';
-	}
+	let fill = $derived(variant === 'dark' ? '#ffffff' : '#000000');
 
-	let colors = $state("bg-white hover:bg-slate-100 text-black")
-
-	if (variant === "dark") {
-		colors = "bg-slate-700 hover:bg-slate-900 text-white"
-	}
+	let colors = $derived(
+		variant === 'dark'
+			? 'bg-slate-700 hover:bg-slate-900 text-white'
+			: 'bg-white hover:bg-slate-100 text-black'
+	);
 </script>
 
 <button

@@ -2,10 +2,7 @@
 	import NavButton from './NavButton.svelte';
 
 	let { variant = 'light' } = $props();
-	let fill = $state('#000000');
-	if (variant === 'dark') {
-		fill = '#ffffff';
-	}
+	let fill = $derived(variant === 'dark' ? '#ffffff' : '#000000');
 </script>
 
 <NavButton href="/" title="Go home" text="" {variant}>

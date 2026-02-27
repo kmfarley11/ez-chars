@@ -13,9 +13,11 @@
         classes = undefined
 	} = $props();
 
-	let gridClasses = $state(`grid grid-flow-${flow} grid-rows-${rowCount}`);
-	if (child) gridClasses += 'grid-child';
-	if (parent) gridClasses += 'grid-parent';
+	let gridClasses = $derived(
+		`grid grid-flow-${flow} grid-rows-${rowCount}` +
+			(child ? ' grid-child' : '') +
+			(parent ? ' grid-parent' : '')
+	);
 </script>
 
 <div
