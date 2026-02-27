@@ -28,11 +28,11 @@ ez-chars focuses on **structured character data**, **fast reference during play*
 
 ### Core Philosophy
 
-- Support multiple game systems I actually run
-  - 5e 2014, 2024
-  - A5E
-  - Shadowdark
-  - Other SRD / Black Flag systems
+- Support multiple game systems I actually run (in order of priority)
+  1. 5e 2014 (characters)
+  2. Shadowdark
+  3. 5e 2024 (characters & sidekicks)
+  4. Other SRD / Black Flag systems, Nimble 5e etc.
 - Favor **clarity and flexibility** over completeness
 - Respect that **players often want to write things themselves**
 
@@ -53,7 +53,7 @@ ez-chars focuses on **structured character data**, **fast reference during play*
 - Acting as a VTT (no maps, initiative trackers, chat, etc.)
 - Enforcing rule correctness or completeness
 - Hosting copyrighted or premium rules content
-- Deep automation or dice rolling engines
+- Deep automation or dice rolling engines (yet)
 
 ---
 
@@ -63,7 +63,7 @@ ez-chars focuses on **structured character data**, **fast reference during play*
 
 - **Mobile-friendly first**
 - **Modular, simple form design**
-- **Flexible content** that supports manual updates
+- **Flexible content** that supports manual updates, manual annotations, as well as codified annotations (i.e. code-defined srd pdf navigation help)
 - **Local-first data ownership**
 - Ability to run:
   - fully offline (after load)
@@ -90,7 +90,9 @@ ez-chars focuses on **structured character data**, **fast reference during play*
 
 ## 5. Information Architecture (Core Pillar)
 
-All character information must clearly fall into one of two categories:
+Note: the visual groupings of these details may have more categories/containers for clean user experiences. However...
+
+All character information under-the-hood must clearly fall into one of two categories:
 
 ### Runtime Information (Primary)
 
@@ -100,9 +102,9 @@ Examples:
 
 - Ability scores & modifiers
 - HP, AC, saves
-- Attacks, actions, spell summaries
+- Attacks, actions, spells
 - Key traits or features
-- Temporary notes or reminders
+- Temporary or quick notes vs. reminders
 
 **Design Requirements**
 
@@ -114,7 +116,7 @@ Examples:
 
 ### Organizational Information (Secondary)
 
-Information used between sessions or for prep.
+Information used between sessions, for prep, or long term storage / deep refs.
 
 Examples:
 
@@ -122,13 +124,21 @@ Examples:
 - Detailed feature descriptions
 - Equipment lists
 - Long-form notes
-- Source annotations
+- Deep source annotations (i.e. going beyond pdf / book page references)
 
 **Design Requirements**
 
 - Collapsible or clearly sectioned
 - Supports free-form text
 - Does not crowd runtime UI
+- Eventually links relevant pieces back to runtime UI (i.e. sword in equipmentlist links to action in runtime ref)
+
+### Other data structure notes
+
+The data for a given system should be structured by the system's relevant open source or creative-commons content. I.e. the 5.1 SRD PDF for 2014 5e, 5.2 for 2024 etc. Note that the json from open5e's api code (v2+) may be excellent to guide data structuring and reference lookups for those 2 systems in particular.
+
+The structures for character basics will have overlap across many systems. Try to reduce overlap and prefer common, reusable structures. But do not let this get in the way of building forwards and getting new systems integrated!
+
 
 ---
 
@@ -152,6 +162,7 @@ Examples:
 - As a user, I can annotate abilities and rules in my own words.
 - As a user, I can export my data and not worry about lock-in.
 - As a tinkerer, I can bend the sheet without fighting the UI.
+- As a user, access to free srd pdf references is easy to navigate without encumbering runtime info.
 
 ---
 
@@ -166,7 +177,7 @@ Examples:
 
 ### Character Sheets (Initial Focus)
 
-- Editable D&D 5e (2014) sidekick sheet
+- Editable D&D 5e (2014) character sheet
 - Sections include:
   - Identity & appearance
   - Ancestry / background
@@ -285,7 +296,7 @@ Momentum > purity.
 
 ### Phase 2 — MVP
 
-- Editable 5e sidekick sheet
+- Editable 5e (2014) character sheet
 - LocalStorage persistence
 - JSON import/export
 
@@ -299,7 +310,7 @@ Momentum > purity.
 
 - Storybook integration
 - Optional backend prototype
-- Second system proof-of-concept (e.g., Shadowdark)
+- Second system proof-of-concept (e.g., 5e2024, Shadowdark)
 
 ---
 

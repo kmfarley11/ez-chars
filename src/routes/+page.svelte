@@ -16,6 +16,7 @@
 	const official2014SheetHref = toBaseHref(
 		'/docs/ext/5e2014/official_2014_DnD_5E_CharacterSheet_FormFillable.pdf'
 	);
+	const full2014SrdHref = toBaseHref('/docs/ext/5e2014/SRD5.1_-_Bookmarked_Full_-_v2.pdf');
 	const charsheetHref = resolve('/charsheets/5e');
 
 	/** @param {import('../data.js').CharData} char */
@@ -36,6 +37,16 @@
 	<a
 		class="underline hover:text-blue-600 dark:hover:text-blue-300"
 		href={official2014SheetHref}
+		target="_blank"
+		rel="noreferrer"
+		>here</a
+	>.
+</p>
+<p class="mb-6 text-base text-gray-600 dark:text-gray-300">
+	Want the full 2014 5e SRD PDF with bookmarks? Download it&nbsp;
+	<a
+		class="underline hover:text-blue-600 dark:hover:text-blue-300"
+		href={full2014SrdHref}
 		target="_blank"
 		rel="noreferrer"
 		>here</a
