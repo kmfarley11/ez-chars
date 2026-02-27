@@ -4,22 +4,35 @@
 		<meta charset="utf-8" />
 		<link rel="icon" href="../favicon.png" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link href="../_app/immutable/entry/start.Cl2JMQfe.js" rel="modulepreload">
-		<link href="../_app/immutable/chunks/g4dwqr8Z.js" rel="modulepreload">
-		<link href="../_app/immutable/chunks/KHMzLeng.js" rel="modulepreload">
-		<link href="../_app/immutable/chunks/CU--2L9n.js" rel="modulepreload">
-		<link href="../_app/immutable/chunks/0PYBS1ly.js" rel="modulepreload">
-		<link href="../_app/immutable/entry/app.xly93ptH.js" rel="modulepreload">
-		<link href="../_app/immutable/chunks/BzFTw6OX.js" rel="modulepreload">
-		<link href="../_app/immutable/chunks/CYk6v8Sx.js" rel="modulepreload">
-		<link href="../_app/immutable/chunks/CTa7R5My.js" rel="modulepreload">
+		<script>
+			(() => {
+				try {
+					const key = 'ez-chars-theme';
+					const valid = ['ocean', 'forest', 'sunset'];
+					const stored = localStorage.getItem(key);
+					const next = valid.includes(stored ?? '') ? stored : 'ocean';
+					document.documentElement.dataset.theme = next;
+				} catch {
+					document.documentElement.dataset.theme = 'ocean';
+				}
+			})();
+		</script>
+		<link href="../_app/immutable/entry/start.DJkS7yBJ.js" rel="modulepreload">
+		<link href="../_app/immutable/chunks/ZqKNW_3N.js" rel="modulepreload">
+		<link href="../_app/immutable/chunks/C0VYCEWz.js" rel="modulepreload">
+		<link href="../_app/immutable/chunks/DVflH5fE.js" rel="modulepreload">
+		<link href="../_app/immutable/chunks/C1tKInxT.js" rel="modulepreload">
+		<link href="../_app/immutable/entry/app.B2Yqi818.js" rel="modulepreload">
+		<link href="../_app/immutable/chunks/DbsCAH1v.js" rel="modulepreload">
+		<link href="../_app/immutable/chunks/CXC44Wpy.js" rel="modulepreload">
+		<link href="../_app/immutable/chunks/BmQiL3Gj.js" rel="modulepreload">
 		
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">
 			<script>
 				{
-					__sveltekit_j4duih = {
+					__sveltekit_v0n0n1 = {
 						base: new URL("..", location).pathname.slice(0, -1),
 						assets: "/ez-chars"
 					};
@@ -27,8 +40,8 @@
 					const element = document.currentScript.parentElement;
 
 					Promise.all([
-						import("../_app/immutable/entry/start.Cl2JMQfe.js"),
-						import("../_app/immutable/entry/app.xly93ptH.js")
+						import("../_app/immutable/entry/start.DJkS7yBJ.js"),
+						import("../_app/immutable/entry/app.B2Yqi818.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element);
 					});
