@@ -1,6 +1,7 @@
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { type Plugin, type ResolvedConfig, type ViteDevServer, defineConfig } from 'vite';
+import type { OutputOptions as RollupOutputOptions } from 'rollup';
 import { createReadStream, existsSync } from 'node:fs';
 import { copyFile, mkdir, readdir, stat } from 'node:fs/promises';
 import { extname, join, resolve as pathResolve } from 'node:path';
@@ -78,6 +79,25 @@ const docsExtPlugin = (): Plugin => {
 	};
 };
 
+// Rollup 4 errors if Kit passes `codeSplitting: undefined`; strip it
+const removeUndefinedCodeSplitting = (): Plugin => ({
+	name: 'remove-undefined-code-splitting',
+	configResolved(config) {
+		const output = config.build?.rollupOptions?.output;
+		const scrub = (target?: RollupOutputOptions | null) => {
+			if (target && 'codeSplitting' in target && target.codeSplitting === undefined) {
+				delete target.codeSplitting;
+			}
+		};
+
+		if (Array.isArray(output)) {
+			output.forEach(scrub);
+		} else {
+			scrub(output);
+		}
+	}
+});
+
 export default defineConfig({
-	plugins: [tailwindcss(), sveltekit(), docsExtPlugin()]
+	plugins: [tailwindcss(), sveltekit(), docsExtPlugin(), removeUndefinedCodeSplitting()]
 });
