@@ -12,7 +12,7 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
-		"deploy": "vite build && touch build/.nojekyll && npx gh-pages -d build -t"
+		"deploy": "vite build && touch build/.nojekyll && npx gh-pages -d build -t && echo \"View deployed site: https://kmfarley11.github.io/ez-chars/\" && echo \"Monitor deploy branch/status: https://github.com/kmfarley11/ez-chars/tree/gh-pages\""
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
