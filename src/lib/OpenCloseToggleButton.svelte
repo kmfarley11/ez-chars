@@ -1,6 +1,6 @@
 <script>
-	/** @typedef {'chevron' | 'stack'} IconVariant */
-	let { text, iconVariant = 'stack', isOpen, handleClick, shadingVariant = 'light' } = $props();
+	/** @typedef {'chevron' | 'hamburger' | 'kebab'} IconVariant */
+	let { text, iconVariant = 'hamburger', isOpen, handleClick, shadingVariant = 'light' } = $props();
 
 	let fill = $derived(
 		shadingVariant === 'dark' ? 'var(--color-brand-text)' : 'var(--color-surface-text)'
@@ -37,13 +37,22 @@
 						stroke-linejoin="round"
 						stroke-width="2"
 					/>
-				{:else}
+				{:else if iconVariant === 'hamburger'}
 					<path
 						stroke-linecap="round"
 						stroke-linejoin="round"
 						stroke-width="2"
 						d="M6 18L18 6M6 6l12 12"
 					/>
+				{:else}
+					<g transform="rotate(90 12 12)">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M6 18L18 6M6 6l12 12"
+						/>
+					</g>
 				{/if}
 			</svg>
 		{:else}
@@ -62,7 +71,7 @@
 						stroke-linecap="round"
 						stroke-linejoin="round"
 					/>
-				{:else}
+				{:else if iconVariant === 'hamburger'}
 					<path
 						stroke={fill}
 						stroke-linecap="round"
@@ -70,6 +79,10 @@
 						stroke-width="2"
 						d="M4 6h16M4 12h16M4 18h16"
 					/>
+				{:else}
+					<circle cx="12" cy="6" r="1.5" fill={fill} stroke="none"></circle>
+					<circle cx="12" cy="12" r="1.5" fill={fill} stroke="none"></circle>
+					<circle cx="12" cy="18" r="1.5" fill={fill} stroke="none"></circle>
 				{/if}
 			</svg>
 		{/if}

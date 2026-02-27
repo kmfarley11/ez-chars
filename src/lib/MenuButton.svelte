@@ -7,7 +7,7 @@
 		text = undefined,
 		shadingVariant = 'light',
 		align = 'right',
-		iconVariant = 'stack'
+		iconVariant = 'hamburger'
 	} = $props();
 	let isMenuOpen = $state(false);
 

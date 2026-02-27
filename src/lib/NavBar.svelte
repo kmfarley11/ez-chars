@@ -1,4 +1,5 @@
 <script>
+	import { resolve } from '$app/paths';
 	import AboutButton from '$lib/AboutButton.svelte';
 	import GitButton from '$lib/GitButton.svelte';
 	import HomeButton from '$lib/HomeButton.svelte';
@@ -9,6 +10,15 @@
 	const appVersion = __APP_VERSION__;
 	const gitShortSha = __GIT_SHA__;
 	const aboutText = `ez-chars v${appVersion} (${gitShortSha})`;
+	const homeHref = resolve('/');
+
+	const goHome = () => {
+		location.href = homeHref;
+	};
+
+	const goGit = () => {
+		window.open('https://github.com/kmfarley11/ez-chars', '_blank', 'noopener,noreferrer');
+	};
 
 	const showAbout = () => {
 		alert(aboutText);
@@ -19,9 +29,19 @@
 <nav class="w-full">
 	<div class="theme-navbar grid w-full min-w-0 grid-cols-[auto_1fr_auto] items-center border px-1 py-1">
 		<div class="min-w-0">
-			<div class="flex items-center">
+			<div class="hidden items-center sm:flex">
 				<HomeButton shadingVariant="dark" />
 				<GitButton shadingVariant="dark" />
+			</div>
+			<div class="block sm:hidden">
+				<MenuButton shadingVariant="dark" align="left" iconVariant="hamburger">
+					<li>
+						<MenuItemButton onclick={goHome} shadingVariant="dark">Home</MenuItemButton>
+					</li>
+					<li>
+						<MenuItemButton onclick={goGit} shadingVariant="dark">GitHub</MenuItemButton>
+					</li>
+				</MenuButton>
 			</div>
 		</div>
 		<div class="min-w-0 px-1 text-center">
@@ -55,7 +75,7 @@
 			</ul>
 		</div>
 		<div class="block sm:hidden" id="navbar-menu">
-			<MenuButton shadingVariant="dark" align="right">
+			<MenuButton shadingVariant="dark" align="right" iconVariant="kebab">
 				<li>
 					<MenuItemButton onclick={showAbout} shadingVariant="dark">About</MenuItemButton>
 				</li>
