@@ -1,13 +1,13 @@
 <script>
 	import DialogButton from './DialogButton.svelte';
-	let { variant = 'light' } = $props();
+	let { shadingVariant = 'light' } = $props();
 
 	const appVersion = __APP_VERSION__;
 	const gitShortSha = __GIT_SHA__;
 	const aboutText = `ez-chars v${appVersion} (${gitShortSha})`;
 </script>
 
-<DialogButton {variant} title={aboutText} ariaLabel="About ez-chars">
+<DialogButton {shadingVariant} title={aboutText} ariaLabel="About ez-chars">
 	{#snippet children()}
 		<svg
 			viewBox="0 0 24 24"

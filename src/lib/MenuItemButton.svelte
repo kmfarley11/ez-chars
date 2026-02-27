@@ -2,13 +2,13 @@
 	const defaultClick = /** @type {(event: MouseEvent) => void} */ (() => {});
 	/** @typedef {'dark' | 'light'} MenuItemVariant */
 	/** @type {MenuItemVariant} */
-	const defaultVariant = 'light';
-	let { children, onclick = defaultClick, variant = defaultVariant } = $props();
+	const defaultShadingVariant = 'light';
+	let { children, onclick = defaultClick, shadingVariant = defaultShadingVariant } = $props();
 
 	let colors = $derived(
-		variant === 'dark'
-			? 'bg-slate-700 hover:bg-slate-900 text-white'
-			: 'bg-white hover:bg-slate-100 text-black'
+		shadingVariant === 'dark'
+			? 'theme-btn-dark'
+			: 'theme-btn-light'
 	);
 </script>
 

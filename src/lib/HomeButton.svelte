@@ -1,11 +1,11 @@
 <script>
 	import NavButton from './NavButton.svelte';
 
-	let { variant = 'light' } = $props();
-	let fill = $derived(variant === 'dark' ? '#ffffff' : '#000000');
+	let { shadingVariant = 'light' } = $props();
+	let fill = $derived(shadingVariant === 'dark' ? '#ffffff' : '#000000');
 </script>
 
-<NavButton href="/" title="Go home" ariaLabel="Go to home page" text="" {variant}>
+<NavButton href="/" title="Go home" ariaLabel="Go to home page" text="" {shadingVariant}>
 	<svg
 		xmlns="http://www.w3.org/2000/svg"
 		xmlns:xlink="http://www.w3.org/1999/xlink"

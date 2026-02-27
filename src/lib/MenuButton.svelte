@@ -2,7 +2,13 @@
 	import OpenCloseToggleButton from './OpenCloseToggleButton.svelte';
 
 	/** @typedef {'left' | 'right'} MenuAlign */
-	let { children = undefined, text = undefined, variant = 'light', align = 'right' } = $props();
+	let {
+		children = undefined,
+		text = undefined,
+		shadingVariant = 'light',
+		align = 'right',
+		iconVariant = 'stack'
+	} = $props();
 	let isMenuOpen = $state(false);
 
 	const handleMenuClick = () => {
@@ -23,9 +29,9 @@
 	};
 
 	let colors = $derived(
-		variant === 'dark'
-			? 'bg-slate-700 hover:bg-slate-900 text-white'
-			: 'bg-white hover:bg-slate-100 text-black'
+		shadingVariant === 'dark'
+			? 'theme-btn-dark'
+			: 'theme-btn-light'
 	);
 </script>
 
@@ -41,9 +47,9 @@
 		<OpenCloseToggleButton
 			{text}
 			isOpen={isMenuOpen}
-			useChevrons={false}
+			{iconVariant}
 			handleClick={handleMenuClick}
-			{variant}
+			{shadingVariant}
 		/>
 		{#if isMenuOpen}
 			<div

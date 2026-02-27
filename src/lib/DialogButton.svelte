@@ -1,6 +1,6 @@
 <script>
 	let {
-		variant = 'light',
+		shadingVariant = 'light',
 		title,
 		ariaLabel,
 		closeText = 'Close',
@@ -9,9 +9,9 @@
 	} = $props();
 
 	let colors = $derived(
-		variant === 'dark'
-			? 'bg-slate-700 hover:bg-slate-900 text-white'
-			: 'bg-white hover:bg-slate-100 text-black'
+		shadingVariant === 'dark'
+			? 'theme-btn-dark'
+			: 'theme-btn-light'
 	);
 
 	/** @type {HTMLDialogElement | undefined} */
@@ -46,7 +46,7 @@
 
 <dialog
 	bind:this={dialogEl}
-	class="m-auto w-[min(92vw,34rem)] max-h-[80vh] rounded-md border border-slate-500 p-0 text-black backdrop:bg-black/30"
+	class="theme-dialog theme-dialog-backdrop m-auto w-[min(92vw,34rem)] max-h-[80vh] rounded-md border p-0"
 	oncancel={handleCancel}
 >
 	<div class="flex min-h-48 flex-col gap-4 p-4">
@@ -56,7 +56,7 @@
 		<div class="flex justify-end">
 			<button
 				type="button"
-				class="btn rounded-md border border-slate-500 px-3 py-1 hover:bg-slate-100"
+				class="theme-btn-light btn rounded-md border px-3 py-1"
 				onclick={closeDialog}
 			>
 				{closeText}

@@ -1,3 +1,128 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+:root {
+	--color-surface: #ffffff;
+	--color-surface-hover: #f1f5f9;
+	--color-surface-text: #0f172a;
+	--color-surface-border: #94a3b8;
+
+	--color-brand: #334967;
+	--color-brand-hover: #1e2f47;
+	--color-brand-text: #f8fafc;
+	--color-brand-border: #94a3b8;
+
+	--color-muted-surface: #cbd5e1;
+	--color-muted-text: #0f172a;
+
+	--color-overlay: rgba(0, 0, 0, 0.3);
+}
+
+:root[data-theme='forest'] {
+	--color-surface: #f6fbf6;
+	--color-surface-hover: #e4f2e4;
+	--color-surface-text: #12301d;
+	--color-surface-border: #7ea08a;
+
+	--color-brand: #2f5d43;
+	--color-brand-hover: #244734;
+	--color-brand-text: #ecfdf2;
+	--color-brand-border: #8ab79a;
+
+	--color-muted-surface: #d7e9db;
+	--color-muted-text: #12301d;
+	--color-overlay: rgba(1, 20, 7, 0.3);
+}
+
+:root[data-theme='sunset'] {
+	--color-surface: #fff7f2;
+	--color-surface-hover: #ffe8dc;
+	--color-surface-text: #3f1f16;
+	--color-surface-border: #d9a895;
+
+	--color-brand: #8d3f2f;
+	--color-brand-hover: #6c3024;
+	--color-brand-text: #fff6f1;
+	--color-brand-border: #e0b39f;
+
+	--color-muted-surface: #f6d7c9;
+	--color-muted-text: #3f1f16;
+	--color-overlay: rgba(20, 7, 1, 0.3);
+}
+
+.theme-btn-light {
+	background-color: var(--color-surface);
+	border-color: var(--color-surface-border);
+	color: var(--color-surface-text);
+}
+
+.theme-btn-light:hover {
+	background-color: var(--color-surface-hover);
+}
+
+.theme-btn-dark {
+	background-color: var(--color-brand);
+	border-color: var(--color-brand-border);
+	color: var(--color-brand-text);
+}
+
+.theme-btn-dark:hover {
+	background-color: var(--color-brand-hover);
+}
+
+.theme-navbar {
+	background-color: var(--color-brand);
+	border-color: var(--color-brand-border);
+	color: var(--color-brand-text);
+}
+
+.theme-dialog {
+	background-color: var(--color-surface);
+	border-color: var(--color-surface-border);
+	color: var(--color-surface-text);
+}
+
+.theme-dialog-backdrop::backdrop {
+	background-color: var(--color-overlay);
+}
+
+.theme-table-head {
+	background-color: var(--color-brand);
+	color: var(--color-brand-text);
+}
+
+.theme-table-row {
+	color: var(--color-muted-text);
+}
+
+.theme-table-row:nth-child(even) {
+	background-color: var(--color-muted-surface);
+}
+
+.theme-table-row:hover,
+.theme-table-row:nth-child(even):hover {
+	background-color: var(--color-brand);
+	color: var(--color-brand-text);
+}
+
+.theme-table {
+	border-color: var(--color-surface-border);
+}
+
+.theme-table th,
+.theme-table td {
+	border-color: var(--color-surface-border);
+}
+
+.theme-text-muted {
+	color: var(--color-muted-text);
+}
+
+.theme-link {
+	color: var(--color-brand);
+}
+
+.theme-link:hover {
+	color: var(--color-brand-hover);
+}

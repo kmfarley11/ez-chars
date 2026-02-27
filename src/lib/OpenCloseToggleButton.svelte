@@ -1,12 +1,15 @@
 <script>
-	let { text, useChevrons, isOpen, handleClick, variant = "light" } = $props();
+	/** @typedef {'chevron' | 'stack'} IconVariant */
+	let { text, iconVariant = 'stack', isOpen, handleClick, shadingVariant = 'light' } = $props();
 
-	let fill = $derived(variant === 'dark' ? '#ffffff' : '#000000');
+	let fill = $derived(
+		shadingVariant === 'dark' ? 'var(--color-brand-text)' : 'var(--color-surface-text)'
+	);
 
 	let colors = $derived(
-		variant === 'dark'
-			? 'bg-slate-700 hover:bg-slate-900 text-white'
-			: 'bg-white hover:bg-slate-100 text-black'
+		shadingVariant === 'dark'
+			? 'theme-btn-dark'
+			: 'theme-btn-light'
 	);
 </script>
 
@@ -26,13 +29,13 @@
 				class="inline-block h-6 w-6 stroke-current"
 			>
 				<title>Close</title>
-				{#if useChevrons}
+				{#if iconVariant === 'chevron'}
 					<path
 						d="M6 15L12 9L18 15"
 						stroke={fill}
-						stroke-width="2"
 						stroke-linecap="round"
 						stroke-linejoin="round"
+						stroke-width="2"
 					/>
 				{:else}
 					<path
@@ -51,16 +54,17 @@
 				class="inline-block h-6 w-6 stroke-current"
 			>
 				<title>Open</title>
-				{#if useChevrons}
+				{#if iconVariant === 'chevron'}
 					<path
 						d="M6 9L12 15L18 9"
-						stroke="#000000"
+						stroke={fill}
 						stroke-width="2"
 						stroke-linecap="round"
 						stroke-linejoin="round"
 					/>
 				{:else}
 					<path
+						stroke={fill}
 						stroke-linecap="round"
 						stroke-linejoin="round"
 						stroke-width="2"

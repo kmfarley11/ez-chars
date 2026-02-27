@@ -4,10 +4,9 @@
 
 	import Table from '$lib/Table.svelte';
 	import MenuItemButton from '$lib/MenuItemButton.svelte';
-	import DropDownMenu from '$lib/DropDownMenu.svelte';
+	import MenuButton from '$lib/MenuButton.svelte';
 	import Heading from '$lib/Heading.svelte';
 
-	let redVariant = 'redTable';
 	/** @param {`/${string}`} pathSuffix */
 	const toBaseHref = (pathSuffix) => {
 		const root = resolve('/');
@@ -27,25 +26,25 @@
 
 <Heading variant="xl">Welcome to ez-chars!</Heading>
 
-<p class="mb-6 text-lg font-normal text-gray-500 sm:px-16 lg:text-xl xl:px-48 dark:text-gray-400">
+<p class="theme-text-muted mb-6 text-lg font-normal sm:px-16 lg:text-xl xl:px-48">
 	Visit <a href="https://github.com/kmfarley11/ez-chars" target="_blank"
 		>github.com/kmfarley11/ez-chars</a
 	> to see the source code
 </p>
-<p class="mb-6 text-base text-gray-600 dark:text-gray-300">
+<p class="theme-text-muted mb-6 text-base">
 	Need the official 2014 D&D 5e form-fillable sheet? Grab it&nbsp;
 	<a
-		class="underline hover:text-blue-600 dark:hover:text-blue-300"
+		class="theme-link underline"
 		href={official2014SheetHref}
 		target="_blank"
 		rel="noreferrer"
 		>here</a
 	>.
 </p>
-<p class="mb-6 text-base text-gray-600 dark:text-gray-300">
+<p class="theme-text-muted mb-6 text-base">
 	Want the full 2014 5e SRD PDF with bookmarks? Download it&nbsp;
 	<a
-		class="underline hover:text-blue-600 dark:hover:text-blue-300"
+		class="theme-link underline"
 		href={full2014SrdHref}
 		target="_blank"
 		rel="noreferrer"
@@ -55,20 +54,19 @@
 
 <div>
 	<div style="align-items: center;">
-		<DropDownMenu text="System Selection!" useChevrons={true}>
+		<MenuButton text="System Selection!" iconVariant="chevron" align="left">
 				<MenuItemButton
 					onclick={() => {
 						location.href = charsheetHref;
-					}}>2014 5e Character (sidekick)</MenuItemButton
+					}}
+					>2014 5e Character (sidekick)</MenuItemButton
 				>
 			<MenuItemButton onclick={() => alert('todo')}>2014 5e Character</MenuItemButton>
-		</DropDownMenu>
+		</MenuButton>
 	</div>
 
-	<!-- TODO use TS or lean into jsdoc... -->
 	<Table
 		tableData={$charsArray}
-		variant={redVariant}
 		onSelect={handleCharSelect}
 	/>
 </div>
