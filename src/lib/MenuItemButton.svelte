@@ -1,6 +1,9 @@
 <script>
 	const defaultClick = /** @type {(event: MouseEvent) => void} */ (() => {});
-	let { children, onclick = defaultClick, variant = "light" } = $props();
+	/** @typedef {'dark' | 'light'} MenuItemVariant */
+	/** @type {MenuItemVariant} */
+	const defaultVariant = 'light';
+	let { children, onclick = defaultClick, variant = defaultVariant } = $props();
 
 	let colors = $derived(
 		variant === 'dark'
@@ -9,9 +12,9 @@
 	);
 </script>
 
-<div class="border-1 rounded-md p-1 px-2 py-2 {colors}" role="none">
+<div class="border-1 w-full rounded-md p-1 px-2 py-2 {colors}" role="none">
 	<button
-		class="btn text-left {colors}"
+		class="btn block w-full text-left {colors}"
 		role="menuitem"
 		tabindex="-1"
 		{onclick}
