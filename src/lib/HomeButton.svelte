@@ -5,7 +5,7 @@
 	let fill = $derived(variant === 'dark' ? '#ffffff' : '#000000');
 </script>
 
-<NavButton href="/" title="Go home" text="" {variant}>
+<NavButton href="/" title="Go home" ariaLabel="Go to home page" text="" {variant}>
 	<svg
 		xmlns="http://www.w3.org/2000/svg"
 		xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -14,7 +14,7 @@
 		version="1.1"
 		viewBox="0 0 486.196 486.196"
 		id="Capa_1"
-		class="mb-1 inline-block h-6 w-6 stroke-current"
+		class="inline-block h-6 w-6 stroke-current"
 		><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g
 			id="SVGRepo_tracerCarrier"
 			stroke-linecap="round"

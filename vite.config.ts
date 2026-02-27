@@ -2,11 +2,14 @@ import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { type Plugin, type ResolvedConfig, type ViteDevServer, defineConfig } from 'vite';
 import type { OutputOptions as RollupOutputOptions } from 'rollup';
-import { createReadStream, existsSync } from 'node:fs';
+import { createReadStream, existsSync, readFileSync } from 'node:fs';
 import { copyFile, mkdir, readdir, stat } from 'node:fs/promises';
 import { extname, join, resolve as pathResolve } from 'node:path';
+import { execSync } from 'node:child_process';
 import type { Dirent, Stats } from 'node:fs';
 import type { NextHandleFunction } from 'connect';
+
+const packageVersion = JSON.parse(readFileSync(pathResolve(process.cwd(), 'package.json'), 'utf8')).version;
 
 const docsExtPlugin = (): Plugin => {
 	const sourceRelative = 'docs/ext';
@@ -99,5 +102,19 @@ const removeUndefinedCodeSplitting = (): Plugin => ({
 });
 
 export default defineConfig({
+	define: {
+		__APP_VERSION__: JSON.stringify(packageVersion),
+		__GIT_SHA__: JSON.stringify(
+			(() => {
+				try {
+					return execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })
+						.toString()
+						.trim();
+				} catch {
+					return 'unknown';
+				}
+			})()
+		)
+	},
 	plugins: [tailwindcss(), sveltekit(), docsExtPlugin(), removeUndefinedCodeSplitting()]
 });

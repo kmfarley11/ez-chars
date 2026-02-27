@@ -5,8 +5,15 @@
 	let fill = $derived(variant === 'dark' ? '#ffffff' : '#000000');
 </script>
 
-<NavButton href="https://github.com/kmfarley11/ez-chars" title="Visit source on GitHub" text="" {target} {variant}>
-	<svg viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg" fill="none" class="mb-1 inline-block h-6 w-6 stroke-current"
+<NavButton
+	href="https://github.com/kmfarley11/ez-chars"
+	title="Visit source on GitHub"
+	ariaLabel="Open ez-chars GitHub repository"
+	text=""
+	{target}
+	{variant}
+>
+	<svg viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg" fill="none" class="inline-block h-6 w-6 stroke-current"
 		><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g
 			id="SVGRepo_tracerCarrier"
 			stroke-linecap="round"

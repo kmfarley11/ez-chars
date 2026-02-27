@@ -11,7 +11,7 @@
 </script>
 
 <button
-	class="btn m-2 rounded-lg {colors} p-2 shadow-lg ring-2 ring-black/5 focus:outline-hidden"
+	class="btn m-1 rounded-lg {colors} p-2 shadow-lg ring-2 ring-black/5 focus:outline-hidden"
 	onclick={handleClick}
 >
 	<span>
