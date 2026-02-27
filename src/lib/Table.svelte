@@ -10,7 +10,7 @@
 	} = $props();
 </script>
 
-<div class="max-w-full overflow-x-auto p-2">
+<div class="max-w-full overflow-x-auto p-0">
 	<table
 		class="theme-table border-tools-table-outline w-full table-auto border-separate justify-between rounded-sm border-2 text-left"
 	>

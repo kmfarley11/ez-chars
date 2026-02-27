@@ -85,3 +85,9 @@ npm run deploy
 
 FTODO: use github actions for cicd instead of manual with gh-pages?
 https://github.com/svelterust/counter/blob/main/.github/workflows/deploy.yml
+
+## licensing
+
+- Source code in this repository is licensed under MIT. See `LICENSE`.
+- Included third-party assets (for example SRD PDFs in `docs/ext/`) retain their original licenses.
+- Third-party attributions and license details are listed in `THIRD_PARTY_NOTICES.md`.

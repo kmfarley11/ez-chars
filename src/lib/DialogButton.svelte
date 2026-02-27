@@ -30,6 +30,13 @@
 		event.preventDefault();
 		closeDialog();
 	};
+
+	/** @param {MouseEvent} event */
+	const handleBackdropClick = (event) => {
+		if (event.target === event.currentTarget) {
+			closeDialog();
+		}
+	};
 </script>
 
 <div class="p-1">
@@ -48,9 +55,10 @@
 	bind:this={dialogEl}
 	class="theme-dialog theme-dialog-backdrop m-auto w-[min(92vw,34rem)] max-h-[80vh] rounded-md border p-0"
 	oncancel={handleCancel}
+	onclick={handleBackdropClick}
 >
-	<div class="flex min-h-48 flex-col gap-4 p-4">
-		<div class="flex flex-1 items-center justify-center text-center">
+	<div class="flex min-h-48 flex-col p-4">
+		<div class="flex-1 pb-4">
 			{@render dialogContent?.()}
 		</div>
 		<div class="flex justify-end">
