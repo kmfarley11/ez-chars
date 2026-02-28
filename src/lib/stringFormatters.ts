@@ -1,21 +1,15 @@
 // const spacesToDashes = (str) => str.replaceAll(' ', '-')
-// TODO - un-JSDoc things in preference for TypeScript where possible
-/**
- * @param {string} str
- */
-export const capitalizeFirstLetter = (str) => {
+
+export const capitalizeFirstLetter = (str: string) => {
     return String(str).charAt(0).toUpperCase() + String(str).slice(1);
 }
 
-export const objToString = (/** @type {{ [x: string]: any; }} */ obj) => {
+export const objToString = (obj: Record<string, any>) => {
     const keys = Object.keys(obj);
-    /**
-     * @type {any[]}
-     */
-    const newArr = [];
+    const newArr: string[] = [];
 
-    keys.forEach((key) => {
-        const value = obj[key];
+    keys.forEach((key: string) => {
+        const value: any = obj[key];
         if (Array.isArray(value)) {
             newArr.push(`${key}::${arrToString(value)}`);
         } else if (typeof value === 'object') {
@@ -28,11 +22,8 @@ export const objToString = (/** @type {{ [x: string]: any; }} */ obj) => {
     return arrToString(newArr, false);
 };
 
-export const arrToString = (/** @type {any[]} */ arr, encapsulate = true) => {
-    /**
-     * @type {string[]}
-     */
-    const newArr = [];
+export const arrToString = (arr: any[], encapsulate = true) => {
+    const newArr: any[] = [];
     arr.forEach((item) => {
         if (Array.isArray(item)) {
             newArr.push(arrToString(item));
@@ -52,7 +43,7 @@ export const arrToString = (/** @type {any[]} */ arr, encapsulate = true) => {
     return encapsulate === true ? `[${result}]` : `${result}`;
 };
 
-export const anyToString = (/** @type {any} */ value, encapsulate = true) => {
+export const anyToString = (value: any, encapsulate = true) => {
     if (Array.isArray(value)){
         return arrToString(value, encapsulate)
     }else if (typeof value === 'object'){
