@@ -1,4 +1,5 @@
 // const spacesToDashes = (str) => str.replaceAll(' ', '-')
+
 /**
  * @param {string} str
  */
@@ -50,3 +51,12 @@ export const arrToString = (/** @type {any[]} */ arr, encapsulate = true) => {
     }, '');
     return encapsulate === true ? `[${result}]` : `${result}`;
 };
+
+export const anyToString = (/** @type {any} */ value, encapsulate = true) => {
+    if (Array.isArray(value)){
+        return arrToString(value, encapsulate)
+    }else if (typeof value === 'object'){
+        return objToString(value)
+    }else{
+        value}
+}

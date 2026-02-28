@@ -4,6 +4,9 @@
 import { type SystemRef, type CharacterDocument } from "./core";
 import { type Dnd5e2014SystemData, type SYSTEM_ID_5E2014 } from "./system.5e2014";
 
+export * from './core'
+export * from './system.5e2014'
+
 export type CharacterDocument5e2014 = (
     CharacterDocument & { 
         system: SystemRef & {
