@@ -1,9 +1,16 @@
-import { type Annotation, type Id } from './core'
+import type { CharacterDocument5e2014, Reference } from '.';
+import { SCHEMA_VER, type Annotation, type Id } from './core'
+import { nowIso, createId } from './helpers';
+import { FULL_2014_SRD_HREF } from '$lib/urlHelpers';
 
 // =======================================================
 // System: D&D 5e (2014) — SRD 5.1
 // =======================================================
+export const SYSTEM_ID_5E2014_val = "dnd5e-2014"
 export type SYSTEM_ID_5E2014 = "dnd5e-2014"
+
+export const CHAR_SCHEMA_VER_5E2014_val = "SRD-5.1-2023"
+export type CHAR_SCHEMA_VER_5E2014 = "SRD-5.1-2023"
 
 export type AbilityKey = "str" | "dex" | "con" | "int" | "wis" | "cha";
 
@@ -211,4 +218,55 @@ export interface SpellRef {
   prepared?: boolean;
   notes?: string;
   annotations?: Annotation[];
+}
+
+export const SRD_REF_5E_2014: Reference = {
+    kind: 'url', locator: { url: FULL_2014_SRD_HREF }, sourceId: createId()
+}
+
+export function create5e2014Character(name?: string, hp?: number, ac?: number): CharacterDocument5e2014 {
+  return {
+    meta: {
+      id: createId(),
+      schemaVersion: SCHEMA_VER,
+      createdAt: nowIso(),
+      updatedAt: nowIso()
+    },
+    system: {
+      id: SYSTEM_ID_5E2014_val,
+      version: CHAR_SCHEMA_VER_5E2014_val,
+      source: 'local',
+      annotations: [
+        { origin: 'source', kind: 'tag', text: '2014-5e' },
+        { origin: 'source', kind: 'tag', text: '2014-5e-srd', ref: SRD_REF_5E_2014 },
+        { origin: 'source', kind: 'tag', text: '2014-5e-ua-sidekick' },
+      ]
+    },
+    identity: {
+      name: name ?? 'Ole No Name',
+    },
+    systemData: {
+      level: 0,
+      proficiencyBonus: 0,
+      abilities: {
+        str: { score: 10, mod: 0 },
+        dex: { score: 10, mod: 0 },
+        con: { score: 10, mod: 0 },
+        int: { score: 10, mod: 0 },
+        wis: { score: 10, mod: 0 },
+        cha: { score: 10, mod: 0 }
+      },
+      saves: {},
+      skills: {},
+      combat: {
+        armorClass: ac ?? 10,
+        hitPoints: {
+          max: hp ?? 5,
+          current: hp ?? 5,
+          temp: 0
+        }
+      },
+      classes: []
+    }
+  }
 }

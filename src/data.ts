@@ -1,160 +1,37 @@
 import { writable, type Writable } from 'svelte/store';
-import { type CharacterWithSystemData, type CharacterDocument5e2014 } from './schema';
-import { nowIso } from './schema/helpers';
+import {
+	type CharacterWithSystemData,
+	type CharacterDocument5e2014,
+	create5e2014Character
+} from './schema';
 
-export const emptyChar: CharacterDocument5e2014 = {
-	meta: {
-		id: 'dne',
-		createdAt: '2026-02-27T16:00:00Z',
-		updatedAt: '2026-02-27T16:00:00Z',
-		schemaVersion: 'char.v1'
-	},
-	identity: {
-		name: 'Ole No Name'
-	},
-	system: {
-		id: 'dnd5e-2014'
-	},
-	systemData: {
-		abilities: {
-			cha: { score: 10 },
-			con: { score: 10 },
-			dex: { score: 10 },
-			wis: { score: 10 },
-			str: { score: 10 },
-			int: { score: 10 }
-		},
-		classes: [],
-		combat: {
-			armorClass: 10,
-			hitPoints: { current: 10, max: 10 }
-		},
-		level: 0,
-		proficiencyBonus: 0,
-		saves: {},
-		skills: {}
-	}
-};
+export const emptyChar: CharacterDocument5e2014 = create5e2014Character();
 
-const bryltin: CharacterDocument5e2014 = {
-	meta: {
-		id: 'char-1',
-		schemaVersion: 'char.v1',
-		createdAt: nowIso(),
-		updatedAt: nowIso()
-	},
-	system: {
-		id: 'dnd5e-2014',
-		version: 'SRD5.1',
-		source: 'local',
-		annotations: [
-			{ origin: 'source', kind: 'tag', text: '2014-5e' },
-			{ origin: 'source', kind: 'tag', text: '2014-5e-srd' },
-			{ origin: 'source', kind: 'tag', text: '2014-5e-ua-sidekick' }
-		]
-	},
-	identity: {
-		name: 'bryltin brewhammer',
-		alignment: 'NG',
-		appearance: '???',
-		ancestryLineage: 'hill dwarf',
-		background: '???'
-	},
-	systemData: {
-		level: 8,
-		proficiencyBonus: 2,
-		abilities: {
-			str: { score: 10, mod: 0 },
-			dex: { score: 10, mod: 0 },
-			con: { score: 10, mod: 0 },
-			int: { score: 10, mod: 0 },
-			wis: { score: 10, mod: 0 },
-			cha: { score: 10, mod: 0 }
-		},
-		saves: {},
-		skills: {},
-		combat: {
-			armorClass: 10,
-			hitPoints: {
-				max: 1,
-				current: 1,
-				temp: 0
-			}
-		},
-		race: {
-			name: 'hill dwarf'
-		},
-		background: {
-			name: '???'
-		},
-		classes: [
-			{
-				name: 'warrior',
-				level: 8
-			}
-		]
+const bryltin: CharacterDocument5e2014 = create5e2014Character('Bryltin Brewhammer');
+bryltin.identity.alignment = 'LG';
+bryltin.identity.ancestryLineage = 'hill dwarf';
+bryltin.systemData.level = 8;
+bryltin.systemData.proficiencyBonus = 2;
+bryltin.systemData.race = { name: 'hill dwarf' };
+bryltin.systemData.classes = [
+	{
+		name: 'warrior',
+		level: 8
 	}
-};
+];
 
-const zindra: CharacterDocument5e2014 = {
-	meta: {
-		id: 'char-2',
-		schemaVersion: 'char.v1',
-		createdAt: nowIso(),
-		updatedAt: nowIso()
-	},
-	system: {
-		id: 'dnd5e-2014',
-		version: 'SRD5.1',
-		source: 'local',
-		annotations: [
-			{ origin: 'source', kind: 'tag', text: '2014-5e' },
-			{ origin: 'source', kind: 'tag', text: '2014-5e-srd' },
-			{ origin: 'source', kind: 'tag', text: '2014-5e-ua-sidekick' }
-		]
-	},
-	identity: {
-		name: 'zindra winterbow',
-		alignment: 'NG',
-		appearance: '???',
-		ancestryLineage: 'wood elf',
-		background: '???'
-	},
-	systemData: {
-		level: 8,
-		proficiencyBonus: 2,
-		abilities: {
-			str: { score: 10, mod: 0 },
-			dex: { score: 10, mod: 0 },
-			con: { score: 10, mod: 0 },
-			int: { score: 10, mod: 0 },
-			wis: { score: 10, mod: 0 },
-			cha: { score: 10, mod: 0 }
-		},
-		saves: {},
-		skills: {},
-		combat: {
-			armorClass: 10,
-			hitPoints: {
-				max: 1,
-				current: 1,
-				temp: 0
-			}
-		},
-		race: {
-			name: 'wood elf'
-		},
-		background: {
-			name: '???'
-		},
-		classes: [
-			{
-				name: 'expert',
-				level: 8
-			}
-		]
+const zindra: CharacterDocument5e2014 = create5e2014Character('Zindra Winterbow');
+zindra.identity.alignment = 'NG';
+zindra.identity.ancestryLineage = 'wood elf';
+zindra.systemData.level = 8;
+zindra.systemData.proficiencyBonus = 2;
+zindra.systemData.race = { name: 'wood elf' };
+zindra.systemData.classes = [
+	{
+		name: 'expert',
+		level: 8
 	}
-};
+];
 
 export let charsArray: Writable<CharacterWithSystemData[]> = writable<CharacterWithSystemData[]>([
 	bryltin,

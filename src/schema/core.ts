@@ -2,6 +2,8 @@
 // Core: shared across systems
 // =======================================================
 
+export const SCHEMA_VER = "0.0.1"
+
 export type Id = string; // uuid, nanoid, etc.
 
 export interface CharacterDocument {

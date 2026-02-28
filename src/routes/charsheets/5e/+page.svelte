@@ -12,9 +12,7 @@
 	}
 
 	const { data }: Props = $props();
-
 	const charIdx = $derived($charsArray.findIndex((char) => char.meta.id == data.id));
-
 	const char: CharacterDocument5e2014 = $derived(
 		charIdx === -1 ? emptyChar : ($charsArray[charIdx] ?? emptyChar)
 	) as CharacterDocument5e2014;
