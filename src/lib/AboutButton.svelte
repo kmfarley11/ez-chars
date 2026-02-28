@@ -31,6 +31,7 @@
 				<h3 class="text-lg leading-none font-bold tracking-tight">ez-chars</h3>
 				<p class="theme-text-muted mt-2">{aboutText}</p>
 			</div>
+			<!-- TODO un-WIP someday... -->
 			<p>⚠️DISCLAIMER: this app is super WIP⚠️</p>
 			<p>Source code license: MIT.</p>
 			<p>

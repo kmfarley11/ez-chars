@@ -20,6 +20,7 @@
 	) as CharacterDocument5e2014;
 </script>
 
+<!-- TODO update this per the latest form factors, prove the concept and refine -->
 <p>Test page 5e...</p>
 
 <GridColumn parent={true} pad={true} classes="rounded-lg" border={true}>
