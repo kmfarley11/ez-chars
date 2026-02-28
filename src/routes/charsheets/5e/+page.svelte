@@ -1,19 +1,23 @@
-<script>
+<script lang="ts">
 	import GridColumn from '$lib/GridColumn.svelte';
 	import GridRow from '$lib/GridRow.svelte';
 	import '../../../app.css';
 	import { charsArray, emptyChar } from '../../../data.js';
+	import type { CharacterDocument5e2014 } from '../../../schema';
 
-	const props = $props();
-	/** @type {import('./$types').PageProps['data']} */
-	const data = $derived(props.data);
+	interface Props {
+		data: {
+			id: string;
+		};
+	}
 
-	const charId = $derived(parseInt(data.id));
-	const charIdx = $derived(charId > 0 ? charId - 1 : -1);
+	const { data }: Props = $props();
 
-	const char = $derived(
-		charIdx === -1 ? emptyChar : $charsArray[charIdx] ?? emptyChar
-	);
+	const charIdx = $derived($charsArray.findIndex((char) => char.meta.id == data.id));
+
+	const char: CharacterDocument5e2014 = $derived(
+		charIdx === -1 ? emptyChar : ($charsArray[charIdx] ?? emptyChar)
+	) as CharacterDocument5e2014;
 </script>
 
 <p>Test page 5e...</p>
@@ -23,23 +27,23 @@
 	<GridRow border={true} pad={true} parent={true} child={true} colCount={3}>
 		<GridColumn>
 			<GridRow>
-				name: {char.name}
+				name: {char.identity.name}
 			</GridRow>
 			<GridRow>
-				class levels: {JSON.stringify(char.classLevels)}
+				class levels: {JSON.stringify(char.systemData.classes)}
 			</GridRow>
 		</GridColumn>
 		<GridColumn>
 			<GridRow>
-				ancestry: {JSON.stringify(char.ancestry, null, 1)}
+				ancestry: {JSON.stringify(char.systemData.race, null, 1)}
 			</GridRow>
 		</GridColumn>
 		<GridColumn child={true} rowCount={2}>
 			<GridRow>
-				alignment: {char.alignment}
+				alignment: {char.identity.alignment}
 			</GridRow>
 			<GridRow>
-				appearance: {char.appearance}
+				appearance: {char.identity.appearance}
 			</GridRow>
 		</GridColumn>
 	</GridRow>
