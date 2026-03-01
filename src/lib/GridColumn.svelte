@@ -10,7 +10,7 @@
 		flow = 'row',
 		pad = false,
 		border = false,
-        classes = undefined
+		classes = undefined
 	} = $props();
 
 	let gridClasses = $derived(

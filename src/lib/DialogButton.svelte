@@ -8,11 +8,7 @@
 		dialogContent
 	} = $props();
 
-	let colors = $derived(
-		shadingVariant === 'dark'
-			? 'theme-btn-dark'
-			: 'theme-btn-light'
-	);
+	let colors = $derived(shadingVariant === 'dark' ? 'theme-btn-dark' : 'theme-btn-light');
 
 	/** @type {HTMLDialogElement | undefined} */
 	let dialogEl;

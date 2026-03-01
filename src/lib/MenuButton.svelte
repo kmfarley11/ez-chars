@@ -28,11 +28,7 @@
 		isMenuOpen = false;
 	};
 
-	let colors = $derived(
-		shadingVariant === 'dark'
-			? 'theme-btn-dark'
-			: 'theme-btn-light'
-	);
+	let colors = $derived(shadingVariant === 'dark' ? 'theme-btn-dark' : 'theme-btn-light');
 </script>
 
 <div class="flex {align === 'right' ? 'justify-end' : 'justify-start'} text-left">
@@ -53,7 +49,9 @@
 		/>
 		{#if isMenuOpen}
 			<div
-				class="absolute {align === 'right' ? 'right-0' : 'left-0'} z-20 mt-1 min-w-36 divide-y rounded-lg p-1 {colors} shadow-sm ring-1"
+				class="absolute {align === 'right'
+					? 'right-0'
+					: 'left-0'} z-20 mt-1 min-w-36 divide-y rounded-lg p-1 {colors} shadow-sm ring-1"
 			>
 				<ul class="w-full">
 					{@render children?.()}

@@ -10,8 +10,8 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
-		"format": "prettier --write .",
-		"lint": "prettier --check . && eslint .",
+		"format": "prettier --write . && prettier --write \"src/**/*.{js,ts}\" --plugin prettier-plugin-tailwindcss",
+		"lint": "prettier --check . && prettier --check \"src/**/*.{js,ts}\" --plugin prettier-plugin-tailwindcss && eslint .",
 		"deploy": "vite build && touch build/.nojekyll && npx gh-pages -d build -t && echo \"View deployed site: https://kmfarley11.github.io/ez-chars/\" && echo \"Monitor deploy branch/status: https://github.com/kmfarley11/ez-chars/tree/gh-pages\""
 	},
 	"devDependencies": {

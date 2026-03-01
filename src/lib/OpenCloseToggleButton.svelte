@@ -6,11 +6,7 @@
 		shadingVariant === 'dark' ? 'var(--color-brand-text)' : 'var(--color-surface-text)'
 	);
 
-	let colors = $derived(
-		shadingVariant === 'dark'
-			? 'theme-btn-dark'
-			: 'theme-btn-light'
-	);
+	let colors = $derived(shadingVariant === 'dark' ? 'theme-btn-dark' : 'theme-btn-light');
 </script>
 
 <button
@@ -80,9 +76,9 @@
 						d="M4 6h16M4 12h16M4 18h16"
 					/>
 				{:else}
-					<circle cx="12" cy="6" r="1.5" fill={fill} stroke="none"></circle>
-					<circle cx="12" cy="12" r="1.5" fill={fill} stroke="none"></circle>
-					<circle cx="12" cy="18" r="1.5" fill={fill} stroke="none"></circle>
+					<circle cx="12" cy="6" r="1.5" {fill} stroke="none"></circle>
+					<circle cx="12" cy="12" r="1.5" {fill} stroke="none"></circle>
+					<circle cx="12" cy="18" r="1.5" {fill} stroke="none"></circle>
 				{/if}
 			</svg>
 		{/if}

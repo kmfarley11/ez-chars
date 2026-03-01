@@ -23,11 +23,12 @@
 	const showAbout = () => {
 		alert(aboutText);
 	};
-
 </script>
 
 <nav class="w-full">
-	<div class="theme-navbar grid w-full min-w-0 grid-cols-[auto_1fr_auto] items-center border px-1 py-1">
+	<div
+		class="theme-navbar grid w-full min-w-0 grid-cols-[auto_1fr_auto] items-center border px-1 py-1"
+	>
 		<div class="min-w-0">
 			<div class="hidden items-center sm:flex">
 				<HomeButton shadingVariant="dark" />
@@ -52,12 +53,7 @@
 		<div class="hidden sm:block" id="navbar-default">
 			<ul class="flex flex-row items-center font-medium">
 				<li>
-					<MenuButton
-						shadingVariant="dark"
-						text="Theme"
-						align="right"
-						iconVariant="chevron"
-					>
+					<MenuButton shadingVariant="dark" text="Theme" align="right" iconVariant="chevron">
 						{#each THEME_OPTIONS as option}
 							<li>
 								<MenuItemButton onclick={() => setTheme(option.id)} shadingVariant="dark">

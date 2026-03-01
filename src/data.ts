@@ -9,6 +9,9 @@ export const emptyChar: CharacterDocument5e2014 = create5e2014Character();
 
 const bryltin: CharacterDocument5e2014 = create5e2014Character({
 	name: 'Bryltin Brewhammer',
+	meta: {
+		id: 'char-bryltin'
+	},
 	identity: {
 		alignment: 'LG',
 		ancestryLineage: 'hill dwarf'
@@ -28,6 +31,9 @@ const bryltin: CharacterDocument5e2014 = create5e2014Character({
 
 const zindra: CharacterDocument5e2014 = create5e2014Character({
 	name: 'Zindra Winterbow',
+	meta: {
+		id: 'char-zindra'
+	},
 	identity: {
 		alignment: 'NG',
 		ancestryLineage: 'wood elf'

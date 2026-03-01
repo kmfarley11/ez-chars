@@ -1,5 +1,5 @@
 <script>
-	import { resolve } from '$app/paths'
+	import { resolve } from '$app/paths';
 	let {
 		href,
 		text,
@@ -12,9 +12,7 @@
 
 	// if href defined, and is a local url, prepend with base. else use as-is, else redefine to base
 	let siteHref = $derived(href ? (href.startsWith('/') ? resolve(href) : href) : resolve('/'));
-	let colors = $derived(shadingVariant === 'dark'
-		? 'theme-btn-dark'
-		: 'theme-btn-light');
+	let colors = $derived(shadingVariant === 'dark' ? 'theme-btn-dark' : 'theme-btn-light');
 </script>
 
 <div class="p-1">
