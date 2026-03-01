@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { charsArray } from '../data.js';
 
@@ -11,7 +12,7 @@
 
 	const charsheetHref = resolve('/charsheets/5e');
 	const handleCharSelect = (char: CharacterWithSystemData) => {
-		location.href = `${charsheetHref}?id=${char.meta.id}`;
+		goto(`${charsheetHref}?id=${encodeURIComponent(char.meta.id)}`);
 	};
 </script>
 
