@@ -9,7 +9,9 @@ import { execSync } from 'node:child_process';
 import type { Dirent, Stats } from 'node:fs';
 import type { NextHandleFunction } from 'connect';
 
-const packageVersion = JSON.parse(readFileSync(pathResolve(process.cwd(), 'package.json'), 'utf8')).version;
+const packageVersion = JSON.parse(
+	readFileSync(pathResolve(process.cwd(), 'package.json'), 'utf8')
+).version;
 
 const docsExtPlugin = (): Plugin => {
 	const sourceRelative = 'docs/ext';

@@ -11,7 +11,7 @@ Third-party assets included in this repository keep their original licenses.
 - File: `docs/ext/5e2014/SRD5.1_-_Bookmarked_Full_-_v2.pdf`
 - Source: <https://www.drivethrurpg.com/en/product/424958/srd-5-1-split-and-bookmarked>
 - Derived from: <https://media.dndbeyond.com/compendium-images/srd/5.1/SRD_CC_v5.1.pdf>
-- Title: *Systems Reference Document 5.1 Split and bookmarked by Derek Ruiz*
+- Title: _Systems Reference Document 5.1 Split and bookmarked by Derek Ruiz_
 - Licensor: Elven Tower
 - Derived from Licensor: Wizards of the Coast LLC
 - License: Creative Commons Attribution 4.0 International (CC BY 4.0)

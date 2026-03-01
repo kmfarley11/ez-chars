@@ -139,7 +139,6 @@ The data for a given system should be structured by the system's relevant open s
 
 The structures for character basics will have overlap across many systems. Try to reduce overlap and prefer common, reusable structures. But do not let this get in the way of building forwards and getting new systems integrated!
 
-
 ---
 
 ## 6. Target Users (Concise)
