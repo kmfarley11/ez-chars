@@ -224,8 +224,80 @@ export const SRD_REF_5E_2014: Reference = {
     kind: 'url', locator: { url: FULL_2014_SRD_HREF }, sourceId: createId()
 }
 
-export function create5e2014Character(name?: string, hp?: number, ac?: number): CharacterDocument5e2014 {
-  return {
+type DeepPartial<T> = {
+  [K in keyof T]?: T[K] extends Array<infer U>
+    ? Array<DeepPartial<U>>
+    : T[K] extends object
+      ? DeepPartial<T[K]>
+      : T[K];
+};
+
+export interface Create5e2014CharacterOptions {
+  name?: string;
+  hp?: number;
+  ac?: number;
+  meta?: Partial<CharacterDocument5e2014["meta"]>;
+  system?: Partial<CharacterDocument5e2014["system"]>;
+  identity?: DeepPartial<CharacterDocument5e2014["identity"]>;
+  features?: CharacterDocument5e2014["features"];
+  inventory?: CharacterDocument5e2014["inventory"];
+  notes?: CharacterDocument5e2014["notes"];
+  annotations?: CharacterDocument5e2014["annotations"];
+  systemData?: DeepPartial<Dnd5e2014SystemData>;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function deepMerge<T>(base: T, override?: DeepPartial<T>): T {
+  if (override === undefined) return base;
+  if (Array.isArray(base)) {
+    return (override as T) ?? base;
+  }
+  if (!isPlainObject(base) || !isPlainObject(override)) {
+    return (override as T) ?? base;
+  }
+
+  const merged: Record<string, unknown> = { ...base };
+  for (const key of Object.keys(override)) {
+    const baseVal = (base as Record<string, unknown>)[key];
+    const overrideVal = (override as Record<string, unknown>)[key];
+    if (overrideVal === undefined) continue;
+    if (isPlainObject(baseVal) && isPlainObject(overrideVal)) {
+      merged[key] = deepMerge(baseVal, overrideVal);
+      continue;
+    }
+    merged[key] = overrideVal;
+  }
+
+  return merged as T;
+}
+
+function normalizeCharacterOptions(
+  arg0?: string | Create5e2014CharacterOptions,
+  hp?: number,
+  ac?: number
+): Create5e2014CharacterOptions {
+  if (typeof arg0 === "string" || arg0 === undefined) {
+    return { name: arg0, hp, ac };
+  }
+  return arg0;
+}
+
+export function create5e2014Character(): CharacterDocument5e2014;
+export function create5e2014Character(name?: string, hp?: number, ac?: number): CharacterDocument5e2014;
+export function create5e2014Character(options: Create5e2014CharacterOptions): CharacterDocument5e2014;
+export function create5e2014Character(
+  arg0?: string | Create5e2014CharacterOptions,
+  hp?: number,
+  ac?: number
+): CharacterDocument5e2014 {
+  const options = normalizeCharacterOptions(arg0, hp, ac);
+  const hpValue = options.hp ?? 5;
+  const acValue = options.ac ?? 10;
+
+  const base: CharacterDocument5e2014 = {
     meta: {
       id: createId(),
       schemaVersion: SCHEMA_VER,
@@ -243,7 +315,7 @@ export function create5e2014Character(name?: string, hp?: number, ac?: number): 
       ]
     },
     identity: {
-      name: name ?? 'Ole No Name',
+      name: options.name ?? 'Ole No Name',
     },
     systemData: {
       level: 0,
@@ -259,14 +331,35 @@ export function create5e2014Character(name?: string, hp?: number, ac?: number): 
       saves: {},
       skills: {},
       combat: {
-        armorClass: ac ?? 10,
+        armorClass: acValue,
         hitPoints: {
-          max: hp ?? 5,
-          current: hp ?? 5,
+          max: hpValue,
+          current: hpValue,
           temp: 0
         }
       },
       classes: []
     }
-  }
+  };
+
+  const withOverrides: CharacterDocument5e2014 = {
+    ...base,
+    meta: {
+      ...base.meta,
+      ...options.meta
+    },
+    system: {
+      ...base.system,
+      ...options.system
+    },
+    identity: deepMerge(base.identity, options.identity),
+    systemData: deepMerge(base.systemData, options.systemData)
+  };
+
+  if (options.features !== undefined) withOverrides.features = options.features;
+  if (options.inventory !== undefined) withOverrides.inventory = options.inventory;
+  if (options.notes !== undefined) withOverrides.notes = options.notes;
+  if (options.annotations !== undefined) withOverrides.annotations = options.annotations;
+
+  return withOverrides;
 }

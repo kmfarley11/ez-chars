@@ -7,45 +7,53 @@ import {
 
 export const emptyChar: CharacterDocument5e2014 = create5e2014Character();
 
-const bryltin: CharacterDocument5e2014 = create5e2014Character('Bryltin Brewhammer');
-bryltin.identity.alignment = 'LG';
-bryltin.identity.ancestryLineage = 'hill dwarf';
-bryltin.systemData.level = 8;
-bryltin.systemData.proficiencyBonus = 2;
-bryltin.systemData.race = { name: 'hill dwarf' };
-bryltin.systemData.classes = [
-	{
-		name: 'warrior',
-		level: 8
+const bryltin: CharacterDocument5e2014 = create5e2014Character({
+	name: 'Bryltin Brewhammer',
+	identity: {
+		alignment: 'LG',
+		ancestryLineage: 'hill dwarf'
+	},
+	systemData: {
+		level: 8,
+		proficiencyBonus: 2,
+		race: { name: 'hill dwarf' },
+		classes: [
+			{
+				name: 'warrior',
+				level: 8
+			}
+		]
 	}
-];
+});
 
-const zindra: CharacterDocument5e2014 = create5e2014Character('Zindra Winterbow');
-zindra.identity.alignment = 'NG';
-zindra.identity.ancestryLineage = 'wood elf';
-zindra.systemData.level = 8;
-zindra.systemData.proficiencyBonus = 2;
-zindra.systemData.race = { name: 'wood elf' };
-zindra.systemData.classes = [
-	{
-		name: 'expert',
-		level: 8
+const zindra: CharacterDocument5e2014 = create5e2014Character({
+	name: 'Zindra Winterbow',
+	identity: {
+		alignment: 'NG',
+		ancestryLineage: 'wood elf'
+	},
+	systemData: {
+		level: 8,
+		proficiencyBonus: 2,
+		race: { name: 'wood elf' },
+		classes: [
+			{
+				name: 'expert',
+				level: 8
+			}
+		]
 	}
-];
+});
 
 export let charsArray: Writable<CharacterWithSystemData[]> = writable<CharacterWithSystemData[]>([
 	bryltin,
 	zindra,
-	{
+	create5e2014Character({
 		meta: {
 			id: 'char-001',
 			schemaVersion: 'char.v1',
 			createdAt: '2026-02-27T16:00:00Z',
 			updatedAt: '2026-02-27T16:00:00Z'
-		},
-		system: {
-			id: 'dnd5e-2014',
-			version: 'SRD5.1'
 		},
 		identity: {
 			name: 'Theren Vael',
@@ -178,17 +186,13 @@ export let charsArray: Writable<CharacterWithSystemData[]> = writable<CharacterW
 				]
 			}
 		}
-	},
-	{
+	}),
+	create5e2014Character({
 		meta: {
 			id: 'char-002',
 			schemaVersion: 'char.v1',
 			createdAt: '2026-02-27T16:10:00Z',
 			updatedAt: '2026-02-27T16:10:00Z'
-		},
-		system: {
-			id: 'dnd5e-2014',
-			version: 'SRD5.1'
 		},
 		identity: {
 			name: 'Bram',
@@ -264,5 +268,5 @@ export let charsArray: Writable<CharacterWithSystemData[]> = writable<CharacterW
 				}
 			]
 		}
-	}
+	})
 ]);
