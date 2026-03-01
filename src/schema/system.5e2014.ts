@@ -2,6 +2,7 @@ import type { CharacterDocument5e2014, Reference } from '.';
 import { SCHEMA_VER, type Annotation, type Id } from './core'
 import { nowIso, createId } from './helpers';
 import { FULL_2014_SRD_HREF } from '$lib/urlHelpers';
+import { z } from 'zod';
 
 // =======================================================
 // System: D&D 5e (2014) — SRD 5.1
@@ -246,6 +247,60 @@ export interface Create5e2014CharacterOptions {
   systemData?: DeepPartial<Dnd5e2014SystemData>;
 }
 
+const create5e2014CharacterOptionsSchema = z.object({
+  name: z.string().min(1).optional(),
+  hp: z.coerce.number().int().min(0).optional(),
+  ac: z.coerce.number().int().min(0).optional(),
+  meta: z.object({
+    id: z.string().min(1).optional(),
+    schemaVersion: z.string().min(1).optional(),
+    createdAt: z.string().min(1).optional(),
+    updatedAt: z.string().min(1).optional()
+  }).partial().optional(),
+  system: z.object({
+    id: z.string().min(1).optional(),
+    version: z.string().min(1).optional(),
+    source: z.enum(['local', 'remote', 'import']).optional(),
+    annotations: z.array(z.unknown()).optional()
+  }).partial().optional(),
+  identity: z.record(z.string(), z.unknown()).optional(),
+  features: z.array(z.unknown()).optional(),
+  inventory: z.array(z.unknown()).optional(),
+  notes: z.array(z.unknown()).optional(),
+  annotations: z.array(z.unknown()).optional(),
+  systemData: z.record(z.string(), z.unknown()).optional()
+}).strict();
+
+const minimalCharacterRuntimeSchema = z.object({
+  meta: z.object({
+    id: z.string().min(1),
+    schemaVersion: z.string().min(1),
+    createdAt: z.string().min(1),
+    updatedAt: z.string().min(1)
+  }),
+  system: z.object({
+    id: z.string().min(1),
+    version: z.string().min(1).optional(),
+    source: z.enum(['local', 'remote', 'import']).optional(),
+    annotations: z.array(z.unknown()).optional()
+  }).passthrough(),
+  identity: z.object({
+    name: z.string().min(1)
+  }).passthrough(),
+  systemData: z.object({
+    level: z.number().int().min(0),
+    proficiencyBonus: z.number().int().min(0),
+    combat: z.object({
+      armorClass: z.number().int().min(0),
+      hitPoints: z.object({
+        max: z.number().int().min(0),
+        current: z.number().int().min(0),
+        temp: z.number().int().min(0).optional()
+      }).passthrough()
+    }).passthrough()
+  }).passthrough()
+}).passthrough();
+
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -293,7 +348,7 @@ export function create5e2014Character(
   hp?: number,
   ac?: number
 ): CharacterDocument5e2014 {
-  const options = normalizeCharacterOptions(arg0, hp, ac);
+  const options = create5e2014CharacterOptionsSchema.parse(normalizeCharacterOptions(arg0, hp, ac)) as Create5e2014CharacterOptions;
   const hpValue = options.hp ?? 5;
   const acValue = options.ac ?? 10;
 
@@ -361,5 +416,5 @@ export function create5e2014Character(
   if (options.notes !== undefined) withOverrides.notes = options.notes;
   if (options.annotations !== undefined) withOverrides.annotations = options.annotations;
 
-  return withOverrides;
+  return minimalCharacterRuntimeSchema.parse(withOverrides) as unknown as CharacterDocument5e2014;
 }
