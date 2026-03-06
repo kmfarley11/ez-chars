@@ -93,6 +93,14 @@ export const hitDiceSchema = z
 	})
 	.strict();
 
+export const deathSavesSchema = z
+	.object({
+		successes: z.number().int().min(0).max(3).optional(),
+		failures: z.number().int().min(0).max(3).optional(),
+		annotations: z.array(annotationSchema).optional()
+	})
+	.strict();
+
 const combatSensesSchema = z
 	.object({
 		passivePerception: z.number().int().optional(),
@@ -108,8 +116,12 @@ export const combatBlockSchema = z
 		armorClass: z.number().int().min(0),
 		initiative: z.number().int().optional(),
 		speed: z.number().int().optional(),
+		speedFly: z.number().int().optional(),
+		speedSwim: z.number().int().optional(),
+		speedClimb: z.number().int().optional(),
 		hitPoints: hitPointsSchema,
 		hitDice: hitDiceSchema.optional(),
+		deathSaves: deathSavesSchema.optional(),
 		senses: combatSensesSchema.optional(),
 		conditions: z.array(z.string()).optional(),
 		annotations: z.array(annotationSchema).optional()
@@ -130,6 +142,9 @@ export const raceChoiceSchema = z
 		subrace: z.string().optional(),
 		size: z.enum(['Tiny', 'Small', 'Medium', 'Large', 'Huge', 'Gargantuan']).optional(),
 		speed: z.number().int().optional(),
+		speedFly: z.number().int().optional(),
+		speedSwim: z.number().int().optional(),
+		speedClimb: z.number().int().optional(),
 		languages: z.array(z.string()).optional(),
 		traits: z.array(featureRefSchema).optional(),
 		annotations: z.array(annotationSchema).optional()

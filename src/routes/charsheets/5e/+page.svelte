@@ -16,37 +16,147 @@
 	const char: CharacterDocument5e2014 = $derived(
 		charIdx === -1 ? emptyChar : ($charsArray[charIdx] ?? emptyChar)
 	) as CharacterDocument5e2014;
+
+	const displayOrPlaceholder = (value: unknown, placeholder = '___') => {
+		if (value === undefined || value === null) return placeholder;
+		if (typeof value === 'string') {
+			const trimmed = value.trim();
+			return trimmed.length === 0 ? placeholder : trimmed;
+		}
+		return String(value);
+	};
+
+	const classLevelsDisplay = $derived(
+		char.systemData.classes.length > 0
+			? char.systemData.classes.map((entry) => `${entry.name} ${entry.level}`).join(' / ')
+			: '___'
+	);
+
+	const ancestryDisplay = $derived(
+		displayOrPlaceholder(char.identity.ancestryLineage ?? char.systemData.race?.name)
+	);
+
+	const backgroundDisplay = $derived(
+		displayOrPlaceholder(char.systemData.background?.name ?? char.identity.background)
+	);
+
+	const alignmentDisplay = $derived(displayOrPlaceholder(char.identity.alignment));
+	const appearanceDisplay = $derived(displayOrPlaceholder(char.identity.appearance));
+
+	const hpCurrentDisplay = $derived(
+		displayOrPlaceholder(char.systemData.combat?.hitPoints?.current, '__')
+	);
+	const hpMaxDisplay = $derived(displayOrPlaceholder(char.systemData.combat?.hitPoints?.max, '__'));
+	const hpTempDisplay = $derived(
+		displayOrPlaceholder(char.systemData.combat?.hitPoints?.temp ?? 0, '__')
+	);
+	const acDisplay = $derived(displayOrPlaceholder(char.systemData.combat?.armorClass, '__'));
+	const initiativeDisplay = $derived(
+		displayOrPlaceholder(char.systemData.combat?.initiative, '__')
+	);
+	const speedWalkDisplay = $derived(
+		displayOrPlaceholder(char.systemData.combat?.speed ?? char.systemData.race?.speed, '__')
+	);
+	const speedFlyDisplay = $derived(
+		displayOrPlaceholder(char.systemData.combat?.speedFly ?? char.systemData.race?.speedFly, '__')
+	);
+	const speedSwimDisplay = $derived(
+		displayOrPlaceholder(char.systemData.combat?.speedSwim ?? char.systemData.race?.speedSwim, '__')
+	);
+	const speedClimbDisplay = $derived(
+		displayOrPlaceholder(
+			char.systemData.combat?.speedClimb ?? char.systemData.race?.speedClimb,
+			'__'
+		)
+	);
+	const hitDiceRemainingDisplay = $derived(
+		displayOrPlaceholder(char.systemData.combat?.hitDice?.remaining, '__')
+	);
+	const hitDiceTotalDisplay = $derived(
+		displayOrPlaceholder(char.systemData.combat?.hitDice?.total, '__')
+	);
+	const deathSaveSuccessesDisplay = $derived(
+		displayOrPlaceholder(char.systemData.combat?.deathSaves?.successes ?? 0, '__')
+	);
+	const deathSaveFailuresDisplay = $derived(
+		displayOrPlaceholder(char.systemData.combat?.deathSaves?.failures ?? 0, '__')
+	);
 </script>
 
 <!-- TODO update this per the latest form factors, prove the concept and refine -->
 <p>Test page 5e...</p>
 
 <GridColumn parent={true} pad={true} classes="rounded-lg" border={true}>
-	<GridRow classes="text-center">Meta / Top level info</GridRow>
-	<GridRow border={true} pad={true} parent={true} child={true} colCount={3}>
-		<GridColumn>
-			<GridRow>
-				name: {char.identity.name}
-			</GridRow>
-			<GridRow>
-				class levels: {JSON.stringify(char.systemData.classes)}
-			</GridRow>
+	<GridRow classes="text-center text-lg font-semibold">Meta / Top-level Info</GridRow>
+	<GridRow
+		border={true}
+		pad={true}
+		parent={true}
+		child={true}
+		colCount={1}
+		classes="gap-3 md:grid-cols-3"
+	>
+		<GridColumn border={true} pad={true} classes="rounded-md">
+			<div class="space-y-2">
+				<p><span class="font-semibold">Name:</span> {displayOrPlaceholder(char.identity.name)}</p>
+				<p><span class="font-semibold">Class Levels:</span> {classLevelsDisplay}</p>
+			</div>
 		</GridColumn>
-		<GridColumn>
-			<GridRow>
-				ancestry: {JSON.stringify(char.systemData.race, null, 1)}
-			</GridRow>
+		<GridColumn border={true} pad={true} classes="rounded-md">
+			<div class="space-y-2">
+				<p><span class="font-semibold">Ancestry:</span> {ancestryDisplay}</p>
+				<p><span class="font-semibold">Background:</span> {backgroundDisplay}</p>
+			</div>
 		</GridColumn>
-		<GridColumn child={true} rowCount={2}>
-			<GridRow>
-				alignment: {char.identity.alignment}
-			</GridRow>
-			<GridRow>
-				appearance: {char.identity.appearance}
-			</GridRow>
+		<GridColumn border={true} pad={true} classes="rounded-md">
+			<div class="space-y-2">
+				<p><span class="font-semibold">Alignment:</span> {alignmentDisplay}</p>
+				<p><span class="font-semibold">Appearance:</span> {appearanceDisplay}</p>
+			</div>
 		</GridColumn>
 	</GridRow>
-	<GridRow border={true} pad={true} classes="text-center">TODO: stat / quickref info</GridRow>
+	<GridRow classes="pt-2 text-center text-lg font-semibold">Quick Reference</GridRow>
+	<GridRow
+		border={true}
+		pad={true}
+		parent={true}
+		child={true}
+		colCount={1}
+		classes="gap-3 md:grid-cols-3"
+	>
+		<GridColumn border={true} pad={true} classes="rounded-md">
+			<div class="space-y-2">
+				<p>
+					<span class="font-semibold">HP:</span>
+					{hpCurrentDisplay}/{hpMaxDisplay}
+					(+{hpTempDisplay} tmp)
+				</p>
+				<p><span class="font-semibold">AC:</span> {acDisplay}</p>
+				<p><span class="font-semibold">Initiative:</span> {initiativeDisplay}</p>
+			</div>
+		</GridColumn>
+		<GridColumn border={true} pad={true} classes="rounded-md">
+			<div class="space-y-2">
+				<p><span class="font-semibold">Speed:</span> {speedWalkDisplay} ft walking</p>
+				<p><span class="font-semibold">Fly:</span> {speedFlyDisplay} ft</p>
+				<p><span class="font-semibold">Swim:</span> {speedSwimDisplay} ft</p>
+				<p><span class="font-semibold">Climb:</span> {speedClimbDisplay} ft</p>
+			</div>
+		</GridColumn>
+		<GridColumn border={true} pad={true} classes="rounded-md">
+			<div class="space-y-2">
+				<p>
+					<span class="font-semibold">Hit Dice:</span>
+					{hitDiceRemainingDisplay}/{hitDiceTotalDisplay}
+				</p>
+				<p>
+					<span class="font-semibold">Death Saves:</span>
+					{deathSaveSuccessesDisplay} ok /
+					{deathSaveFailuresDisplay} rip
+				</p>
+			</div>
+		</GridColumn>
+	</GridRow>
 </GridColumn>
 
 TODO: all the rest of the info...

@@ -13,6 +13,7 @@ import {
 	combatBlockSchema,
 	hitPointsSchema,
 	hitDiceSchema,
+	deathSavesSchema,
 	raceChoiceSchema,
 	backgroundChoiceSchema,
 	classLevelSchema,
@@ -48,6 +49,7 @@ export {
 	combatBlockSchema,
 	hitPointsSchema,
 	hitDiceSchema,
+	deathSavesSchema,
 	raceChoiceSchema,
 	backgroundChoiceSchema,
 	classLevelSchema,
@@ -69,6 +71,7 @@ export type Skill = z.infer<typeof skillSchema>;
 export type CombatBlock = z.infer<typeof combatBlockSchema>;
 export type HitPoints = z.infer<typeof hitPointsSchema>;
 export type HitDice = z.infer<typeof hitDiceSchema>;
+export type DeathSaves = z.infer<typeof deathSavesSchema>;
 export type RaceChoice = z.infer<typeof raceChoiceSchema>;
 export type BackgroundChoice = z.infer<typeof backgroundChoiceSchema>;
 export type ClassLevel = z.infer<typeof classLevelSchema>;
@@ -229,6 +232,10 @@ export function create5e2014Character(
 					max: hpValue,
 					current: hpValue,
 					temp: 0
+				},
+				deathSaves: {
+					successes: 0,
+					failures: 0
 				}
 			},
 			classes: []
