@@ -1,31 +1,26 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import { displayOrPlaceholder } from '$lib/displayHelpers';
+	type GridFieldType = 'string' | 'number' | 'array' | 'object' | 'unknown';
 
-	interface EditPayload {
-		name: string;
-		classLevels: string;
-	}
+	type GridContentField = {
+		fieldName: string;
+		fieldType: GridFieldType;
+		value: unknown;
+	};
+
+	type GridContentData = Record<string, GridContentField>;
 
 	interface Props {
-		children?: Snippet;
+		data: GridContentData;
 		// eslint-disable-next-line no-unused-vars
-		handleEditSave: (_payload: EditPayload) => void;
+		handleEditSave: (_payload: GridContentData) => void;
 		handleEditCancel?: () => void;
-		initialName?: string;
-		initialClassLevels?: string;
 	}
 
-	let {
-		children,
-		handleEditSave,
-		handleEditCancel = undefined,
-		initialName = '',
-		initialClassLevels = ''
-	}: Props = $props();
+	let { data, handleEditSave, handleEditCancel = undefined }: Props = $props();
 
 	let dialogEl: HTMLDialogElement | undefined;
-	let nameDraft = $state('');
-	let classLevelsDraft = $state('');
+	let draftData = $state<GridContentData>({});
 
 	const closeDialog = () => {
 		dialogEl?.close();
@@ -37,8 +32,15 @@
 	};
 
 	const onOpen = () => {
-		nameDraft = initialName;
-		classLevelsDraft = initialClassLevels;
+		draftData = Object.fromEntries(
+			Object.entries(data).map(([fieldKey, field]) => [
+				fieldKey,
+				{
+					...field,
+					value: displayOrPlaceholder(field.value, '')
+				}
+			])
+		);
 		dialogEl?.showModal();
 	};
 
@@ -50,10 +52,7 @@
 
 	const onSubmit = (event: SubmitEvent) => {
 		event.preventDefault();
-		handleEditSave({
-			name: nameDraft,
-			classLevels: classLevelsDraft
-		});
+		handleEditSave(draftData);
 		closeDialog();
 	};
 </script>
@@ -82,7 +81,14 @@
 			></path>
 		</svg>
 	</button>
-	{@render children?.()}
+	<div class="space-y-2">
+		{#each Object.entries(data) as [fieldKey, field] (fieldKey)}
+			<p>
+				<span class="font-semibold">{field.fieldName}:</span>
+				{displayOrPlaceholder(field.value)}
+			</p>
+		{/each}
+	</div>
 </div>
 
 <dialog
@@ -93,23 +99,26 @@
 >
 	<form class="flex flex-col gap-3 p-4" onsubmit={onSubmit}>
 		<h3 class="text-lg leading-none font-semibold">Edit Meta Fields</h3>
-		<label class="space-y-1">
-			<span class="font-semibold">Name</span>
-			<input
-				class="theme-input w-full rounded-md border px-2 py-1"
-				type="text"
-				bind:value={nameDraft}
-			/>
-		</label>
-		<label class="space-y-1">
-			<span class="font-semibold">Class Levels</span>
-			<input
-				class="theme-input w-full rounded-md border px-2 py-1"
-				type="text"
-				bind:value={classLevelsDraft}
-				placeholder="Fighter 1 / Wizard 1"
-			/>
-		</label>
+		{#each Object.entries(draftData) as [fieldKey, field] (fieldKey)}
+			<label class="space-y-1">
+				<span class="font-semibold">{field.fieldName}</span>
+				<input
+					class="theme-input w-full rounded-md border px-2 py-1"
+					type="text"
+					value={displayOrPlaceholder(field.value, '')}
+					oninput={(event) => {
+						const target = event.currentTarget as HTMLInputElement;
+						draftData = {
+							...draftData,
+							[fieldKey]: {
+								...field,
+								value: target.value
+							}
+						};
+					}}
+				/>
+			</label>
+		{/each}
 		<div class="mt-1 flex justify-end gap-2">
 			<button
 				type="button"

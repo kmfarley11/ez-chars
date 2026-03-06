@@ -5,6 +5,7 @@
 	import '../../../app.css';
 	import { charsArray, emptyChar } from '../../../data.js';
 	import type { CharacterDocument5e2014 } from '../../../schema';
+	import { displayOrPlaceholder } from '$lib/displayHelpers';
 
 	interface Props {
 		data: {
@@ -18,20 +19,26 @@
 		charIdx === -1 ? emptyChar : ($charsArray[charIdx] ?? emptyChar)
 	) as CharacterDocument5e2014;
 
-	const displayOrPlaceholder = (value: unknown, placeholder = '___') => {
-		if (value === undefined || value === null) return placeholder;
-		if (typeof value === 'string') {
-			const trimmed = value.trim();
-			return trimmed.length === 0 ? placeholder : trimmed;
-		}
-		return String(value);
+	type GridFieldType = 'string' | 'number' | 'array' | 'object' | 'unknown';
+	type GridContentField = {
+		fieldName: string;
+		fieldType: GridFieldType;
+		value: unknown;
 	};
+	type GridContentData = Record<string, GridContentField>;
 
-	const classLevelsDisplay = $derived(
-		char.systemData.classes.length > 0
-			? char.systemData.classes.map((entry) => `${entry.name} ${entry.level}`).join(' / ')
-			: '___'
-	);
+	const metaPrimaryData = $derived<GridContentData>({
+		name: {
+			fieldName: 'Name',
+			fieldType: 'string',
+			value: char.identity.name
+		},
+		classLevels: {
+			fieldName: 'Class Levels',
+			fieldType: 'array',
+			value: char.systemData.classes
+		}
+	});
 
 	const ancestryDisplay = $derived(
 		displayOrPlaceholder(char.identity.ancestryLineage ?? char.systemData.race?.name)
@@ -83,9 +90,9 @@
 		displayOrPlaceholder(char.systemData.combat?.deathSaves?.failures ?? 0, '__')
 	);
 
-	const handleEditMetaSave = (payload: { name: string; classLevels: string }) => {
-		const nextName = payload.name.trim();
-		const nextClassLevels = payload.classLevels
+	const handleEditMetaSave = (payload: GridContentData) => {
+		const nextName = displayOrPlaceholder(payload.name?.value, '').trim();
+		const nextClassLevels = displayOrPlaceholder(payload.classLevels?.value, '')
 			.split(/[/,\n]/)
 			.map((segment) => segment.trim())
 			.filter((segment) => segment.length > 0)
@@ -136,16 +143,7 @@
 		classes="gap-3"
 	>
 		<GridColumn border={true} pad={true} classes="rounded-md">
-			<GridContent
-				handleEditSave={handleEditMetaSave}
-				initialName={char.identity.name ?? ''}
-				initialClassLevels={classLevelsDisplay === '___' ? '' : classLevelsDisplay}
-			>
-				<div class="space-y-2">
-					<p><span class="font-semibold">Name:</span> {displayOrPlaceholder(char.identity.name)}</p>
-					<p><span class="font-semibold">Class Levels:</span> {classLevelsDisplay}</p>
-				</div>
-			</GridContent>
+			<GridContent handleEditSave={handleEditMetaSave} data={metaPrimaryData} />
 		</GridColumn>
 		<GridColumn border={true} pad={true} classes="rounded-md">
 			<div class="space-y-2">
