@@ -1,6 +1,15 @@
-<script>
-	// TODO typescript to hint and verify variant...
-	let { children = undefined, text = undefined, variant = 'xl' } = $props();
+<script lang="ts">
+	import type { Snippet } from 'svelte';
+
+	type Variant = 'xl' | 'lg' | 'md' | 'sm';
+
+	type Props = {
+		children?: Snippet;
+		text?: string;
+		variant?: Variant;
+	};
+
+	let { children = undefined, text = undefined, variant = 'xl' }: Props = $props();
 </script>
 
 <div class="p-2 leading-none tracking-tight">
