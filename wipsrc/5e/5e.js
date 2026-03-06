@@ -1,3 +1,5 @@
+/* global jsonData:writable, saveData */
+
 function exportJson() {
 	const jsonString = JSON.stringify(jsonData, null, 2);
 	const blob = new Blob([jsonString], { type: 'application/json' });
@@ -26,7 +28,7 @@ function importJson() {
 				} else {
 					alert('Invalid format: Must contain formSchema and formData.');
 				}
-			} catch (err) {
+			} catch {
 				alert('Failed to parse JSON file.');
 			}
 		};
@@ -44,3 +46,7 @@ function doAlert(inalert) {
 		alert(inalert);
 	}
 }
+
+window.exportJson = exportJson;
+window.importJson = importJson;
+window.doAlert = doAlert;

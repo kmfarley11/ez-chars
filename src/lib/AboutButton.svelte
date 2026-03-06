@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import DialogButton from './DialogButton.svelte';
 	let { shadingVariant = 'light' } = $props();
 
@@ -6,25 +6,23 @@
 	const gitShortSha = __GIT_SHA__;
 	const aboutText = `ez-chars v${appVersion} (${gitShortSha})`;
 	const noticesHref = 'https://github.com/kmfarley11/ez-chars/blob/main/THIRD_PARTY_NOTICES.md';
-	const extAttributionHref = '/docs/ext/Readme.md';
+	const extAttributionHref = 'https://github.com/kmfarley11/ez-chars/blob/main/docs/ext/Readme.md';
 	const ccByHref = 'https://creativecommons.org/licenses/by/4.0/';
 </script>
 
 <DialogButton {shadingVariant} title={aboutText} ariaLabel="About ez-chars">
-	{#snippet children()}
-		<svg
-			viewBox="0 0 24 24"
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			class="inline-block h-6 w-6 stroke-current"
-			aria-hidden="true"
-		>
-			<circle cx="12" cy="12" r="9" stroke-width="1.5"></circle>
-			<path d="M9.75 9.25a2.25 2.25 0 1 1 3.5 1.86c-.78.52-1.25 1-1.25 2.14" stroke-width="1.5"
-			></path>
-			<circle cx="12" cy="16.75" r="1" fill="currentColor" stroke="none"></circle>
-		</svg>
-	{/snippet}
+	<svg
+		viewBox="0 0 24 24"
+		xmlns="http://www.w3.org/2000/svg"
+		fill="none"
+		class="inline-block h-6 w-6 stroke-current"
+		aria-hidden="true"
+	>
+		<circle cx="12" cy="12" r="9" stroke-width="1.5"></circle>
+		<path d="M9.75 9.25a2.25 2.25 0 1 1 3.5 1.86c-.78.52-1.25 1-1.25 2.14" stroke-width="1.5"
+		></path>
+		<circle cx="12" cy="16.75" r="1" fill="currentColor" stroke="none"></circle>
+	</svg>
 	{#snippet dialogContent()}
 		<div class="space-y-3 px-1 py-1 text-sm">
 			<div class="border-b pb-2">

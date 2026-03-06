@@ -51,12 +51,18 @@ const docsExtPlugin = (): Plugin => {
 			outDir = config.build.outDir;
 		},
 		configureServer(server: ViteDevServer) {
-			const mountPoint = '/docs/ext';
+			const normalizedBase = (server.config.base || '/').replace(/\/$/, '');
+			const mountPoints = ['/docs/ext'];
+			if (normalizedBase && normalizedBase !== '/') {
+				mountPoints.push(`${normalizedBase}/docs/ext`);
+			}
 			const sourceDir = pathResolve(rootDir ?? server.config.root, sourceRelative);
 			if (!existsSync(sourceDir)) return;
 
 			const handler: NextHandleFunction = (req, res, next) => {
-				if (!req.url || !req.url.startsWith(mountPoint)) return next();
+				if (!req.url) return next();
+				const mountPoint = mountPoints.find((point) => req.url?.startsWith(point));
+				if (!mountPoint) return next();
 				const relativePath = req.url.slice(mountPoint.length);
 				const sanitized = relativePath.replace(/^\/+/, '');
 				const target = pathResolve(sourceDir, sanitized);

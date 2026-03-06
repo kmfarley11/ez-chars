@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { resolve } from '$app/paths';
 	import AboutButton from '$lib/AboutButton.svelte';
 	import GitButton from '$lib/GitButton.svelte';
@@ -46,7 +46,9 @@
 			</div>
 		</div>
 		<div class="min-w-0 px-1 text-center">
-			<a href="/" class="block truncate text-2xl font-bold leading-none tracking-tight md:text-3xl"
+			<a
+				href={homeHref}
+				class="block truncate text-2xl font-bold leading-none tracking-tight md:text-3xl"
 				>ez-chars</a
 			>
 		</div>
@@ -54,7 +56,7 @@
 			<ul class="flex flex-row items-center font-medium">
 				<li>
 					<MenuButton shadingVariant="dark" text="Theme" align="right" iconVariant="chevron">
-						{#each THEME_OPTIONS as option}
+						{#each THEME_OPTIONS as option (option.id)}
 							<li>
 								<MenuItemButton onclick={() => setTheme(option.id)} shadingVariant="dark">
 									{option.label}{$theme === option.id ? ' (active)' : ''}
@@ -75,7 +77,7 @@
 				<li>
 					<MenuItemButton onclick={showAbout} shadingVariant="dark">About</MenuItemButton>
 				</li>
-				{#each THEME_OPTIONS as option}
+				{#each THEME_OPTIONS as option (option.id)}
 					<li>
 						<MenuItemButton onclick={() => setTheme(option.id)} shadingVariant="dark">
 							Theme: {option.label}{$theme === option.id ? ' (active)' : ''}

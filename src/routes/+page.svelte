@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { charsArray } from '../data.js';
 
@@ -7,12 +6,12 @@
 	import MenuItemButton from '$lib/MenuItemButton.svelte';
 	import MenuButton from '$lib/MenuButton.svelte';
 	import type { CharacterWithSystemData } from '../schema/index.js';
-
 	import { FULL_2014_SRD_HREF, OFFICIAL_2014_CHAR_SHEET_HREF } from '$lib/urlHelpers.js';
 
 	const charsheetHref = resolve('/charsheets/5e');
 	const handleCharSelect = (char: CharacterWithSystemData) => {
-		goto(`${charsheetHref}?id=${encodeURIComponent(char.meta.id)}`);
+		const charId = encodeURIComponent(char.meta.id);
+		location.href = `${charsheetHref}?id=${charId}`;
 	};
 </script>
 
@@ -29,13 +28,16 @@
 					class="theme-link underline"
 					href={OFFICIAL_2014_CHAR_SHEET_HREF}
 					target="_blank"
-					rel="noreferrer">here</a
+					rel="external noreferrer">here</a
 				>.
 			</p>
 			<p class="theme-text-muted text-base">
 				Want the full 2014 5e SRD PDF with bookmarks? View it&nbsp;
-				<a class="theme-link underline" href={FULL_2014_SRD_HREF} target="_blank" rel="noreferrer"
-					>here</a
+				<a
+					class="theme-link underline"
+					href={FULL_2014_SRD_HREF}
+					target="_blank"
+					rel="external noreferrer">here</a
 				>.
 			</p>
 		</div>
