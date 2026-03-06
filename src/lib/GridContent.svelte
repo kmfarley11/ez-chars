@@ -60,7 +60,7 @@
 <div class="group relative">
 	<button
 		type="button"
-		class="theme-btn-light btn absolute top-2 right-2 z-10 rounded-md border p-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+		class="theme-btn-light btn absolute top-0 right-0 z-10 rounded-md border p-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
 		aria-label="Edit"
 		title="Edit"
 		onclick={onOpen}
@@ -81,7 +81,7 @@
 			></path>
 		</svg>
 	</button>
-	<div class="space-y-2">
+	<div class="space-y-2 pr-12">
 		{#each Object.entries(data) as [fieldKey, field] (fieldKey)}
 			<p>
 				<span class="font-semibold">{field.fieldName}:</span>
