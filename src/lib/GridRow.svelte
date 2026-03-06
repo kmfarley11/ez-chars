@@ -7,6 +7,8 @@
 		child = false,
 		parent = false,
 		colCount = 1,
+		colCountMd = undefined,
+		colCountLg = undefined,
 		flow = 'col',
 		pad = false,
 		border = false,
@@ -40,9 +42,17 @@
 	const normalizedColCount = $derived(
 		Number.isFinite(colCount) ? Math.max(1, Math.min(12, Math.trunc(colCount))) : 1
 	);
+	const normalizedColCountMd = $derived(
+		Number.isFinite(colCountMd) ? Math.max(1, Math.min(12, Math.trunc(colCountMd))) : undefined
+	);
+	const normalizedColCountLg = $derived(
+		Number.isFinite(colCountLg) ? Math.max(1, Math.min(12, Math.trunc(colCountLg))) : undefined
+	);
 
 	let gridClasses = $derived(
 		`grid ${flowClassMap[normalizedFlow]} ${colCountClassMap[String(normalizedColCount)]}` +
+			(normalizedColCountMd ? ` md:${colCountClassMap[String(normalizedColCountMd)]}` : '') +
+			(normalizedColCountLg ? ` lg:${colCountClassMap[String(normalizedColCountLg)]}` : '') +
 			(child ? ' grid-child' : '') +
 			(parent ? ' grid-parent' : '')
 	);

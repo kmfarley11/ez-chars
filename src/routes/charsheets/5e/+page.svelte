@@ -93,8 +93,10 @@
 		pad={true}
 		parent={true}
 		child={true}
+		flow="row"
 		colCount={1}
-		classes="gap-3 md:grid-cols-3"
+		colCountMd={3}
+		classes="gap-3"
 	>
 		<GridColumn border={true} pad={true} classes="rounded-md">
 			<div class="space-y-2">
@@ -121,8 +123,10 @@
 		pad={true}
 		parent={true}
 		child={true}
+		flow="row"
 		colCount={1}
-		classes="gap-3 md:grid-cols-3"
+		colCountMd={3}
+		classes="gap-3"
 	>
 		<GridColumn border={true} pad={true} classes="rounded-md">
 			<div class="space-y-2">
