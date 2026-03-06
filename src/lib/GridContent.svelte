@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { capitalizeFirstLetter } from '$lib/stringFormatters';
 	import { displayOrPlaceholder } from '$lib/displayHelpers';
 	type GridFieldType = 'string' | 'number' | 'array' | 'object' | 'unknown';
 
@@ -11,16 +12,80 @@
 	type GridContentData = Record<string, GridContentField>;
 
 	interface Props {
-		data: GridContentData;
+		data?: GridContentData;
+		dataObject?: Record<string, unknown>;
 		// eslint-disable-next-line no-unused-vars
 		handleEditSave: (_payload: GridContentData) => void;
 		handleEditCancel?: () => void;
 	}
 
-	let { data, handleEditSave, handleEditCancel = undefined }: Props = $props();
+	let {
+		data = undefined,
+		dataObject = undefined,
+		handleEditSave,
+		handleEditCancel = undefined
+	}: Props = $props();
 
 	let dialogEl: HTMLDialogElement | undefined;
 	let draftData = $state<GridContentData>({});
+
+	const inferFieldName = (fieldKey: string) => {
+		const spaced = fieldKey
+			.replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+			.replace(/[_-]+/g, ' ')
+			.trim();
+		return capitalizeFirstLetter(spaced.length > 0 ? spaced : fieldKey);
+	};
+
+	const inferFieldType = (value: unknown): GridFieldType => {
+		if (Array.isArray(value)) return 'array';
+		if (typeof value === 'string') return 'string';
+		if (typeof value === 'number') return 'number';
+		if (typeof value === 'object' && value !== null) return 'object';
+		return 'unknown';
+	};
+
+	const normalizedData = $derived<GridContentData>(
+		data ??
+			Object.fromEntries(
+				Object.entries(dataObject ?? {}).map(([fieldKey, value]) => [
+					fieldKey,
+					{
+						fieldName: inferFieldName(fieldKey),
+						fieldType: inferFieldType(value),
+						value
+					}
+				])
+			)
+	);
+
+	const isMinMaxObject = (value: unknown): value is { min: unknown; max: unknown } =>
+		typeof value === 'object' && value !== null && 'min' in value && 'max' in value;
+
+	const formatFieldValue = (field: GridContentField, placeholder = '___') => {
+		if (isMinMaxObject(field.value)) {
+			const minValue = displayOrPlaceholder(field.value.min, placeholder);
+			const maxValue = displayOrPlaceholder(field.value.max, placeholder);
+			return `${minValue}/${maxValue}`;
+		}
+		return displayOrPlaceholder(field.value, placeholder);
+	};
+
+	const parseFieldInput = (fieldKey: string, field: GridContentField, input: string): unknown => {
+		const sourceField = normalizedData[fieldKey];
+		const shouldParseMinMax = isMinMaxObject(field.value) || isMinMaxObject(sourceField?.value);
+		if (shouldParseMinMax) {
+			const [rawMin = '', rawMax = ''] = input.split('/', 2);
+			const min = rawMin.trim();
+			const max = rawMax.trim();
+			const toTyped = (raw: string) => {
+				const asNum = Number(raw);
+				return raw.length > 0 && Number.isFinite(asNum) ? asNum : raw;
+			};
+			return { min: toTyped(min), max: toTyped(max) };
+		}
+		return input;
+	};
 
 	const closeDialog = () => {
 		dialogEl?.close();
@@ -33,11 +98,10 @@
 
 	const onOpen = () => {
 		draftData = Object.fromEntries(
-			Object.entries(data).map(([fieldKey, field]) => [
+			Object.entries(normalizedData).map(([fieldKey, field]) => [
 				fieldKey,
 				{
-					...field,
-					value: displayOrPlaceholder(field.value, '')
+					...field
 				}
 			])
 		);
@@ -82,10 +146,10 @@
 		</svg>
 	</button>
 	<div class="space-y-2 pr-12">
-		{#each Object.entries(data) as [fieldKey, field] (fieldKey)}
+		{#each Object.entries(normalizedData) as [fieldKey, field] (fieldKey)}
 			<p>
 				<span class="font-semibold">{field.fieldName}:</span>
-				{displayOrPlaceholder(field.value)}
+				{formatFieldValue(field)}
 			</p>
 		{/each}
 	</div>
@@ -105,14 +169,14 @@
 				<input
 					class="theme-input w-full rounded-md border px-2 py-1"
 					type="text"
-					value={displayOrPlaceholder(field.value, '')}
+					value={formatFieldValue(field, '')}
 					oninput={(event) => {
 						const target = event.currentTarget as HTMLInputElement;
 						draftData = {
 							...draftData,
 							[fieldKey]: {
 								...field,
-								value: target.value
+								value: parseFieldInput(fieldKey, field, target.value)
 							}
 						};
 					}}

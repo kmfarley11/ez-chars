@@ -19,25 +19,18 @@
 		charIdx === -1 ? emptyChar : ($charsArray[charIdx] ?? emptyChar)
 	) as CharacterDocument5e2014;
 
-	type GridFieldType = 'string' | 'number' | 'array' | 'object' | 'unknown';
-	type GridContentField = {
-		fieldName: string;
-		fieldType: GridFieldType;
-		value: unknown;
-	};
-	type GridContentData = Record<string, GridContentField>;
-
-	const metaPrimaryData = $derived<GridContentData>({
-		name: {
-			fieldName: 'Name',
-			fieldType: 'string',
-			value: char.identity.name
-		},
-		classLevels: {
-			fieldName: 'Class Levels',
-			fieldType: 'array',
-			value: char.systemData.classes
+	type GridContentData = Record<
+		string,
+		{
+			fieldName: string;
+			fieldType: 'string' | 'number' | 'array' | 'object' | 'unknown';
+			value: unknown;
 		}
+	>;
+
+	const metaPrimaryData = $derived({
+		name: char.identity.name,
+		classLevels: char.systemData.classes
 	});
 
 	const ancestryDisplay = $derived(
@@ -51,17 +44,15 @@
 	const alignmentDisplay = $derived(displayOrPlaceholder(char.identity.alignment));
 	const appearanceDisplay = $derived(displayOrPlaceholder(char.identity.appearance));
 
-	const hpCurrentDisplay = $derived(
-		displayOrPlaceholder(char.systemData.combat?.hitPoints?.current, '__')
-	);
-	const hpMaxDisplay = $derived(displayOrPlaceholder(char.systemData.combat?.hitPoints?.max, '__'));
-	const hpTempDisplay = $derived(
-		displayOrPlaceholder(char.systemData.combat?.hitPoints?.temp ?? 0, '__')
-	);
-	const acDisplay = $derived(displayOrPlaceholder(char.systemData.combat?.armorClass, '__'));
-	const initiativeDisplay = $derived(
-		displayOrPlaceholder(char.systemData.combat?.initiative, '__')
-	);
+	const quickRefPrimaryData = $derived({
+		hp: {
+			min: char.systemData.combat?.hitPoints?.current,
+			max: char.systemData.combat?.hitPoints?.max
+		},
+		armorClass: char.systemData.combat?.armorClass,
+		initiative: char.systemData.combat?.initiative,
+		tempHp: char.systemData.combat?.hitPoints?.temp ?? 0
+	});
 	const speedWalkDisplay = $derived(
 		displayOrPlaceholder(char.systemData.combat?.speed ?? char.systemData.race?.speed, '__')
 	);
@@ -125,6 +116,49 @@
 			})
 		);
 	};
+
+	const handleQuickRefPrimarySave = (payload: GridContentData) => {
+		const hpRange = payload.hp?.value as { min?: unknown; max?: unknown } | undefined;
+		const hpCurrent = Number.parseInt(displayOrPlaceholder(hpRange?.min, '0'), 10);
+		const hpMax = Number.parseInt(displayOrPlaceholder(hpRange?.max, '0'), 10);
+		const hpTemp = Number.parseInt(displayOrPlaceholder(payload.tempHp?.value, '0'), 10);
+		const nextAc = Number.parseInt(displayOrPlaceholder(payload.armorClass?.value, '0'), 10);
+		const nextInitiative = Number.parseInt(
+			displayOrPlaceholder(payload.initiative?.value, '0'),
+			10
+		);
+
+		charsArray.update((entries) =>
+			entries.map((entry) => {
+				if (entry.meta.id !== data.id) return entry;
+				if (entry.system.id !== 'dnd5e-2014') return entry;
+				const typedEntry = entry as CharacterDocument5e2014;
+				return {
+					...typedEntry,
+					systemData: {
+						...typedEntry.systemData,
+						combat: {
+							...typedEntry.systemData.combat,
+							armorClass: Number.isFinite(nextAc)
+								? nextAc
+								: typedEntry.systemData.combat.armorClass,
+							initiative: Number.isFinite(nextInitiative)
+								? nextInitiative
+								: typedEntry.systemData.combat.initiative,
+							hitPoints: {
+								...typedEntry.systemData.combat.hitPoints,
+								current: Number.isFinite(hpCurrent)
+									? hpCurrent
+									: typedEntry.systemData.combat.hitPoints.current,
+								max: Number.isFinite(hpMax) ? hpMax : typedEntry.systemData.combat.hitPoints.max,
+								temp: Number.isFinite(hpTemp) ? hpTemp : typedEntry.systemData.combat.hitPoints.temp
+							}
+						}
+					}
+				};
+			})
+		);
+	};
 </script>
 
 <!-- TODO update this per the latest form factors, prove the concept and refine -->
@@ -143,7 +177,7 @@
 		classes="gap-3"
 	>
 		<GridColumn border={true} pad={true} classes="rounded-md">
-			<GridContent handleEditSave={handleEditMetaSave} data={metaPrimaryData} />
+			<GridContent handleEditSave={handleEditMetaSave} dataObject={metaPrimaryData} />
 		</GridColumn>
 		<GridColumn border={true} pad={true} classes="rounded-md">
 			<div class="space-y-2">
@@ -170,15 +204,7 @@
 		classes="gap-3"
 	>
 		<GridColumn border={true} pad={true} classes="rounded-md">
-			<div class="space-y-2">
-				<p>
-					<span class="font-semibold">HP:</span>
-					{hpCurrentDisplay}/{hpMaxDisplay}
-					(+{hpTempDisplay} tmp)
-				</p>
-				<p><span class="font-semibold">AC:</span> {acDisplay}</p>
-				<p><span class="font-semibold">Initiative:</span> {initiativeDisplay}</p>
-			</div>
+			<GridContent handleEditSave={handleQuickRefPrimarySave} dataObject={quickRefPrimaryData} />
 		</GridColumn>
 		<GridColumn border={true} pad={true} classes="rounded-md">
 			<div class="space-y-2">
