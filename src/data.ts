@@ -1,4 +1,5 @@
 import { writable, type Writable } from 'svelte/store';
+import { browser } from '$app/environment';
 import {
 	type CharacterWithSystemData,
 	type CharacterDocument5e2014,
@@ -51,7 +52,7 @@ const zindra: CharacterDocument5e2014 = create5e2014Character({
 	}
 });
 
-export let charsArray: Writable<CharacterWithSystemData[]> = writable<CharacterWithSystemData[]>([
+const seedChars: CharacterWithSystemData[] = [
 	bryltin,
 	zindra,
 	create5e2014Character({
@@ -275,4 +276,32 @@ export let charsArray: Writable<CharacterWithSystemData[]> = writable<CharacterW
 			]
 		}
 	})
-]);
+];
+
+const CHARS_STORAGE_KEY = 'ez-chars.characters.v1';
+
+const loadChars = (): CharacterWithSystemData[] => {
+	if (!browser) return seedChars;
+	try {
+		const raw = localStorage.getItem(CHARS_STORAGE_KEY);
+		if (!raw) return seedChars;
+		const parsed = JSON.parse(raw);
+		if (!Array.isArray(parsed)) return seedChars;
+		return parsed as CharacterWithSystemData[];
+	} catch {
+		return seedChars;
+	}
+};
+
+export let charsArray: Writable<CharacterWithSystemData[]> =
+	writable<CharacterWithSystemData[]>(loadChars());
+
+if (browser) {
+	charsArray.subscribe((value) => {
+		try {
+			localStorage.setItem(CHARS_STORAGE_KEY, JSON.stringify(value));
+		} catch {
+			// Intentionally ignore storage write failures.
+		}
+	});
+}

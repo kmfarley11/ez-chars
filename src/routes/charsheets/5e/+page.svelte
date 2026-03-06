@@ -1,4 +1,5 @@
 <script lang="ts">
+	import GridContent from '$lib/GridContent.svelte';
 	import GridColumn from '$lib/GridColumn.svelte';
 	import GridRow from '$lib/GridRow.svelte';
 	import '../../../app.css';
@@ -81,6 +82,42 @@
 	const deathSaveFailuresDisplay = $derived(
 		displayOrPlaceholder(char.systemData.combat?.deathSaves?.failures ?? 0, '__')
 	);
+
+	const handleEditMetaSave = (payload: { name: string; classLevels: string }) => {
+		const nextName = payload.name.trim();
+		const nextClassLevels = payload.classLevels
+			.split(/[/,\n]/)
+			.map((segment) => segment.trim())
+			.filter((segment) => segment.length > 0)
+			.map((segment) => {
+				const match = segment.match(/^(.*?)(?:\s+(\d+))?$/);
+				const className = match?.[1]?.trim() ?? segment;
+				const parsedLevel = match?.[2] ? Number.parseInt(match[2], 10) : 1;
+				return {
+					name: className.length > 0 ? className : 'Unknown',
+					level: Number.isFinite(parsedLevel) && parsedLevel > 0 ? parsedLevel : 1
+				};
+			});
+
+		charsArray.update((entries) =>
+			entries.map((entry) => {
+				if (entry.meta.id !== data.id) return entry;
+				if (entry.system.id !== 'dnd5e-2014') return entry;
+				const typedEntry = entry as CharacterDocument5e2014;
+				return {
+					...typedEntry,
+					identity: {
+						...typedEntry.identity,
+						name: nextName.length > 0 ? nextName : typedEntry.identity.name
+					},
+					systemData: {
+						...typedEntry.systemData,
+						classes: nextClassLevels
+					}
+				};
+			})
+		);
+	};
 </script>
 
 <!-- TODO update this per the latest form factors, prove the concept and refine -->
@@ -99,10 +136,16 @@
 		classes="gap-3"
 	>
 		<GridColumn border={true} pad={true} classes="rounded-md">
-			<div class="space-y-2">
-				<p><span class="font-semibold">Name:</span> {displayOrPlaceholder(char.identity.name)}</p>
-				<p><span class="font-semibold">Class Levels:</span> {classLevelsDisplay}</p>
-			</div>
+			<GridContent
+				handleEditSave={handleEditMetaSave}
+				initialName={char.identity.name ?? ''}
+				initialClassLevels={classLevelsDisplay === '___' ? '' : classLevelsDisplay}
+			>
+				<div class="space-y-2">
+					<p><span class="font-semibold">Name:</span> {displayOrPlaceholder(char.identity.name)}</p>
+					<p><span class="font-semibold">Class Levels:</span> {classLevelsDisplay}</p>
+				</div>
+			</GridContent>
 		</GridColumn>
 		<GridColumn border={true} pad={true} classes="rounded-md">
 			<div class="space-y-2">
