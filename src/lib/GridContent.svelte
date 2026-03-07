@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { onMount, tick } from 'svelte';
 	import GridColumn from '$lib/GridColumn.svelte';
-	import GridRow from '$lib/GridRow.svelte';
+	import GridRowAuto from '$lib/GridRowAuto.svelte';
 	import { capitalizeFirstLetter } from '$lib/stringFormatters';
 	import { displayOrPlaceholder } from '$lib/displayHelpers';
 	import type {
@@ -32,8 +31,6 @@
 
 	let dialogEl: HTMLDialogElement | undefined;
 	let draftData = $state<GridContentData>({});
-	let displayLayoutEl: HTMLDivElement | undefined;
-	let displayColCount = $state(1);
 
 	const inferFieldName = (fieldKey: string) => {
 		const spaced = fieldKey
@@ -87,66 +84,6 @@
 		);
 
 	const normalizedData = $derived<GridContentData>(normalizeData(data));
-	const displayFieldCount = $derived(Object.keys(normalizedData).length);
-
-	// Keep GridContent dense but readable by capping auto-layout to at most three columns.
-	const getMaxAutoCols = (fieldCount: number): number => Math.max(1, Math.min(fieldCount, 3));
-
-	// Measure no-wrap item widths and choose the largest column count that avoids wrapping.
-	const recalculateDisplayColCount = () => {
-		const maxCols = getMaxAutoCols(displayFieldCount);
-		if (maxCols <= 1 || !displayLayoutEl) {
-			displayColCount = 1;
-			return;
-		}
-
-		const style = getComputedStyle(displayLayoutEl);
-		const horizontalPadding =
-			Number.parseFloat(style.paddingLeft) + Number.parseFloat(style.paddingRight);
-		const availableWidth = displayLayoutEl.clientWidth - horizontalPadding;
-		if (availableWidth <= 0) {
-			displayColCount = 1;
-			return;
-		}
-
-		const itemWidths = Array.from(
-			displayLayoutEl.querySelectorAll<HTMLElement>('[data-grid-content-display-item]')
-		)
-			.map((item) => item.scrollWidth)
-			.filter((width) => width > 0);
-		if (itemWidths.length === 0) {
-			displayColCount = 1;
-			return;
-		}
-
-		const gapPx = 8; // Tailwind gap-2.
-		for (let cols = maxCols; cols >= 1; cols -= 1) {
-			const widthPerCol = (availableWidth - gapPx * (cols - 1)) / cols;
-			if (itemWidths.every((width) => width <= widthPerCol)) {
-				displayColCount = cols;
-				return;
-			}
-		}
-
-		displayColCount = 1;
-	};
-
-	$effect(() => {
-		normalizedData;
-		void tick().then(recalculateDisplayColCount);
-	});
-
-	onMount(() => {
-		if (!displayLayoutEl) return;
-		const resizeObserver = new ResizeObserver(() => {
-			recalculateDisplayColCount();
-		});
-		resizeObserver.observe(displayLayoutEl);
-		recalculateDisplayColCount();
-		return () => {
-			resizeObserver.disconnect();
-		};
-	});
 
 	// Render any field shape generically: primitives, nested objects, and arrays of nested entries.
 	const formatFieldValue = (
@@ -366,13 +303,13 @@
 			></path>
 		</svg>
 	</button>
-	<div bind:this={displayLayoutEl} class="pr-12">
-		<GridRow parent={true} child={true} flow="row" colCount={displayColCount} classes="gap-2">
+	<div class="pr-12">
+		<GridRowAuto maxCols={3} classes="gap-2">
 			{#each Object.entries(normalizedData) as [fieldKey, field] (fieldKey)}
 				{@const labeledParts = getLabeledDisplayParts(field)}
 				<GridColumn classes="min-w-0">
 					<p class="min-w-0">
-						<span data-grid-content-display-item class="inline-block">
+						<span data-grid-auto-item class="inline-block">
 							<span class="font-semibold">{field.fieldName}:</span>
 							{#if labeledParts}
 								{#each labeledParts as part, idx (`${fieldKey}-${idx}`)}
@@ -394,7 +331,7 @@
 					</p>
 				</GridColumn>
 			{/each}
-		</GridRow>
+		</GridRowAuto>
 	</div>
 </div>
 
