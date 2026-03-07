@@ -1,7 +1,21 @@
-<script>
+<script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { twMerge } from 'tailwind-merge';
 
-	// flow = row, auto, col
+	type GridFlow = 'row' | 'col' | 'auto';
+	type GridCount = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+
+	interface Props {
+		children?: Snippet;
+		child?: boolean;
+		parent?: boolean;
+		rowCount?: number;
+		flow?: GridFlow;
+		pad?: boolean;
+		border?: boolean;
+		classes?: string;
+	}
+
 	let {
 		children = undefined,
 		child = false,
@@ -11,17 +25,15 @@
 		pad = false,
 		border = false,
 		classes = undefined
-	} = $props();
+	}: Props = $props();
 
-	/** @type {Record<string, string>} */
-	const flowClassMap = {
+	const flowClassMap: Record<GridFlow, string> = {
 		row: 'grid-flow-row',
 		col: 'grid-flow-col',
 		auto: 'grid-flow-row-dense'
 	};
 
-	/** @type {Record<string, string>} */
-	const rowCountClassMap = {
+	const rowCountClassMap: Record<GridCount, string> = {
 		'1': 'grid-rows-1',
 		'2': 'grid-rows-2',
 		'3': 'grid-rows-3',
@@ -36,13 +48,16 @@
 		'12': 'grid-rows-12'
 	};
 
-	const normalizedFlow = $derived(flowClassMap[flow] ? flow : 'row');
-	const normalizedRowCount = $derived(
-		Number.isFinite(rowCount) ? Math.max(1, Math.min(12, Math.trunc(rowCount))) : 1
-	);
+	const toGridCount = (value: number | undefined, fallback: GridCount): GridCount => {
+		if (typeof value !== 'number' || !Number.isFinite(value)) return fallback;
+		return Math.max(1, Math.min(12, Math.trunc(value))) as GridCount;
+	};
 
-	let gridClasses = $derived(
-		`grid ${flowClassMap[normalizedFlow]} ${rowCountClassMap[String(normalizedRowCount)]}` +
+	const normalizedFlow = $derived(flow in flowClassMap ? flow : 'row');
+	const normalizedRowCount = $derived(toGridCount(rowCount, 1));
+
+	const gridClasses = $derived(
+		`grid ${flowClassMap[normalizedFlow]} ${rowCountClassMap[normalizedRowCount]}` +
 			(child ? ' grid-child' : '') +
 			(parent ? ' grid-parent' : '')
 	);

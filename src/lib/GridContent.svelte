@@ -1,4 +1,6 @@
 <script lang="ts">
+	import GridColumn from '$lib/GridColumn.svelte';
+	import GridRow from '$lib/GridRow.svelte';
 	import { capitalizeFirstLetter } from '$lib/stringFormatters';
 	import { displayOrPlaceholder } from '$lib/displayHelpers';
 	import type {
@@ -82,6 +84,7 @@
 		);
 
 	const normalizedData = $derived<GridContentData>(normalizeData(data));
+	// const displayFieldCount = $derived(Object.keys(normalizedData).length);
 
 	// Render any field shape generically: primitives, nested objects, and arrays of nested entries.
 	const formatFieldValue = (
@@ -301,11 +304,20 @@
 			></path>
 		</svg>
 	</button>
-	<div class="space-y-2 pr-12">
+	<GridRow
+		parent={true}
+		child={true}
+		flow="row"
+		colCount={1}
+		// colCountSm={displayFieldCount >= 2 ? 2 : 1}
+		// colCountMd={displayFieldCount >= 2 ? 2 : 1}
+		// colCountLg={displayFieldCount >= 2 ? 2 : 1}
+		classes="gap-2 pr-12"
+	>
 		{#each Object.entries(normalizedData) as [fieldKey, field] (fieldKey)}
 			{@const labeledParts = getLabeledDisplayParts(field)}
-			<div>
-				<p>
+			<GridColumn classes="min-w-0">
+				<p class="min-w-0 wrap-break-word">
 					<span class="font-semibold">{field.fieldName}:</span>
 					{#if labeledParts}
 						{#each labeledParts as part, idx (`${fieldKey}-${idx}`)}
@@ -324,9 +336,9 @@
 						<span class="theme-text-muted text-xs italic"> ({field.label}) </span>
 					{/if}
 				</p>
-			</div>
+			</GridColumn>
 		{/each}
-	</div>
+	</GridRow>
 </div>
 
 <dialog
