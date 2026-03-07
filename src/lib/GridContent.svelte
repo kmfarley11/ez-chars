@@ -84,7 +84,7 @@
 		);
 
 	const normalizedData = $derived<GridContentData>(normalizeData(data));
-	// const displayFieldCount = $derived(Object.keys(normalizedData).length);
+	const displayFieldCount = $derived(Object.keys(normalizedData).length);
 
 	// Render any field shape generically: primitives, nested objects, and arrays of nested entries.
 	const formatFieldValue = (
@@ -309,9 +309,9 @@
 		child={true}
 		flow="row"
 		colCount={1}
-		// colCountSm={displayFieldCount >= 2 ? 2 : 1}
-		// colCountMd={displayFieldCount >= 2 ? 2 : 1}
-		// colCountLg={displayFieldCount >= 2 ? 2 : 1}
+		colCountSm={displayFieldCount >= 2 ? 2 : 1}
+		colCountMd={displayFieldCount >= 2 ? 2 : 1}
+		colCountLg={displayFieldCount >= 2 ? 2 : 1}
 		classes="gap-2 pr-12"
 	>
 		{#each Object.entries(normalizedData) as [fieldKey, field] (fieldKey)}
