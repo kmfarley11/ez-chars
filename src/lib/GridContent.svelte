@@ -287,6 +287,8 @@
 		title="Edit"
 		onclick={onOpen}
 	>
+		<!-- TODO - consider edits at individual field level rather than group -->
+		<!-- TODO - implement cursor shift on hover. -->
 		<svg
 			viewBox="0 0 24 24"
 			xmlns="http://www.w3.org/2000/svg"
@@ -307,7 +309,7 @@
 		<GridContainerAuto maxCols={3} classes="gap-2">
 			{#each Object.entries(normalizedData) as [fieldKey, field] (fieldKey)}
 				{@const labeledParts = getLabeledDisplayParts(field)}
-				<GridContainer axis="rows" span="col" classes="min-w-0">
+				<GridContainer classes="min-w-0">
 					<p class="min-w-0">
 						<span data-grid-auto-item class="inline-block">
 							<span class="font-semibold">{field.fieldName}:</span>

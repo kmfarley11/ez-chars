@@ -164,54 +164,42 @@
 	};
 </script>
 
-<GridContainer axis="rows" span="col" parent={true} pad={true} classes="rounded-lg" border={true}>
-	<GridContainer axis="cols" span="row" classes="text-center text-lg font-semibold">
-		Meta / Top-level Info
-	</GridContainer>
+<GridContainer pad={true} classes="rounded-lg" border={true}>
 	<GridContainer
-		axis="cols"
-		span="row"
+		heading="Meta / Top-level Info"
 		border={true}
 		pad={true}
-		parent={true}
-		child={true}
 		flow="row"
 		count={1}
 		countMd={3}
 		classes="gap-3"
 	>
-		<GridContainer axis="rows" span="col" border={true} pad={true} classes="rounded-md">
+		<GridContainer border={true} pad={true} classes="rounded-md">
 			<GridContent handleEditSavePatches={handleGridPatchesSave} data={metaPrimaryData} />
 		</GridContainer>
-		<GridContainer axis="rows" span="col" border={true} pad={true} classes="rounded-md">
+		<GridContainer border={true} pad={true} classes="rounded-md">
 			<GridContent handleEditSavePatches={handleGridPatchesSave} data={metaSecondaryData} />
 		</GridContainer>
-		<GridContainer axis="rows" span="col" border={true} pad={true} classes="rounded-md">
+		<GridContainer border={true} pad={true} classes="rounded-md">
 			<GridContent handleEditSavePatches={handleGridPatchesSave} data={metaTertiaryData} />
 		</GridContainer>
 	</GridContainer>
-	<GridContainer axis="cols" span="row" classes="pt-2 text-center text-lg font-semibold">
-		Quick Reference
-	</GridContainer>
 	<GridContainer
-		axis="cols"
-		span="row"
+		heading="Quick Reference"
 		border={true}
 		pad={true}
-		parent={true}
-		child={true}
 		flow="row"
 		count={1}
 		countMd={3}
-		classes="gap-3"
+		classes="mt-2 gap-3"
 	>
-		<GridContainer axis="rows" span="col" border={true} pad={true} classes="rounded-md">
+		<GridContainer border={true} pad={true} classes="rounded-md">
 			<GridContent handleEditSavePatches={handleGridPatchesSave} data={quickRefPrimaryData} />
 		</GridContainer>
-		<GridContainer axis="rows" span="col" border={true} pad={true} classes="rounded-md">
+		<GridContainer border={true} pad={true} classes="rounded-md">
 			<GridContent handleEditSavePatches={handleGridPatchesSave} data={quickRefMovementData} />
 		</GridContainer>
-		<GridContainer axis="rows" span="col" border={true} pad={true} classes="rounded-md">
+		<GridContainer border={true} pad={true} classes="rounded-md">
 			<GridContent handleEditSavePatches={handleGridPatchesSave} data={quickRefSecondaryData} />
 		</GridContainer>
 	</GridContainer>

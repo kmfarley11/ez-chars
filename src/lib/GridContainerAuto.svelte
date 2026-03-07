@@ -10,8 +10,6 @@
 		minCols?: number;
 		gapPx?: number;
 		measureSelector?: string;
-		parent?: boolean;
-		child?: boolean;
 		flow?: GridFlow;
 		pad?: boolean;
 		border?: boolean;
@@ -25,8 +23,6 @@
 		gapPx = 8,
 		// Measured elements should use intrinsic width (e.g. inline-block + nowrap) for accurate fit checks.
 		measureSelector = '[data-grid-auto-item]',
-		parent = true,
-		child = true,
 		flow = 'row',
 		pad = false,
 		border = false,
@@ -120,17 +116,7 @@
 </script>
 
 <div bind:this={layoutEl}>
-	<GridContainer
-		axis="cols"
-		span="row"
-		count={colCount}
-		{parent}
-		{child}
-		{flow}
-		{pad}
-		{border}
-		{classes}
-	>
+	<GridContainer count={colCount} {flow} {pad} {border} {classes}>
 		{@render children?.()}
 	</GridContainer>
 </div>

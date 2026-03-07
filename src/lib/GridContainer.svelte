@@ -10,42 +10,43 @@
 
 	interface Props {
 		children?: Snippet;
-		child?: boolean;
-		parent?: boolean;
-		flow?: GridFlow;
+		// Force grid on/off; when omitted, grid mode is inferred from count props.
+		grid?: boolean;
+		// Axis controls whether count maps to columns or rows when in grid mode.
 		axis?: GridAxis;
+		// Span controls how this wrapper behaves inside a parent grid item slot.
+		// If omitted, span is inferred from axis (cols -> row span, rows -> col span).
 		span?: GridSpan;
+		// Flow/count props only affect layout when grid mode is enabled.
+		flow?: GridFlow;
 		count?: number;
 		countSm?: number;
 		countMd?: number;
 		countLg?: number;
+		// Visual wrapper controls (independent of grid mode).
 		pad?: boolean;
 		border?: boolean;
 		classes?: string;
-		collapsible?: boolean;
-		defaultCollapsed?: boolean;
-		collapseLabel?: string;
+		// Optional section heading rendered at the top of the container.
+		heading?: string;
 	}
 
 	const GRID_LAYER_DEPTH_KEY = 'ez:grid-layer-depth';
 
 	let {
 		children = undefined,
-		child = false,
-		parent = false,
+		grid = undefined,
 		flow,
 		axis = 'cols',
-		span = 'row',
-		count = 1,
+		span = undefined,
+		count = undefined,
 		countSm = undefined,
 		countMd = undefined,
 		countLg = undefined,
 		pad = false,
 		border = false,
 		classes = undefined,
-		collapsible = undefined,
-		defaultCollapsed = false,
-		collapseLabel = undefined
+		heading = undefined
 	}: Props = $props();
 
 	// Share current grid nesting depth so nested grid wrappers can render stronger elevation.
@@ -121,6 +122,16 @@
 		return toGridCount(value, 1);
 	};
 
+	// Automatically treat the wrapper as a grid when a count is supplied; `grid` can override this.
+	const shouldRenderGrid = $derived(
+		typeof grid === 'boolean'
+			? grid
+			: typeof count === 'number' ||
+					typeof countSm === 'number' ||
+					typeof countMd === 'number' ||
+					typeof countLg === 'number'
+	);
+
 	const normalizedAxis = $derived(axis === 'rows' ? 'rows' : 'cols');
 	const normalizedFlow = $derived(
 		flow === 'col' || flow === 'row' || flow === 'auto'
@@ -129,7 +140,8 @@
 				? 'col'
 				: 'row'
 	);
-	const normalizedSpanClass = $derived(span === 'col' ? 'col-span-1' : 'row-span-1');
+	const inferredSpan = $derived(span ?? (normalizedAxis === 'cols' ? 'row' : 'col'));
+	const normalizedSpanClass = $derived(inferredSpan === 'col' ? 'col-span-1' : 'row-span-1');
 	const normalizedCount = $derived(toGridCount(count, 1));
 	const normalizedCountSm = $derived(toOptionalGridCount(countSm));
 	const normalizedCountMd = $derived(toOptionalGridCount(countMd));
@@ -155,20 +167,15 @@
 				: '') +
 			(normalizedAxis === 'cols' && normalizedCountLg
 				? ` ${colCountClassMap[normalizedCountLg].lg}`
-				: '') +
-			(child ? ' grid-child' : '') +
-			(parent ? ' grid-parent' : '')
+				: '')
 	);
 
-	const isCollapsible = $derived(
-		typeof collapsible === 'boolean' ? collapsible : parent === true && border === true
-	);
-	const collapseControlLabel = $derived(
-		typeof collapseLabel === 'string' && collapseLabel.trim().length > 0
-			? ` ${collapseLabel.trim()}`
-			: ''
-	);
-	let isCollapsed = $derived.by(() => (isCollapsible ? defaultCollapsed : false));
+	// Opinionated collapse model: only heading containers are collapsible.
+	const headingText = $derived(typeof heading === 'string' ? heading.trim() : '');
+	const hasHeading = $derived(headingText.length > 0);
+	const isCollapsible = $derived(hasHeading);
+	// Start expanded; heading clicks toggle this state.
+	let isCollapsed = $state(false);
 
 	const onToggleCollapse = () => {
 		isCollapsed = !isCollapsed;
@@ -184,22 +191,31 @@
 	)}
 	style={border === true ? `--grid-layer-depth:${gridLayerDepth};` : undefined}
 >
-	{#if child || parent}
-		{#if isCollapsible}
-			<div class="mb-1 flex justify-end">
+	{#if hasHeading}
+		<div class="mb-2 flex justify-center">
+			{#if isCollapsible}
 				<button
 					type="button"
-					class="theme-btn-light btn rounded-sm border px-2 py-0.5 text-xs"
+					class="theme-btn-light btn inline-flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-center text-lg font-semibold"
 					aria-expanded={!isCollapsed}
-					aria-label={isCollapsed
-						? `Expand${collapseControlLabel}`
-						: `Collapse${collapseControlLabel}`}
+					aria-label={isCollapsed ? `Expand ${headingText}` : `Collapse ${headingText}`}
 					onclick={onToggleCollapse}
 				>
-					{isCollapsed ? 'Expand' : 'Collapse'}
+					<span>{headingText}</span>
+					<!-- TODO - make this an actual button? or prefer a chevron, as-is it looks a bit iffy -->
+					<span
+						aria-hidden="true"
+						class="inline-flex h-5 w-5 items-center justify-center rounded-sm border text-sm font-semibold leading-none"
+					>
+						{isCollapsed ? '+' : '-'}
+					</span>
 				</button>
-			</div>
-		{/if}
+			{:else}
+				<p class="text-center text-lg font-semibold">{headingText}</p>
+			{/if}
+		</div>
+	{/if}
+	{#if shouldRenderGrid}
 		{#if !isCollapsible || !isCollapsed}
 			<div class={gridClasses}>
 				{@render children?.()}
