@@ -94,24 +94,24 @@
 	});
 	const quickRefMovementData = $derived<GridContentData>({
 		speed: {
-			label: '(walking ft)',
+			label: 'walking ft',
 			bindPath: ['systemData', 'combat', 'speed'],
 			value: char.systemData.combat?.speed ?? char.systemData.race?.speed ?? ''
 		},
 		fly: {
-			// label: '(ft)',
+			label: 'ft',
 			bindPath: ['systemData', 'combat', 'speedFly'],
 			value: char.systemData.combat?.speedFly ?? char.systemData.race?.speedFly ?? ''
 		},
 		swim: {
 			fieldName: 'Swim',
-			// label: '(ft)',
+			label: 'ft',
 			bindPath: ['systemData', 'combat', 'speedSwim'],
 			value: char.systemData.combat?.speedSwim ?? char.systemData.race?.speedSwim ?? ''
 		},
 		climb: {
 			fieldName: 'Climb',
-			// label: '(ft)',
+			label: 'ft',
 			bindPath: ['systemData', 'combat', 'speedClimb'],
 			value: char.systemData.combat?.speedClimb ?? char.systemData.race?.speedClimb ?? ''
 		}

@@ -310,20 +310,20 @@
 					{#if labeledParts}
 						{#each labeledParts as part, idx (`${fieldKey}-${idx}`)}
 							{#if idx > 0}
-								/
+								<span aria-hidden="true" class="mx-1">/</span>
 							{/if}
 							{part.value}
 							{#if part.label}
-								<span class="italic"> {part.label} </span>
+								<span class="theme-text-muted text-xs italic">&nbsp;({part.label})</span>
 							{/if}
 						{/each}
 					{:else}
 						{formatFieldValue(field)}
 					{/if}
+					{#if field.label}
+						<span class="theme-text-muted text-xs italic"> ({field.label}) </span>
+					{/if}
 				</p>
-				{#if field.label}
-					<p class="theme-text-muted text-xs italic">{field.label}</p>
-				{/if}
 			</div>
 		{/each}
 	</div>
@@ -340,17 +340,21 @@
 		{#each Object.entries(draftData) as [fieldKey, field] (fieldKey)}
 			{@const leafInputs = collectLeafInputs(field, [fieldKey])}
 			<div class="space-y-1">
-				<p class="font-semibold">{field.fieldName}</p>
-				{#if field.label}
-					<p class="theme-text-muted text-xs italic">{field.label}</p>
-				{/if}
+				<p class="font-semibold">
+					{field.fieldName}
+					{#if field.label}
+						<span class="theme-text-muted text-xs italic"> ({field.label}) </span>
+					{/if}
+				</p>
 				<div class="space-y-2">
 					{#each leafInputs as leaf, idx (`${fieldKey}-${idx}-${leaf.path.join('.')}`)}
 						<label class="space-y-1">
-							<span class="theme-text-muted text-xs">{leaf.field.fieldName}</span>
-							{#if leaf.joinedLabel}
-								<span class="theme-text-muted block text-xs italic">{leaf.joinedLabel}</span>
-							{/if}
+							<span class="theme-text-muted text-xs">
+								{leaf.field.fieldName}
+								{#if leaf.joinedLabel}
+									<span class="theme-text-muted text-xs italic"> ({leaf.joinedLabel}) </span>
+								{/if}
+							</span>
 							<input
 								class="theme-input w-full rounded-md border px-2 py-1"
 								type={typeof leaf.field.value === 'number' ? 'number' : 'text'}
