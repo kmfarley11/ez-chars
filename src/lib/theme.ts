@@ -1,13 +1,15 @@
 import { writable } from 'svelte/store';
 import type { Writable } from 'svelte/store';
 
-export type ThemeName = 'ocean' | 'forest' | 'sunset';
+export type ThemeName = 'ocean' | 'forest' | 'sunset' | 'pink' | 'purple';
 export type ThemeOption = { id: ThemeName; label: string };
 
 export const THEME_OPTIONS: ThemeOption[] = [
-	{ id: 'ocean', label: 'Ocean' },
-	{ id: 'forest', label: 'Forest' },
-	{ id: 'sunset', label: 'Sunset' }
+	{ id: 'ocean', label: 'Seafarer' },
+	{ id: 'forest', label: 'Verdant Wilds' },
+	{ id: 'sunset', label: 'Ember Dusk' },
+	{ id: 'pink', label: 'Rose Court' },
+	{ id: 'purple', label: 'Arcane Veil' }
 ];
 
 export const THEMES: ThemeName[] = THEME_OPTIONS.map((option) => option.id);

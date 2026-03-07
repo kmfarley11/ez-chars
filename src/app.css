@@ -57,6 +57,42 @@
 	--color-overlay: rgba(20, 7, 1, 0.3);
 }
 
+:root[data-theme='pink'] {
+	--color-surface: #fff5fa;
+	--color-surface-hover: #ffe8f3;
+	--color-surface-text: #3a1529;
+	--color-surface-border: #d8a3bf;
+	--color-page-bg-start: #ffeef7;
+	--color-page-bg-end: #f8d9e9;
+
+	--color-brand: #b24a84;
+	--color-brand-hover: #943468;
+	--color-brand-text: #fff5fb;
+	--color-brand-border: #d39ab9;
+
+	--color-muted-surface: #f3d0e2;
+	--color-muted-text: #3a1529;
+	--color-overlay: rgba(24, 2, 14, 0.3);
+}
+
+:root[data-theme='purple'] {
+	--color-surface: #f7f4ff;
+	--color-surface-hover: #ece6ff;
+	--color-surface-text: #24153d;
+	--color-surface-border: #b8a7de;
+	--color-page-bg-start: #efebff;
+	--color-page-bg-end: #ddd3f8;
+
+	--color-brand: #5e4b8b;
+	--color-brand-hover: #4a3a71;
+	--color-brand-text: #f7f5ff;
+	--color-brand-border: #a89ad0;
+
+	--color-muted-surface: #d8d0f0;
+	--color-muted-text: #24153d;
+	--color-overlay: rgba(12, 4, 24, 0.3);
+}
+
 .theme-btn-light {
 	background-color: var(--color-surface);
 	border-color: var(--color-surface-border);
