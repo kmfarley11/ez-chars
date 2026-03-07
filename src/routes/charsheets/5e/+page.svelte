@@ -68,18 +68,16 @@
 			'__'
 		)
 	);
-	const hitDiceRemainingDisplay = $derived(
-		displayOrPlaceholder(char.systemData.combat?.hitDice?.remaining, '__')
-	);
-	const hitDiceTotalDisplay = $derived(
-		displayOrPlaceholder(char.systemData.combat?.hitDice?.total, '__')
-	);
-	const deathSaveSuccessesDisplay = $derived(
-		displayOrPlaceholder(char.systemData.combat?.deathSaves?.successes ?? 0, '__')
-	);
-	const deathSaveFailuresDisplay = $derived(
-		displayOrPlaceholder(char.systemData.combat?.deathSaves?.failures ?? 0, '__')
-	);
+	const quickRefSecondaryData = $derived({
+		hitDice: {
+			min: char.systemData.combat?.hitDice?.remaining,
+			max: char.systemData.combat?.hitDice?.total
+		},
+		deathSaves: [
+			{ value: char.systemData.combat?.deathSaves?.successes ?? 0, label: 'ok' },
+			{ value: char.systemData.combat?.deathSaves?.failures ?? 0, label: 'rip' }
+		]
+	});
 
 	const handleEditMetaSave = (payload: GridContentData) => {
 		const nextName = displayOrPlaceholder(payload.name?.value, '').trim();
@@ -159,6 +157,63 @@
 			})
 		);
 	};
+
+	const handleQuickRefSecondarySave = (payload: GridContentData) => {
+		const hitDiceRange = payload.hitDice?.value as { min?: unknown; max?: unknown } | undefined;
+		const nextHitDiceRemaining = displayOrPlaceholder(hitDiceRange?.min, '').trim();
+		const nextHitDiceTotal = displayOrPlaceholder(hitDiceRange?.max, '').trim();
+
+		const deathSavesList = Array.isArray(payload.deathSaves?.value) ? payload.deathSaves.value : [];
+		const getLabeledNumber = (label: string, fallback: number) => {
+			const found = deathSavesList.find(
+				(item) =>
+					typeof item === 'object' && item !== null && 'label' in item && item.label === label
+			) as { value?: unknown } | undefined;
+			const parsed = Number.parseInt(displayOrPlaceholder(found?.value, `${fallback}`), 10);
+			return Number.isFinite(parsed) ? parsed : fallback;
+		};
+		const nextDeathSaveSuccesses = getLabeledNumber(
+			'ok',
+			char.systemData.combat?.deathSaves?.successes ?? 0
+		);
+		const nextDeathSaveFailures = getLabeledNumber(
+			'rip',
+			char.systemData.combat?.deathSaves?.failures ?? 0
+		);
+
+		charsArray.update((entries) =>
+			entries.map((entry) => {
+				if (entry.meta.id !== data.id) return entry;
+				if (entry.system.id !== 'dnd5e-2014') return entry;
+				const typedEntry = entry as CharacterDocument5e2014;
+				return {
+					...typedEntry,
+					systemData: {
+						...typedEntry.systemData,
+						combat: {
+							...typedEntry.systemData.combat,
+							hitDice: {
+								...(typedEntry.systemData.combat.hitDice ?? {}),
+								total:
+									nextHitDiceTotal.length > 0
+										? nextHitDiceTotal
+										: (typedEntry.systemData.combat.hitDice?.total ?? ''),
+								remaining:
+									nextHitDiceRemaining.length > 0
+										? nextHitDiceRemaining
+										: (typedEntry.systemData.combat.hitDice?.remaining ?? '')
+							},
+							deathSaves: {
+								...(typedEntry.systemData.combat.deathSaves ?? {}),
+								successes: nextDeathSaveSuccesses,
+								failures: nextDeathSaveFailures
+							}
+						}
+					}
+				};
+			})
+		);
+	};
 </script>
 
 <!-- TODO update this per the latest form factors, prove the concept and refine -->
@@ -215,17 +270,10 @@
 			</div>
 		</GridColumn>
 		<GridColumn border={true} pad={true} classes="rounded-md">
-			<div class="space-y-2">
-				<p>
-					<span class="font-semibold">Hit Dice:</span>
-					{hitDiceRemainingDisplay}/{hitDiceTotalDisplay}
-				</p>
-				<p>
-					<span class="font-semibold">Death Saves:</span>
-					{deathSaveSuccessesDisplay} ok /
-					{deathSaveFailuresDisplay} rip
-				</p>
-			</div>
+			<GridContent
+				handleEditSave={handleQuickRefSecondarySave}
+				dataObject={quickRefSecondaryData}
+			/>
 		</GridColumn>
 	</GridRow>
 </GridColumn>
