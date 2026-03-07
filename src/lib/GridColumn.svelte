@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import { getContext, setContext, type Snippet } from 'svelte';
 	import { twMerge } from 'tailwind-merge';
 
 	type GridFlow = 'row' | 'col' | 'auto';
@@ -16,6 +16,8 @@
 		classes?: string;
 	}
 
+	const GRID_LAYER_DEPTH_KEY = 'ez:grid-layer-depth';
+
 	let {
 		children = undefined,
 		child = false,
@@ -26,6 +28,11 @@
 		border = false,
 		classes = undefined
 	}: Props = $props();
+
+	// Share current grid nesting depth so nested GridRow/GridColumn wrappers can render stronger elevation.
+	const parentLayerDepth = getContext<number>(GRID_LAYER_DEPTH_KEY) ?? 0;
+	const gridLayerDepth = parentLayerDepth + 1;
+	setContext(GRID_LAYER_DEPTH_KEY, gridLayerDepth);
 
 	const flowClassMap: Record<GridFlow, string> = {
 		row: 'grid-flow-row',
@@ -67,9 +74,10 @@
 	class={twMerge(
 		'col-span-1',
 		pad === true ? 'm-2 p-2' : '',
-		border === true ? 'rounded-md border' : '',
+		border === true ? 'theme-grid-layer rounded-md border' : '',
 		classes
 	)}
+	style={border === true ? `--grid-layer-depth:${gridLayerDepth};` : undefined}
 >
 	{#if child || parent}
 		<div class={gridClasses}>

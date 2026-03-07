@@ -11,7 +11,7 @@
 	});
 </script>
 
-<div>
+<div class="theme-page">
 	<NavBar />
 	{@render children()}
 </div>
