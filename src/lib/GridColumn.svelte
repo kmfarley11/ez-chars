@@ -14,6 +14,9 @@
 		pad?: boolean;
 		border?: boolean;
 		classes?: string;
+		collapsible?: boolean;
+		defaultCollapsed?: boolean;
+		collapseLabel?: string;
 	}
 
 	const GRID_LAYER_DEPTH_KEY = 'ez:grid-layer-depth';
@@ -26,7 +29,10 @@
 		flow = 'row',
 		pad = false,
 		border = false,
-		classes = undefined
+		classes = undefined,
+		collapsible = undefined,
+		defaultCollapsed = false,
+		collapseLabel = undefined
 	}: Props = $props();
 
 	// Share current grid nesting depth so nested GridRow/GridColumn wrappers can render stronger elevation.
@@ -62,12 +68,31 @@
 
 	const normalizedFlow = $derived(flow in flowClassMap ? flow : 'row');
 	const normalizedRowCount = $derived(toGridCount(rowCount, 1));
+	const isCollapsible = $derived(
+		typeof collapsible === 'boolean' ? collapsible : parent === true && border === true
+	);
+	const collapseControlLabel = $derived(
+		typeof collapseLabel === 'string' && collapseLabel.trim().length > 0
+			? ` ${collapseLabel.trim()}`
+			: ''
+	);
+	let isCollapsed = $derived(defaultCollapsed);
 
 	const gridClasses = $derived(
 		`grid ${flowClassMap[normalizedFlow]} ${rowCountClassMap[normalizedRowCount]}` +
 			(child ? ' grid-child' : '') +
 			(parent ? ' grid-parent' : '')
 	);
+
+	$effect(() => {
+		if (!isCollapsible) {
+			isCollapsed = false;
+		}
+	});
+
+	const onToggleCollapse = () => {
+		isCollapsed = !isCollapsed;
+	};
 </script>
 
 <div
@@ -80,9 +105,26 @@
 	style={border === true ? `--grid-layer-depth:${gridLayerDepth};` : undefined}
 >
 	{#if child || parent}
-		<div class={gridClasses}>
-			{@render children?.()}
-		</div>
+		{#if isCollapsible}
+			<div class="mb-1 flex justify-end">
+				<button
+					type="button"
+					class="theme-btn-light btn rounded-sm border px-2 py-0.5 text-xs"
+					aria-expanded={!isCollapsed}
+					aria-label={isCollapsed
+						? `Expand${collapseControlLabel}`
+						: `Collapse${collapseControlLabel}`}
+					onclick={onToggleCollapse}
+				>
+					{isCollapsed ? 'Expand' : 'Collapse'}
+				</button>
+			</div>
+		{/if}
+		{#if !isCollapsible || !isCollapsed}
+			<div class={gridClasses}>
+				{@render children?.()}
+			</div>
+		{/if}
 	{:else}
 		{@render children?.()}
 	{/if}
