@@ -6,7 +6,11 @@
 	import { charsArray, emptyChar } from '../../../data.js';
 	import type { CharacterDocument5e2014 } from '../../../schema';
 	import { displayOrPlaceholder } from '$lib/displayHelpers';
-	import type { GridContentData, GridContentNestedFields } from '$lib/gridContentTypes';
+	import type {
+		GridContentData,
+		GridContentField,
+		GridContentFieldValue
+	} from '$lib/gridContentTypes';
 
 	interface Props {
 		data: {
@@ -115,140 +119,199 @@
 		}
 	});
 
-	const handleEditMetaSave = (payload: GridContentData) => {
-		const nextName = displayOrPlaceholder(payload.name?.value, '').trim();
-		const classLevelsValue = payload.classLevels?.value;
-		const nextClassLevels = Array.isArray(classLevelsValue)
-			? classLevelsValue
-					.map((entryField) => {
-						const nested = entryField.value as GridContentNestedFields;
-						const className = displayOrPlaceholder(nested.name?.value, '').trim();
-						const parsedLevel = Number.parseInt(displayOrPlaceholder(nested.level?.value, '1'), 10);
-						return {
-							name: className.length > 0 ? className : 'Unknown',
-							level: Number.isFinite(parsedLevel) && parsedLevel > 0 ? parsedLevel : 1
-						};
-					})
-					.filter((entry) => entry.name.length > 0)
-			: [];
+	type GridPathSegment = string | number;
 
+	const isGridFieldArray = (value: GridContentFieldValue): value is Array<GridContentField> =>
+		Array.isArray(value);
+
+	const isGridNestedFields = (
+		value: GridContentFieldValue
+	): value is Record<string, GridContentField> =>
+		typeof value === 'object' && value !== null && !Array.isArray(value);
+
+	const readFieldFromField = (
+		field: GridContentField | undefined,
+		path: Array<GridPathSegment>
+	): GridContentField | undefined => {
+		if (!field) return undefined;
+		let cursor: GridContentField | undefined = field;
+		for (const segment of path) {
+			if (!cursor) return undefined;
+			if (typeof segment === 'number') {
+				if (!isGridFieldArray(cursor.value)) return undefined;
+				cursor = cursor.value[segment];
+				continue;
+			}
+			if (!isGridNestedFields(cursor.value)) return undefined;
+			cursor = cursor.value[segment];
+		}
+		return cursor;
+	};
+
+	const readFieldFromData = (
+		payload: GridContentData,
+		path: Array<GridPathSegment>
+	): GridContentField | undefined => {
+		const [head, ...rest] = path;
+		if (typeof head !== 'string') return undefined;
+		return readFieldFromField(payload[head], rest);
+	};
+
+	const readStringValue = (field: GridContentField | undefined, fallback = '') =>
+		displayOrPlaceholder(field?.value, fallback).trim();
+
+	const readIntValue = (field: GridContentField | undefined, fallback = 0) => {
+		const parsed = Number.parseInt(displayOrPlaceholder(field?.value, `${fallback}`), 10);
+		return Number.isFinite(parsed) ? parsed : fallback;
+	};
+
+	const readStringFromData = (
+		payload: GridContentData,
+		path: Array<GridPathSegment>,
+		fallback = ''
+	) => readStringValue(readFieldFromData(payload, path), fallback);
+
+	const readIntFromData = (payload: GridContentData, path: Array<GridPathSegment>, fallback = 0) =>
+		readIntValue(readFieldFromData(payload, path), fallback);
+
+	const readStringFromField = (
+		field: GridContentField,
+		path: Array<GridPathSegment>,
+		fallback = ''
+	) => readStringValue(readFieldFromField(field, path), fallback);
+
+	const readIntFromField = (field: GridContentField, path: Array<GridPathSegment>, fallback = 0) =>
+		readIntValue(readFieldFromField(field, path), fallback);
+
+	const readArrayFromData = (payload: GridContentData, path: Array<GridPathSegment>) => {
+		const field = readFieldFromData(payload, path);
+		if (!field || !isGridFieldArray(field.value)) return [];
+		return field.value;
+	};
+
+	/* eslint-disable no-unused-vars */
+	type CharacterUpdater = (entry: CharacterDocument5e2014) => CharacterDocument5e2014;
+	type GridPayloadUpdater = (
+		payload: GridContentData,
+		entry: CharacterDocument5e2014
+	) => CharacterDocument5e2014;
+	/* eslint-enable no-unused-vars */
+
+	const updateCurrent5eCharacter = (updateFn: CharacterUpdater) => {
 		charsArray.update((entries) =>
 			entries.map((entry) => {
 				if (entry.meta.id !== data.id) return entry;
 				if (entry.system.id !== 'dnd5e-2014') return entry;
-				const typedEntry = entry as CharacterDocument5e2014;
+				return updateFn(entry as CharacterDocument5e2014);
+			})
+		);
+	};
+
+	const createGridSaveHandler = (applyPayload: GridPayloadUpdater) => (payload: GridContentData) =>
+		updateCurrent5eCharacter((entry) => applyPayload(payload, entry));
+
+	const handleEditMetaSave = createGridSaveHandler((payload, entry) => {
+		const nextName = readStringFromData(payload, ['name'], entry.identity.name);
+		const nextClassLevels = readArrayFromData(payload, ['classLevels'])
+			.map((classField) => {
+				const className = readStringFromField(classField, ['name'], 'Unknown');
+				const classLevel = readIntFromField(classField, ['level'], 1);
 				return {
-					...typedEntry,
-					identity: {
-						...typedEntry.identity,
-						name: nextName.length > 0 ? nextName : typedEntry.identity.name
+					name: className.length > 0 ? className : 'Unknown',
+					level: classLevel > 0 ? classLevel : 1
+				};
+			})
+			.filter((classLevel) => classLevel.name.length > 0);
+
+		return {
+			...entry,
+			identity: {
+				...entry.identity,
+				name: nextName.length > 0 ? nextName : entry.identity.name
+			},
+			systemData: {
+				...entry.systemData,
+				classes: nextClassLevels
+			}
+		};
+	});
+
+	const handleQuickRefPrimarySave = createGridSaveHandler((payload, entry) => {
+		const hpCurrent = readIntFromData(
+			payload,
+			['hp', 'current'],
+			entry.systemData.combat.hitPoints.current
+		);
+		const hpMax = readIntFromData(payload, ['hp', 'max'], entry.systemData.combat.hitPoints.max);
+		const hpTemp = readIntFromData(payload, ['tempHp'], entry.systemData.combat.hitPoints.temp);
+		const nextAc = readIntFromData(payload, ['armorClass'], entry.systemData.combat.armorClass);
+		const nextInitiative = readIntFromData(
+			payload,
+			['initiative'],
+			entry.systemData.combat.initiative
+		);
+
+		return {
+			...entry,
+			systemData: {
+				...entry.systemData,
+				combat: {
+					...entry.systemData.combat,
+					armorClass: nextAc,
+					initiative: nextInitiative,
+					hitPoints: {
+						...entry.systemData.combat.hitPoints,
+						current: hpCurrent,
+						max: hpMax,
+						temp: hpTemp
+					}
+				}
+			}
+		};
+	});
+
+	const handleQuickRefSecondarySave = createGridSaveHandler((payload, entry) => {
+		const nextHitDiceRemaining = readStringFromData(
+			payload,
+			['hitDice', 'remaining'],
+			entry.systemData.combat.hitDice?.remaining ?? ''
+		);
+		const nextHitDiceTotal = readStringFromData(
+			payload,
+			['hitDice', 'total'],
+			entry.systemData.combat.hitDice?.total ?? ''
+		);
+		const nextDeathSaveSuccesses = readIntFromData(
+			payload,
+			['deathSaves', 'successes'],
+			entry.systemData.combat?.deathSaves?.successes ?? 0
+		);
+		const nextDeathSaveFailures = readIntFromData(
+			payload,
+			['deathSaves', 'failures'],
+			entry.systemData.combat?.deathSaves?.failures ?? 0
+		);
+
+		return {
+			...entry,
+			systemData: {
+				...entry.systemData,
+				combat: {
+					...entry.systemData.combat,
+					hitDice: {
+						...(entry.systemData.combat.hitDice ?? {}),
+						total: nextHitDiceTotal.length > 0 ? nextHitDiceTotal : '',
+						remaining: nextHitDiceRemaining.length > 0 ? nextHitDiceRemaining : ''
 					},
-					systemData: {
-						...typedEntry.systemData,
-						classes: nextClassLevels
+					deathSaves: {
+						...(entry.systemData.combat.deathSaves ?? {}),
+						successes: nextDeathSaveSuccesses,
+						failures: nextDeathSaveFailures
 					}
-				};
-			})
-		);
-	};
-
-	const handleQuickRefPrimarySave = (payload: GridContentData) => {
-		const hpRange = payload.hp?.value as GridContentNestedFields | undefined;
-		const hpCurrent = Number.parseInt(displayOrPlaceholder(hpRange?.current?.value, '0'), 10);
-		const hpMax = Number.parseInt(displayOrPlaceholder(hpRange?.max?.value, '0'), 10);
-		const hpTemp = Number.parseInt(displayOrPlaceholder(payload.tempHp?.value, '0'), 10);
-		const nextAc = Number.parseInt(displayOrPlaceholder(payload.armorClass?.value, '0'), 10);
-		const nextInitiative = Number.parseInt(
-			displayOrPlaceholder(payload.initiative?.value, '0'),
-			10
-		);
-
-		charsArray.update((entries) =>
-			entries.map((entry) => {
-				if (entry.meta.id !== data.id) return entry;
-				if (entry.system.id !== 'dnd5e-2014') return entry;
-				const typedEntry = entry as CharacterDocument5e2014;
-				return {
-					...typedEntry,
-					systemData: {
-						...typedEntry.systemData,
-						combat: {
-							...typedEntry.systemData.combat,
-							armorClass: Number.isFinite(nextAc)
-								? nextAc
-								: typedEntry.systemData.combat.armorClass,
-							initiative: Number.isFinite(nextInitiative)
-								? nextInitiative
-								: typedEntry.systemData.combat.initiative,
-							hitPoints: {
-								...typedEntry.systemData.combat.hitPoints,
-								current: Number.isFinite(hpCurrent)
-									? hpCurrent
-									: typedEntry.systemData.combat.hitPoints.current,
-								max: Number.isFinite(hpMax) ? hpMax : typedEntry.systemData.combat.hitPoints.max,
-								temp: Number.isFinite(hpTemp) ? hpTemp : typedEntry.systemData.combat.hitPoints.temp
-							}
-						}
-					}
-				};
-			})
-		);
-	};
-
-	const handleQuickRefSecondarySave = (payload: GridContentData) => {
-		const hitDiceRange = payload.hitDice?.value as GridContentNestedFields | undefined;
-		const nextHitDiceRemaining = displayOrPlaceholder(hitDiceRange?.remaining?.value, '').trim();
-		const nextHitDiceTotal = displayOrPlaceholder(hitDiceRange?.total?.value, '').trim();
-
-		const deathSaves = payload.deathSaves?.value as GridContentNestedFields | undefined;
-		const nextDeathSaveSuccesses = Number.parseInt(
-			displayOrPlaceholder(
-				deathSaves?.successes?.value,
-				`${char.systemData.combat?.deathSaves?.successes ?? 0}`
-			),
-			10
-		);
-		const nextDeathSaveFailures = Number.parseInt(
-			displayOrPlaceholder(
-				deathSaves?.failures?.value,
-				`${char.systemData.combat?.deathSaves?.failures ?? 0}`
-			),
-			10
-		);
-
-		charsArray.update((entries) =>
-			entries.map((entry) => {
-				if (entry.meta.id !== data.id) return entry;
-				if (entry.system.id !== 'dnd5e-2014') return entry;
-				const typedEntry = entry as CharacterDocument5e2014;
-				return {
-					...typedEntry,
-					systemData: {
-						...typedEntry.systemData,
-						combat: {
-							...typedEntry.systemData.combat,
-							hitDice: {
-								...(typedEntry.systemData.combat.hitDice ?? {}),
-								total:
-									nextHitDiceTotal.length > 0
-										? nextHitDiceTotal
-										: (typedEntry.systemData.combat.hitDice?.total ?? ''),
-								remaining:
-									nextHitDiceRemaining.length > 0
-										? nextHitDiceRemaining
-										: (typedEntry.systemData.combat.hitDice?.remaining ?? '')
-							},
-							deathSaves: {
-								...(typedEntry.systemData.combat.deathSaves ?? {}),
-								successes: nextDeathSaveSuccesses,
-								failures: nextDeathSaveFailures
-							}
-						}
-					}
-				};
-			})
-		);
-	};
+				}
+			}
+		};
+	});
 </script>
 
 <!-- TODO update this per the latest form factors, prove the concept and refine -->
