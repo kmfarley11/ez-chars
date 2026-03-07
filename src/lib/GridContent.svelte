@@ -1,6 +1,6 @@
 <script lang="ts">
 	import GridColumn from '$lib/GridColumn.svelte';
-	import GridRowAuto from '$lib/GridRowAuto.svelte';
+	import GridContainerAuto from '$lib/GridContainerAuto.svelte';
 	import { capitalizeFirstLetter } from '$lib/stringFormatters';
 	import { displayOrPlaceholder } from '$lib/displayHelpers';
 	import type {
@@ -304,7 +304,7 @@
 		</svg>
 	</button>
 	<div class="pr-12">
-		<GridRowAuto maxCols={3} classes="gap-2">
+		<GridContainerAuto maxCols={3} classes="gap-2">
 			{#each Object.entries(normalizedData) as [fieldKey, field] (fieldKey)}
 				{@const labeledParts = getLabeledDisplayParts(field)}
 				<GridColumn classes="min-w-0">
@@ -331,7 +331,7 @@
 					</p>
 				</GridColumn>
 			{/each}
-		</GridRowAuto>
+		</GridContainerAuto>
 	</div>
 </div>
 

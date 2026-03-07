@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, tick, type Snippet } from 'svelte';
-	import GridRow from '$lib/GridRow.svelte';
+	import GridContainer from '$lib/GridContainer.svelte';
 
 	type GridFlow = 'col' | 'row' | 'auto';
 
@@ -120,7 +120,17 @@
 </script>
 
 <div bind:this={layoutEl}>
-	<GridRow {parent} {child} {flow} {pad} {border} {classes} {colCount}>
+	<GridContainer
+		axis="cols"
+		span="row"
+		count={colCount}
+		{parent}
+		{child}
+		{flow}
+		{pad}
+		{border}
+		{classes}
+	>
 		{@render children?.()}
-	</GridRow>
+	</GridContainer>
 </div>
