@@ -6,6 +6,7 @@
 	import { charsArray, emptyChar } from '../../../data.js';
 	import type { CharacterDocument5e2014 } from '../../../schema';
 	import { displayOrPlaceholder } from '$lib/displayHelpers';
+	import type { GridContentData } from '$lib/gridContentTypes';
 
 	interface Props {
 		data: {
@@ -18,15 +19,6 @@
 	const char: CharacterDocument5e2014 = $derived(
 		charIdx === -1 ? emptyChar : ($charsArray[charIdx] ?? emptyChar)
 	) as CharacterDocument5e2014;
-
-	type GridContentData = Record<
-		string,
-		{
-			fieldName: string;
-			fieldType: 'string' | 'number' | 'array' | 'object' | 'unknown';
-			value: unknown;
-		}
-	>;
 
 	const metaPrimaryData = $derived({
 		name: char.identity.name,

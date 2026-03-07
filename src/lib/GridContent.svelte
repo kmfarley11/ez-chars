@@ -1,18 +1,13 @@
 <script lang="ts">
 	import { capitalizeFirstLetter } from '$lib/stringFormatters';
 	import { displayOrPlaceholder } from '$lib/displayHelpers';
-
-	type GridFieldType = 'string' | 'number' | 'array' | 'object' | 'unknown';
-	type GridContentFieldObjectValue = Record<string, string | number>;
-	type GridContentFieldValue = string | number | GridContentFieldObjectValue;
-
-	type GridContentField = {
-		fieldName: string;
-		fieldType: GridFieldType;
-		value: GridContentFieldValue | GridContentFieldValue[];
-	};
-
-	type GridContentData = Record<string, GridContentField>;
+	import type {
+		GridContentData,
+		GridContentField,
+		GridContentFieldObjectValue,
+		GridContentFieldValue,
+		GridFieldType
+	} from '$lib/gridContentTypes';
 
 	interface Props {
 		data?: GridContentData;
