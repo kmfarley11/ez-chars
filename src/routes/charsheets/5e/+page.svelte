@@ -6,7 +6,7 @@
 	import { charsArray, emptyChar } from '../../../data.js';
 	import type { CharacterDocument5e2014 } from '../../../schema';
 	import { displayOrPlaceholder } from '$lib/displayHelpers';
-	import type { GridContentData } from '$lib/gridContentTypes';
+	import type { GridContentData, GridContentNestedFields } from '$lib/gridContentTypes';
 
 	interface Props {
 		data: {
@@ -20,12 +20,40 @@
 		charIdx === -1 ? emptyChar : ($charsArray[charIdx] ?? emptyChar)
 	) as CharacterDocument5e2014;
 
-	const metaPrimaryData = $derived({
-		name: char.identity.name,
-		classLevels: char.systemData.classes.map((entry) => ({
-			stringValue: entry.name,
-			intValue: entry.level
-		}))
+	const metaPrimaryData = $derived<GridContentData>({
+		name: {
+			fieldName: 'Name',
+			fieldType: 'string',
+			value: char.identity.name
+		},
+		classLevels: {
+			fieldName: 'Class Levels',
+			fieldType: 'object',
+			value: Object.fromEntries(
+				char.systemData.classes.map((entry, index) => {
+					const key = `class${index + 1}`;
+					return [
+						key,
+						{
+							fieldName: `Class ${index + 1}`,
+							fieldType: 'object' as const,
+							value: {
+								stringValue: {
+									fieldName: 'Name',
+									fieldType: 'string' as const,
+									value: entry.name
+								},
+								intValue: {
+									fieldName: 'Level',
+									fieldType: 'number' as const,
+									value: entry.level
+								}
+							}
+						}
+					];
+				})
+			)
+		}
 	});
 
 	const ancestryDisplay = $derived(
@@ -39,14 +67,38 @@
 	const alignmentDisplay = $derived(displayOrPlaceholder(char.identity.alignment));
 	const appearanceDisplay = $derived(displayOrPlaceholder(char.identity.appearance));
 
-	const quickRefPrimaryData = $derived({
+	const quickRefPrimaryData = $derived<GridContentData>({
 		hp: {
-			min: char.systemData.combat?.hitPoints?.current,
-			max: char.systemData.combat?.hitPoints?.max
+			fieldName: 'HP',
+			fieldType: 'object',
+			value: {
+				current: {
+					fieldName: 'Current',
+					fieldType: 'number',
+					value: char.systemData.combat?.hitPoints?.current ?? 0
+				},
+				max: {
+					fieldName: 'Max',
+					fieldType: 'number',
+					value: char.systemData.combat?.hitPoints?.max ?? 0
+				}
+			}
 		},
-		armorClass: char.systemData.combat?.armorClass,
-		initiative: char.systemData.combat?.initiative,
-		tempHp: char.systemData.combat?.hitPoints?.temp ?? 0
+		armorClass: {
+			fieldName: 'Armor Class',
+			fieldType: 'number',
+			value: char.systemData.combat?.armorClass
+		},
+		initiative: {
+			fieldName: 'Initiative',
+			fieldType: 'number',
+			value: char.systemData.combat?.initiative ?? 0
+		},
+		tempHp: {
+			fieldName: 'Temp HP',
+			fieldType: 'number',
+			value: char.systemData.combat?.hitPoints?.temp ?? 0
+		}
 	});
 	const speedWalkDisplay = $derived(
 		displayOrPlaceholder(char.systemData.combat?.speed ?? char.systemData.race?.speed, '__')
@@ -63,47 +115,65 @@
 			'__'
 		)
 	);
-	const quickRefSecondaryData = $derived({
+	const quickRefSecondaryData = $derived<GridContentData>({
 		hitDice: {
-			min: char.systemData.combat?.hitDice?.remaining,
-			max: char.systemData.combat?.hitDice?.total
+			fieldName: 'Hit Dice',
+			fieldType: 'object',
+			value: {
+				min: {
+					fieldName: 'Remaining',
+					fieldType: 'string',
+					value: char.systemData.combat?.hitDice?.remaining ?? ''
+				},
+				max: {
+					fieldName: 'Total',
+					fieldType: 'string',
+					value: char.systemData.combat?.hitDice?.total ?? ''
+				}
+			}
 		},
-		deathSaves: [
-			{
-				stringValue: '',
-				intValue: char.systemData.combat?.deathSaves?.successes ?? 0,
-				label: 'ok'
-			},
-			{ stringValue: '', intValue: char.systemData.combat?.deathSaves?.failures ?? 0, label: 'rip' }
-		]
+		deathSaves: {
+			fieldName: 'Death Saves',
+			fieldType: 'object',
+			value: {
+				ok: {
+					fieldName: 'Successes',
+					fieldType: 'number',
+					value: char.systemData.combat?.deathSaves?.successes ?? 0,
+					label: 'ok'
+				},
+				rip: {
+					fieldName: 'Failures',
+					fieldType: 'number',
+					value: char.systemData.combat?.deathSaves?.failures ?? 0,
+					label: 'rip'
+				}
+			}
+		}
 	});
 
 	const handleEditMetaSave = (payload: GridContentData) => {
 		const nextName = displayOrPlaceholder(payload.name?.value, '').trim();
 		const classLevelsValue = payload.classLevels?.value;
-		const nextClassLevels = Array.isArray(classLevelsValue)
-			? classLevelsValue.map((entry) => {
-					const levelEntry = entry as { stringValue?: unknown; intValue?: unknown };
-					const className = displayOrPlaceholder(levelEntry.stringValue, '').trim();
-					const parsedLevel = Number.parseInt(displayOrPlaceholder(levelEntry.intValue, '1'), 10);
-					return {
-						name: className.length > 0 ? className : 'Unknown',
-						level: Number.isFinite(parsedLevel) && parsedLevel > 0 ? parsedLevel : 1
-					};
-				})
-			: displayOrPlaceholder(classLevelsValue, '')
-					.split(/[/,\n]/)
-					.map((segment: string) => segment.trim())
-					.filter((segment: string) => segment.length > 0)
-					.map((segment: string) => {
-						const match = segment.match(/^(.*?)(?:\s+(\d+))?$/);
-						const className = match?.[1]?.trim() ?? segment;
-						const parsedLevel = match?.[2] ? Number.parseInt(match[2], 10) : 1;
-						return {
-							name: className.length > 0 ? className : 'Unknown',
-							level: Number.isFinite(parsedLevel) && parsedLevel > 0 ? parsedLevel : 1
-						};
-					});
+		const nextClassLevels =
+			typeof classLevelsValue === 'object' &&
+			classLevelsValue !== null &&
+			!Array.isArray(classLevelsValue)
+				? Object.values(classLevelsValue as GridContentNestedFields)
+						.map((entryField) => {
+							const nested = entryField.value as GridContentNestedFields;
+							const className = displayOrPlaceholder(nested.stringValue?.value, '').trim();
+							const parsedLevel = Number.parseInt(
+								displayOrPlaceholder(nested.intValue?.value, '1'),
+								10
+							);
+							return {
+								name: className.length > 0 ? className : 'Unknown',
+								level: Number.isFinite(parsedLevel) && parsedLevel > 0 ? parsedLevel : 1
+							};
+						})
+						.filter((entry) => entry.name.length > 0)
+				: [];
 
 		charsArray.update((entries) =>
 			entries.map((entry) => {
@@ -126,9 +196,9 @@
 	};
 
 	const handleQuickRefPrimarySave = (payload: GridContentData) => {
-		const hpRange = payload.hp?.value as { min?: unknown; max?: unknown } | undefined;
-		const hpCurrent = Number.parseInt(displayOrPlaceholder(hpRange?.min, '0'), 10);
-		const hpMax = Number.parseInt(displayOrPlaceholder(hpRange?.max, '0'), 10);
+		const hpRange = payload.hp?.value as GridContentNestedFields | undefined;
+		const hpCurrent = Number.parseInt(displayOrPlaceholder(hpRange?.min?.value, '0'), 10);
+		const hpMax = Number.parseInt(displayOrPlaceholder(hpRange?.max?.value, '0'), 10);
 		const hpTemp = Number.parseInt(displayOrPlaceholder(payload.tempHp?.value, '0'), 10);
 		const nextAc = Number.parseInt(displayOrPlaceholder(payload.armorClass?.value, '0'), 10);
 		const nextInitiative = Number.parseInt(
@@ -169,26 +239,24 @@
 	};
 
 	const handleQuickRefSecondarySave = (payload: GridContentData) => {
-		const hitDiceRange = payload.hitDice?.value as { min?: unknown; max?: unknown } | undefined;
-		const nextHitDiceRemaining = displayOrPlaceholder(hitDiceRange?.min, '').trim();
-		const nextHitDiceTotal = displayOrPlaceholder(hitDiceRange?.max, '').trim();
+		const hitDiceRange = payload.hitDice?.value as GridContentNestedFields | undefined;
+		const nextHitDiceRemaining = displayOrPlaceholder(hitDiceRange?.min?.value, '').trim();
+		const nextHitDiceTotal = displayOrPlaceholder(hitDiceRange?.max?.value, '').trim();
 
-		const deathSavesList = Array.isArray(payload.deathSaves?.value) ? payload.deathSaves.value : [];
-		const getLabeledNumber = (label: string, fallback: number): number => {
-			const found = deathSavesList.find(
-				(item) =>
-					typeof item === 'object' && item !== null && 'label' in item && item.label === label
-			) as { intValue?: unknown } | undefined;
-			const parsed = Number.parseInt(displayOrPlaceholder(found?.intValue, `${fallback}`), 10);
-			return Number.isFinite(parsed) ? parsed : fallback;
-		};
-		const nextDeathSaveSuccesses = getLabeledNumber(
-			'ok',
-			char.systemData.combat?.deathSaves?.successes ?? 0
+		const deathSaves = payload.deathSaves?.value as GridContentNestedFields | undefined;
+		const nextDeathSaveSuccesses = Number.parseInt(
+			displayOrPlaceholder(
+				deathSaves?.ok?.value,
+				`${char.systemData.combat?.deathSaves?.successes ?? 0}`
+			),
+			10
 		);
-		const nextDeathSaveFailures = getLabeledNumber(
-			'rip',
-			char.systemData.combat?.deathSaves?.failures ?? 0
+		const nextDeathSaveFailures = Number.parseInt(
+			displayOrPlaceholder(
+				deathSaves?.rip?.value,
+				`${char.systemData.combat?.deathSaves?.failures ?? 0}`
+			),
+			10
 		);
 
 		charsArray.update((entries) =>
@@ -242,7 +310,7 @@
 		classes="gap-3"
 	>
 		<GridColumn border={true} pad={true} classes="rounded-md">
-			<GridContent handleEditSave={handleEditMetaSave} dataObject={metaPrimaryData} />
+			<GridContent handleEditSave={handleEditMetaSave} data={metaPrimaryData} />
 		</GridColumn>
 		<GridColumn border={true} pad={true} classes="rounded-md">
 			<div class="space-y-2">
@@ -269,7 +337,7 @@
 		classes="gap-3"
 	>
 		<GridColumn border={true} pad={true} classes="rounded-md">
-			<GridContent handleEditSave={handleQuickRefPrimarySave} dataObject={quickRefPrimaryData} />
+			<GridContent handleEditSave={handleQuickRefPrimarySave} data={quickRefPrimaryData} />
 		</GridColumn>
 		<GridColumn border={true} pad={true} classes="rounded-md">
 			<div class="space-y-2">
@@ -280,10 +348,7 @@
 			</div>
 		</GridColumn>
 		<GridColumn border={true} pad={true} classes="rounded-md">
-			<GridContent
-				handleEditSave={handleQuickRefSecondarySave}
-				dataObject={quickRefSecondaryData}
-			/>
+			<GridContent handleEditSave={handleQuickRefSecondarySave} data={quickRefSecondaryData} />
 		</GridColumn>
 	</GridRow>
 </GridColumn>

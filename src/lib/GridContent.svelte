@@ -4,8 +4,8 @@
 	import type {
 		GridContentData,
 		GridContentField,
-		GridContentFieldObjectValue,
 		GridContentFieldValue,
+		GridContentNestedFields,
 		GridFieldType
 	} from '$lib/gridContentTypes';
 
@@ -36,40 +36,53 @@
 	};
 
 	const inferFieldType = (value: unknown): GridFieldType => {
-		if (Array.isArray(value)) return 'array';
 		if (typeof value === 'string') return 'string';
 		if (typeof value === 'number') return 'number';
-		if (typeof value === 'object' && value !== null) return 'object';
-		return 'unknown';
+		return 'object';
 	};
 
-	const coerceObjectValue = (value: Record<string, unknown>): GridContentFieldObjectValue =>
-		Object.fromEntries(
-			Object.entries(value).map(([key, item]) => [
-				key,
-				typeof item === 'number'
-					? item
-					: typeof item === 'string'
-						? item
-						: displayOrPlaceholder(item, '')
-			])
-		);
+	const buildField = (fieldKey: string, raw: unknown): GridContentField => {
+		if (typeof raw === 'string' || typeof raw === 'number') {
+			return {
+				fieldName: inferFieldName(fieldKey),
+				fieldType: inferFieldType(raw),
+				value: raw
+			};
+		}
 
-	const coerceFieldValue = (value: unknown): GridContentField['value'] => {
-		if (typeof value === 'number' || typeof value === 'string') return value;
-		if (Array.isArray(value)) {
-			return value.map((item) => {
-				if (typeof item === 'number' || typeof item === 'string') return item;
-				if (typeof item === 'object' && item !== null) {
-					return coerceObjectValue(item as Record<string, unknown>);
-				}
-				return displayOrPlaceholder(item, '');
-			});
+		if (Array.isArray(raw)) {
+			const nested: GridContentNestedFields = Object.fromEntries(
+				raw.map((item, idx) => {
+					const key = `item${idx + 1}`;
+					return [key, buildField(key, item)];
+				})
+			);
+			return {
+				fieldName: inferFieldName(fieldKey),
+				fieldType: 'object',
+				value: nested
+			};
 		}
-		if (typeof value === 'object' && value !== null) {
-			return coerceObjectValue(value as Record<string, unknown>);
+
+		if (typeof raw === 'object' && raw !== null) {
+			const nested: GridContentNestedFields = Object.fromEntries(
+				Object.entries(raw as Record<string, unknown>).map(([key, item]) => [
+					key,
+					buildField(key, item)
+				])
+			);
+			return {
+				fieldName: inferFieldName(fieldKey),
+				fieldType: 'object',
+				value: nested
+			};
 		}
-		return displayOrPlaceholder(value, '');
+
+		return {
+			fieldName: inferFieldName(fieldKey),
+			fieldType: 'string',
+			value: displayOrPlaceholder(raw, '')
+		};
 	};
 
 	const normalizedData = $derived<GridContentData>(
@@ -77,71 +90,127 @@
 			Object.fromEntries(
 				Object.entries(dataObject ?? {}).map(([fieldKey, value]) => [
 					fieldKey,
-					{
-						fieldName: inferFieldName(fieldKey),
-						fieldType: inferFieldType(value),
-						value: coerceFieldValue(value)
-					}
+					buildField(fieldKey, value)
 				])
 			)
 	);
 
-	const formatObjectValue = (obj: GridContentFieldObjectValue, placeholder = '___') => {
-		if ('min' in obj && 'max' in obj) {
-			return `${displayOrPlaceholder(obj.min, placeholder)}/${displayOrPlaceholder(obj.max, placeholder)}`;
+	const isNestedFields = (value: GridContentFieldValue): value is GridContentNestedFields =>
+		typeof value === 'object' && value !== null;
+
+	const formatFieldValue = (field: GridContentField, placeholder = '___'): string => {
+		if (!isNestedFields(field.value)) return displayOrPlaceholder(field.value, placeholder);
+
+		const nested = field.value;
+		if ('min' in nested && 'max' in nested) {
+			return `${formatFieldValue(nested.min, placeholder)}/${formatFieldValue(nested.max, placeholder)}`;
 		}
-		const values = Object.values(obj)
-			.map((v) => displayOrPlaceholder(v, '').trim())
-			.filter((v) => v.length > 0);
-		return values.length > 0 ? values.join(' ') : placeholder;
+
+		if ('stringValue' in nested || 'intValue' in nested) {
+			const text = nested.stringValue ? formatFieldValue(nested.stringValue, '') : '';
+			const numeric = nested.intValue ? formatFieldValue(nested.intValue, '') : '';
+			const combined = [text, numeric].filter((v) => v.length > 0).join(' ');
+			return combined.length > 0 ? combined : placeholder;
+		}
+
+		const combined = Object.values(nested)
+			.map((entry) => formatFieldValue(entry, ''))
+			.filter((entry) => entry.length > 0)
+			.join(' / ');
+		return combined.length > 0 ? combined : placeholder;
 	};
 
-	const formatFieldValue = (field: GridContentField, placeholder = '___') => {
-		if (Array.isArray(field.value)) {
-			const formatted = field.value
-				.map((entry) => {
-					if (typeof entry === 'object' && entry !== null) {
-						return formatObjectValue(entry as GridContentFieldObjectValue, '');
-					}
-					return displayOrPlaceholder(entry, '');
-				})
-				.filter((entry) => entry.length > 0);
-			return formatted.length > 0 ? formatted.join(' / ') : placeholder;
-		}
-		if (typeof field.value === 'object' && field.value !== null) {
-			return formatObjectValue(field.value as GridContentFieldObjectValue, placeholder);
-		}
-		return displayOrPlaceholder(field.value, placeholder);
+	type DisplayPart = { value: string; label?: string };
+
+	const getLabeledDisplayParts = (field: GridContentField): DisplayPart[] | undefined => {
+		if (!isNestedFields(field.value)) return undefined;
+
+		const nested = field.value;
+		if ('min' in nested && 'max' in nested) return undefined;
+		if ('stringValue' in nested || 'intValue' in nested) return undefined;
+
+		const parts = Object.values(nested)
+			.map((entry) => ({
+				value: formatFieldValue(entry, ''),
+				label: entry.label
+			}))
+			.filter((entry) => entry.value.length > 0);
+
+		return parts.some((entry) => entry.label) ? parts : undefined;
 	};
 
-	const parseFieldInput = (fieldKey: string, field: GridContentField, input: string): unknown => {
-		const sourceField = normalizedData[fieldKey];
-		if (
-			typeof sourceField?.value === 'object' &&
-			sourceField.value !== null &&
-			!Array.isArray(sourceField.value) &&
-			'min' in sourceField.value &&
-			'max' in sourceField.value
-		) {
-			const [rawMin = '', rawMax = ''] = input.split('/', 2);
-			const toTyped = (raw: string) => {
-				const trimmed = raw.trim();
-				const asNum = Number(trimmed);
-				return trimmed.length > 0 && Number.isFinite(asNum) ? asNum : trimmed;
+	const joinLabels = (...labels: Array<string | undefined>): string | undefined => {
+		const parts = labels
+			.map((label) => displayOrPlaceholder(label, '').trim())
+			.filter((label) => label.length > 0);
+		if (parts.length === 0) return undefined;
+		return parts.join(' / ');
+	};
+
+	type LeafInput = { path: string[]; field: GridContentField; joinedLabel?: string };
+
+	const collectLeafInputs = (
+		field: GridContentField,
+		path: string[],
+		inheritedLabel?: string
+	): LeafInput[] => {
+		const nextLabel = joinLabels(inheritedLabel, field.label);
+		if (!isNestedFields(field.value)) return [{ path, field, joinedLabel: nextLabel }];
+		return Object.entries(field.value).flatMap(([childKey, childField]) =>
+			collectLeafInputs(childField, [...path, childKey], nextLabel)
+		);
+	};
+
+	const updateNestedValueAtPath = (
+		fields: GridContentNestedFields,
+		path: string[],
+		nextValue: string | number
+	): GridContentNestedFields => {
+		const [head, ...rest] = path;
+		const target = fields[head];
+		if (!target) return fields;
+		if (rest.length === 0) {
+			return {
+				...fields,
+				[head]: {
+					...target,
+					value: nextValue
+				}
 			};
-			return { min: toTyped(rawMin), max: toTyped(rawMax) };
 		}
-		return input;
+		if (!isNestedFields(target.value)) return fields;
+		return {
+			...fields,
+			[head]: {
+				...target,
+				value: updateNestedValueAtPath(target.value, rest, nextValue)
+			}
+		};
 	};
 
-	const updateFieldValue = (fieldKey: string, nextValue: unknown) => {
-		const currentField = draftData[fieldKey];
-		if (!currentField) return;
-		draftData = {
-			...draftData,
-			[fieldKey]: {
-				...currentField,
-				value: nextValue as GridContentField['value']
+	const updateDataAtPath = (
+		source: GridContentData,
+		path: string[],
+		nextValue: string | number
+	): GridContentData => {
+		const [head, ...rest] = path;
+		const target = source[head];
+		if (!target) return source;
+		if (rest.length === 0) {
+			return {
+				...source,
+				[head]: {
+					...target,
+					value: nextValue
+				}
+			};
+		}
+		if (!isNestedFields(target.value)) return source;
+		return {
+			...source,
+			[head]: {
+				...target,
+				value: updateNestedValueAtPath(target.value, rest, nextValue)
 			}
 		};
 	};
@@ -156,14 +225,7 @@
 	};
 
 	const onOpen = () => {
-		draftData = Object.fromEntries(
-			Object.entries(normalizedData).map(([fieldKey, field]) => [
-				fieldKey,
-				{
-					...field
-				}
-			])
-		);
+		draftData = structuredClone(normalizedData);
 		dialogEl?.showModal();
 	};
 
@@ -206,10 +268,28 @@
 	</button>
 	<div class="space-y-2 pr-12">
 		{#each Object.entries(normalizedData) as [fieldKey, field] (fieldKey)}
-			<p>
-				<span class="font-semibold">{field.fieldName}:</span>
-				{formatFieldValue(field)}
-			</p>
+			{@const labeledParts = getLabeledDisplayParts(field)}
+			<div>
+				<p>
+					<span class="font-semibold">{field.fieldName}:</span>
+					{#if labeledParts}
+						{#each labeledParts as part, idx (`${fieldKey}-${idx}`)}
+							{#if idx > 0}
+								/
+							{/if}
+							{part.value}
+							{#if part.label}
+								<span class="italic"> {part.label} </span>
+							{/if}
+						{/each}
+					{:else}
+						{formatFieldValue(field)}
+					{/if}
+				</p>
+				{#if field.label}
+					<p class="theme-text-muted text-xs italic">{field.label}</p>
+				{/if}
+			</div>
 		{/each}
 	</div>
 </div>
@@ -223,99 +303,39 @@
 	<form class="flex flex-col gap-3 p-4" onsubmit={onSubmit}>
 		<h3 class="text-lg leading-none font-semibold">Edit Meta Fields</h3>
 		{#each Object.entries(draftData) as [fieldKey, field] (fieldKey)}
-			<label class="space-y-1">
-				<span class="font-semibold">{field.fieldName}</span>
-				{#if Array.isArray(field.value)}
-					<div class="space-y-2">
-						{#each field.value as entry, idx (idx)}
-							{#if typeof entry === 'object' && entry !== null && !Array.isArray(entry)}
-								<div class="space-y-1">
-									<div class="grid grid-cols-2 gap-2">
-										{#each Object.entries(entry) as [entryKey, entryValue] (entryKey)}
-											<input
-												class="theme-input w-full rounded-md border px-2 py-1"
-												type={typeof entryValue === 'number' ? 'number' : 'text'}
-												step={typeof entryValue === 'number' ? '1' : undefined}
-												value={displayOrPlaceholder(entryValue, '')}
-												aria-label={`${field.fieldName} ${idx + 1} ${entryKey}`}
-												oninput={(event) => {
-													const target = event.currentTarget as HTMLInputElement;
-													const next = [...(field.value as GridContentFieldValue[])];
-													const current =
-														typeof next[idx] === 'object' && next[idx] !== null
-															? (next[idx] as GridContentFieldObjectValue)
-															: {};
-													const parsed = Number(target.value);
-													next[idx] = {
-														...current,
-														[entryKey]:
-															typeof entryValue === 'number' && Number.isFinite(parsed)
-																? parsed
-																: target.value
-													};
-													updateFieldValue(fieldKey, next);
-												}}
-											/>
-										{/each}
-									</div>
-									{#if 'label' in entry && displayOrPlaceholder(entry.label, '').trim().length > 0}
-										<p class="theme-text-muted text-xs italic">
-											{displayOrPlaceholder(entry.label, '')}
-										</p>
-									{/if}
-								</div>
-							{:else}
-								<input
-									class="theme-input w-full rounded-md border px-2 py-1"
-									type="text"
-									value={displayOrPlaceholder(entry, '')}
-									aria-label={`${field.fieldName} ${idx + 1}`}
-									oninput={(event) => {
-										const target = event.currentTarget as HTMLInputElement;
-										const next = [...(field.value as GridContentFieldValue[])];
-										next[idx] = target.value;
-										updateFieldValue(fieldKey, next);
-									}}
-								/>
+			{@const leafInputs = collectLeafInputs(field, [fieldKey])}
+			<div class="space-y-1">
+				<p class="font-semibold">{field.fieldName}</p>
+				{#if field.label}
+					<p class="theme-text-muted text-xs italic">{field.label}</p>
+				{/if}
+				<div class="space-y-2">
+					{#each leafInputs as leaf, idx (`${fieldKey}-${idx}-${leaf.path.join('.')}`)}
+						<label class="space-y-1">
+							<span class="theme-text-muted text-xs">{leaf.field.fieldName}</span>
+							{#if leaf.joinedLabel}
+								<span class="theme-text-muted block text-xs italic">{leaf.joinedLabel}</span>
 							{/if}
-						{/each}
-					</div>
-				{:else if typeof field.value === 'object' && field.value !== null}
-					<div class="grid grid-cols-2 gap-2">
-						{#each Object.entries(field.value) as [entryKey, entryValue] (entryKey)}
 							<input
 								class="theme-input w-full rounded-md border px-2 py-1"
-								type={typeof entryValue === 'number' ? 'number' : 'text'}
-								step={typeof entryValue === 'number' ? '1' : undefined}
-								value={displayOrPlaceholder(entryValue, '')}
-								aria-label={`${field.fieldName} ${entryKey}`}
+								type={typeof leaf.field.value === 'number' ? 'number' : 'text'}
+								step={typeof leaf.field.value === 'number' ? '1' : undefined}
+								value={displayOrPlaceholder(leaf.field.value, '')}
+								aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
 								oninput={(event) => {
 									const target = event.currentTarget as HTMLInputElement;
-									const current = field.value as GridContentFieldObjectValue;
 									const parsed = Number(target.value);
-									updateFieldValue(fieldKey, {
-										...current,
-										[entryKey]:
-											typeof entryValue === 'number' && Number.isFinite(parsed)
-												? parsed
-												: target.value
-									});
+									const nextValue =
+										typeof leaf.field.value === 'number' && Number.isFinite(parsed)
+											? parsed
+											: target.value;
+									draftData = updateDataAtPath(draftData, leaf.path, nextValue);
 								}}
 							/>
-						{/each}
-					</div>
-				{:else}
-					<input
-						class="theme-input w-full rounded-md border px-2 py-1"
-						type="text"
-						value={formatFieldValue(field, '')}
-						oninput={(event) => {
-							const target = event.currentTarget as HTMLInputElement;
-							updateFieldValue(fieldKey, parseFieldInput(fieldKey, field, target.value));
-						}}
-					/>
-				{/if}
-			</label>
+						</label>
+					{/each}
+				</div>
+			</div>
 		{/each}
 		<div class="mt-1 flex justify-end gap-2">
 			<button
