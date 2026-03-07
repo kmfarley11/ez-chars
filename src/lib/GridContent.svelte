@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { capitalizeFirstLetter } from '$lib/stringFormatters';
 	import { displayOrPlaceholder } from '$lib/displayHelpers';
+
 	type GridFieldType = 'string' | 'number' | 'array' | 'object' | 'unknown';
+	type GridContentFieldObjectValue = Record<string, string | number>;
+	type GridContentFieldValue = string | number | GridContentFieldObjectValue;
 
 	type GridContentField = {
 		fieldName: string;
 		fieldType: GridFieldType;
-		value: unknown;
+		value: GridContentFieldValue | GridContentFieldValue[];
 	};
 
 	type GridContentData = Record<string, GridContentField>;
@@ -45,6 +48,35 @@
 		return 'unknown';
 	};
 
+	const coerceObjectValue = (value: Record<string, unknown>): GridContentFieldObjectValue =>
+		Object.fromEntries(
+			Object.entries(value).map(([key, item]) => [
+				key,
+				typeof item === 'number'
+					? item
+					: typeof item === 'string'
+						? item
+						: displayOrPlaceholder(item, '')
+			])
+		);
+
+	const coerceFieldValue = (value: unknown): GridContentField['value'] => {
+		if (typeof value === 'number' || typeof value === 'string') return value;
+		if (Array.isArray(value)) {
+			return value.map((item) => {
+				if (typeof item === 'number' || typeof item === 'string') return item;
+				if (typeof item === 'object' && item !== null) {
+					return coerceObjectValue(item as Record<string, unknown>);
+				}
+				return displayOrPlaceholder(item, '');
+			});
+		}
+		if (typeof value === 'object' && value !== null) {
+			return coerceObjectValue(value as Record<string, unknown>);
+		}
+		return displayOrPlaceholder(value, '');
+	};
+
 	const normalizedData = $derived<GridContentData>(
 		data ??
 			Object.fromEntries(
@@ -53,86 +85,70 @@
 					{
 						fieldName: inferFieldName(fieldKey),
 						fieldType: inferFieldType(value),
-						value
+						value: coerceFieldValue(value)
 					}
 				])
 			)
 	);
 
-	const isMinMaxObject = (value: unknown): value is { min: unknown; max: unknown } =>
-		typeof value === 'object' && value !== null && 'min' in value && 'max' in value;
-	const isLabeledValueArray = (
-		value: unknown
-	): value is Array<{ value: unknown; label: unknown }> =>
-		Array.isArray(value) &&
-		value.every(
-			(entry) => typeof entry === 'object' && entry !== null && 'value' in entry && 'label' in entry
-		);
+	const formatObjectValue = (obj: GridContentFieldObjectValue, placeholder = '___') => {
+		if ('min' in obj && 'max' in obj) {
+			return `${displayOrPlaceholder(obj.min, placeholder)}/${displayOrPlaceholder(obj.max, placeholder)}`;
+		}
+		const values = Object.values(obj)
+			.map((v) => displayOrPlaceholder(v, '').trim())
+			.filter((v) => v.length > 0);
+		return values.length > 0 ? values.join(' ') : placeholder;
+	};
 
 	const formatFieldValue = (field: GridContentField, placeholder = '___') => {
-		if (isMinMaxObject(field.value)) {
-			const minValue = displayOrPlaceholder(field.value.min, placeholder);
-			const maxValue = displayOrPlaceholder(field.value.max, placeholder);
-			return `${minValue}/${maxValue}`;
-		}
-		if (isLabeledValueArray(field.value)) {
+		if (Array.isArray(field.value)) {
 			const formatted = field.value
 				.map((entry) => {
-					const valueText = displayOrPlaceholder(entry.value, '').trim();
-					const labelText = displayOrPlaceholder(entry.label, '').trim();
-					if (valueText.length > 0 && labelText.length > 0) return `${valueText} ${labelText}`;
-					return valueText || labelText;
+					if (typeof entry === 'object' && entry !== null) {
+						return formatObjectValue(entry as GridContentFieldObjectValue, '');
+					}
+					return displayOrPlaceholder(entry, '');
 				})
 				.filter((entry) => entry.length > 0);
 			return formatted.length > 0 ? formatted.join(' / ') : placeholder;
 		}
-		return displayOrPlaceholder(field.value, placeholder);
-	};
-
-	const formatEditableValue = (field: GridContentField, placeholder = '') => {
-		if (isLabeledValueArray(field.value)) {
-			const valuesOnly = field.value
-				.map((entry) => displayOrPlaceholder(entry.value, '').trim())
-				.filter((entry) => entry.length > 0);
-			return valuesOnly.length > 0 ? valuesOnly.join(' / ') : placeholder;
+		if (typeof field.value === 'object' && field.value !== null) {
+			return formatObjectValue(field.value as GridContentFieldObjectValue, placeholder);
 		}
-		return formatFieldValue(field, placeholder);
+		return displayOrPlaceholder(field.value, placeholder);
 	};
 
 	const parseFieldInput = (fieldKey: string, field: GridContentField, input: string): unknown => {
 		const sourceField = normalizedData[fieldKey];
-		const shouldParseMinMax = isMinMaxObject(field.value) || isMinMaxObject(sourceField?.value);
-		if (shouldParseMinMax) {
+		if (
+			typeof sourceField?.value === 'object' &&
+			sourceField.value !== null &&
+			!Array.isArray(sourceField.value) &&
+			'min' in sourceField.value &&
+			'max' in sourceField.value
+		) {
 			const [rawMin = '', rawMax = ''] = input.split('/', 2);
-			const min = rawMin.trim();
-			const max = rawMax.trim();
 			const toTyped = (raw: string) => {
-				const asNum = Number(raw);
-				return raw.length > 0 && Number.isFinite(asNum) ? asNum : raw;
+				const trimmed = raw.trim();
+				const asNum = Number(trimmed);
+				return trimmed.length > 0 && Number.isFinite(asNum) ? asNum : trimmed;
 			};
-			return { min: toTyped(min), max: toTyped(max) };
-		}
-		const shouldParseLabeledArray =
-			isLabeledValueArray(field.value) || isLabeledValueArray(sourceField?.value);
-		if (shouldParseLabeledArray) {
-			const source = isLabeledValueArray(sourceField?.value) ? sourceField.value : [];
-			const chunks = input
-				.split(/[/,\n]/)
-				.map((segment) => segment.trim())
-				.filter((segment) => segment.length > 0);
-			const toTyped = (raw: string) => {
-				const asNum = Number(raw);
-				return raw.length > 0 && Number.isFinite(asNum) ? asNum : raw;
-			};
-			if (source.length > 0) {
-				return source.map((entry, index) => ({
-					label: entry.label,
-					value: toTyped(chunks[index] ?? displayOrPlaceholder(entry.value, ''))
-				}));
-			}
-			return chunks.map((chunk) => ({ label: '', value: toTyped(chunk) }));
+			return { min: toTyped(rawMin), max: toTyped(rawMax) };
 		}
 		return input;
+	};
+
+	const updateFieldValue = (fieldKey: string, nextValue: unknown) => {
+		const currentField = draftData[fieldKey];
+		if (!currentField) return;
+		draftData = {
+			...draftData,
+			[fieldKey]: {
+				...currentField,
+				value: nextValue as GridContentField['value']
+			}
+		};
 	};
 
 	const closeDialog = () => {
@@ -214,28 +230,95 @@
 		{#each Object.entries(draftData) as [fieldKey, field] (fieldKey)}
 			<label class="space-y-1">
 				<span class="font-semibold">{field.fieldName}</span>
-				<input
-					class="theme-input w-full rounded-md border px-2 py-1"
-					type="text"
-					value={formatEditableValue(field, '')}
-					oninput={(event) => {
-						const target = event.currentTarget as HTMLInputElement;
-						draftData = {
-							...draftData,
-							[fieldKey]: {
-								...field,
-								value: parseFieldInput(fieldKey, field, target.value)
-							}
-						};
-					}}
-				/>
-				{#if isLabeledValueArray(field.value)}
-					<p class="theme-text-muted text-xs italic">
-						{field.value
-							.map((entry) => displayOrPlaceholder(entry.label, '').trim())
-							.filter((entry) => entry.length > 0)
-							.join(' / ')}
-					</p>
+				{#if Array.isArray(field.value)}
+					<div class="space-y-2">
+						{#each field.value as entry, idx (idx)}
+							{#if typeof entry === 'object' && entry !== null && !Array.isArray(entry)}
+								<div class="space-y-1">
+									<div class="grid grid-cols-2 gap-2">
+										{#each Object.entries(entry) as [entryKey, entryValue] (entryKey)}
+											<input
+												class="theme-input w-full rounded-md border px-2 py-1"
+												type={typeof entryValue === 'number' ? 'number' : 'text'}
+												step={typeof entryValue === 'number' ? '1' : undefined}
+												value={displayOrPlaceholder(entryValue, '')}
+												aria-label={`${field.fieldName} ${idx + 1} ${entryKey}`}
+												oninput={(event) => {
+													const target = event.currentTarget as HTMLInputElement;
+													const next = [...(field.value as GridContentFieldValue[])];
+													const current =
+														typeof next[idx] === 'object' && next[idx] !== null
+															? (next[idx] as GridContentFieldObjectValue)
+															: {};
+													const parsed = Number(target.value);
+													next[idx] = {
+														...current,
+														[entryKey]:
+															typeof entryValue === 'number' && Number.isFinite(parsed)
+																? parsed
+																: target.value
+													};
+													updateFieldValue(fieldKey, next);
+												}}
+											/>
+										{/each}
+									</div>
+									{#if 'label' in entry && displayOrPlaceholder(entry.label, '').trim().length > 0}
+										<p class="theme-text-muted text-xs italic">
+											{displayOrPlaceholder(entry.label, '')}
+										</p>
+									{/if}
+								</div>
+							{:else}
+								<input
+									class="theme-input w-full rounded-md border px-2 py-1"
+									type="text"
+									value={displayOrPlaceholder(entry, '')}
+									aria-label={`${field.fieldName} ${idx + 1}`}
+									oninput={(event) => {
+										const target = event.currentTarget as HTMLInputElement;
+										const next = [...(field.value as GridContentFieldValue[])];
+										next[idx] = target.value;
+										updateFieldValue(fieldKey, next);
+									}}
+								/>
+							{/if}
+						{/each}
+					</div>
+				{:else if typeof field.value === 'object' && field.value !== null}
+					<div class="grid grid-cols-2 gap-2">
+						{#each Object.entries(field.value) as [entryKey, entryValue] (entryKey)}
+							<input
+								class="theme-input w-full rounded-md border px-2 py-1"
+								type={typeof entryValue === 'number' ? 'number' : 'text'}
+								step={typeof entryValue === 'number' ? '1' : undefined}
+								value={displayOrPlaceholder(entryValue, '')}
+								aria-label={`${field.fieldName} ${entryKey}`}
+								oninput={(event) => {
+									const target = event.currentTarget as HTMLInputElement;
+									const current = field.value as GridContentFieldObjectValue;
+									const parsed = Number(target.value);
+									updateFieldValue(fieldKey, {
+										...current,
+										[entryKey]:
+											typeof entryValue === 'number' && Number.isFinite(parsed)
+												? parsed
+												: target.value
+									});
+								}}
+							/>
+						{/each}
+					</div>
+				{:else}
+					<input
+						class="theme-input w-full rounded-md border px-2 py-1"
+						type="text"
+						value={formatFieldValue(field, '')}
+						oninput={(event) => {
+							const target = event.currentTarget as HTMLInputElement;
+							updateFieldValue(fieldKey, parseFieldInput(fieldKey, field, target.value));
+						}}
+					/>
 				{/if}
 			</label>
 		{/each}

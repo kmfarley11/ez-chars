@@ -30,7 +30,10 @@
 
 	const metaPrimaryData = $derived({
 		name: char.identity.name,
-		classLevels: char.systemData.classes
+		classLevels: char.systemData.classes.map((entry) => ({
+			stringValue: entry.name,
+			intValue: entry.level
+		}))
 	});
 
 	const ancestryDisplay = $derived(
@@ -74,26 +77,41 @@
 			max: char.systemData.combat?.hitDice?.total
 		},
 		deathSaves: [
-			{ value: char.systemData.combat?.deathSaves?.successes ?? 0, label: 'ok' },
-			{ value: char.systemData.combat?.deathSaves?.failures ?? 0, label: 'rip' }
+			{
+				stringValue: '',
+				intValue: char.systemData.combat?.deathSaves?.successes ?? 0,
+				label: 'ok'
+			},
+			{ stringValue: '', intValue: char.systemData.combat?.deathSaves?.failures ?? 0, label: 'rip' }
 		]
 	});
 
 	const handleEditMetaSave = (payload: GridContentData) => {
 		const nextName = displayOrPlaceholder(payload.name?.value, '').trim();
-		const nextClassLevels = displayOrPlaceholder(payload.classLevels?.value, '')
-			.split(/[/,\n]/)
-			.map((segment) => segment.trim())
-			.filter((segment) => segment.length > 0)
-			.map((segment) => {
-				const match = segment.match(/^(.*?)(?:\s+(\d+))?$/);
-				const className = match?.[1]?.trim() ?? segment;
-				const parsedLevel = match?.[2] ? Number.parseInt(match[2], 10) : 1;
-				return {
-					name: className.length > 0 ? className : 'Unknown',
-					level: Number.isFinite(parsedLevel) && parsedLevel > 0 ? parsedLevel : 1
-				};
-			});
+		const classLevelsValue = payload.classLevels?.value;
+		const nextClassLevels = Array.isArray(classLevelsValue)
+			? classLevelsValue.map((entry) => {
+					const levelEntry = entry as { stringValue?: unknown; intValue?: unknown };
+					const className = displayOrPlaceholder(levelEntry.stringValue, '').trim();
+					const parsedLevel = Number.parseInt(displayOrPlaceholder(levelEntry.intValue, '1'), 10);
+					return {
+						name: className.length > 0 ? className : 'Unknown',
+						level: Number.isFinite(parsedLevel) && parsedLevel > 0 ? parsedLevel : 1
+					};
+				})
+			: displayOrPlaceholder(classLevelsValue, '')
+					.split(/[/,\n]/)
+					.map((segment: string) => segment.trim())
+					.filter((segment: string) => segment.length > 0)
+					.map((segment: string) => {
+						const match = segment.match(/^(.*?)(?:\s+(\d+))?$/);
+						const className = match?.[1]?.trim() ?? segment;
+						const parsedLevel = match?.[2] ? Number.parseInt(match[2], 10) : 1;
+						return {
+							name: className.length > 0 ? className : 'Unknown',
+							level: Number.isFinite(parsedLevel) && parsedLevel > 0 ? parsedLevel : 1
+						};
+					});
 
 		charsArray.update((entries) =>
 			entries.map((entry) => {
@@ -164,12 +182,12 @@
 		const nextHitDiceTotal = displayOrPlaceholder(hitDiceRange?.max, '').trim();
 
 		const deathSavesList = Array.isArray(payload.deathSaves?.value) ? payload.deathSaves.value : [];
-		const getLabeledNumber = (label: string, fallback: number) => {
+		const getLabeledNumber = (label: string, fallback: number): number => {
 			const found = deathSavesList.find(
 				(item) =>
 					typeof item === 'object' && item !== null && 'label' in item && item.label === label
-			) as { value?: unknown } | undefined;
-			const parsed = Number.parseInt(displayOrPlaceholder(found?.value, `${fallback}`), 10);
+			) as { intValue?: unknown } | undefined;
+			const parsed = Number.parseInt(displayOrPlaceholder(found?.intValue, `${fallback}`), 10);
 			return Number.isFinite(parsed) ? parsed : fallback;
 		};
 		const nextDeathSaveSuccesses = getLabeledNumber(
