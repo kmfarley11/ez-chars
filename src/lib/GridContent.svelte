@@ -2,24 +2,28 @@
 	import { capitalizeFirstLetter } from '$lib/stringFormatters';
 	import { displayOrPlaceholder } from '$lib/displayHelpers';
 	import type {
+		GridContentBindPath,
 		GridContentData,
 		GridContentField,
 		GridContentFieldValue,
-		GridContentNestedFields
+		GridContentNestedFields,
+		GridContentPatch,
+		GridContentPathSegment
 	} from '$lib/gridContentTypes';
 
 	interface Props {
-		data?: GridContentData;
-		dataObject?: Record<string, unknown>;
+		data: GridContentData;
 		// eslint-disable-next-line no-unused-vars
-		handleEditSave: (_payload: GridContentData) => void;
+		handleEditSave?: (_payload: GridContentData) => void;
+		// eslint-disable-next-line no-unused-vars
+		handleEditSavePatches?: (_patches: Array<GridContentPatch>) => void;
 		handleEditCancel?: () => void;
 	}
 
 	let {
-		data = undefined,
-		dataObject = undefined,
+		data,
 		handleEditSave,
+		handleEditSavePatches,
 		handleEditCancel = undefined
 	}: Props = $props();
 
@@ -34,47 +38,13 @@
 		return capitalizeFirstLetter(spaced.length > 0 ? spaced : fieldKey);
 	};
 
-	const buildField = (fieldKey: string, raw: unknown): GridContentField => {
-		if (typeof raw === 'string' || typeof raw === 'number') {
-			return {
-				fieldName: inferFieldName(fieldKey),
-				value: raw
-			};
-		}
-
-		if (Array.isArray(raw)) {
-			const nested = raw.map((item, idx) => buildField(`item${idx + 1}`, item));
-			return {
-				fieldName: inferFieldName(fieldKey),
-				value: nested
-			};
-		}
-
-		if (typeof raw === 'object' && raw !== null) {
-			const nested: GridContentNestedFields = Object.fromEntries(
-				Object.entries(raw as Record<string, unknown>).map(([key, item]) => [
-					key,
-					buildField(key, item)
-				])
-			);
-			return {
-				fieldName: inferFieldName(fieldKey),
-				value: nested
-			};
-		}
-
-		return {
-			fieldName: inferFieldName(fieldKey),
-			value: displayOrPlaceholder(raw, '')
-		};
-	};
-
 	const isFieldArray = (value: GridContentFieldValue): value is Array<GridContentField> =>
 		Array.isArray(value);
 
 	const isNestedFields = (value: GridContentFieldValue): value is GridContentNestedFields =>
 		typeof value === 'object' && value !== null && !Array.isArray(value);
 
+	// Ensure every field (including nested ones) has a stable display name before render/edit.
 	const normalizeField = (fieldKey: string, field: GridContentField): GridContentField => {
 		const normalizedName =
 			displayOrPlaceholder(field.fieldName, '').trim() || inferFieldName(fieldKey);
@@ -111,18 +81,9 @@
 			Object.entries(source).map(([fieldKey, field]) => [fieldKey, normalizeField(fieldKey, field)])
 		);
 
-	const normalizedData = $derived<GridContentData>(
-		normalizeData(
-			data ??
-				Object.fromEntries(
-					Object.entries(dataObject ?? {}).map(([fieldKey, value]) => [
-						fieldKey,
-						buildField(fieldKey, value)
-					])
-				)
-		)
-	);
+	const normalizedData = $derived<GridContentData>(normalizeData(data));
 
+	// Render any field shape generically: primitives, nested objects, and arrays of nested entries.
 	const formatFieldValue = (
 		field: GridContentField,
 		placeholder = '___',
@@ -141,10 +102,6 @@
 		}
 
 		const nested = field.value;
-		if ('min' in nested && 'max' in nested) {
-			return `${formatFieldValue(nested.min, placeholder)}/${formatFieldValue(nested.max, placeholder)}`;
-		}
-
 		const combined = Object.values(nested)
 			.map((entry) => formatFieldValue(entry, '', nestedJoiner))
 			.filter((entry) => entry.length > 0)
@@ -158,7 +115,6 @@
 		if (isFieldArray(field.value) || !isNestedFields(field.value)) return undefined;
 
 		const nested = field.value;
-		if ('min' in nested && 'max' in nested) return undefined;
 
 		const parts = Object.values(nested)
 			.map((entry) => ({
@@ -178,33 +134,54 @@
 		return parts.join(' / ');
 	};
 
-	type PathSegment = string | number;
-	type LeafInput = { path: PathSegment[]; field: GridContentField; joinedLabel?: string };
+	type LeafInput = {
+		path: Array<GridContentPathSegment>;
+		field: GridContentField;
+		joinedLabel?: string;
+		bindPath?: GridContentBindPath;
+	};
 
+	// Bind path resolution order: explicit field `bindPath`, then inherited parent bind path + this segment.
+	const resolveBindPath = (
+		field: GridContentField,
+		inheritedBindPath: GridContentBindPath | undefined,
+		pathSegment: GridContentPathSegment | undefined
+	): GridContentBindPath | undefined => {
+		if (field.bindPath && field.bindPath.length > 0) return field.bindPath;
+		if (!inheritedBindPath) return undefined;
+		if (typeof pathSegment === 'undefined') return inheritedBindPath;
+		return [...inheritedBindPath, pathSegment];
+	};
+
+	// Flatten nested field trees into editable leaves while carrying UI labels + resolved bind paths.
 	const collectLeafInputs = (
 		field: GridContentField,
-		path: PathSegment[],
-		inheritedLabel?: string
+		path: Array<GridContentPathSegment>,
+		inheritedLabel?: string,
+		inheritedBindPath?: GridContentBindPath,
+		pathSegment?: GridContentPathSegment
 	): LeafInput[] => {
 		const nextLabel = joinLabels(inheritedLabel, field.label);
+		const nextBindPath = resolveBindPath(field, inheritedBindPath, pathSegment);
 		if (!isFieldArray(field.value) && !isNestedFields(field.value)) {
-			return [{ path, field, joinedLabel: nextLabel }];
+			return [{ path, field, joinedLabel: nextLabel, bindPath: nextBindPath }];
 		}
 
 		if (isFieldArray(field.value)) {
 			return field.value.flatMap((childField, idx) =>
-				collectLeafInputs(childField, [...path, idx], nextLabel)
+				collectLeafInputs(childField, [...path, idx], nextLabel, nextBindPath, idx)
 			);
 		}
 
 		return Object.entries(field.value).flatMap(([childKey, childField]) =>
-			collectLeafInputs(childField, [...path, childKey], nextLabel)
+			collectLeafInputs(childField, [...path, childKey], nextLabel, nextBindPath, childKey)
 		);
 	};
 
+	// Immutable deep update for a single edited leaf by traversing path segments recursively.
 	const updateFieldAtPath = (
 		field: GridContentField,
-		path: PathSegment[],
+		path: Array<GridContentPathSegment>,
 		nextValue: string | number
 	): GridContentField => {
 		const [head, ...rest] = path;
@@ -241,7 +218,7 @@
 
 	const updateDataAtPath = (
 		source: GridContentData,
-		path: PathSegment[],
+		path: Array<GridContentPathSegment>,
 		nextValue: string | number
 	): GridContentData => {
 		const [head, ...rest] = path;
@@ -274,9 +251,28 @@
 		}
 	};
 
+	// Convert current draft into atomic write operations for model-level patch handlers.
+	const collectPatchesFromData = (source: GridContentData): Array<GridContentPatch> =>
+		Object.entries(source).flatMap(([fieldKey, field]) =>
+			collectLeafInputs(field, [fieldKey], undefined, undefined, fieldKey).flatMap((leaf) => {
+				if (isFieldArray(leaf.field.value) || isNestedFields(leaf.field.value)) return [];
+				return [
+					{
+						path: leaf.bindPath ?? leaf.path,
+						value: leaf.field.value
+					}
+				];
+			})
+		);
+
 	const onSubmit = (event: SubmitEvent) => {
 		event.preventDefault();
-		handleEditSave(draftData);
+		// Preferred path: emit bind-path patches; fallback preserves legacy payload-based integration.
+		if (handleEditSavePatches) {
+			handleEditSavePatches(collectPatchesFromData(draftData));
+		} else {
+			handleEditSave?.(draftData);
+		}
 		closeDialog();
 	};
 </script>
