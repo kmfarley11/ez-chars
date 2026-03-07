@@ -79,17 +79,17 @@
 				}
 			}
 		},
-		armorClass: {
-			bindPath: ['systemData', 'combat', 'armorClass'],
-			value: char.systemData.combat?.armorClass
+		tempHp: {
+			bindPath: ['systemData', 'combat', 'hitPoints', 'temp'],
+			value: char.systemData.combat?.hitPoints?.temp ?? 0
 		},
 		initiative: {
 			bindPath: ['systemData', 'combat', 'initiative'],
 			value: char.systemData.combat?.initiative ?? 0
 		},
-		tempHp: {
-			bindPath: ['systemData', 'combat', 'hitPoints', 'temp'],
-			value: char.systemData.combat?.hitPoints?.temp ?? 0
+		armorClass: {
+			bindPath: ['systemData', 'combat', 'armorClass'],
+			value: char.systemData.combat?.armorClass
 		}
 	});
 	const quickRefMovementData = $derived<GridContentData>({
@@ -98,10 +98,11 @@
 			bindPath: ['systemData', 'combat', 'speed'],
 			value: char.systemData.combat?.speed ?? char.systemData.race?.speed ?? ''
 		},
-		fly: {
+		climb: {
+			fieldName: 'Climb',
 			label: 'ft',
-			bindPath: ['systemData', 'combat', 'speedFly'],
-			value: char.systemData.combat?.speedFly ?? char.systemData.race?.speedFly ?? ''
+			bindPath: ['systemData', 'combat', 'speedClimb'],
+			value: char.systemData.combat?.speedClimb ?? char.systemData.race?.speedClimb ?? ''
 		},
 		swim: {
 			fieldName: 'Swim',
@@ -109,11 +110,10 @@
 			bindPath: ['systemData', 'combat', 'speedSwim'],
 			value: char.systemData.combat?.speedSwim ?? char.systemData.race?.speedSwim ?? ''
 		},
-		climb: {
-			fieldName: 'Climb',
+		fly: {
 			label: 'ft',
-			bindPath: ['systemData', 'combat', 'speedClimb'],
-			value: char.systemData.combat?.speedClimb ?? char.systemData.race?.speedClimb ?? ''
+			bindPath: ['systemData', 'combat', 'speedFly'],
+			value: char.systemData.combat?.speedFly ?? char.systemData.race?.speedFly ?? ''
 		}
 	});
 	const quickRefSecondaryData = $derived<GridContentData>({
@@ -164,9 +164,6 @@
 		updateCurrent5eCharacter((entry) => applyGridPatches(entry, patches));
 	};
 </script>
-
-<!-- TODO update this per the latest form factors, prove the concept and refine -->
-<p>Test page 5e...</p>
 
 <GridColumn parent={true} pad={true} classes="rounded-lg" border={true}>
 	<GridRow classes="text-center text-lg font-semibold">Meta / Top-level Info</GridRow>
