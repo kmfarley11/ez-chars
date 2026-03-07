@@ -33,7 +33,7 @@
 		children = undefined,
 		child = false,
 		parent = false,
-		flow = 'col',
+		flow,
 		axis = 'cols',
 		span = 'row',
 		count = 1,

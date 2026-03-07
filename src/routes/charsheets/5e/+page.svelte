@@ -1,7 +1,6 @@
 <script lang="ts">
 	import GridContent from '$lib/GridContent.svelte';
-	import GridColumn from '$lib/GridColumn.svelte';
-	import GridRow from '$lib/GridRow.svelte';
+	import GridContainer from '$lib/GridContainer.svelte';
 	import '../../../app.css';
 	import { charsArray, emptyChar } from '../../../data.js';
 	import type { CharacterDocument5e2014 } from '../../../schema';
@@ -165,49 +164,57 @@
 	};
 </script>
 
-<GridColumn parent={true} pad={true} classes="rounded-lg" border={true}>
-	<GridRow classes="text-center text-lg font-semibold">Meta / Top-level Info</GridRow>
-	<GridRow
+<GridContainer axis="rows" span="col" parent={true} pad={true} classes="rounded-lg" border={true}>
+	<GridContainer axis="cols" span="row" classes="text-center text-lg font-semibold">
+		Meta / Top-level Info
+	</GridContainer>
+	<GridContainer
+		axis="cols"
+		span="row"
 		border={true}
 		pad={true}
 		parent={true}
 		child={true}
 		flow="row"
-		colCount={1}
-		colCountMd={3}
+		count={1}
+		countMd={3}
 		classes="gap-3"
 	>
-		<GridColumn border={true} pad={true} classes="rounded-md">
+		<GridContainer axis="rows" span="col" border={true} pad={true} classes="rounded-md">
 			<GridContent handleEditSavePatches={handleGridPatchesSave} data={metaPrimaryData} />
-		</GridColumn>
-		<GridColumn border={true} pad={true} classes="rounded-md">
+		</GridContainer>
+		<GridContainer axis="rows" span="col" border={true} pad={true} classes="rounded-md">
 			<GridContent handleEditSavePatches={handleGridPatchesSave} data={metaSecondaryData} />
-		</GridColumn>
-		<GridColumn border={true} pad={true} classes="rounded-md">
+		</GridContainer>
+		<GridContainer axis="rows" span="col" border={true} pad={true} classes="rounded-md">
 			<GridContent handleEditSavePatches={handleGridPatchesSave} data={metaTertiaryData} />
-		</GridColumn>
-	</GridRow>
-	<GridRow classes="pt-2 text-center text-lg font-semibold">Quick Reference</GridRow>
-	<GridRow
+		</GridContainer>
+	</GridContainer>
+	<GridContainer axis="cols" span="row" classes="pt-2 text-center text-lg font-semibold">
+		Quick Reference
+	</GridContainer>
+	<GridContainer
+		axis="cols"
+		span="row"
 		border={true}
 		pad={true}
 		parent={true}
 		child={true}
 		flow="row"
-		colCount={1}
-		colCountMd={3}
+		count={1}
+		countMd={3}
 		classes="gap-3"
 	>
-		<GridColumn border={true} pad={true} classes="rounded-md">
+		<GridContainer axis="rows" span="col" border={true} pad={true} classes="rounded-md">
 			<GridContent handleEditSavePatches={handleGridPatchesSave} data={quickRefPrimaryData} />
-		</GridColumn>
-		<GridColumn border={true} pad={true} classes="rounded-md">
+		</GridContainer>
+		<GridContainer axis="rows" span="col" border={true} pad={true} classes="rounded-md">
 			<GridContent handleEditSavePatches={handleGridPatchesSave} data={quickRefMovementData} />
-		</GridColumn>
-		<GridColumn border={true} pad={true} classes="rounded-md">
+		</GridContainer>
+		<GridContainer axis="rows" span="col" border={true} pad={true} classes="rounded-md">
 			<GridContent handleEditSavePatches={handleGridPatchesSave} data={quickRefSecondaryData} />
-		</GridColumn>
-	</GridRow>
-</GridColumn>
+		</GridContainer>
+	</GridContainer>
+</GridContainer>
 
 TODO: all the rest of the info...

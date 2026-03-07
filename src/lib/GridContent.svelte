@@ -1,5 +1,5 @@
 <script lang="ts">
-	import GridColumn from '$lib/GridColumn.svelte';
+	import GridContainer from '$lib/GridContainer.svelte';
 	import GridContainerAuto from '$lib/GridContainerAuto.svelte';
 	import { capitalizeFirstLetter } from '$lib/stringFormatters';
 	import { displayOrPlaceholder } from '$lib/displayHelpers';
@@ -307,7 +307,7 @@
 		<GridContainerAuto maxCols={3} classes="gap-2">
 			{#each Object.entries(normalizedData) as [fieldKey, field] (fieldKey)}
 				{@const labeledParts = getLabeledDisplayParts(field)}
-				<GridColumn classes="min-w-0">
+				<GridContainer axis="rows" span="col" classes="min-w-0">
 					<p class="min-w-0">
 						<span data-grid-auto-item class="inline-block">
 							<span class="font-semibold">{field.fieldName}:</span>
@@ -329,7 +329,7 @@
 							{/if}
 						</span>
 					</p>
-				</GridColumn>
+				</GridContainer>
 			{/each}
 		</GridContainerAuto>
 	</div>
