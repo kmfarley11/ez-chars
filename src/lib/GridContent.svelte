@@ -5,8 +5,7 @@
 		GridContentData,
 		GridContentField,
 		GridContentFieldValue,
-		GridContentNestedFields,
-		GridFieldType
+		GridContentNestedFields
 	} from '$lib/gridContentTypes';
 
 	interface Props {
@@ -35,17 +34,10 @@
 		return capitalizeFirstLetter(spaced.length > 0 ? spaced : fieldKey);
 	};
 
-	const inferFieldType = (value: unknown): GridFieldType => {
-		if (typeof value === 'string') return 'string';
-		if (typeof value === 'number') return 'number';
-		return 'object';
-	};
-
 	const buildField = (fieldKey: string, raw: unknown): GridContentField => {
 		if (typeof raw === 'string' || typeof raw === 'number') {
 			return {
 				fieldName: inferFieldName(fieldKey),
-				fieldType: inferFieldType(raw),
 				value: raw
 			};
 		}
@@ -59,7 +51,6 @@
 			);
 			return {
 				fieldName: inferFieldName(fieldKey),
-				fieldType: 'object',
 				value: nested
 			};
 		}
@@ -73,30 +64,58 @@
 			);
 			return {
 				fieldName: inferFieldName(fieldKey),
-				fieldType: 'object',
 				value: nested
 			};
 		}
 
 		return {
 			fieldName: inferFieldName(fieldKey),
-			fieldType: 'string',
 			value: displayOrPlaceholder(raw, '')
 		};
 	};
 
-	const normalizedData = $derived<GridContentData>(
-		data ??
-			Object.fromEntries(
-				Object.entries(dataObject ?? {}).map(([fieldKey, value]) => [
-					fieldKey,
-					buildField(fieldKey, value)
-				])
-			)
-	);
-
 	const isNestedFields = (value: GridContentFieldValue): value is GridContentNestedFields =>
 		typeof value === 'object' && value !== null;
+
+	const normalizeField = (fieldKey: string, field: GridContentField): GridContentField => {
+		const normalizedName =
+			displayOrPlaceholder(field.fieldName, '').trim() || inferFieldName(fieldKey);
+		if (!isNestedFields(field.value)) {
+			return {
+				...field,
+				fieldName: normalizedName
+			};
+		}
+
+		const normalizedNested: GridContentNestedFields = Object.fromEntries(
+			Object.entries(field.value).map(([childKey, childField]) => [
+				childKey,
+				normalizeField(childKey, childField)
+			])
+		);
+		return {
+			...field,
+			fieldName: normalizedName,
+			value: normalizedNested
+		};
+	};
+
+	const normalizeData = (source: GridContentData): GridContentData =>
+		Object.fromEntries(
+			Object.entries(source).map(([fieldKey, field]) => [fieldKey, normalizeField(fieldKey, field)])
+		);
+
+	const normalizedData = $derived<GridContentData>(
+		normalizeData(
+			data ??
+				Object.fromEntries(
+					Object.entries(dataObject ?? {}).map(([fieldKey, value]) => [
+						fieldKey,
+						buildField(fieldKey, value)
+					])
+				)
+		)
+	);
 
 	const formatFieldValue = (field: GridContentField, placeholder = '___'): string => {
 		if (!isNestedFields(field.value)) return displayOrPlaceholder(field.value, placeholder);
