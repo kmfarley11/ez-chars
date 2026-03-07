@@ -6,7 +6,6 @@
 	import { charsArray, emptyChar } from '../../../data.js';
 	import type { CharacterDocument5e2014 } from '../../../schema';
 	import { applyGridPatches } from '$lib/characterGridHelpers';
-	import { displayOrPlaceholder } from '$lib/displayHelpers';
 	import type { GridContentData, GridContentPatch } from '$lib/gridContentTypes';
 
 	interface Props {
@@ -45,16 +44,27 @@
 		}
 	});
 
-	const ancestryDisplay = $derived(
-		displayOrPlaceholder(char.identity.ancestryLineage ?? char.systemData.race?.name)
-	);
+	const metaSecondaryData = $derived<GridContentData>({
+		ancestry: {
+			bindPath: ['identity', 'ancestryLineage'],
+			value: char.identity.ancestryLineage ?? char.systemData.race?.name ?? ''
+		},
+		background: {
+			bindPath: ['identity', 'background'],
+			value: char.identity.background ?? char.systemData.background?.name ?? ''
+		}
+	});
 
-	const backgroundDisplay = $derived(
-		displayOrPlaceholder(char.systemData.background?.name ?? char.identity.background)
-	);
-
-	const alignmentDisplay = $derived(displayOrPlaceholder(char.identity.alignment));
-	const appearanceDisplay = $derived(displayOrPlaceholder(char.identity.appearance));
+	const metaTertiaryData = $derived<GridContentData>({
+		alignment: {
+			bindPath: ['identity', 'alignment'],
+			value: char.identity.alignment ?? ''
+		},
+		appearance: {
+			bindPath: ['identity', 'appearance'],
+			value: char.identity.appearance ?? ''
+		}
+	});
 
 	const quickRefPrimaryData = $derived<GridContentData>({
 		hp: {
@@ -82,21 +92,30 @@
 			value: char.systemData.combat?.hitPoints?.temp ?? 0
 		}
 	});
-	const speedWalkDisplay = $derived(
-		displayOrPlaceholder(char.systemData.combat?.speed ?? char.systemData.race?.speed, '__')
-	);
-	const speedFlyDisplay = $derived(
-		displayOrPlaceholder(char.systemData.combat?.speedFly ?? char.systemData.race?.speedFly, '__')
-	);
-	const speedSwimDisplay = $derived(
-		displayOrPlaceholder(char.systemData.combat?.speedSwim ?? char.systemData.race?.speedSwim, '__')
-	);
-	const speedClimbDisplay = $derived(
-		displayOrPlaceholder(
-			char.systemData.combat?.speedClimb ?? char.systemData.race?.speedClimb,
-			'__'
-		)
-	);
+	const quickRefMovementData = $derived<GridContentData>({
+		speed: {
+			label: '(walking ft)',
+			bindPath: ['systemData', 'combat', 'speed'],
+			value: char.systemData.combat?.speed ?? char.systemData.race?.speed ?? ''
+		},
+		fly: {
+			// label: '(ft)',
+			bindPath: ['systemData', 'combat', 'speedFly'],
+			value: char.systemData.combat?.speedFly ?? char.systemData.race?.speedFly ?? ''
+		},
+		swim: {
+			fieldName: 'Swim',
+			// label: '(ft)',
+			bindPath: ['systemData', 'combat', 'speedSwim'],
+			value: char.systemData.combat?.speedSwim ?? char.systemData.race?.speedSwim ?? ''
+		},
+		climb: {
+			fieldName: 'Climb',
+			// label: '(ft)',
+			bindPath: ['systemData', 'combat', 'speedClimb'],
+			value: char.systemData.combat?.speedClimb ?? char.systemData.race?.speedClimb ?? ''
+		}
+	});
 	const quickRefSecondaryData = $derived<GridContentData>({
 		hitDice: {
 			fieldName: 'Hit Dice',
@@ -165,16 +184,10 @@
 			<GridContent handleEditSavePatches={handleGridPatchesSave} data={metaPrimaryData} />
 		</GridColumn>
 		<GridColumn border={true} pad={true} classes="rounded-md">
-			<div class="space-y-2">
-				<p><span class="font-semibold">Ancestry:</span> {ancestryDisplay}</p>
-				<p><span class="font-semibold">Background:</span> {backgroundDisplay}</p>
-			</div>
+			<GridContent handleEditSavePatches={handleGridPatchesSave} data={metaSecondaryData} />
 		</GridColumn>
 		<GridColumn border={true} pad={true} classes="rounded-md">
-			<div class="space-y-2">
-				<p><span class="font-semibold">Alignment:</span> {alignmentDisplay}</p>
-				<p><span class="font-semibold">Appearance:</span> {appearanceDisplay}</p>
-			</div>
+			<GridContent handleEditSavePatches={handleGridPatchesSave} data={metaTertiaryData} />
 		</GridColumn>
 	</GridRow>
 	<GridRow classes="pt-2 text-center text-lg font-semibold">Quick Reference</GridRow>
@@ -192,12 +205,7 @@
 			<GridContent handleEditSavePatches={handleGridPatchesSave} data={quickRefPrimaryData} />
 		</GridColumn>
 		<GridColumn border={true} pad={true} classes="rounded-md">
-			<div class="space-y-2">
-				<p><span class="font-semibold">Speed:</span> {speedWalkDisplay} ft walking</p>
-				<p><span class="font-semibold">Fly:</span> {speedFlyDisplay} ft</p>
-				<p><span class="font-semibold">Swim:</span> {speedSwimDisplay} ft</p>
-				<p><span class="font-semibold">Climb:</span> {speedClimbDisplay} ft</p>
-			</div>
+			<GridContent handleEditSavePatches={handleGridPatchesSave} data={quickRefMovementData} />
 		</GridColumn>
 		<GridColumn border={true} pad={true} classes="rounded-md">
 			<GridContent handleEditSavePatches={handleGridPatchesSave} data={quickRefSecondaryData} />
