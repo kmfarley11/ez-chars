@@ -1,4 +1,8 @@
-export type GridContentFieldValue = string | number | GridContentNestedFields;
+export type GridContentFieldValue =
+	| string
+	| number
+	| GridContentNestedFields
+	| Array<GridContentField>;
 export type GridContentNestedFields = Record<string, GridContentField>;
 
 export type GridContentField = {

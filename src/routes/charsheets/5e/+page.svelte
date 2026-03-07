@@ -25,27 +25,19 @@
 			value: char.identity.name
 		},
 		classLevels: {
-			value: Object.fromEntries(
-				char.systemData.classes.map((entry, index) => {
-					const key = `class${index + 1}`;
-					return [
-						key,
-						{
-							fieldName: `Class ${index + 1}`,
-							value: {
-								name: {
-									fieldName: `Class ${index + 1} Name`,
-									value: entry.name
-								},
-								level: {
-									fieldName: `Class ${index + 1} Level`,
-									value: entry.level
-								}
-							}
-						}
-					];
-				})
-			)
+			value: char.systemData.classes.map((entry, index) => ({
+				fieldName: `Class ${index + 1}`,
+				value: {
+					name: {
+						fieldName: `Class ${index + 1} Name`,
+						value: entry.name
+					},
+					level: {
+						fieldName: `Class ${index + 1} Level`,
+						value: entry.level
+					}
+				}
+			}))
 		}
 	});
 
@@ -126,25 +118,19 @@
 	const handleEditMetaSave = (payload: GridContentData) => {
 		const nextName = displayOrPlaceholder(payload.name?.value, '').trim();
 		const classLevelsValue = payload.classLevels?.value;
-		const nextClassLevels =
-			typeof classLevelsValue === 'object' &&
-			classLevelsValue !== null &&
-			!Array.isArray(classLevelsValue)
-				? Object.values(classLevelsValue as GridContentNestedFields)
-						.map((entryField) => {
-							const nested = entryField.value as GridContentNestedFields;
-							const className = displayOrPlaceholder(nested.name?.value, '').trim();
-							const parsedLevel = Number.parseInt(
-								displayOrPlaceholder(nested.level?.value, '1'),
-								10
-							);
-							return {
-								name: className.length > 0 ? className : 'Unknown',
-								level: Number.isFinite(parsedLevel) && parsedLevel > 0 ? parsedLevel : 1
-							};
-						})
-						.filter((entry) => entry.name.length > 0)
-				: [];
+		const nextClassLevels = Array.isArray(classLevelsValue)
+			? classLevelsValue
+					.map((entryField) => {
+						const nested = entryField.value as GridContentNestedFields;
+						const className = displayOrPlaceholder(nested.name?.value, '').trim();
+						const parsedLevel = Number.parseInt(displayOrPlaceholder(nested.level?.value, '1'), 10);
+						return {
+							name: className.length > 0 ? className : 'Unknown',
+							level: Number.isFinite(parsedLevel) && parsedLevel > 0 ? parsedLevel : 1
+						};
+					})
+					.filter((entry) => entry.name.length > 0)
+			: [];
 
 		charsArray.update((entries) =>
 			entries.map((entry) => {

@@ -43,12 +43,7 @@
 		}
 
 		if (Array.isArray(raw)) {
-			const nested: GridContentNestedFields = Object.fromEntries(
-				raw.map((item, idx) => {
-					const key = `item${idx + 1}`;
-					return [key, buildField(key, item)];
-				})
-			);
+			const nested = raw.map((item, idx) => buildField(`item${idx + 1}`, item));
 			return {
 				fieldName: inferFieldName(fieldKey),
 				value: nested
@@ -74,16 +69,27 @@
 		};
 	};
 
+	const isFieldArray = (value: GridContentFieldValue): value is Array<GridContentField> =>
+		Array.isArray(value);
+
 	const isNestedFields = (value: GridContentFieldValue): value is GridContentNestedFields =>
-		typeof value === 'object' && value !== null;
+		typeof value === 'object' && value !== null && !Array.isArray(value);
 
 	const normalizeField = (fieldKey: string, field: GridContentField): GridContentField => {
 		const normalizedName =
 			displayOrPlaceholder(field.fieldName, '').trim() || inferFieldName(fieldKey);
-		if (!isNestedFields(field.value)) {
+		if (!isFieldArray(field.value) && !isNestedFields(field.value)) {
 			return {
 				...field,
 				fieldName: normalizedName
+			};
+		}
+
+		if (isFieldArray(field.value)) {
+			return {
+				...field,
+				fieldName: normalizedName,
+				value: field.value.map((child, idx) => normalizeField(`item${idx + 1}`, child))
 			};
 		}
 
@@ -117,36 +123,42 @@
 		)
 	);
 
-	const formatFieldValue = (field: GridContentField, placeholder = '___'): string => {
-		if (!isNestedFields(field.value)) return displayOrPlaceholder(field.value, placeholder);
+	const formatFieldValue = (
+		field: GridContentField,
+		placeholder = '___',
+		nestedJoiner = ' / '
+	): string => {
+		if (!isFieldArray(field.value) && !isNestedFields(field.value)) {
+			return displayOrPlaceholder(field.value, placeholder);
+		}
+
+		if (isFieldArray(field.value)) {
+			const combined = field.value
+				.map((entry) => formatFieldValue(entry, '', ' '))
+				.filter((entry) => entry.length > 0)
+				.join(' / ');
+			return combined.length > 0 ? combined : placeholder;
+		}
 
 		const nested = field.value;
 		if ('min' in nested && 'max' in nested) {
 			return `${formatFieldValue(nested.min, placeholder)}/${formatFieldValue(nested.max, placeholder)}`;
 		}
 
-		if ('stringValue' in nested || 'intValue' in nested) {
-			const text = nested.stringValue ? formatFieldValue(nested.stringValue, '') : '';
-			const numeric = nested.intValue ? formatFieldValue(nested.intValue, '') : '';
-			const combined = [text, numeric].filter((v) => v.length > 0).join(' ');
-			return combined.length > 0 ? combined : placeholder;
-		}
-
 		const combined = Object.values(nested)
-			.map((entry) => formatFieldValue(entry, ''))
+			.map((entry) => formatFieldValue(entry, '', nestedJoiner))
 			.filter((entry) => entry.length > 0)
-			.join(' / ');
+			.join(nestedJoiner);
 		return combined.length > 0 ? combined : placeholder;
 	};
 
 	type DisplayPart = { value: string; label?: string };
 
 	const getLabeledDisplayParts = (field: GridContentField): DisplayPart[] | undefined => {
-		if (!isNestedFields(field.value)) return undefined;
+		if (isFieldArray(field.value) || !isNestedFields(field.value)) return undefined;
 
 		const nested = field.value;
 		if ('min' in nested && 'max' in nested) return undefined;
-		if ('stringValue' in nested || 'intValue' in nested) return undefined;
 
 		const parts = Object.values(nested)
 			.map((entry) => ({
@@ -166,71 +178,79 @@
 		return parts.join(' / ');
 	};
 
-	type LeafInput = { path: string[]; field: GridContentField; joinedLabel?: string };
+	type PathSegment = string | number;
+	type LeafInput = { path: PathSegment[]; field: GridContentField; joinedLabel?: string };
 
 	const collectLeafInputs = (
 		field: GridContentField,
-		path: string[],
+		path: PathSegment[],
 		inheritedLabel?: string
 	): LeafInput[] => {
 		const nextLabel = joinLabels(inheritedLabel, field.label);
-		if (!isNestedFields(field.value)) return [{ path, field, joinedLabel: nextLabel }];
+		if (!isFieldArray(field.value) && !isNestedFields(field.value)) {
+			return [{ path, field, joinedLabel: nextLabel }];
+		}
+
+		if (isFieldArray(field.value)) {
+			return field.value.flatMap((childField, idx) =>
+				collectLeafInputs(childField, [...path, idx], nextLabel)
+			);
+		}
+
 		return Object.entries(field.value).flatMap(([childKey, childField]) =>
 			collectLeafInputs(childField, [...path, childKey], nextLabel)
 		);
 	};
 
-	const updateNestedValueAtPath = (
-		fields: GridContentNestedFields,
-		path: string[],
+	const updateFieldAtPath = (
+		field: GridContentField,
+		path: PathSegment[],
 		nextValue: string | number
-	): GridContentNestedFields => {
+	): GridContentField => {
 		const [head, ...rest] = path;
-		const target = fields[head];
-		if (!target) return fields;
-		if (rest.length === 0) {
+		if (head === undefined) {
 			return {
-				...fields,
-				[head]: {
-					...target,
-					value: nextValue
-				}
+				...field,
+				value: nextValue
 			};
 		}
-		if (!isNestedFields(target.value)) return fields;
+
+		if (isFieldArray(field.value)) {
+			if (typeof head !== 'number') return field;
+			const target = field.value[head];
+			if (!target) return field;
+			return {
+				...field,
+				value: field.value.map((entry, idx) =>
+					idx === head ? updateFieldAtPath(target, rest, nextValue) : entry
+				)
+			};
+		}
+
+		if (!isNestedFields(field.value) || typeof head !== 'string') return field;
+		const target = field.value[head];
+		if (!target) return field;
 		return {
-			...fields,
-			[head]: {
-				...target,
-				value: updateNestedValueAtPath(target.value, rest, nextValue)
+			...field,
+			value: {
+				...field.value,
+				[head]: updateFieldAtPath(target, rest, nextValue)
 			}
 		};
 	};
 
 	const updateDataAtPath = (
 		source: GridContentData,
-		path: string[],
+		path: PathSegment[],
 		nextValue: string | number
 	): GridContentData => {
 		const [head, ...rest] = path;
+		if (typeof head !== 'string') return source;
 		const target = source[head];
 		if (!target) return source;
-		if (rest.length === 0) {
-			return {
-				...source,
-				[head]: {
-					...target,
-					value: nextValue
-				}
-			};
-		}
-		if (!isNestedFields(target.value)) return source;
 		return {
 			...source,
-			[head]: {
-				...target,
-				value: updateNestedValueAtPath(target.value, rest, nextValue)
-			}
+			[head]: updateFieldAtPath(target, rest, nextValue)
 		};
 	};
 
