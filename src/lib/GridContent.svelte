@@ -552,356 +552,368 @@
 
 							{#if leaf.field.annotationBindPath}
 								{@const annotations = leaf.field.annotations ?? []}
-								<div class="space-y-2 rounded-md border px-2 py-2">
-									<div class="flex items-center justify-between">
-										<span class="theme-text-muted text-xs font-semibold">Annotations</span>
-										<button
-											type="button"
-											class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
-											onclick={() => {
-												draftData = updateDataAnnotationsAtPath(draftData, leaf.path, [
-													...annotations,
-													{
-														id: createId(),
-														origin: 'user',
-														kind: 'note',
-														text: ''
-													}
-												]);
-											}}
-										>
-											Add
-										</button>
-									</div>
+								<details class="space-y-2 rounded-md border px-2 py-2">
+									<summary class="theme-text-muted cursor-pointer text-xs font-semibold">
+										Annotations ({annotations.length})
+									</summary>
+									<div class="mt-2 space-y-2">
+										<div class="flex items-center justify-end">
+											<button
+												type="button"
+												class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
+												onclick={() => {
+													draftData = updateDataAnnotationsAtPath(draftData, leaf.path, [
+														...annotations,
+														{
+															id: createId(),
+															origin: 'user',
+															kind: 'note',
+															text: ''
+														}
+													]);
+												}}
+											>
+												Add
+											</button>
+										</div>
 
-									{#if annotations.length === 0}
-										<p class="theme-text-muted text-xs italic">No annotations.</p>
-									{:else}
-										{#each annotations as annotation, annotationIdx (`${fieldKey}-${idx}-annotation-${annotation.id ?? annotationIdx}`)}
-											<div class="space-y-2 rounded-md border px-2 py-2">
-												<div class="grid gap-2 md:grid-cols-2">
-													<label class="space-y-1">
-														<span class="theme-text-muted text-xs">Kind</span>
-														<select
-															class="theme-input w-full rounded-md border px-2 py-1"
-															value={annotation.kind}
-															onchange={(event) => {
-																const target = event.currentTarget as HTMLSelectElement;
-																draftData = updateDataAnnotationsAtPath(
-																	draftData,
-																	leaf.path,
-																	annotations.map((entry, entryIdx) =>
-																		entryIdx === annotationIdx
-																			? {
-																					...entry,
-																					kind: target.value as GridContentAnnotation['kind']
-																				}
-																			: entry
-																	)
-																);
-															}}
-														>
-															{#each annotationKinds as optionKind (optionKind)}
-																<option value={optionKind}>{optionKind}</option>
-															{/each}
-														</select>
-													</label>
-													<label class="space-y-1">
-														<span class="theme-text-muted text-xs">Origin</span>
-														<select
-															class="theme-input w-full rounded-md border px-2 py-1"
-															value={annotation.origin}
-															onchange={(event) => {
-																const target = event.currentTarget as HTMLSelectElement;
-																draftData = updateDataAnnotationsAtPath(
-																	draftData,
-																	leaf.path,
-																	annotations.map((entry, entryIdx) =>
-																		entryIdx === annotationIdx
-																			? {
-																					...entry,
-																					origin: target.value as GridContentAnnotation['origin']
-																				}
-																			: entry
-																	)
-																);
-															}}
-														>
-															{#each annotationOrigins as optionOrigin (optionOrigin)}
-																<option value={optionOrigin}>{optionOrigin}</option>
-															{/each}
-														</select>
-													</label>
-													<label class="space-y-1">
-														<span class="theme-text-muted text-xs">Tags (comma separated)</span>
-														<input
-															class="theme-input w-full rounded-md border px-2 py-1"
-															type="text"
-															value={(annotation.tags ?? []).join(', ')}
-															oninput={(event) => {
-																const target = event.currentTarget as HTMLInputElement;
-																const nextTags = parseTags(target.value);
-																draftData = updateDataAnnotationsAtPath(
-																	draftData,
-																	leaf.path,
-																	annotations.map((entry, entryIdx) =>
-																		entryIdx === annotationIdx
-																			? {
-																					...entry,
-																					tags: nextTags.length > 0 ? nextTags : undefined
-																				}
-																			: entry
-																	)
-																);
-															}}
-														/>
-													</label>
-												</div>
-
-												<label class="space-y-1">
-													<span class="theme-text-muted text-xs">Text</span>
-													<textarea
-														class="theme-input w-full rounded-md border px-2 py-1"
-														rows="3"
-														oninput={(event) => {
-															const target = event.currentTarget as HTMLTextAreaElement;
-															draftData = updateDataAnnotationsAtPath(
-																draftData,
-																leaf.path,
-																annotations.map((entry, entryIdx) =>
-																	entryIdx === annotationIdx
-																		? {
-																				...entry,
-																				text:
-																					target.value.trim().length > 0 ? target.value : undefined
-																			}
-																		: entry
-																)
-															);
-														}}>{annotation.text ?? ''}</textarea
-													>
-												</label>
-
-												<details class="space-y-2">
+										{#if annotations.length === 0}
+											<p class="theme-text-muted text-xs italic">No annotations.</p>
+										{:else}
+											{#each annotations as annotation, annotationIdx (`${fieldKey}-${idx}-annotation-${annotation.id ?? annotationIdx}`)}
+												<details class="space-y-2 rounded-md border px-2 py-2">
 													<summary class="theme-text-muted cursor-pointer text-xs">
-														Reference (optional)
+														Annotation {annotationIdx + 1}: {annotation.kind} ({annotation.origin})
 													</summary>
-													<div class="mt-2 grid gap-2 md:grid-cols-2">
+													<div class="mt-2 space-y-2">
+														<div class="grid gap-2 md:grid-cols-2">
+															<label class="space-y-1">
+																<span class="theme-text-muted text-xs">Kind</span>
+																<select
+																	class="theme-input w-full rounded-md border px-2 py-1"
+																	value={annotation.kind}
+																	onchange={(event) => {
+																		const target = event.currentTarget as HTMLSelectElement;
+																		draftData = updateDataAnnotationsAtPath(
+																			draftData,
+																			leaf.path,
+																			annotations.map((entry, entryIdx) =>
+																				entryIdx === annotationIdx
+																					? {
+																							...entry,
+																							kind: target.value as GridContentAnnotation['kind']
+																						}
+																					: entry
+																			)
+																		);
+																	}}
+																>
+																	{#each annotationKinds as optionKind (optionKind)}
+																		<option value={optionKind}>{optionKind}</option>
+																	{/each}
+																</select>
+															</label>
+															<label class="space-y-1">
+																<span class="theme-text-muted text-xs">Origin</span>
+																<select
+																	class="theme-input w-full rounded-md border px-2 py-1"
+																	value={annotation.origin}
+																	onchange={(event) => {
+																		const target = event.currentTarget as HTMLSelectElement;
+																		draftData = updateDataAnnotationsAtPath(
+																			draftData,
+																			leaf.path,
+																			annotations.map((entry, entryIdx) =>
+																				entryIdx === annotationIdx
+																					? {
+																							...entry,
+																							origin:
+																								target.value as GridContentAnnotation['origin']
+																						}
+																					: entry
+																			)
+																		);
+																	}}
+																>
+																	{#each annotationOrigins as optionOrigin (optionOrigin)}
+																		<option value={optionOrigin}>{optionOrigin}</option>
+																	{/each}
+																</select>
+															</label>
+															<label class="space-y-1">
+																<span class="theme-text-muted text-xs">Tags (comma separated)</span>
+																<input
+																	class="theme-input w-full rounded-md border px-2 py-1"
+																	type="text"
+																	value={(annotation.tags ?? []).join(', ')}
+																	oninput={(event) => {
+																		const target = event.currentTarget as HTMLInputElement;
+																		const nextTags = parseTags(target.value);
+																		draftData = updateDataAnnotationsAtPath(
+																			draftData,
+																			leaf.path,
+																			annotations.map((entry, entryIdx) =>
+																				entryIdx === annotationIdx
+																					? {
+																							...entry,
+																							tags: nextTags.length > 0 ? nextTags : undefined
+																						}
+																					: entry
+																			)
+																		);
+																	}}
+																/>
+															</label>
+														</div>
+
 														<label class="space-y-1">
-															<span class="theme-text-muted text-xs">Source ID</span>
-															<input
+															<span class="theme-text-muted text-xs">Text</span>
+															<textarea
 																class="theme-input w-full rounded-md border px-2 py-1"
-																type="text"
-																value={annotation.ref?.sourceId ?? ''}
+																rows="3"
 																oninput={(event) => {
-																	const target = event.currentTarget as HTMLInputElement;
+																	const target = event.currentTarget as HTMLTextAreaElement;
 																	draftData = updateDataAnnotationsAtPath(
 																		draftData,
 																		leaf.path,
-																		updateAnnotationRefAtIndex(
-																			annotations,
-																			annotationIdx,
-																			(currentRef) => ({
-																				...currentRef,
-																				sourceId: target.value
-																			})
+																		annotations.map((entry, entryIdx) =>
+																			entryIdx === annotationIdx
+																				? {
+																						...entry,
+																						text:
+																							target.value.trim().length > 0
+																								? target.value
+																								: undefined
+																					}
+																				: entry
 																		)
 																	);
-																}}
-															/>
+																}}>{annotation.text ?? ''}</textarea
+															>
 														</label>
-														<label class="space-y-1">
-															<span class="theme-text-muted text-xs">Ref Kind</span>
-															<select
-																class="theme-input w-full rounded-md border px-2 py-1"
-																value={annotation.ref?.kind ?? 'url'}
-																onchange={(event) => {
-																	const target = event.currentTarget as HTMLSelectElement;
+
+														<details class="space-y-2">
+															<summary class="theme-text-muted cursor-pointer text-xs">
+																Reference (optional)
+															</summary>
+															<div class="mt-2 grid gap-2 md:grid-cols-2">
+																<label class="space-y-1">
+																	<span class="theme-text-muted text-xs">Source ID</span>
+																	<input
+																		class="theme-input w-full rounded-md border px-2 py-1"
+																		type="text"
+																		value={annotation.ref?.sourceId ?? ''}
+																		oninput={(event) => {
+																			const target = event.currentTarget as HTMLInputElement;
+																			draftData = updateDataAnnotationsAtPath(
+																				draftData,
+																				leaf.path,
+																				updateAnnotationRefAtIndex(
+																					annotations,
+																					annotationIdx,
+																					(currentRef) => ({
+																						...currentRef,
+																						sourceId: target.value
+																					})
+																				)
+																			);
+																		}}
+																	/>
+																</label>
+																<label class="space-y-1">
+																	<span class="theme-text-muted text-xs">Ref Kind</span>
+																	<select
+																		class="theme-input w-full rounded-md border px-2 py-1"
+																		value={annotation.ref?.kind ?? 'url'}
+																		onchange={(event) => {
+																			const target = event.currentTarget as HTMLSelectElement;
+																			draftData = updateDataAnnotationsAtPath(
+																				draftData,
+																				leaf.path,
+																				updateAnnotationRefAtIndex(
+																					annotations,
+																					annotationIdx,
+																					(currentRef) => ({
+																						...currentRef,
+																						kind: target.value as GridContentReference['kind']
+																					})
+																				)
+																			);
+																		}}
+																	>
+																		{#each annotationRefKinds as optionRefKind (optionRefKind)}
+																			<option value={optionRefKind}>{optionRefKind}</option>
+																		{/each}
+																	</select>
+																</label>
+																<label class="space-y-1">
+																	<span class="theme-text-muted text-xs">Page</span>
+																	<input
+																		class="theme-input w-full rounded-md border px-2 py-1"
+																		type="number"
+																		step="1"
+																		value={annotation.ref?.locator?.page ?? ''}
+																		oninput={(event) => {
+																			const target = event.currentTarget as HTMLInputElement;
+																			const parsed = Number(target.value);
+																			draftData = updateDataAnnotationsAtPath(
+																				draftData,
+																				leaf.path,
+																				updateAnnotationRefAtIndex(
+																					annotations,
+																					annotationIdx,
+																					(currentRef) => ({
+																						...currentRef,
+																						locator: {
+																							...currentRef.locator,
+																							page: Number.isFinite(parsed) ? parsed : undefined
+																						}
+																					})
+																				)
+																			);
+																		}}
+																	/>
+																</label>
+																<label class="space-y-1">
+																	<span class="theme-text-muted text-xs">URL</span>
+																	<input
+																		class="theme-input w-full rounded-md border px-2 py-1"
+																		type="text"
+																		value={annotation.ref?.locator?.url ?? ''}
+																		oninput={(event) => {
+																			const target = event.currentTarget as HTMLInputElement;
+																			draftData = updateDataAnnotationsAtPath(
+																				draftData,
+																				leaf.path,
+																				updateAnnotationRefAtIndex(
+																					annotations,
+																					annotationIdx,
+																					(currentRef) => ({
+																						...currentRef,
+																						locator: {
+																							...currentRef.locator,
+																							url:
+																								target.value.trim().length > 0
+																									? target.value
+																									: undefined
+																						}
+																					})
+																				)
+																			);
+																		}}
+																	/>
+																</label>
+																<label class="space-y-1">
+																	<span class="theme-text-muted text-xs">External ID</span>
+																	<input
+																		class="theme-input w-full rounded-md border px-2 py-1"
+																		type="text"
+																		value={annotation.ref?.locator?.id ?? ''}
+																		oninput={(event) => {
+																			const target = event.currentTarget as HTMLInputElement;
+																			draftData = updateDataAnnotationsAtPath(
+																				draftData,
+																				leaf.path,
+																				updateAnnotationRefAtIndex(
+																					annotations,
+																					annotationIdx,
+																					(currentRef) => ({
+																						...currentRef,
+																						locator: {
+																							...currentRef.locator,
+																							id:
+																								target.value.trim().length > 0
+																									? target.value
+																									: undefined
+																						}
+																					})
+																				)
+																			);
+																		}}
+																	/>
+																</label>
+																<label class="space-y-1">
+																	<span class="theme-text-muted text-xs">Anchor</span>
+																	<input
+																		class="theme-input w-full rounded-md border px-2 py-1"
+																		type="text"
+																		value={annotation.ref?.locator?.anchor ?? ''}
+																		oninput={(event) => {
+																			const target = event.currentTarget as HTMLInputElement;
+																			draftData = updateDataAnnotationsAtPath(
+																				draftData,
+																				leaf.path,
+																				updateAnnotationRefAtIndex(
+																					annotations,
+																					annotationIdx,
+																					(currentRef) => ({
+																						...currentRef,
+																						locator: {
+																							...currentRef.locator,
+																							anchor:
+																								target.value.trim().length > 0
+																									? target.value
+																									: undefined
+																						}
+																					})
+																				)
+																			);
+																		}}
+																	/>
+																</label>
+																<label class="space-y-1">
+																	<span class="theme-text-muted text-xs">Label</span>
+																	<input
+																		class="theme-input w-full rounded-md border px-2 py-1"
+																		type="text"
+																		value={annotation.ref?.locator?.label ?? ''}
+																		oninput={(event) => {
+																			const target = event.currentTarget as HTMLInputElement;
+																			draftData = updateDataAnnotationsAtPath(
+																				draftData,
+																				leaf.path,
+																				updateAnnotationRefAtIndex(
+																					annotations,
+																					annotationIdx,
+																					(currentRef) => ({
+																						...currentRef,
+																						locator: {
+																							...currentRef.locator,
+																							label:
+																								target.value.trim().length > 0
+																									? target.value
+																									: undefined
+																						}
+																					})
+																				)
+																			);
+																		}}
+																	/>
+																</label>
+															</div>
+														</details>
+
+														<div class="flex justify-end">
+															<button
+																type="button"
+																class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
+																onclick={() => {
 																	draftData = updateDataAnnotationsAtPath(
 																		draftData,
 																		leaf.path,
-																		updateAnnotationRefAtIndex(
-																			annotations,
-																			annotationIdx,
-																			(currentRef) => ({
-																				...currentRef,
-																				kind: target.value as GridContentReference['kind']
-																			})
-																		)
+																		annotations.filter((_, entryIdx) => entryIdx !== annotationIdx)
 																	);
 																}}
 															>
-																{#each annotationRefKinds as optionRefKind (optionRefKind)}
-																	<option value={optionRefKind}>{optionRefKind}</option>
-																{/each}
-															</select>
-														</label>
-														<label class="space-y-1">
-															<span class="theme-text-muted text-xs">Page</span>
-															<input
-																class="theme-input w-full rounded-md border px-2 py-1"
-																type="number"
-																step="1"
-																value={annotation.ref?.locator?.page ?? ''}
-																oninput={(event) => {
-																	const target = event.currentTarget as HTMLInputElement;
-																	const parsed = Number(target.value);
-																	draftData = updateDataAnnotationsAtPath(
-																		draftData,
-																		leaf.path,
-																		updateAnnotationRefAtIndex(
-																			annotations,
-																			annotationIdx,
-																			(currentRef) => ({
-																				...currentRef,
-																				locator: {
-																					...currentRef.locator,
-																					page: Number.isFinite(parsed) ? parsed : undefined
-																				}
-																			})
-																		)
-																	);
-																}}
-															/>
-														</label>
-														<label class="space-y-1">
-															<span class="theme-text-muted text-xs">URL</span>
-															<input
-																class="theme-input w-full rounded-md border px-2 py-1"
-																type="text"
-																value={annotation.ref?.locator?.url ?? ''}
-																oninput={(event) => {
-																	const target = event.currentTarget as HTMLInputElement;
-																	draftData = updateDataAnnotationsAtPath(
-																		draftData,
-																		leaf.path,
-																		updateAnnotationRefAtIndex(
-																			annotations,
-																			annotationIdx,
-																			(currentRef) => ({
-																				...currentRef,
-																				locator: {
-																					...currentRef.locator,
-																					url:
-																						target.value.trim().length > 0
-																							? target.value
-																							: undefined
-																				}
-																			})
-																		)
-																	);
-																}}
-															/>
-														</label>
-														<label class="space-y-1">
-															<span class="theme-text-muted text-xs">External ID</span>
-															<input
-																class="theme-input w-full rounded-md border px-2 py-1"
-																type="text"
-																value={annotation.ref?.locator?.id ?? ''}
-																oninput={(event) => {
-																	const target = event.currentTarget as HTMLInputElement;
-																	draftData = updateDataAnnotationsAtPath(
-																		draftData,
-																		leaf.path,
-																		updateAnnotationRefAtIndex(
-																			annotations,
-																			annotationIdx,
-																			(currentRef) => ({
-																				...currentRef,
-																				locator: {
-																					...currentRef.locator,
-																					id:
-																						target.value.trim().length > 0
-																							? target.value
-																							: undefined
-																				}
-																			})
-																		)
-																	);
-																}}
-															/>
-														</label>
-														<label class="space-y-1">
-															<span class="theme-text-muted text-xs">Anchor</span>
-															<input
-																class="theme-input w-full rounded-md border px-2 py-1"
-																type="text"
-																value={annotation.ref?.locator?.anchor ?? ''}
-																oninput={(event) => {
-																	const target = event.currentTarget as HTMLInputElement;
-																	draftData = updateDataAnnotationsAtPath(
-																		draftData,
-																		leaf.path,
-																		updateAnnotationRefAtIndex(
-																			annotations,
-																			annotationIdx,
-																			(currentRef) => ({
-																				...currentRef,
-																				locator: {
-																					...currentRef.locator,
-																					anchor:
-																						target.value.trim().length > 0
-																							? target.value
-																							: undefined
-																				}
-																			})
-																		)
-																	);
-																}}
-															/>
-														</label>
-														<label class="space-y-1">
-															<span class="theme-text-muted text-xs">Label</span>
-															<input
-																class="theme-input w-full rounded-md border px-2 py-1"
-																type="text"
-																value={annotation.ref?.locator?.label ?? ''}
-																oninput={(event) => {
-																	const target = event.currentTarget as HTMLInputElement;
-																	draftData = updateDataAnnotationsAtPath(
-																		draftData,
-																		leaf.path,
-																		updateAnnotationRefAtIndex(
-																			annotations,
-																			annotationIdx,
-																			(currentRef) => ({
-																				...currentRef,
-																				locator: {
-																					...currentRef.locator,
-																					label:
-																						target.value.trim().length > 0
-																							? target.value
-																							: undefined
-																				}
-																			})
-																		)
-																	);
-																}}
-															/>
-														</label>
+																Remove
+															</button>
+														</div>
 													</div>
 												</details>
-
-												<div class="flex justify-end">
-													<button
-														type="button"
-														class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
-														onclick={() => {
-															draftData = updateDataAnnotationsAtPath(
-																draftData,
-																leaf.path,
-																annotations.filter((_, entryIdx) => entryIdx !== annotationIdx)
-															);
-														}}
-													>
-														Remove
-													</button>
-												</div>
-											</div>
-										{/each}
-									{/if}
-								</div>
+											{/each}
+										{/if}
+									</div>
+								</details>
 							{/if}
 						</div>
 					{/each}
