@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import {
 		annotationKinds,
 		annotationOrigins,
@@ -20,6 +21,20 @@
 
 	let { annotations, onChange }: Props = $props();
 
+	const toAnnotationEditorDomId = (annotationId: string): string => `annotation-editor-${annotationId}`;
+
+	const focusNewAnnotationEditor = async (annotationId: string) => {
+		await tick();
+		const root = document.getElementById(toAnnotationEditorDomId(annotationId));
+		if (!(root instanceof HTMLDetailsElement)) return;
+		root.open = true;
+		root.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		const nameInput = root.querySelector('input[data-annotation-name-input]');
+		if (!(nameInput instanceof HTMLInputElement)) return;
+		nameInput.focus();
+		nameInput.select();
+	};
+
 	const updateAnnotationAtIndex = (
 		annotationIdx: number,
 		// eslint-disable-next-line no-unused-vars
@@ -29,16 +44,19 @@
 			annotations.map((entry, entryIdx) => (entryIdx === annotationIdx ? updater(entry) : entry))
 		);
 
-	const addAnnotation = () =>
+	const addAnnotation = async () => {
+		const newAnnotationId = createId();
 		onChange([
 			...annotations,
 			{
-				id: createId(),
+				id: newAnnotationId,
 				origin: 'user',
 				kind: 'note',
 				text: ''
 			}
 		]);
+		await focusNewAnnotationEditor(newAnnotationId);
+	};
 
 	const removeAnnotationAtIndex = (annotationIdx: number) =>
 		onChange(annotations.filter((_, entryIdx) => entryIdx !== annotationIdx));
@@ -201,7 +219,10 @@
 				{@const selectedReferenceTemplateKey = getReferenceTemplateKey(annotation)}
 				{@const srdPreviewHref = getTemplatePreviewHref(annotation, 'srd')}
 				{@const dndBeyondPreviewHref = getTemplatePreviewHref(annotation, 'dndBeyond')}
-				<details class="space-y-2 rounded-md border px-2 py-2">
+				<details
+					id={annotation.id ? toAnnotationEditorDomId(annotation.id) : undefined}
+					class="space-y-2 rounded-md border px-2 py-2"
+				>
 					<summary class="theme-text-muted cursor-pointer text-xs">
 						{annotation.name ?? `Annotation ${annotationIdx + 1}`}: {annotation.kind}
 						({annotation.origin})
@@ -213,6 +234,7 @@
 								<input
 									class="theme-input w-full rounded-md border px-2 py-1"
 									type="text"
+									data-annotation-name-input
 									value={annotation.name ?? ''}
 									oninput={(event) => {
 										const target = event.currentTarget as HTMLInputElement;
