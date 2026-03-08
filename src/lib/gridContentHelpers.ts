@@ -1,16 +1,18 @@
 import { displayOrPlaceholder } from '$lib/displayHelpers';
 import { capitalizeFirstLetter } from '$lib/stringFormatters';
+import { isGridFieldArray, isGridNestedFields } from '$lib/gridFieldGuards';
 import type {
 	GridContentAnnotation,
 	GridContentBindPath,
 	GridContentData,
 	GridContentField,
-	GridContentFieldValue,
 	GridContentNestedFields,
 	GridContentPatch,
 	GridContentPathSegment
 } from '$lib/gridContentTypes';
 
+// Read-side helpers used by GridContent rendering and patch projection.
+// Mutation/write helpers live in `characterGridHelpers.ts`.
 export type HelpAnnotationGroup = {
 	key: string;
 	title: string;
@@ -27,6 +29,9 @@ export type LeafInput = {
 	bindPath?: GridContentBindPath;
 };
 
+// ------------------------------------------------------------
+// Field Normalization + Display Helpers
+// ------------------------------------------------------------
 const inferFieldName = (fieldKey: string) => {
 	const spaced = fieldKey
 		.replace(/([a-z0-9])([A-Z])/g, '$1 $2')
@@ -35,11 +40,9 @@ const inferFieldName = (fieldKey: string) => {
 	return capitalizeFirstLetter(spaced.length > 0 ? spaced : fieldKey);
 };
 
-export const isFieldArray = (value: GridContentFieldValue): value is Array<GridContentField> =>
-	Array.isArray(value);
-
-export const isNestedFields = (value: GridContentFieldValue): value is GridContentNestedFields =>
-	typeof value === 'object' && value !== null && !Array.isArray(value);
+// Re-export shared guards for callers that already consume them from this module.
+export const isFieldArray = isGridFieldArray;
+export const isNestedFields = isGridNestedFields;
 
 const shouldRenderField = (field: GridContentField) => !field.editOnly;
 
@@ -131,6 +134,9 @@ const joinLabels = (...labels: Array<string | undefined>): string | undefined =>
 	return parts.join(' / ');
 };
 
+// ------------------------------------------------------------
+// Field Traversal Helpers
+// ------------------------------------------------------------
 // Bind path resolution order: explicit field `bindPath`, then inherited parent bind path + this segment.
 const resolveBindPath = (
 	field: GridContentField,
@@ -188,6 +194,9 @@ export const collectHelpAnnotationGroups = (source: GridContentData): Array<Help
 		})
 	);
 
+// ------------------------------------------------------------
+// Patch Projection
+// ------------------------------------------------------------
 // Convert current draft into atomic write operations for model-level patch handlers.
 export const collectPatchesFromData = (source: GridContentData): Array<GridContentPatch> =>
 	Object.entries(source).flatMap(([fieldKey, field]) =>

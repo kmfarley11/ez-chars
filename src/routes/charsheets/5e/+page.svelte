@@ -4,9 +4,16 @@
 	import '../../../app.css';
 	import { charsArray, emptyChar } from '../../../data.js';
 	import { createId } from '../../../schema/helpers';
-	import { annotationSchema, type Annotation, type CharacterDocument5e2014 } from '../../../schema';
+	import {
+		DND_BEYOND_BASIC_RULES_REF_5E_2014,
+		SRD_REF_5E_2014,
+		annotationSchema,
+		type Annotation,
+		type CharacterDocument5e2014
+	} from '../../../schema';
 	import { applyGridPatches } from '$lib/characterGridHelpers';
 	import type {
+		GridAnnotationEditorConfig,
 		GridContentAnnotation,
 		GridContentBindPath,
 		GridContentData,
@@ -28,6 +35,23 @@
 
 	type AnnotationEntries = Record<string, Annotation>;
 	type PrimitiveGridValue = string | number;
+
+	const annotationEditorConfig: GridAnnotationEditorConfig = {
+		defaultKind: 'note',
+		defaultOrigin: 'user',
+		referenceTemplates: [
+			{
+				key: 'srd-5e-2014',
+				label: 'SRD 5.1 (local PDF)',
+				reference: SRD_REF_5E_2014
+			},
+			{
+				key: 'dnd-beyond-basic-rules-2014',
+				label: 'D&D Beyond Basic Rules (2014)',
+				reference: DND_BEYOND_BASIC_RULES_REF_5E_2014
+			}
+		]
+	};
 
 	const isObjectRecord = (value: unknown): value is Record<string, unknown> =>
 		typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -305,13 +329,25 @@
 		classes="gap-3"
 	>
 		<GridContainer border={true} pad={true} classes="rounded-md">
-			<GridContent handleEditSavePatches={handleGridPatchesSave} data={metaPrimaryData} />
+			<GridContent
+				handleEditSavePatches={handleGridPatchesSave}
+				{annotationEditorConfig}
+				data={metaPrimaryData}
+			/>
 		</GridContainer>
 		<GridContainer border={true} pad={true} classes="rounded-md">
-			<GridContent handleEditSavePatches={handleGridPatchesSave} data={metaSecondaryData} />
+			<GridContent
+				handleEditSavePatches={handleGridPatchesSave}
+				{annotationEditorConfig}
+				data={metaSecondaryData}
+			/>
 		</GridContainer>
 		<GridContainer border={true} pad={true} classes="rounded-md">
-			<GridContent handleEditSavePatches={handleGridPatchesSave} data={metaTertiaryData} />
+			<GridContent
+				handleEditSavePatches={handleGridPatchesSave}
+				{annotationEditorConfig}
+				data={metaTertiaryData}
+			/>
 		</GridContainer>
 	</GridContainer>
 	<GridContainer
@@ -324,13 +360,25 @@
 		classes="mt-2 gap-3"
 	>
 		<GridContainer border={true} pad={true} classes="rounded-md">
-			<GridContent handleEditSavePatches={handleGridPatchesSave} data={quickRefPrimaryData} />
+			<GridContent
+				handleEditSavePatches={handleGridPatchesSave}
+				{annotationEditorConfig}
+				data={quickRefPrimaryData}
+			/>
 		</GridContainer>
 		<GridContainer border={true} pad={true} classes="rounded-md">
-			<GridContent handleEditSavePatches={handleGridPatchesSave} data={quickRefMovementData} />
+			<GridContent
+				handleEditSavePatches={handleGridPatchesSave}
+				{annotationEditorConfig}
+				data={quickRefMovementData}
+			/>
 		</GridContainer>
 		<GridContainer border={true} pad={true} classes="rounded-md">
-			<GridContent handleEditSavePatches={handleGridPatchesSave} data={quickRefSecondaryData} />
+			<GridContent
+				handleEditSavePatches={handleGridPatchesSave}
+				{annotationEditorConfig}
+				data={quickRefSecondaryData}
+			/>
 		</GridContainer>
 	</GridContainer>
 </GridContainer>

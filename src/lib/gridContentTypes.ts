@@ -7,6 +7,18 @@ export type GridContentReference = Reference;
 
 export type GridContentAnnotation = Annotation;
 
+export type GridAnnotationReferenceTemplate = {
+	key: string;
+	label: string;
+	reference: GridContentReference;
+};
+
+export type GridAnnotationEditorConfig = {
+	referenceTemplates?: Array<GridAnnotationReferenceTemplate>;
+	defaultKind?: GridContentAnnotation['kind'];
+	defaultOrigin?: GridContentAnnotation['origin'];
+};
+
 export type GridContentFieldValue =
 	| string
 	| number

@@ -14,10 +14,16 @@
 	} from '$lib/gridContentHelpers';
 	import { updateGridAnnotationsAtPath, updateGridDataAtPath } from '$lib/characterGridHelpers';
 	import { displayOrPlaceholder } from '$lib/displayHelpers';
-	import type { GridContentData, GridContentPatch } from '$lib/gridContentTypes';
+	import type {
+		GridAnnotationEditorConfig,
+		GridContentData,
+		GridContentPatch
+	} from '$lib/gridContentTypes';
 
 	interface Props {
 		data: GridContentData;
+		// Optional domain-level annotation behavior injected by page/feature layers.
+		annotationEditorConfig?: GridAnnotationEditorConfig;
 		// eslint-disable-next-line no-unused-vars
 		handleEditSave?: (_payload: GridContentData) => void;
 		// eslint-disable-next-line no-unused-vars
@@ -27,6 +33,7 @@
 
 	let {
 		data,
+		annotationEditorConfig = undefined,
 		handleEditSave,
 		handleEditSavePatches,
 		handleEditCancel = undefined
@@ -174,7 +181,7 @@
 	onclick={onBackdropClick}
 >
 	<form class="flex flex-col gap-3 p-4" onsubmit={onSubmit}>
-		<h3 class="text-lg leading-none font-semibold">Edit Meta Fields</h3>
+		<h3 class="text-lg leading-none font-semibold">Edit Fields</h3>
 		{#each Object.entries(draftData) as [fieldKey, field] (fieldKey)}
 			{@const leafInputs = collectLeafInputs(field, [fieldKey])}
 			<div class="space-y-1">
@@ -227,6 +234,9 @@
 							{#if leaf.field.annotationBindPath}
 								<GridContentAnnotationsEditor
 									annotations={leaf.field.annotations ?? []}
+									referenceTemplates={annotationEditorConfig?.referenceTemplates}
+									defaultKind={annotationEditorConfig?.defaultKind}
+									defaultOrigin={annotationEditorConfig?.defaultOrigin}
 									onChange={(nextAnnotations) => {
 										draftData = updateGridAnnotationsAtPath(draftData, leaf.path, nextAnnotations);
 									}}

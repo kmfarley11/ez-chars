@@ -2,12 +2,14 @@ import type {
 	GridContentAnnotation,
 	GridContentData,
 	GridContentField,
-	GridContentFieldValue,
 	GridContentPatch,
 	GridContentPathSegment,
 	GridContentReference
 } from '$lib/gridContentTypes';
+import { isGridFieldArray, isGridNestedFields } from '$lib/gridFieldGuards';
 
+// Write-side helpers for GridContent editing and patch application.
+// Read/projection helpers live in `gridContentHelpers.ts`.
 // ------------------------------------------------------------
 // Generic Path Patch Utilities
 // ------------------------------------------------------------
@@ -68,6 +70,9 @@ export const setValueAtPath = (
 	cursor[lastSegment] = value;
 };
 
+// ------------------------------------------------------------
+// Reference Helpers
+// ------------------------------------------------------------
 const stripFragment = (url: string): string => url.split('#', 1)[0];
 
 // Build the clickable URL for supported reference kinds while preserving app conventions.
@@ -94,6 +99,9 @@ export const toReferenceHref = (reference: GridContentReference): string | undef
 	return undefined;
 };
 
+// ------------------------------------------------------------
+// Grid Draft Mutation Helpers
+// ------------------------------------------------------------
 const updateGridFieldAtPath = (
 	field: GridContentField,
 	path: Array<GridContentPathSegment>,
@@ -125,14 +133,6 @@ const updateGridFieldAtPath = (
 		}
 	};
 };
-
-const isGridFieldArray = (value: GridContentFieldValue): value is Array<GridContentField> =>
-	Array.isArray(value);
-
-const isGridNestedFields = (
-	value: GridContentFieldValue
-): value is Record<string, GridContentField> =>
-	typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const updateGridFieldValueAtPath = (
 	field: GridContentField,

@@ -1,21 +1,30 @@
 <script lang="ts">
 	import { toReferenceHref } from '$lib/characterGridHelpers';
 	import { tick } from 'svelte';
-	import type { GridContentAnnotation, GridContentReference } from '$lib/gridContentTypes';
-	import { DND_BEYOND_BASIC_RULES_REF_5E_2014, SRD_REF_5E_2014 } from '../schema/system.5e2014';
+	import type {
+		GridAnnotationReferenceTemplate,
+		GridContentAnnotation,
+		GridContentReference
+	} from '$lib/gridContentTypes';
 	import { createId } from '../schema/helpers';
 
 	// `onChange` receives a full replacement annotation array (immutable update contract).
 	interface Props {
 		annotations: Array<GridContentAnnotation>;
+		referenceTemplates?: Array<GridAnnotationReferenceTemplate>;
+		defaultKind?: GridContentAnnotation['kind'];
+		defaultOrigin?: GridContentAnnotation['origin'];
 		// eslint-disable-next-line no-unused-vars
 		onChange: (_next: Array<GridContentAnnotation>) => void;
 	}
 
-	let { annotations, onChange }: Props = $props();
-
-	const DEFAULT_ANNOTATION_KIND: GridContentAnnotation['kind'] = 'note';
-	const DEFAULT_ANNOTATION_ORIGIN: GridContentAnnotation['origin'] = 'user';
+	let {
+		annotations,
+		referenceTemplates = [],
+		defaultKind = 'note',
+		defaultOrigin = 'user',
+		onChange
+	}: Props = $props();
 
 	const toAnnotationEditorDomId = (annotationId: string): string =>
 		`annotation-editor-${annotationId}`;
@@ -47,8 +56,8 @@
 			...annotations,
 			{
 				id: newAnnotationId,
-				origin: DEFAULT_ANNOTATION_ORIGIN,
-				kind: DEFAULT_ANNOTATION_KIND,
+				origin: defaultOrigin,
+				kind: defaultKind,
 				text: ''
 			}
 		]);
@@ -57,6 +66,8 @@
 
 	const removeAnnotationAtIndex = (annotationIdx: number) =>
 		onChange(annotations.filter((_, entryIdx) => entryIdx !== annotationIdx));
+
+	const NO_REFERENCE_TEMPLATE_KEY = '__none__';
 
 	const applyReferenceTemplateAtIndex = (
 		annotationIdx: number,
@@ -79,41 +90,35 @@
 			};
 		});
 
-	type ReferenceTemplateKey = 'none' | 'srd' | 'dndBeyond';
+	const matchesTemplateReference = (
+		reference: GridContentReference,
+		template: GridAnnotationReferenceTemplate
+	): boolean =>
+		reference.kind === template.reference.kind &&
+		reference.sourceId === template.reference.sourceId &&
+		reference.locator.url === template.reference.locator.url;
 
-	type TemplateReferenceKey = Exclude<ReferenceTemplateKey, 'none'>;
-
-	const getReferenceTemplateKey = (annotation: GridContentAnnotation): ReferenceTemplateKey => {
-		if (!annotation.ref) return 'none';
-		if (
-			annotation.ref.kind === SRD_REF_5E_2014.kind &&
-			annotation.ref.sourceId === SRD_REF_5E_2014.sourceId &&
-			annotation.ref.locator.url === SRD_REF_5E_2014.locator.url
-		) {
-			return 'srd';
-		}
-		if (
-			annotation.ref.kind === DND_BEYOND_BASIC_RULES_REF_5E_2014.kind &&
-			annotation.ref.sourceId === DND_BEYOND_BASIC_RULES_REF_5E_2014.sourceId &&
-			annotation.ref.locator.url === DND_BEYOND_BASIC_RULES_REF_5E_2014.locator.url
-		) {
-			return 'dndBeyond';
-		}
-		return 'none';
+	const getReferenceTemplateForAnnotation = (
+		annotation: GridContentAnnotation
+	): GridAnnotationReferenceTemplate | undefined => {
+		const reference = annotation.ref;
+		if (!reference) return undefined;
+		return referenceTemplates.find((template) => matchesTemplateReference(reference, template));
 	};
 
-	const getReferenceTemplateByKey = (key: TemplateReferenceKey): GridContentReference =>
-		key === 'srd' ? SRD_REF_5E_2014 : DND_BEYOND_BASIC_RULES_REF_5E_2014;
+	const getReferenceTemplateKey = (annotation: GridContentAnnotation): string => {
+		const matchedTemplate = getReferenceTemplateForAnnotation(annotation);
+		return matchedTemplate?.key ?? NO_REFERENCE_TEMPLATE_KEY;
+	};
 
 	const getTemplatePreviewHref = (
 		annotation: GridContentAnnotation,
-		templateKey: TemplateReferenceKey
+		template: GridAnnotationReferenceTemplate
 	): string | undefined => {
-		const templateRef = getReferenceTemplateByKey(templateKey);
-		if (getReferenceTemplateKey(annotation) === templateKey && annotation.ref) {
-			return toReferenceHref(annotation.ref) ?? toReferenceHref(templateRef);
+		if (getReferenceTemplateKey(annotation) === template.key && annotation.ref) {
+			return toReferenceHref(annotation.ref) ?? toReferenceHref(template.reference);
 		}
-		return toReferenceHref(templateRef);
+		return toReferenceHref(template.reference);
 	};
 
 	const updatePdfPageAtIndex = (annotationIdx: number, nextPageValue: string) =>
@@ -194,8 +199,6 @@
 		{:else}
 			{#each annotations as annotation, annotationIdx (`annotation-${annotation.id ?? annotationIdx}`)}
 				{@const selectedReferenceTemplateKey = getReferenceTemplateKey(annotation)}
-				{@const srdPreviewHref = getTemplatePreviewHref(annotation, 'srd')}
-				{@const dndBeyondPreviewHref = getTemplatePreviewHref(annotation, 'dndBeyond')}
 				<details
 					id={annotation.id ? toAnnotationEditorDomId(annotation.id) : undefined}
 					class="space-y-2 rounded-md border px-2 py-2"
@@ -244,7 +247,7 @@
 										<input
 											type="radio"
 											name={`annotation-ref-template-${annotation.id ?? annotationIdx}`}
-											checked={selectedReferenceTemplateKey === 'none'}
+											checked={selectedReferenceTemplateKey === NO_REFERENCE_TEMPLATE_KEY}
 											onchange={() => {
 												applyReferenceTemplateAtIndex(annotationIdx, undefined);
 											}}
@@ -252,51 +255,30 @@
 										<span class="theme-text-muted">None</span>
 									</label>
 								</div>
-								<div class="flex items-center justify-between gap-2 text-xs">
-									<label class="flex items-center gap-2">
-										<input
-											type="radio"
-											name={`annotation-ref-template-${annotation.id ?? annotationIdx}`}
-											checked={selectedReferenceTemplateKey === 'srd'}
-											onchange={() => {
-												applyReferenceTemplateAtIndex(annotationIdx, SRD_REF_5E_2014);
-											}}
-										/>
-										<span class="theme-text-muted">SRD 5.1 (local PDF)</span>
-									</label>
-									{#if srdPreviewHref}
-										<a
-											class="theme-link underline"
-											href={srdPreviewHref}
-											target="_blank"
-											rel="external noopener noreferrer">(view here)</a
-										>
-									{/if}
-								</div>
-								<div class="flex items-center justify-between gap-2 text-xs">
-									<label class="flex items-center gap-2">
-										<input
-											type="radio"
-											name={`annotation-ref-template-${annotation.id ?? annotationIdx}`}
-											checked={selectedReferenceTemplateKey === 'dndBeyond'}
-											onchange={() => {
-												applyReferenceTemplateAtIndex(
-													annotationIdx,
-													DND_BEYOND_BASIC_RULES_REF_5E_2014
-												);
-											}}
-										/>
-										<span class="theme-text-muted">D&D Beyond Basic Rules (2014)</span>
-									</label>
-									{#if dndBeyondPreviewHref}
-										<a
-											class="theme-link underline"
-											href={dndBeyondPreviewHref}
-											target="_blank"
-											rel="external noopener noreferrer">(view here)</a
-										>
-									{/if}
-								</div>
+								{#each referenceTemplates as template (template.key)}
+									{@const templatePreviewHref = getTemplatePreviewHref(annotation, template)}
+									<div class="flex items-center justify-between gap-2 text-xs">
+										<label class="flex items-center gap-2">
+											<input
+												type="radio"
+												name={`annotation-ref-template-${annotation.id ?? annotationIdx}`}
+												checked={selectedReferenceTemplateKey === template.key}
+												onchange={() => {
+													applyReferenceTemplateAtIndex(annotationIdx, template.reference);
+												}}
+											/>
+											<span class="theme-text-muted">{template.label}</span>
+										</label>
+										{#if templatePreviewHref}
+											<a
+												class="theme-link underline"
+												href={templatePreviewHref}
+												target="_blank"
+												rel="external noopener noreferrer">(view here)</a
+											>
+										{/if}
+									</div>
+								{/each}
 							</div>
 							{#if annotation.ref?.kind === 'pdf'}
 								<label class="mt-2 block space-y-1">

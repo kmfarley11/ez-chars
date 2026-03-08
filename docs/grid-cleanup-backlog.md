@@ -19,6 +19,11 @@ This tracks the incremental cleanup passes for `src/lib/*Grid*`.
 - [x] Split `GridContent.svelte` pure logic into `gridContentHelpers.ts`.
 - [x] Add a short data-path contract comment (`path` vs `bindPath` vs `annotationBindPath`).
 
+## Completed (Batch 4)
+
+- [x] Centralize shared field-shape guards in `gridFieldGuards.ts`.
+- [x] Clarify helper-module responsibilities (`gridContentHelpers.ts` vs `characterGridHelpers.ts`).
+
 ## Remaining
 
 - None.
