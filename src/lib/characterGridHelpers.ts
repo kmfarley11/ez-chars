@@ -1,5 +1,16 @@
-import type { GridContentPatch, GridContentPathSegment } from '$lib/gridContentTypes';
+import type {
+	GridContentAnnotation,
+	GridContentData,
+	GridContentField,
+	GridContentFieldValue,
+	GridContentPatch,
+	GridContentPathSegment,
+	GridContentReference
+} from '$lib/gridContentTypes';
 
+// ------------------------------------------------------------
+// Generic Path Patch Utilities
+// ------------------------------------------------------------
 // Writes any JSON-like value to a nested object/array path.
 // If intermediate containers are missing, they are created based on the next segment type.
 // Example: ['systemData', 'classes', 0, 'level'] => object -> array -> object -> primitive.
@@ -57,6 +68,179 @@ export const setValueAtPath = (
 	cursor[lastSegment] = value;
 };
 
+// ------------------------------------------------------------
+// Grid Draft Mutation Helpers
+// ------------------------------------------------------------
+export const annotationOrigins: Array<GridContentAnnotation['origin']> = ['user', 'source'];
+export const annotationKinds: Array<GridContentAnnotation['kind']> = [
+	'note',
+	'reference',
+	'summary',
+	'tag'
+];
+export const annotationRefKinds: Array<GridContentReference['kind']> = [
+	'pdf_page',
+	'url',
+	'external_id'
+];
+
+const isGridFieldArray = (value: GridContentFieldValue): value is Array<GridContentField> =>
+	Array.isArray(value);
+
+const isGridNestedFields = (
+	value: GridContentFieldValue
+): value is Record<string, GridContentField> =>
+	typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const updateGridFieldValueAtPath = (
+	field: GridContentField,
+	path: Array<GridContentPathSegment>,
+	nextValue: string | number
+): GridContentField => {
+	const [head, ...rest] = path;
+	if (head === undefined) {
+		return {
+			...field,
+			value: nextValue
+		};
+	}
+
+	if (isGridFieldArray(field.value)) {
+		if (typeof head !== 'number') return field;
+		const target = field.value[head];
+		if (!target) return field;
+		return {
+			...field,
+			value: field.value.map((entry, idx) =>
+				idx === head ? updateGridFieldValueAtPath(target, rest, nextValue) : entry
+			)
+		};
+	}
+
+	if (!isGridNestedFields(field.value) || typeof head !== 'string') return field;
+	const target = field.value[head];
+	if (!target) return field;
+	return {
+		...field,
+		value: {
+			...field.value,
+			[head]: updateGridFieldValueAtPath(target, rest, nextValue)
+		}
+	};
+};
+
+export const updateGridDataAtPath = (
+	source: GridContentData,
+	path: Array<GridContentPathSegment>,
+	nextValue: string | number
+): GridContentData => {
+	const [head, ...rest] = path;
+	if (typeof head !== 'string') return source;
+	const target = source[head];
+	if (!target) return source;
+	return {
+		...source,
+		[head]: updateGridFieldValueAtPath(target, rest, nextValue)
+	};
+};
+
+const updateGridFieldAnnotationsAtPath = (
+	field: GridContentField,
+	path: Array<GridContentPathSegment>,
+	nextAnnotations: Array<GridContentAnnotation>
+): GridContentField => {
+	const [head, ...rest] = path;
+	if (head === undefined) {
+		return {
+			...field,
+			annotations: nextAnnotations
+		};
+	}
+
+	if (isGridFieldArray(field.value)) {
+		if (typeof head !== 'number') return field;
+		const target = field.value[head];
+		if (!target) return field;
+		return {
+			...field,
+			value: field.value.map((entry, idx) =>
+				idx === head ? updateGridFieldAnnotationsAtPath(target, rest, nextAnnotations) : entry
+			)
+		};
+	}
+
+	if (!isGridNestedFields(field.value) || typeof head !== 'string') return field;
+	const target = field.value[head];
+	if (!target) return field;
+	return {
+		...field,
+		value: {
+			...field.value,
+			[head]: updateGridFieldAnnotationsAtPath(target, rest, nextAnnotations)
+		}
+	};
+};
+
+export const updateGridAnnotationsAtPath = (
+	source: GridContentData,
+	path: Array<GridContentPathSegment>,
+	nextAnnotations: Array<GridContentAnnotation>
+): GridContentData => {
+	const [head, ...rest] = path;
+	if (typeof head !== 'string') return source;
+	const target = source[head];
+	if (!target) return source;
+	return {
+		...source,
+		[head]: updateGridFieldAnnotationsAtPath(target, rest, nextAnnotations)
+	};
+};
+
+export const parseAnnotationTags = (value: string): Array<string> =>
+	value
+		.split(',')
+		.map((entry) => entry.trim())
+		.filter((entry) => entry.length > 0);
+
+// ------------------------------------------------------------
+// Annotation Editing Helpers
+// ------------------------------------------------------------
+const hasLocatorValue = (value: unknown): boolean => {
+	if (typeof value === 'number') return Number.isFinite(value);
+	if (typeof value === 'string') return value.trim().length > 0;
+	return false;
+};
+
+export const updateAnnotationRefAtIndex = (
+	annotations: Array<GridContentAnnotation>,
+	annotationIdx: number,
+	updater: (_value: GridContentReference) => GridContentReference
+): Array<GridContentAnnotation> =>
+	annotations.map((entry, idx) => {
+		if (idx !== annotationIdx) return entry;
+		const baseRef: GridContentReference = entry.ref ?? {
+			sourceId: '',
+			kind: 'url',
+			locator: {}
+		};
+		const nextRef = updater(baseRef);
+		const hasSource = nextRef.sourceId.trim().length > 0;
+		const hasLocator = Object.values(nextRef.locator).some((locatorValue) =>
+			hasLocatorValue(locatorValue)
+		);
+		if (!hasSource && !hasLocator) {
+			const { ref: _ignored, ...rest } = entry;
+			return rest;
+		}
+		return {
+			...entry,
+			ref: nextRef
+		};
+	});
+
+// ------------------------------------------------------------
+// Patch Application
+// ------------------------------------------------------------
 // Removes a value at a nested path when explicit deletion is requested.
 const unsetValueAtPath = (
 	target: Record<string, unknown> | Array<unknown>,
