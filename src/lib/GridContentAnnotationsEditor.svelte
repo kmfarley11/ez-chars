@@ -7,6 +7,8 @@
 		updateAnnotationRefAtIndex
 	} from '$lib/characterGridHelpers';
 	import type { GridContentAnnotation, GridContentReference } from '$lib/gridContentTypes';
+	import ValidatedInputField from '$lib/ValidatedInputField.svelte';
+	import { SRD_REF_5E_2014 } from '../schema/system.5e2014';
 	import { createId } from '../schema/helpers';
 
 	// `onChange` receives a full replacement annotation array (immutable update contract).
@@ -20,6 +22,7 @@
 
 	const updateAnnotationAtIndex = (
 		annotationIdx: number,
+		// eslint-disable-next-line no-unused-vars
 		updater: (_annotation: GridContentAnnotation) => GridContentAnnotation
 	) =>
 		onChange(
@@ -45,6 +48,7 @@
 
 	const updateRefAtIndex = (
 		annotationIdx: number,
+		// eslint-disable-next-line no-unused-vars
 		updater: (_value: GridContentReference) => GridContentReference
 	) => onChange(updateAnnotationRefAtIndex(annotations, annotationIdx, updater));
 
@@ -72,6 +76,30 @@
 				[field]: value
 			}
 		}));
+
+	const applyReferenceTemplateAtIndex = (
+		annotationIdx: number,
+		referenceTemplate: GridContentReference
+	) =>
+		updateRefAtIndex(annotationIdx, () => ({
+			...referenceTemplate,
+			locator: {
+				...referenceTemplate.locator
+			}
+		}));
+
+	const validateReferenceSourceId = (
+		hasReference: boolean,
+		sourceId: string
+	): string | undefined =>
+		hasReference && sourceId.trim().length === 0
+			? 'Source ID is required when a reference is present.'
+			: undefined;
+
+	const isMissingReferenceSourceId = (annotation: GridContentAnnotation): boolean => {
+		const sourceId = annotation.ref?.sourceId ?? '';
+		return Boolean(validateReferenceSourceId(Boolean(annotation.ref), sourceId));
+	};
 </script>
 
 <details class="space-y-2 rounded-md border px-2 py-2">
@@ -93,10 +121,14 @@
 			<p class="theme-text-muted text-xs italic">No annotations.</p>
 		{:else}
 			{#each annotations as annotation, annotationIdx (`annotation-${annotation.id ?? annotationIdx}`)}
+				{@const missingReferenceSourceId = isMissingReferenceSourceId(annotation)}
 				<details class="space-y-2 rounded-md border px-2 py-2">
 					<summary class="theme-text-muted cursor-pointer text-xs">
 						{annotation.name ?? `Annotation ${annotationIdx + 1}`}: {annotation.kind}
 						({annotation.origin})
+						{#if missingReferenceSourceId}
+							<span class="text-red-600 italic"> - missing source id</span>
+						{/if}
 					</summary>
 					<div class="mt-2 space-y-2">
 						<div class="grid gap-2 md:grid-cols-2">
@@ -187,19 +219,27 @@
 						<details class="space-y-2">
 							<summary class="theme-text-muted cursor-pointer text-xs">Reference (optional)</summary
 							>
+							<div class="mt-2 flex justify-end">
+								<button
+									type="button"
+									class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
+									onclick={() => {
+										applyReferenceTemplateAtIndex(annotationIdx, SRD_REF_5E_2014);
+									}}
+								>
+									Use SRD_REF_5E_2014
+								</button>
+							</div>
 							<div class="mt-2 grid gap-2 md:grid-cols-2">
-								<label class="space-y-1">
-									<span class="theme-text-muted text-xs">Source ID</span>
-									<input
-										class="theme-input w-full rounded-md border px-2 py-1"
-										type="text"
-										value={annotation.ref?.sourceId ?? ''}
-										oninput={(event) => {
-											const target = event.currentTarget as HTMLInputElement;
-											updateRefSourceIdAtIndex(annotationIdx, target.value);
-										}}
-									/>
-								</label>
+								<ValidatedInputField
+									label="Source ID"
+									required={Boolean(annotation.ref)}
+									value={annotation.ref?.sourceId ?? ''}
+									validator={(value) => validateReferenceSourceId(Boolean(annotation.ref), value)}
+									onValueChange={(nextValue) => {
+										updateRefSourceIdAtIndex(annotationIdx, nextValue);
+									}}
+								/>
 								<label class="space-y-1">
 									<span class="theme-text-muted text-xs">Ref Kind</span>
 									<select

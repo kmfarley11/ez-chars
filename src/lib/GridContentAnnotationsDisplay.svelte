@@ -21,12 +21,28 @@
 		return `Annotation ${annotationIdx + 1}`;
 	};
 
+	const toReferenceHref = (reference: GridContentReference): string | undefined => {
+		if (reference.kind !== 'url') return undefined;
+		const urlValue = reference.locator.url?.trim();
+		if (!urlValue) return undefined;
+		if (typeof reference.locator.page !== 'number' || !Number.isFinite(reference.locator.page)) {
+			return urlValue;
+		}
+
+		const page = Math.trunc(reference.locator.page);
+		return `${urlValue.split('#', 1)[0]}#page=${page}`;
+	};
+
 	const formatReference = (reference: GridContentReference): string => {
 		const locatorParts: Array<string> = [];
-		if (typeof reference.locator.page === 'number') {
+		const referenceHref = toReferenceHref(reference);
+		const hasClickableUrl = reference.kind === 'url' && referenceHref !== undefined;
+		if (typeof reference.locator.page === 'number' && !hasClickableUrl) {
 			locatorParts.push(`page ${reference.locator.page}`);
 		}
-		if (reference.locator.url) {
+		if (referenceHref) {
+			locatorParts.push(referenceHref);
+		} else if (reference.locator.url) {
 			locatorParts.push(reference.locator.url);
 		}
 		if (reference.locator.id) {
@@ -53,7 +69,19 @@
 				<span class="font-semibold">{toAnnotationHeading(annotation, annotationIdx)}:</span>
 				<span> {displayOrPlaceholder(annotation.text, '___')}</span>
 				{#if annotation.ref}
-					<p class="theme-text-muted text-xs italic">{formatReference(annotation.ref)}</p>
+					{@const referenceHref = toReferenceHref(annotation.ref)}
+					<p class="theme-text-muted text-xs italic">
+						{#if referenceHref}
+							<a
+								class="theme-link underline"
+								href={referenceHref}
+								target="_blank"
+								rel="external noopener noreferrer">{formatReference(annotation.ref)}</a
+							>
+						{:else}
+							{formatReference(annotation.ref)}
+						{/if}
+					</p>
 				{/if}
 			</li>
 		{/each}

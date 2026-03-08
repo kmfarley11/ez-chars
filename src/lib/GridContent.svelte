@@ -460,7 +460,9 @@
 	<div class="flex flex-col gap-3 p-4">
 		<h3 class="text-lg leading-none font-semibold">Help</h3>
 		{#if helpAnnotationGroups.length === 0}
-			<p class="theme-text-muted text-sm">No field annotations available.</p>
+			<p class="theme-text-muted text-sm">
+				No field annotations available. Add some via the edit menu!
+			</p>
 		{:else}
 			<div class="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
 				{#each helpAnnotationGroups as group (group.key)}

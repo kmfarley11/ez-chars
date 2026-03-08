@@ -1,7 +1,7 @@
 import type { Reference } from './core';
 import { SCHEMA_VER } from './core';
 import { nowIso, createId } from './helpers';
-import { FULL_2014_SRD_HREF } from '$lib/urlHelpers';
+import { FULL_2014_SRD_URL } from '$lib/urlHelpers';
 import { z } from 'zod';
 import {
 	abilityKeySchema,
@@ -85,8 +85,10 @@ export type CharacterDocument5e2014 = z.infer<typeof characterDocument5e2014Sche
 
 export const SRD_REF_5E_2014: Reference = {
 	kind: 'url',
-	locator: { url: FULL_2014_SRD_HREF },
-	sourceId: createId()
+	locator: {
+		url: FULL_2014_SRD_URL
+	},
+	sourceId: 'local-5.1-srd' // createId()
 };
 
 const create5e2014CharacterOptionsSchema = z
