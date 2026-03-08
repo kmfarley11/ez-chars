@@ -3,6 +3,7 @@
 	import GridContainerAuto from '$lib/GridContainerAuto.svelte';
 	import { capitalizeFirstLetter } from '$lib/stringFormatters';
 	import { displayOrPlaceholder } from '$lib/displayHelpers';
+	import { createId } from '../schema/helpers';
 	import type {
 		GridContentAnnotation,
 		GridContentBindPath,
@@ -561,6 +562,7 @@
 												draftData = updateDataAnnotationsAtPath(draftData, leaf.path, [
 													...annotations,
 													{
+														id: createId(),
 														origin: 'user',
 														kind: 'note',
 														text: ''
@@ -578,32 +580,6 @@
 										{#each annotations as annotation, annotationIdx (`${fieldKey}-${idx}-annotation-${annotation.id ?? annotationIdx}`)}
 											<div class="space-y-2 rounded-md border px-2 py-2">
 												<div class="grid gap-2 md:grid-cols-2">
-													<label class="space-y-1">
-														<span class="theme-text-muted text-xs">ID</span>
-														<input
-															class="theme-input w-full rounded-md border px-2 py-1"
-															type="text"
-															value={annotation.id ?? ''}
-															oninput={(event) => {
-																const target = event.currentTarget as HTMLInputElement;
-																draftData = updateDataAnnotationsAtPath(
-																	draftData,
-																	leaf.path,
-																	annotations.map((entry, entryIdx) =>
-																		entryIdx === annotationIdx
-																			? {
-																					...entry,
-																					id:
-																						target.value.trim().length > 0
-																							? target.value
-																							: undefined
-																				}
-																			: entry
-																	)
-																);
-															}}
-														/>
-													</label>
 													<label class="space-y-1">
 														<span class="theme-text-muted text-xs">Kind</span>
 														<select

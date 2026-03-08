@@ -3,6 +3,7 @@
 	import GridContainer from '$lib/GridContainer.svelte';
 	import '../../../app.css';
 	import { charsArray, emptyChar } from '../../../data.js';
+	import { createId } from '../../../schema/helpers';
 	import { annotationSchema, type Annotation, type CharacterDocument5e2014 } from '../../../schema';
 	import { applyGridPatches } from '$lib/characterGridHelpers';
 	import type {
@@ -65,9 +66,18 @@
 		if (!annotationBindPath) return [];
 		const value = getValueAtPath(char, annotationBindPath);
 		if (!isObjectRecord(value)) return [];
-		return Object.values(value).flatMap((entry) => {
+		return Object.entries(value).flatMap(([key, entry]) => {
 			const parsed = annotationSchema.safeParse(entry);
-			return parsed.success ? [parsed.data] : [];
+			if (!parsed.success) return [];
+			return [
+				{
+					...parsed.data,
+					id:
+						typeof parsed.data.id === 'string' && parsed.data.id.trim().length > 0
+							? parsed.data.id
+							: key
+				}
+			];
 		});
 	};
 
@@ -255,20 +265,15 @@
 		annotations: Array<GridContentAnnotation>
 	): Record<string, Annotation> => {
 		const entries: Record<string, Annotation> = {};
-		for (const [index, candidate] of annotations.entries()) {
+		for (const candidate of annotations) {
 			const parsed = annotationSchema.safeParse(candidate);
 			if (!parsed.success) continue;
-			const baseKey =
+			const id =
 				typeof parsed.data.id === 'string' && parsed.data.id.trim().length > 0
 					? parsed.data.id
-					: `annotation-${index + 1}`;
-			let key = baseKey;
-			let suffix = 2;
-			while (key in entries) {
-				key = `${baseKey}-${suffix}`;
-				suffix += 1;
-			}
-			entries[key] = parsed.data.id ? parsed.data : { ...parsed.data, id: key };
+					: createId();
+			if (id in entries) continue;
+			entries[id] = { ...parsed.data, id };
 		}
 		return entries;
 	};
