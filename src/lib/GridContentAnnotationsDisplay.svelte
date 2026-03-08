@@ -22,22 +22,33 @@
 	};
 
 	const toReferenceHref = (reference: GridContentReference): string | undefined => {
-		if (reference.kind !== 'url') return undefined;
 		const urlValue = reference.locator.url?.trim();
 		if (!urlValue) return undefined;
-		if (typeof reference.locator.page !== 'number' || !Number.isFinite(reference.locator.page)) {
-			return urlValue;
+
+		if (reference.kind === 'pdf') {
+			if (typeof reference.locator.page !== 'number' || !Number.isFinite(reference.locator.page)) {
+				return urlValue;
+			}
+			const page = Math.max(1, Math.trunc(reference.locator.page));
+			return `${urlValue.split('#', 1)[0]}#page=${page}`;
 		}
 
-		const page = Math.trunc(reference.locator.page);
-		return `${urlValue.split('#', 1)[0]}#page=${page}`;
+		if (reference.kind === 'url') {
+			const anchorValue = reference.locator.anchor?.trim();
+			if (!anchorValue) return urlValue;
+			const normalizedAnchor = anchorValue.startsWith('#') ? anchorValue.slice(1) : anchorValue;
+			if (normalizedAnchor.length === 0) return urlValue;
+			return `${urlValue.split('#', 1)[0]}#${normalizedAnchor}`;
+		}
+
+		return undefined;
 	};
 
 	const formatReference = (reference: GridContentReference): string => {
 		const locatorParts: Array<string> = [];
 		const referenceHref = toReferenceHref(reference);
-		const hasClickableUrl = reference.kind === 'url' && referenceHref !== undefined;
-		if (typeof reference.locator.page === 'number' && !hasClickableUrl) {
+		const hasClickableHref = referenceHref !== undefined;
+		if (typeof reference.locator.page === 'number' && !hasClickableHref) {
 			locatorParts.push(`page ${reference.locator.page}`);
 		}
 		if (referenceHref) {
@@ -48,7 +59,7 @@
 		if (reference.locator.id) {
 			locatorParts.push(`id ${reference.locator.id}`);
 		}
-		if (reference.locator.anchor) {
+		if (reference.locator.anchor && !hasClickableHref) {
 			locatorParts.push(`anchor ${reference.locator.anchor}`);
 		}
 		if (reference.locator.label) {

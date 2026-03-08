@@ -84,7 +84,7 @@ export type Dnd5e2014SystemData = z.infer<typeof dnd5e2014SystemDataSchema>;
 export type CharacterDocument5e2014 = z.infer<typeof characterDocument5e2014Schema>;
 
 export const SRD_REF_5E_2014: Reference = {
-	kind: 'url',
+	kind: 'pdf',
 	locator: {
 		url: FULL_2014_SRD_URL
 	},

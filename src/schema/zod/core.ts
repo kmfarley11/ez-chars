@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const referenceSchema = z
 	.object({
 		sourceId: z.string().min(1),
-		kind: z.enum(['pdf_page', 'url', 'external_id']),
+		kind: z.enum(['pdf', 'url']),
 		locator: z
 			.object({
 				page: z.number().int().optional(),

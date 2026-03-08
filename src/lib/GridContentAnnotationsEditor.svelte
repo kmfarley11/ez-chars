@@ -2,12 +2,9 @@
 	import {
 		annotationKinds,
 		annotationOrigins,
-		annotationRefKinds,
-		parseAnnotationTags,
-		updateAnnotationRefAtIndex
+		parseAnnotationTags
 	} from '$lib/characterGridHelpers';
 	import type { GridContentAnnotation, GridContentReference } from '$lib/gridContentTypes';
-	import ValidatedInputField from '$lib/ValidatedInputField.svelte';
 	import {
 		DND_BEYOND_BASIC_RULES_REF_5E_2014,
 		SRD_REF_5E_2014
@@ -46,63 +43,140 @@
 	const removeAnnotationAtIndex = (annotationIdx: number) =>
 		onChange(annotations.filter((_, entryIdx) => entryIdx !== annotationIdx));
 
-	const toOptionalTrimmed = (value: string): string | undefined =>
-		value.trim().length > 0 ? value : undefined;
-
-	const updateRefAtIndex = (
-		annotationIdx: number,
-		// eslint-disable-next-line no-unused-vars
-		updater: (_value: GridContentReference) => GridContentReference
-	) => onChange(updateAnnotationRefAtIndex(annotations, annotationIdx, updater));
-
-	const updateRefSourceIdAtIndex = (annotationIdx: number, sourceId: string) =>
-		updateRefAtIndex(annotationIdx, (currentRef) => ({
-			...currentRef,
-			sourceId
-		}));
-
-	const updateRefKindAtIndex = (annotationIdx: number, kind: GridContentReference['kind']) =>
-		updateRefAtIndex(annotationIdx, (currentRef) => ({
-			...currentRef,
-			kind
-		}));
-
-	const updateLocatorFieldAtIndex = (
-		annotationIdx: number,
-		field: keyof GridContentReference['locator'],
-		value: GridContentReference['locator'][keyof GridContentReference['locator']]
-	) =>
-		updateRefAtIndex(annotationIdx, (currentRef) => ({
-			...currentRef,
-			locator: {
-				...currentRef.locator,
-				[field]: value
-			}
-		}));
-
 	const applyReferenceTemplateAtIndex = (
 		annotationIdx: number,
-		referenceTemplate: GridContentReference
+		referenceTemplate: GridContentReference | undefined
 	) =>
-		updateRefAtIndex(annotationIdx, () => ({
-			...referenceTemplate,
-			locator: {
-				...referenceTemplate.locator
+		updateAnnotationAtIndex(annotationIdx, (entry) => {
+			if (!referenceTemplate) {
+				const { ref: _ignored, ...rest } = entry;
+				return rest;
 			}
-		}));
+			return {
+				...entry,
+				ref: {
+					...referenceTemplate,
+					locator: {
+						...referenceTemplate.locator
+					}
+				}
+			};
+		});
 
-	const validateReferenceSourceId = (
-		hasReference: boolean,
-		sourceId: string
-	): string | undefined =>
-		hasReference && sourceId.trim().length === 0
-			? 'Source ID is required when a reference is present.'
-			: undefined;
+	type ReferenceTemplateKey = 'none' | 'srd' | 'dndBeyond';
 
-	const isMissingReferenceSourceId = (annotation: GridContentAnnotation): boolean => {
-		const sourceId = annotation.ref?.sourceId ?? '';
-		return Boolean(validateReferenceSourceId(Boolean(annotation.ref), sourceId));
+	type TemplateReferenceKey = Exclude<ReferenceTemplateKey, 'none'>;
+
+	const getReferenceTemplateKey = (annotation: GridContentAnnotation): ReferenceTemplateKey => {
+		if (!annotation.ref) return 'none';
+		if (
+			annotation.ref.kind === SRD_REF_5E_2014.kind &&
+			annotation.ref.sourceId === SRD_REF_5E_2014.sourceId &&
+			annotation.ref.locator.url === SRD_REF_5E_2014.locator.url
+		) {
+			return 'srd';
+		}
+		if (
+			annotation.ref.kind === DND_BEYOND_BASIC_RULES_REF_5E_2014.kind &&
+			annotation.ref.sourceId === DND_BEYOND_BASIC_RULES_REF_5E_2014.sourceId &&
+			annotation.ref.locator.url === DND_BEYOND_BASIC_RULES_REF_5E_2014.locator.url
+		) {
+			return 'dndBeyond';
+		}
+		return 'none';
 	};
+
+	const getReferenceTemplateByKey = (key: TemplateReferenceKey): GridContentReference =>
+		key === 'srd' ? SRD_REF_5E_2014 : DND_BEYOND_BASIC_RULES_REF_5E_2014;
+
+	const toReferenceHref = (reference: GridContentReference): string | undefined => {
+		const urlValue = reference.locator.url?.trim();
+		if (!urlValue) return undefined;
+
+		if (reference.kind === 'pdf') {
+			if (typeof reference.locator.page !== 'number' || !Number.isFinite(reference.locator.page)) {
+				return urlValue;
+			}
+			const page = Math.max(1, Math.trunc(reference.locator.page));
+			return `${urlValue.split('#', 1)[0]}#page=${page}`;
+		}
+
+		if (reference.kind === 'url') {
+			const anchorValue = reference.locator.anchor?.trim();
+			if (!anchorValue) return urlValue;
+			const normalizedAnchor = anchorValue.startsWith('#') ? anchorValue.slice(1) : anchorValue;
+			if (normalizedAnchor.length === 0) return urlValue;
+			return `${urlValue.split('#', 1)[0]}#${normalizedAnchor}`;
+		}
+
+		return undefined;
+	};
+
+	const getTemplatePreviewHref = (
+		annotation: GridContentAnnotation,
+		templateKey: TemplateReferenceKey
+	): string | undefined => {
+		const templateRef = getReferenceTemplateByKey(templateKey);
+		if (getReferenceTemplateKey(annotation) === templateKey && annotation.ref) {
+			return toReferenceHref(annotation.ref) ?? toReferenceHref(templateRef);
+		}
+		return toReferenceHref(templateRef);
+	};
+
+	const updatePdfPageAtIndex = (annotationIdx: number, nextPageValue: string) =>
+		updateAnnotationAtIndex(annotationIdx, (entry) => {
+			if (!entry.ref || entry.ref.kind !== 'pdf') return entry;
+			const trimmed = nextPageValue.trim();
+			const parsed = Number(trimmed);
+			const nextPage =
+				trimmed.length === 0 || !Number.isInteger(parsed) ? undefined : Math.max(1, parsed);
+			if (nextPage === undefined) {
+				const { page: _ignored, ...restLocator } = entry.ref.locator;
+				return {
+					...entry,
+					ref: {
+						...entry.ref,
+						locator: restLocator
+					}
+				};
+			}
+			return {
+				...entry,
+				ref: {
+					...entry.ref,
+					locator: {
+						...entry.ref.locator,
+						page: nextPage
+					}
+				}
+			};
+		});
+
+	const updateUrlAnchorAtIndex = (annotationIdx: number, nextAnchorValue: string) =>
+		updateAnnotationAtIndex(annotationIdx, (entry) => {
+			if (!entry.ref || entry.ref.kind !== 'url') return entry;
+			const trimmed = nextAnchorValue.trim();
+			if (trimmed.length === 0) {
+				const { anchor: _ignored, ...restLocator } = entry.ref.locator;
+				return {
+					...entry,
+					ref: {
+						...entry.ref,
+						locator: restLocator
+					}
+				};
+			}
+			return {
+				...entry,
+				ref: {
+					...entry.ref,
+					locator: {
+						...entry.ref.locator,
+						anchor: trimmed
+					}
+				}
+			};
+		});
 </script>
 
 <details class="space-y-2 rounded-md border px-2 py-2">
@@ -124,14 +198,13 @@
 			<p class="theme-text-muted text-xs italic">No annotations.</p>
 		{:else}
 			{#each annotations as annotation, annotationIdx (`annotation-${annotation.id ?? annotationIdx}`)}
-				{@const missingReferenceSourceId = isMissingReferenceSourceId(annotation)}
+				{@const selectedReferenceTemplateKey = getReferenceTemplateKey(annotation)}
+				{@const srdPreviewHref = getTemplatePreviewHref(annotation, 'srd')}
+				{@const dndBeyondPreviewHref = getTemplatePreviewHref(annotation, 'dndBeyond')}
 				<details class="space-y-2 rounded-md border px-2 py-2">
 					<summary class="theme-text-muted cursor-pointer text-xs">
 						{annotation.name ?? `Annotation ${annotationIdx + 1}`}: {annotation.kind}
 						({annotation.origin})
-						{#if missingReferenceSourceId}
-							<span class="text-red-600 italic"> - missing source id</span>
-						{/if}
 					</summary>
 					<div class="mt-2 space-y-2">
 						<div class="grid gap-2 md:grid-cols-2">
@@ -219,145 +292,99 @@
 							>
 						</label>
 
-						<details class="space-y-2">
+						<details class="space-y-2" open>
 							<summary class="theme-text-muted cursor-pointer text-xs">Reference (optional)</summary
 							>
-							<div class="mt-2 flex justify-end">
-								<button
-									type="button"
-									class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
-									onclick={() => {
-										applyReferenceTemplateAtIndex(annotationIdx, SRD_REF_5E_2014);
-									}}
-								>
-									Use SRD_REF_5E_2014
-								</button>
+							<div class="mt-2 space-y-1">
+								<div class="flex items-center justify-between gap-2 text-xs">
+									<label class="flex items-center gap-2">
+										<input
+											type="radio"
+											name={`annotation-ref-template-${annotation.id ?? annotationIdx}`}
+											checked={selectedReferenceTemplateKey === 'none'}
+											onchange={() => {
+												applyReferenceTemplateAtIndex(annotationIdx, undefined);
+											}}
+										/>
+										<span class="theme-text-muted">None</span>
+									</label>
+								</div>
+								<div class="flex items-center justify-between gap-2 text-xs">
+									<label class="flex items-center gap-2">
+										<input
+											type="radio"
+											name={`annotation-ref-template-${annotation.id ?? annotationIdx}`}
+											checked={selectedReferenceTemplateKey === 'srd'}
+											onchange={() => {
+												applyReferenceTemplateAtIndex(annotationIdx, SRD_REF_5E_2014);
+											}}
+										/>
+										<span class="theme-text-muted">SRD 5.1 (local PDF)</span>
+									</label>
+									{#if srdPreviewHref}
+										<a
+											class="theme-link underline"
+											href={srdPreviewHref}
+											target="_blank"
+											rel="external noopener noreferrer">(view here)</a
+										>
+									{/if}
+								</div>
+								<div class="flex items-center justify-between gap-2 text-xs">
+									<label class="flex items-center gap-2">
+										<input
+											type="radio"
+											name={`annotation-ref-template-${annotation.id ?? annotationIdx}`}
+											checked={selectedReferenceTemplateKey === 'dndBeyond'}
+											onchange={() => {
+												applyReferenceTemplateAtIndex(
+													annotationIdx,
+													DND_BEYOND_BASIC_RULES_REF_5E_2014
+												);
+											}}
+										/>
+										<span class="theme-text-muted">D&D Beyond Basic Rules (2014)</span>
+									</label>
+									{#if dndBeyondPreviewHref}
+										<a
+											class="theme-link underline"
+											href={dndBeyondPreviewHref}
+											target="_blank"
+											rel="external noopener noreferrer">(view here)</a
+										>
+									{/if}
+								</div>
 							</div>
-							<div class="mt-2 flex justify-end">
-								<button
-									type="button"
-									class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
-									onclick={() => {
-										applyReferenceTemplateAtIndex(
-											annotationIdx,
-											DND_BEYOND_BASIC_RULES_REF_5E_2014
-										);
-									}}
-								>
-									Use DND_BEYOND_BASIC_RULES_REF_5E_2014
-								</button>
-							</div>
-							<div class="mt-2 grid gap-2 md:grid-cols-2">
-								<ValidatedInputField
-									label="Source ID"
-									required={Boolean(annotation.ref)}
-									value={annotation.ref?.sourceId ?? ''}
-									validator={(value) => validateReferenceSourceId(Boolean(annotation.ref), value)}
-									onValueChange={(nextValue) => {
-										updateRefSourceIdAtIndex(annotationIdx, nextValue);
-									}}
-								/>
-								<label class="space-y-1">
-									<span class="theme-text-muted text-xs">Ref Kind</span>
-									<select
-										class="theme-input w-full rounded-md border px-2 py-1"
-										value={annotation.ref?.kind ?? 'url'}
-										onchange={(event) => {
-											const target = event.currentTarget as HTMLSelectElement;
-											updateRefKindAtIndex(
-												annotationIdx,
-												target.value as GridContentReference['kind']
-											);
-										}}
-									>
-										{#each annotationRefKinds as optionRefKind (optionRefKind)}
-											<option value={optionRefKind}>{optionRefKind}</option>
-										{/each}
-									</select>
-								</label>
-								<label class="space-y-1">
-									<span class="theme-text-muted text-xs">Page</span>
+							{#if annotation.ref?.kind === 'pdf'}
+								<label class="mt-2 block space-y-1">
+									<span class="theme-text-muted text-xs">Page (optional)</span>
 									<input
 										class="theme-input w-full rounded-md border px-2 py-1"
 										type="number"
 										step="1"
-										value={annotation.ref?.locator?.page ?? ''}
+										min="1"
+										value={annotation.ref?.locator.page ?? ''}
 										oninput={(event) => {
 											const target = event.currentTarget as HTMLInputElement;
-											const parsed = Number(target.value);
-											updateLocatorFieldAtIndex(
-												annotationIdx,
-												'page',
-												Number.isFinite(parsed) ? parsed : undefined
-											);
+											updatePdfPageAtIndex(annotationIdx, target.value);
 										}}
 									/>
 								</label>
-								<label class="space-y-1">
-									<span class="theme-text-muted text-xs">URL</span>
+							{/if}
+							{#if annotation.ref?.kind === 'url'}
+								<label class="mt-2 block space-y-1">
+									<span class="theme-text-muted text-xs">Anchor (optional)</span>
 									<input
 										class="theme-input w-full rounded-md border px-2 py-1"
 										type="text"
-										value={annotation.ref?.locator?.url ?? ''}
+										value={annotation.ref?.locator.anchor ?? ''}
 										oninput={(event) => {
 											const target = event.currentTarget as HTMLInputElement;
-											updateLocatorFieldAtIndex(
-												annotationIdx,
-												'url',
-												toOptionalTrimmed(target.value)
-											);
+											updateUrlAnchorAtIndex(annotationIdx, target.value);
 										}}
 									/>
 								</label>
-								<label class="space-y-1">
-									<span class="theme-text-muted text-xs">External ID</span>
-									<input
-										class="theme-input w-full rounded-md border px-2 py-1"
-										type="text"
-										value={annotation.ref?.locator?.id ?? ''}
-										oninput={(event) => {
-											const target = event.currentTarget as HTMLInputElement;
-											updateLocatorFieldAtIndex(
-												annotationIdx,
-												'id',
-												toOptionalTrimmed(target.value)
-											);
-										}}
-									/>
-								</label>
-								<label class="space-y-1">
-									<span class="theme-text-muted text-xs">Anchor</span>
-									<input
-										class="theme-input w-full rounded-md border px-2 py-1"
-										type="text"
-										value={annotation.ref?.locator?.anchor ?? ''}
-										oninput={(event) => {
-											const target = event.currentTarget as HTMLInputElement;
-											updateLocatorFieldAtIndex(
-												annotationIdx,
-												'anchor',
-												toOptionalTrimmed(target.value)
-											);
-										}}
-									/>
-								</label>
-								<label class="space-y-1">
-									<span class="theme-text-muted text-xs">Label</span>
-									<input
-										class="theme-input w-full rounded-md border px-2 py-1"
-										type="text"
-										value={annotation.ref?.locator?.label ?? ''}
-										oninput={(event) => {
-											const target = event.currentTarget as HTMLInputElement;
-											updateLocatorFieldAtIndex(
-												annotationIdx,
-												'label',
-												toOptionalTrimmed(target.value)
-											);
-										}}
-									/>
-								</label>
-							</div>
+							{/if}
 						</details>
 
 						<div class="flex justify-end">

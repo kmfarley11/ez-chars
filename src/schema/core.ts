@@ -35,5 +35,5 @@ export type AnnotationOrigin = z.infer<typeof annotationOriginSchema>;
 export const annotationKindSchema = z.enum(['note', 'reference', 'summary', 'tag']);
 export type AnnotationKind = z.infer<typeof annotationKindSchema>;
 
-export const referenceKindSchema = z.enum(['pdf_page', 'url', 'external_id']);
+export const referenceKindSchema = z.enum(['pdf', 'url']);
 export type ReferenceKind = z.infer<typeof referenceKindSchema>;

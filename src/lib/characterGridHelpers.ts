@@ -79,9 +79,8 @@ export const annotationKinds: Array<GridContentAnnotation['kind']> = [
 	'tag'
 ];
 export const annotationRefKinds: Array<GridContentReference['kind']> = [
-	'pdf_page',
-	'url',
-	'external_id'
+	'pdf',
+	'url'
 ];
 
 const isGridFieldArray = (value: GridContentFieldValue): value is Array<GridContentField> =>
