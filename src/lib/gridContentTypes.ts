@@ -1,27 +1,11 @@
+import type { Annotation, Reference } from '../schema/core';
+
 export type GridContentPathSegment = string | number;
 export type GridContentBindPath = Array<GridContentPathSegment>;
 
-export type GridContentReference = {
-	sourceId: string;
-	kind: 'pdf_page' | 'url' | 'external_id';
-	locator: {
-		page?: number;
-		url?: string;
-		id?: string;
-		anchor?: string;
-		label?: string;
-	};
-};
+export type GridContentReference = Reference;
 
-export type GridContentAnnotation = {
-	id?: string;
-	name?: string;
-	origin: 'user' | 'source';
-	kind: 'note' | 'reference' | 'summary' | 'tag';
-	text?: string;
-	ref?: GridContentReference;
-	tags?: Array<string>;
-};
+export type GridContentAnnotation = Annotation;
 
 export type GridContentFieldValue =
 	| string
