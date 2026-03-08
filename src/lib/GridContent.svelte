@@ -282,13 +282,12 @@
 <div class="group relative">
 	<button
 		type="button"
-		class="theme-btn-light btn absolute top-0 right-0 z-10 rounded-md border p-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+		class="theme-btn-light btn absolute top-0 right-0 z-10 rounded-md border p-1 opacity-0 transition-opacity group-hover:cursor-pointer group-hover:opacity-100 group-focus-within:opacity-100"
 		aria-label="Edit"
 		title="Edit"
 		onclick={onOpen}
 	>
 		<!-- TODO - consider edits at individual field level rather than group -->
-		<!-- TODO - implement cursor shift on hover. -->
 		<svg
 			viewBox="0 0 24 24"
 			xmlns="http://www.w3.org/2000/svg"
