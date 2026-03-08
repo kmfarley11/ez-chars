@@ -68,17 +68,63 @@ export const setValueAtPath = (
 	cursor[lastSegment] = value;
 };
 
-// ------------------------------------------------------------
-// Grid Draft Mutation Helpers
-// ------------------------------------------------------------
-export const annotationOrigins: Array<GridContentAnnotation['origin']> = ['user', 'source'];
-export const annotationKinds: Array<GridContentAnnotation['kind']> = [
-	'note',
-	'reference',
-	'summary',
-	'tag'
-];
-export const annotationRefKinds: Array<GridContentReference['kind']> = ['pdf', 'url'];
+const stripFragment = (url: string): string => url.split('#', 1)[0];
+
+// Build the clickable URL for supported reference kinds while preserving app conventions.
+export const toReferenceHref = (reference: GridContentReference): string | undefined => {
+	const urlValue = reference.locator.url?.trim();
+	if (!urlValue) return undefined;
+
+	if (reference.kind === 'pdf') {
+		if (typeof reference.locator.page !== 'number' || !Number.isFinite(reference.locator.page)) {
+			return urlValue;
+		}
+		const page = Math.max(1, Math.trunc(reference.locator.page));
+		return `${stripFragment(urlValue)}#page=${page}`;
+	}
+
+	if (reference.kind === 'url') {
+		const anchorValue = reference.locator.anchor?.trim();
+		if (!anchorValue) return urlValue;
+		const normalizedAnchor = anchorValue.startsWith('#') ? anchorValue.slice(1) : anchorValue;
+		if (normalizedAnchor.length === 0) return urlValue;
+		return `${stripFragment(urlValue)}#${normalizedAnchor}`;
+	}
+
+	return undefined;
+};
+
+const updateGridFieldAtPath = (
+	field: GridContentField,
+	path: Array<GridContentPathSegment>,
+	updater: (_field: GridContentField) => GridContentField
+): GridContentField => {
+	const [head, ...rest] = path;
+	if (head === undefined) return updater(field);
+
+	if (isGridFieldArray(field.value)) {
+		if (typeof head !== 'number') return field;
+		const target = field.value[head];
+		if (!target) return field;
+		return {
+			...field,
+			value: field.value.map((entry, idx) =>
+				idx === head ? updateGridFieldAtPath(target, rest, updater) : entry
+			)
+		};
+	}
+
+	if (!isGridNestedFields(field.value) || typeof head !== 'string') return field;
+	const target = field.value[head];
+	if (!target) return field;
+	return {
+		...field,
+		value: {
+			...field.value,
+			[head]: updateGridFieldAtPath(target, rest, updater)
+		}
+	};
+};
 
 const isGridFieldArray = (value: GridContentFieldValue): value is Array<GridContentField> =>
 	Array.isArray(value);
@@ -92,38 +138,11 @@ const updateGridFieldValueAtPath = (
 	field: GridContentField,
 	path: Array<GridContentPathSegment>,
 	nextValue: string | number
-): GridContentField => {
-	const [head, ...rest] = path;
-	if (head === undefined) {
-		return {
-			...field,
-			value: nextValue
-		};
-	}
-
-	if (isGridFieldArray(field.value)) {
-		if (typeof head !== 'number') return field;
-		const target = field.value[head];
-		if (!target) return field;
-		return {
-			...field,
-			value: field.value.map((entry, idx) =>
-				idx === head ? updateGridFieldValueAtPath(target, rest, nextValue) : entry
-			)
-		};
-	}
-
-	if (!isGridNestedFields(field.value) || typeof head !== 'string') return field;
-	const target = field.value[head];
-	if (!target) return field;
-	return {
-		...field,
-		value: {
-			...field.value,
-			[head]: updateGridFieldValueAtPath(target, rest, nextValue)
-		}
-	};
-};
+): GridContentField =>
+	updateGridFieldAtPath(field, path, (leafField) => ({
+		...leafField,
+		value: nextValue
+	}));
 
 export const updateGridDataAtPath = (
 	source: GridContentData,
@@ -144,38 +163,11 @@ const updateGridFieldAnnotationsAtPath = (
 	field: GridContentField,
 	path: Array<GridContentPathSegment>,
 	nextAnnotations: Array<GridContentAnnotation>
-): GridContentField => {
-	const [head, ...rest] = path;
-	if (head === undefined) {
-		return {
-			...field,
-			annotations: nextAnnotations
-		};
-	}
-
-	if (isGridFieldArray(field.value)) {
-		if (typeof head !== 'number') return field;
-		const target = field.value[head];
-		if (!target) return field;
-		return {
-			...field,
-			value: field.value.map((entry, idx) =>
-				idx === head ? updateGridFieldAnnotationsAtPath(target, rest, nextAnnotations) : entry
-			)
-		};
-	}
-
-	if (!isGridNestedFields(field.value) || typeof head !== 'string') return field;
-	const target = field.value[head];
-	if (!target) return field;
-	return {
-		...field,
-		value: {
-			...field.value,
-			[head]: updateGridFieldAnnotationsAtPath(target, rest, nextAnnotations)
-		}
-	};
-};
+): GridContentField =>
+	updateGridFieldAtPath(field, path, (leafField) => ({
+		...leafField,
+		annotations: nextAnnotations
+	}));
 
 export const updateGridAnnotationsAtPath = (
 	source: GridContentData,
@@ -191,48 +183,6 @@ export const updateGridAnnotationsAtPath = (
 		[head]: updateGridFieldAnnotationsAtPath(target, rest, nextAnnotations)
 	};
 };
-
-export const parseAnnotationTags = (value: string): Array<string> =>
-	value
-		.split(',')
-		.map((entry) => entry.trim())
-		.filter((entry) => entry.length > 0);
-
-// ------------------------------------------------------------
-// Annotation Editing Helpers
-// ------------------------------------------------------------
-const hasLocatorValue = (value: unknown): boolean => {
-	if (typeof value === 'number') return Number.isFinite(value);
-	if (typeof value === 'string') return value.trim().length > 0;
-	return false;
-};
-
-export const updateAnnotationRefAtIndex = (
-	annotations: Array<GridContentAnnotation>,
-	annotationIdx: number,
-	updater: (_value: GridContentReference) => GridContentReference
-): Array<GridContentAnnotation> =>
-	annotations.map((entry, idx) => {
-		if (idx !== annotationIdx) return entry;
-		const baseRef: GridContentReference = entry.ref ?? {
-			sourceId: '',
-			kind: 'url',
-			locator: {}
-		};
-		const nextRef = updater(baseRef);
-		const hasSource = nextRef.sourceId.trim().length > 0;
-		const hasLocator = Object.values(nextRef.locator).some((locatorValue) =>
-			hasLocatorValue(locatorValue)
-		);
-		if (!hasSource && !hasLocator) {
-			const { ref: _ignored, ...rest } = entry;
-			return rest;
-		}
-		return {
-			...entry,
-			ref: nextRef
-		};
-	});
 
 // ------------------------------------------------------------
 // Patch Application

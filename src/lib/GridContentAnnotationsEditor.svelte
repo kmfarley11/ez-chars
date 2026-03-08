@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { toReferenceHref } from '$lib/characterGridHelpers';
 	import { tick } from 'svelte';
 	import type { GridContentAnnotation, GridContentReference } from '$lib/gridContentTypes';
 	import { DND_BEYOND_BASIC_RULES_REF_5E_2014, SRD_REF_5E_2014 } from '../schema/system.5e2014';
@@ -103,29 +104,6 @@
 
 	const getReferenceTemplateByKey = (key: TemplateReferenceKey): GridContentReference =>
 		key === 'srd' ? SRD_REF_5E_2014 : DND_BEYOND_BASIC_RULES_REF_5E_2014;
-
-	const toReferenceHref = (reference: GridContentReference): string | undefined => {
-		const urlValue = reference.locator.url?.trim();
-		if (!urlValue) return undefined;
-
-		if (reference.kind === 'pdf') {
-			if (typeof reference.locator.page !== 'number' || !Number.isFinite(reference.locator.page)) {
-				return urlValue;
-			}
-			const page = Math.max(1, Math.trunc(reference.locator.page));
-			return `${urlValue.split('#', 1)[0]}#page=${page}`;
-		}
-
-		if (reference.kind === 'url') {
-			const anchorValue = reference.locator.anchor?.trim();
-			if (!anchorValue) return urlValue;
-			const normalizedAnchor = anchorValue.startsWith('#') ? anchorValue.slice(1) : anchorValue;
-			if (normalizedAnchor.length === 0) return urlValue;
-			return `${urlValue.split('#', 1)[0]}#${normalizedAnchor}`;
-		}
-
-		return undefined;
-	};
 
 	const getTemplatePreviewHref = (
 		annotation: GridContentAnnotation,

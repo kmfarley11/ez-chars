@@ -31,6 +31,7 @@
 
 	let layoutEl: HTMLDivElement | undefined;
 	let colCount = $state(1);
+	let recalculateFrame: number | undefined;
 
 	// Keep all computed counts inside valid Tailwind grid utility range.
 	const clampGridCount = (value: number, fallback = 1): number => {
@@ -78,13 +79,29 @@
 		colCount = normalizedMinCols;
 	};
 
+	const scheduleRecalculate = () => {
+		if (typeof window === 'undefined') return;
+		if (recalculateFrame !== undefined) return;
+		recalculateFrame = window.requestAnimationFrame(() => {
+			recalculateFrame = undefined;
+			recalculateColCount();
+		});
+	};
+
+	const cancelScheduledRecalculate = () => {
+		if (typeof window === 'undefined') return;
+		if (recalculateFrame === undefined) return;
+		window.cancelAnimationFrame(recalculateFrame);
+		recalculateFrame = undefined;
+	};
+
 	// Re-evaluate after reactive input changes and after DOM has painted those changes.
 	$effect(() => {
 		normalizedMinCols;
 		normalizedMaxCols;
 		normalizedGapPx;
 		measureSelector;
-		void tick().then(recalculateColCount);
+		void tick().then(scheduleRecalculate);
 	});
 
 	onMount(() => {
@@ -92,13 +109,13 @@
 
 		// Container resize changes available width, so the optimal column count may change.
 		const resizeObserver = new ResizeObserver(() => {
-			recalculateColCount();
+			scheduleRecalculate();
 		});
 		resizeObserver.observe(layoutEl);
 
 		// Content edits can change measured text width without resizing the container.
 		const mutationObserver = new MutationObserver(() => {
-			recalculateColCount();
+			scheduleRecalculate();
 		});
 		mutationObserver.observe(layoutEl, {
 			subtree: true,
@@ -106,11 +123,12 @@
 			characterData: true
 		});
 
-		void tick().then(recalculateColCount);
+		void tick().then(scheduleRecalculate);
 
 		return () => {
 			resizeObserver.disconnect();
 			mutationObserver.disconnect();
+			cancelScheduledRecalculate();
 		};
 	});
 </script>

@@ -173,7 +173,6 @@
 	// Opinionated collapse model: only heading containers are collapsible.
 	const headingText = $derived(typeof heading === 'string' ? heading.trim() : '');
 	const hasHeading = $derived(headingText.length > 0);
-	const isCollapsible = $derived(hasHeading);
 	// Start expanded; heading clicks toggle this state.
 	let isCollapsed = $state(false);
 
@@ -193,30 +192,25 @@
 >
 	{#if hasHeading}
 		<div class="mb-2 flex justify-center">
-			{#if isCollapsible}
-				<button
-					type="button"
-					class="theme-btn-light btn inline-flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-center text-lg font-semibold"
-					aria-expanded={!isCollapsed}
-					aria-label={isCollapsed ? `Expand ${headingText}` : `Collapse ${headingText}`}
-					onclick={onToggleCollapse}
+			<button
+				type="button"
+				class="theme-btn-light btn inline-flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-center text-lg font-semibold"
+				aria-expanded={!isCollapsed}
+				aria-label={isCollapsed ? `Expand ${headingText}` : `Collapse ${headingText}`}
+				onclick={onToggleCollapse}
+			>
+				<span>{headingText}</span>
+				<span
+					aria-hidden="true"
+					class="inline-flex h-5 w-5 items-center justify-center rounded-sm border text-sm font-semibold leading-none"
 				>
-					<span>{headingText}</span>
-					<!-- TODO - make this an actual button? or prefer a chevron, as-is it looks a bit iffy -->
-					<span
-						aria-hidden="true"
-						class="inline-flex h-5 w-5 items-center justify-center rounded-sm border text-sm font-semibold leading-none"
-					>
-						{isCollapsed ? '+' : '-'}
-					</span>
-				</button>
-			{:else}
-				<p class="text-center text-lg font-semibold">{headingText}</p>
-			{/if}
+					{isCollapsed ? '+' : '-'}
+				</span>
+			</button>
 		</div>
 	{/if}
 	{#if shouldRenderGrid}
-		{#if !isCollapsible || !isCollapsed}
+		{#if !isCollapsed}
 			<div class={gridClasses}>
 				{@render children?.()}
 			</div>
