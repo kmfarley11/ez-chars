@@ -1,10 +1,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import type { GridContentAnnotation, GridContentReference } from '$lib/gridContentTypes';
-	import {
-		DND_BEYOND_BASIC_RULES_REF_5E_2014,
-		SRD_REF_5E_2014
-	} from '../schema/system.5e2014';
+	import { DND_BEYOND_BASIC_RULES_REF_5E_2014, SRD_REF_5E_2014 } from '../schema/system.5e2014';
 	import { createId } from '../schema/helpers';
 
 	// `onChange` receives a full replacement annotation array (immutable update contract).
@@ -19,7 +16,8 @@
 	const DEFAULT_ANNOTATION_KIND: GridContentAnnotation['kind'] = 'note';
 	const DEFAULT_ANNOTATION_ORIGIN: GridContentAnnotation['origin'] = 'user';
 
-	const toAnnotationEditorDomId = (annotationId: string): string => `annotation-editor-${annotationId}`;
+	const toAnnotationEditorDomId = (annotationId: string): string =>
+		`annotation-editor-${annotationId}`;
 
 	const focusNewAnnotationEditor = async (annotationId: string) => {
 		await tick();
@@ -65,7 +63,8 @@
 	) =>
 		updateAnnotationAtIndex(annotationIdx, (entry) => {
 			if (!referenceTemplate) {
-				const { ref: _ignored, ...rest } = entry;
+				const rest = { ...entry };
+				delete rest.ref;
 				return rest;
 			}
 			return {
@@ -147,7 +146,8 @@
 			const nextPage =
 				trimmed.length === 0 || !Number.isInteger(parsed) ? undefined : Math.max(1, parsed);
 			if (nextPage === undefined) {
-				const { page: _ignored, ...restLocator } = entry.ref.locator;
+				const restLocator = { ...entry.ref.locator };
+				delete restLocator.page;
 				return {
 					...entry,
 					ref: {
@@ -173,7 +173,8 @@
 			if (!entry.ref || entry.ref.kind !== 'url') return entry;
 			const trimmed = nextAnchorValue.trim();
 			if (trimmed.length === 0) {
-				const { anchor: _ignored, ...restLocator } = entry.ref.locator;
+				const restLocator = { ...entry.ref.locator };
+				delete restLocator.anchor;
 				return {
 					...entry,
 					ref: {

@@ -203,10 +203,13 @@
 			collectLeafInputs(field, [fieldKey]).flatMap((leaf, idx) => {
 				const fieldAnnotations = leaf.field.annotations ?? [];
 				if (fieldAnnotations.length === 0) return [];
-				const isSameField = field.fieldName === leaf.field.fieldName;
-				const title = isSameField
-					? field.fieldName
-					: `${field.fieldName} / ${leaf.field.fieldName}`;
+				const rootFieldName = displayOrPlaceholder(
+					field.fieldName,
+					inferFieldName(fieldKey)
+				).trim();
+				const leafFieldName = displayOrPlaceholder(leaf.field.fieldName, rootFieldName).trim();
+				const title =
+					rootFieldName === leafFieldName ? rootFieldName : `${rootFieldName} / ${leafFieldName}`;
 				return [
 					{
 						key: `${fieldKey}-${idx}-${leaf.path.join('.')}`,

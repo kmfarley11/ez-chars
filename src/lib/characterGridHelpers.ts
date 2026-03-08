@@ -78,10 +78,7 @@ export const annotationKinds: Array<GridContentAnnotation['kind']> = [
 	'summary',
 	'tag'
 ];
-export const annotationRefKinds: Array<GridContentReference['kind']> = [
-	'pdf',
-	'url'
-];
+export const annotationRefKinds: Array<GridContentReference['kind']> = ['pdf', 'url'];
 
 const isGridFieldArray = (value: GridContentFieldValue): value is Array<GridContentField> =>
 	Array.isArray(value);
