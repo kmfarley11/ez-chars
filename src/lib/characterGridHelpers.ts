@@ -1,12 +1,12 @@
 import type { GridContentPatch, GridContentPathSegment } from '$lib/gridContentTypes';
 
-// Writes a primitive value to a nested object/array path.
+// Writes any JSON-like value to a nested object/array path.
 // If intermediate containers are missing, they are created based on the next segment type.
 // Example: ['systemData', 'classes', 0, 'level'] => object -> array -> object -> primitive.
 export const setValueAtPath = (
 	target: Record<string, unknown> | Array<unknown>,
 	path: Array<GridContentPathSegment>,
-	value: string | number
+	value: unknown
 ) => {
 	if (path.length === 0) return;
 	let cursor: Record<string, unknown> | Array<unknown> = target;
@@ -57,6 +57,41 @@ export const setValueAtPath = (
 	cursor[lastSegment] = value;
 };
 
+// Removes a value at a nested path when explicit deletion is requested.
+const unsetValueAtPath = (
+	target: Record<string, unknown> | Array<unknown>,
+	path: Array<GridContentPathSegment>
+) => {
+	if (path.length === 0) return;
+	let cursor: Record<string, unknown> | Array<unknown> | undefined = target;
+	for (let idx = 0; idx < path.length - 1; idx += 1) {
+		if (!cursor) return;
+		const segment = path[idx];
+		if (typeof segment === 'number') {
+			if (!Array.isArray(cursor)) return;
+			const next = cursor[segment];
+			if (typeof next !== 'object' || next === null) return;
+			cursor = next as Record<string, unknown> | Array<unknown>;
+			continue;
+		}
+
+		if (Array.isArray(cursor)) return;
+		const next = cursor[segment];
+		if (typeof next !== 'object' || next === null) return;
+		cursor = next as Record<string, unknown> | Array<unknown>;
+	}
+
+	const lastSegment = path[path.length - 1];
+	if (typeof lastSegment === 'number') {
+		if (!Array.isArray(cursor)) return;
+		cursor[lastSegment] = undefined;
+		return;
+	}
+
+	if (Array.isArray(cursor)) return;
+	delete cursor[lastSegment];
+};
+
 // Applies a batch of GridContent patches immutably.
 // The clone keeps store updates predictable and avoids in-place mutation of source objects.
 export const applyGridPatches = <T extends Record<string, unknown>>(
@@ -65,6 +100,10 @@ export const applyGridPatches = <T extends Record<string, unknown>>(
 ): T => {
 	const next = structuredClone(source) as T;
 	for (const patch of patches) {
+		if (typeof patch.value === 'undefined') {
+			unsetValueAtPath(next, patch.path);
+			continue;
+		}
 		setValueAtPath(next, patch.path, patch.value);
 	}
 	return next;

@@ -262,6 +262,34 @@ const skillsSchema = z
 	})
 	.strict();
 
+const annotationEntriesSchema = z.record(z.string().min(1), annotationSchema);
+
+const mirroredSystemDataAnnotationNodeSchema: z.ZodType<unknown> = z.lazy(() =>
+	z
+		.object({
+			_annotations: annotationEntriesSchema.optional()
+		})
+		.catchall(
+			z.union([
+				mirroredSystemDataAnnotationNodeSchema,
+				z.array(mirroredSystemDataAnnotationNodeSchema)
+			])
+		)
+);
+
+const mirroredSystemDataAnnotationsSchema: z.ZodType<Record<string, unknown>> = z.lazy(() =>
+	z
+		.object({
+			_annotations: annotationEntriesSchema.optional()
+		})
+		.catchall(
+			z.union([
+				mirroredSystemDataAnnotationNodeSchema,
+				z.array(mirroredSystemDataAnnotationNodeSchema)
+			])
+		)
+);
+
 export const dnd5e2014SystemDataSchema = z
 	.object({
 		level: z.number().int().min(0),
@@ -284,17 +312,7 @@ export const dnd5e2014SystemDataSchema = z
 		classes: z.array(classLevelSchema),
 		attacks: z.array(attackSchema).optional(),
 		spellcasting: spellcastingBlockSchema.optional(),
-		// TODO - consider updating the schema so annotations can more direclty mirror the systemdata record structure
-		// 	the point of the annotations is to allow code vs. user driven references & notations to exist on various parts of the
-		//	data structure for both edit & render as part of character sheet designs.
-		// the method i had in mind was to directly mirror the object structure but allow annotationSchema at every level (to inform tooltips and/or help buttons)
-		// another method could be to refine the structure to match the view containers better and just inclue annotations at those levels
-		// the former is most robust but daunting, the latter is easiest to reach but may _need_ refactor before long
-		// Ultimately we want to do 2 major things with this
-		//	1. (primary) give the user to create and edit notes for convenience if they need to re-find a rule etc.
-		//	2. give the user assistance in managing a character by codifying some free refs/annotations as part of editing in this app
-		// The question of how is a bit open ended at the moment. Just need to weigh the pros and cons and consider level of effort near term vs long term a bit
-		annotations: z.array(annotationSchema).optional()
+		annotations: mirroredSystemDataAnnotationsSchema.optional()
 	})
 	.strict();
 

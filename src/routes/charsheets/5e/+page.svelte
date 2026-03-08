@@ -3,9 +3,15 @@
 	import GridContainer from '$lib/GridContainer.svelte';
 	import '../../../app.css';
 	import { charsArray, emptyChar } from '../../../data.js';
-	import type { CharacterDocument5e2014 } from '../../../schema';
+	import { annotationSchema, type Annotation, type CharacterDocument5e2014 } from '../../../schema';
 	import { applyGridPatches } from '$lib/characterGridHelpers';
-	import type { GridContentData, GridContentPatch } from '$lib/gridContentTypes';
+	import type {
+		GridContentAnnotation,
+		GridContentBindPath,
+		GridContentData,
+		GridContentField,
+		GridContentPatch
+	} from '$lib/gridContentTypes';
 
 	interface Props {
 		data: {
@@ -19,129 +25,202 @@
 		charIdx === -1 ? emptyChar : ($charsArray[charIdx] ?? emptyChar)
 	) as CharacterDocument5e2014;
 
+	type AnnotationEntries = Record<string, Annotation>;
+	type PrimitiveGridValue = string | number;
+
+	const isObjectRecord = (value: unknown): value is Record<string, unknown> =>
+		typeof value === 'object' && value !== null && !Array.isArray(value);
+
+	const getValueAtPath = (source: unknown, path: GridContentBindPath): unknown => {
+		let cursor: unknown = source;
+		for (const segment of path) {
+			if (typeof segment === 'number') {
+				if (!Array.isArray(cursor)) return undefined;
+				cursor = cursor[segment];
+				continue;
+			}
+
+			if (!isObjectRecord(cursor)) return undefined;
+			cursor = cursor[segment];
+		}
+		return cursor;
+	};
+
+	const toSystemDataAnnotationPath = (
+		bindPath: GridContentBindPath
+	): GridContentBindPath | undefined => {
+		if (bindPath.length === 0) return undefined;
+		if (bindPath[0] === 'systemData') {
+			return ['systemData', 'annotations', ...bindPath.slice(1), '_annotations'];
+		}
+		if (bindPath[0] === 'identity') {
+			return ['systemData', 'annotations', 'identity', ...bindPath.slice(1), '_annotations'];
+		}
+		return undefined;
+	};
+
+	const annotationsAtPath = (
+		annotationBindPath: GridContentBindPath | undefined
+	): Array<GridContentAnnotation> => {
+		if (!annotationBindPath) return [];
+		const value = getValueAtPath(char, annotationBindPath);
+		if (!isObjectRecord(value)) return [];
+		return Object.values(value).flatMap((entry) => {
+			const parsed = annotationSchema.safeParse(entry);
+			return parsed.success ? [parsed.data] : [];
+		});
+	};
+
+	const withFieldAnnotations = (
+		value: PrimitiveGridValue,
+		bindPath: GridContentBindPath,
+		options: Pick<GridContentField, 'fieldName' | 'label'> = {}
+	): GridContentField => {
+		const annotationBindPath = toSystemDataAnnotationPath(bindPath);
+		if (!annotationBindPath) return { ...options, bindPath, value };
+		return {
+			...options,
+			bindPath,
+			annotationBindPath,
+			annotations: annotationsAtPath(annotationBindPath),
+			value
+		};
+	};
+
 	const metaPrimaryData = $derived<GridContentData>({
-		name: {
-			bindPath: ['identity', 'name'],
-			value: char.identity.name
-		},
+		name: withFieldAnnotations(char.identity.name, ['identity', 'name']),
 		classLevels: {
 			value: char.systemData.classes.map((entry, index) => ({
 				fieldName: `Class ${index + 1}`,
 				value: {
-					name: {
-						fieldName: `Class ${index + 1} Name`,
-						bindPath: ['systemData', 'classes', index, 'name'],
-						value: entry.name
-					},
-					level: {
-						fieldName: `Class ${index + 1} Level`,
-						bindPath: ['systemData', 'classes', index, 'level'],
-						value: entry.level
-					}
+					name: withFieldAnnotations(entry.name, ['systemData', 'classes', index, 'name'], {
+						fieldName: `Class ${index + 1} Name`
+					}),
+					level: withFieldAnnotations(entry.level, ['systemData', 'classes', index, 'level'], {
+						fieldName: `Class ${index + 1} Level`
+					})
 				}
 			}))
 		}
 	});
 
 	const metaSecondaryData = $derived<GridContentData>({
-		ancestry: {
-			bindPath: ['identity', 'ancestryLineage'],
-			value: char.identity.ancestryLineage ?? char.systemData.race?.name ?? ''
-		},
-		background: {
-			bindPath: ['identity', 'background'],
-			value: char.identity.background ?? char.systemData.background?.name ?? ''
-		}
+		ancestry: withFieldAnnotations(
+			char.identity.ancestryLineage ?? char.systemData.race?.name ?? '',
+			['identity', 'ancestryLineage']
+		),
+		background: withFieldAnnotations(
+			char.identity.background ?? char.systemData.background?.name ?? '',
+			['identity', 'background']
+		)
 	});
 
 	const metaTertiaryData = $derived<GridContentData>({
-		alignment: {
-			bindPath: ['identity', 'alignment'],
-			value: char.identity.alignment ?? ''
-		},
-		appearance: {
-			bindPath: ['identity', 'appearance'],
-			value: char.identity.appearance ?? ''
-		}
+		alignment: withFieldAnnotations(char.identity.alignment ?? '', ['identity', 'alignment']),
+		appearance: withFieldAnnotations(char.identity.appearance ?? '', ['identity', 'appearance'])
 	});
 
 	const quickRefPrimaryData = $derived<GridContentData>({
 		hp: {
 			value: {
-				current: {
-					bindPath: ['systemData', 'combat', 'hitPoints', 'current'],
-					value: char.systemData.combat?.hitPoints?.current ?? 0
-				},
-				max: {
-					bindPath: ['systemData', 'combat', 'hitPoints', 'max'],
-					value: char.systemData.combat?.hitPoints?.max ?? 0
-				}
+				current: withFieldAnnotations(char.systemData.combat?.hitPoints?.current ?? 0, [
+					'systemData',
+					'combat',
+					'hitPoints',
+					'current'
+				]),
+				max: withFieldAnnotations(char.systemData.combat?.hitPoints?.max ?? 0, [
+					'systemData',
+					'combat',
+					'hitPoints',
+					'max'
+				])
 			}
 		},
-		tempHp: {
-			bindPath: ['systemData', 'combat', 'hitPoints', 'temp'],
-			value: char.systemData.combat?.hitPoints?.temp ?? 0
-		},
-		initiative: {
-			bindPath: ['systemData', 'combat', 'initiative'],
-			value: char.systemData.combat?.initiative ?? 0
-		},
-		armorClass: {
-			bindPath: ['systemData', 'combat', 'armorClass'],
-			value: char.systemData.combat?.armorClass
-		}
+		tempHp: withFieldAnnotations(char.systemData.combat?.hitPoints?.temp ?? 0, [
+			'systemData',
+			'combat',
+			'hitPoints',
+			'temp'
+		]),
+		initiative: withFieldAnnotations(char.systemData.combat?.initiative ?? 0, [
+			'systemData',
+			'combat',
+			'initiative'
+		]),
+		armorClass: withFieldAnnotations(char.systemData.combat?.armorClass ?? 0, [
+			'systemData',
+			'combat',
+			'armorClass'
+		])
 	});
 	const quickRefMovementData = $derived<GridContentData>({
-		speed: {
-			label: 'walking ft',
-			bindPath: ['systemData', 'combat', 'speed'],
-			value: char.systemData.combat?.speed ?? char.systemData.race?.speed ?? ''
-		},
-		climb: {
-			fieldName: 'Climb',
-			label: 'ft',
-			bindPath: ['systemData', 'combat', 'speedClimb'],
-			value: char.systemData.combat?.speedClimb ?? char.systemData.race?.speedClimb ?? ''
-		},
-		swim: {
-			fieldName: 'Swim',
-			label: 'ft',
-			bindPath: ['systemData', 'combat', 'speedSwim'],
-			value: char.systemData.combat?.speedSwim ?? char.systemData.race?.speedSwim ?? ''
-		},
-		fly: {
-			label: 'ft',
-			bindPath: ['systemData', 'combat', 'speedFly'],
-			value: char.systemData.combat?.speedFly ?? char.systemData.race?.speedFly ?? ''
-		}
+		speed: withFieldAnnotations(
+			char.systemData.combat?.speed ?? char.systemData.race?.speed ?? '',
+			['systemData', 'combat', 'speed'],
+			{
+				label: 'walking ft'
+			}
+		),
+		climb: withFieldAnnotations(
+			char.systemData.combat?.speedClimb ?? char.systemData.race?.speedClimb ?? '',
+			['systemData', 'combat', 'speedClimb'],
+			{
+				fieldName: 'Climb',
+				label: 'ft'
+			}
+		),
+		swim: withFieldAnnotations(
+			char.systemData.combat?.speedSwim ?? char.systemData.race?.speedSwim ?? '',
+			['systemData', 'combat', 'speedSwim'],
+			{
+				fieldName: 'Swim',
+				label: 'ft'
+			}
+		),
+		fly: withFieldAnnotations(
+			char.systemData.combat?.speedFly ?? char.systemData.race?.speedFly ?? '',
+			['systemData', 'combat', 'speedFly'],
+			{
+				label: 'ft'
+			}
+		)
 	});
 	const quickRefSecondaryData = $derived<GridContentData>({
 		hitDice: {
 			fieldName: 'Hit Dice',
 			value: {
-				remaining: {
-					bindPath: ['systemData', 'combat', 'hitDice', 'remaining'],
-					value: char.systemData.combat?.hitDice?.remaining ?? ''
-				},
-				total: {
-					bindPath: ['systemData', 'combat', 'hitDice', 'total'],
-					value: char.systemData.combat?.hitDice?.total ?? ''
-				}
+				remaining: withFieldAnnotations(char.systemData.combat?.hitDice?.remaining ?? '', [
+					'systemData',
+					'combat',
+					'hitDice',
+					'remaining'
+				]),
+				total: withFieldAnnotations(char.systemData.combat?.hitDice?.total ?? '', [
+					'systemData',
+					'combat',
+					'hitDice',
+					'total'
+				])
 			}
 		},
 		deathSaves: {
 			fieldName: 'Death Saves',
 			value: {
-				successes: {
-					bindPath: ['systemData', 'combat', 'deathSaves', 'successes'],
-					value: char.systemData.combat?.deathSaves?.successes ?? 0,
-					label: 'ok'
-				},
-				failures: {
-					bindPath: ['systemData', 'combat', 'deathSaves', 'failures'],
-					value: char.systemData.combat?.deathSaves?.failures ?? 0,
-					label: 'rip'
-				}
+				successes: withFieldAnnotations(
+					char.systemData.combat?.deathSaves?.successes ?? 0,
+					['systemData', 'combat', 'deathSaves', 'successes'],
+					{
+						label: 'ok'
+					}
+				),
+				failures: withFieldAnnotations(
+					char.systemData.combat?.deathSaves?.failures ?? 0,
+					['systemData', 'combat', 'deathSaves', 'failures'],
+					{
+						label: 'rip'
+					}
+				)
 			}
 		}
 	});
@@ -159,8 +238,54 @@
 		);
 	};
 
+	const isSystemDataAnnotationPath = (path: GridContentBindPath): boolean =>
+		path.length >= 3 &&
+		path[0] === 'systemData' &&
+		path[1] === 'annotations' &&
+		path[path.length - 1] === '_annotations';
+
+	const isValidAnnotationArray = (value: unknown): value is Array<GridContentAnnotation> =>
+		Array.isArray(value) &&
+		value.every((entry) => {
+			const parsed = annotationSchema.safeParse(entry);
+			return parsed.success;
+		});
+
+	const annotationEntriesFromArray = (
+		annotations: Array<GridContentAnnotation>
+	): Record<string, Annotation> => {
+		const entries: Record<string, Annotation> = {};
+		for (const [index, candidate] of annotations.entries()) {
+			const parsed = annotationSchema.safeParse(candidate);
+			if (!parsed.success) continue;
+			const baseKey =
+				typeof parsed.data.id === 'string' && parsed.data.id.trim().length > 0
+					? parsed.data.id
+					: `annotation-${index + 1}`;
+			let key = baseKey;
+			let suffix = 2;
+			while (key in entries) {
+				key = `${baseKey}-${suffix}`;
+				suffix += 1;
+			}
+			entries[key] = parsed.data.id ? parsed.data : { ...parsed.data, id: key };
+		}
+		return entries;
+	};
+
+	const normalizeGridPatches = (patches: Array<GridContentPatch>): Array<GridContentPatch> =>
+		patches.flatMap((patch) => {
+			if (!isSystemDataAnnotationPath(patch.path)) return [patch];
+			if (!isValidAnnotationArray(patch.value)) return [];
+			if (patch.value.length === 0) return [{ ...patch, value: undefined }];
+			const entries = annotationEntriesFromArray(patch.value);
+			return Object.keys(entries).length > 0
+				? [{ ...patch, value: entries as AnnotationEntries }]
+				: [];
+		});
+
 	const handleGridPatchesSave = (patches: Array<GridContentPatch>) => {
-		updateCurrent5eCharacter((entry) => applyGridPatches(entry, patches));
+		updateCurrent5eCharacter((entry) => applyGridPatches(entry, normalizeGridPatches(patches)));
 	};
 </script>
 
