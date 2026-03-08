@@ -8,7 +8,10 @@
 	} from '$lib/characterGridHelpers';
 	import type { GridContentAnnotation, GridContentReference } from '$lib/gridContentTypes';
 	import ValidatedInputField from '$lib/ValidatedInputField.svelte';
-	import { SRD_REF_5E_2014 } from '../schema/system.5e2014';
+	import {
+		DND_BEYOND_BASIC_RULES_REF_5E_2014,
+		SRD_REF_5E_2014
+	} from '../schema/system.5e2014';
 	import { createId } from '../schema/helpers';
 
 	// `onChange` receives a full replacement annotation array (immutable update contract).
@@ -228,6 +231,20 @@
 									}}
 								>
 									Use SRD_REF_5E_2014
+								</button>
+							</div>
+							<div class="mt-2 flex justify-end">
+								<button
+									type="button"
+									class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
+									onclick={() => {
+										applyReferenceTemplateAtIndex(
+											annotationIdx,
+											DND_BEYOND_BASIC_RULES_REF_5E_2014
+										);
+									}}
+								>
+									Use DND_BEYOND_BASIC_RULES_REF_5E_2014
 								</button>
 							</div>
 							<div class="mt-2 grid gap-2 md:grid-cols-2">

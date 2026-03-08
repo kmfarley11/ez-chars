@@ -91,6 +91,14 @@ export const SRD_REF_5E_2014: Reference = {
 	sourceId: 'local-5.1-srd' // createId()
 };
 
+export const DND_BEYOND_BASIC_RULES_REF_5E_2014: Reference = {
+	kind: 'url',
+	locator: {
+		url: 'https://www.dndbeyond.com/sources/dnd/basic-rules-2014'
+	},
+	sourceId: 'dndbeyond-basic-rules-2014'
+};
+
 const create5e2014CharacterOptionsSchema = z
 	.object({
 		name: z.string().min(1).optional(),
