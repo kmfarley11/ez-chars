@@ -1,11 +1,13 @@
 <script lang="ts">
 	import GridContainer from '$lib/GridContainer.svelte';
+	import GridContentAnnotationsDisplay from '$lib/GridContentAnnotationsDisplay.svelte';
 	import GridContentAnnotationsEditor from '$lib/GridContentAnnotationsEditor.svelte';
 	import GridContainerAuto from '$lib/GridContainerAuto.svelte';
 	import { updateGridAnnotationsAtPath, updateGridDataAtPath } from '$lib/characterGridHelpers';
 	import { capitalizeFirstLetter } from '$lib/stringFormatters';
 	import { displayOrPlaceholder } from '$lib/displayHelpers';
 	import type {
+		GridContentAnnotation,
 		GridContentBindPath,
 		GridContentData,
 		GridContentField,
@@ -89,6 +91,13 @@
 		);
 
 	const normalizedData = $derived<GridContentData>(normalizeData(data));
+
+	type HelpAnnotationGroup = {
+		key: string;
+		title: string;
+		joinedLabel?: string;
+		annotations: Array<GridContentAnnotation>;
+	};
 
 	// Render any field shape generically: primitives, nested objects, and arrays of nested entries.
 	const formatFieldValue = (
@@ -188,6 +197,30 @@
 			collectLeafInputs(childField, [...path, childKey], nextLabel, nextBindPath, childKey)
 		);
 	};
+
+	const collectHelpAnnotationGroups = (source: GridContentData): Array<HelpAnnotationGroup> =>
+		Object.entries(source).flatMap(([fieldKey, field]) =>
+			collectLeafInputs(field, [fieldKey]).flatMap((leaf, idx) => {
+				const fieldAnnotations = leaf.field.annotations ?? [];
+				if (fieldAnnotations.length === 0) return [];
+				const isSameField = field.fieldName === leaf.field.fieldName;
+				const title = isSameField
+					? field.fieldName
+					: `${field.fieldName} / ${leaf.field.fieldName}`;
+				return [
+					{
+						key: `${fieldKey}-${idx}-${leaf.path.join('.')}`,
+						title,
+						joinedLabel: leaf.joinedLabel,
+						annotations: fieldAnnotations
+					}
+				];
+			})
+		);
+
+	const helpAnnotationGroups = $derived<Array<HelpAnnotationGroup>>(
+		collectHelpAnnotationGroups(normalizedData)
+	);
 
 	const closeDialog = () => {
 		dialogEl?.close();
@@ -426,7 +459,23 @@
 >
 	<div class="flex flex-col gap-3 p-4">
 		<h3 class="text-lg leading-none font-semibold">Help</h3>
-		<p class="theme-text-muted text-sm">Help content coming soon.</p>
+		{#if helpAnnotationGroups.length === 0}
+			<p class="theme-text-muted text-sm">No field annotations available.</p>
+		{:else}
+			<div class="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
+				{#each helpAnnotationGroups as group (group.key)}
+					<div class="space-y-1 rounded-md border px-2 py-2">
+						<p class="text-sm font-semibold">
+							{group.title}
+							{#if group.joinedLabel}
+								<span class="theme-text-muted text-xs italic"> ({group.joinedLabel}) </span>
+							{/if}
+						</p>
+						<GridContentAnnotationsDisplay annotations={group.annotations} />
+					</div>
+				{/each}
+			</div>
+		{/if}
 		<div class="mt-1 flex justify-end">
 			<button
 				type="button"
