@@ -15,6 +15,7 @@ export type GridContentReference = {
 
 export type GridContentAnnotation = {
 	id?: string;
+	name?: string;
 	origin: 'user' | 'source';
 	kind: 'note' | 'reference' | 'summary' | 'tag';
 	text?: string;

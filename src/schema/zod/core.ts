@@ -31,6 +31,7 @@ export const referenceSchema = z
 export const annotationSchema = z
 	.object({
 		id: z.string().optional(),
+		name: z.string().min(1).optional(),
 		origin: z.enum(['user', 'source']),
 		kind: z.enum(['note', 'reference', 'summary', 'tag']),
 		text: z.string().optional(),

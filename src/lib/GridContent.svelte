@@ -583,10 +583,37 @@
 											{#each annotations as annotation, annotationIdx (`${fieldKey}-${idx}-annotation-${annotation.id ?? annotationIdx}`)}
 												<details class="space-y-2 rounded-md border px-2 py-2">
 													<summary class="theme-text-muted cursor-pointer text-xs">
-														Annotation {annotationIdx + 1}: {annotation.kind} ({annotation.origin})
+														{annotation.name ?? `Annotation ${annotationIdx + 1}`}: {annotation.kind}
+														({annotation.origin})
 													</summary>
 													<div class="mt-2 space-y-2">
 														<div class="grid gap-2 md:grid-cols-2">
+															<label class="space-y-1">
+																<span class="theme-text-muted text-xs">Name</span>
+																<input
+																	class="theme-input w-full rounded-md border px-2 py-1"
+																	type="text"
+																	value={annotation.name ?? ''}
+																	oninput={(event) => {
+																		const target = event.currentTarget as HTMLInputElement;
+																		draftData = updateDataAnnotationsAtPath(
+																			draftData,
+																			leaf.path,
+																			annotations.map((entry, entryIdx) =>
+																				entryIdx === annotationIdx
+																					? {
+																							...entry,
+																							name:
+																								target.value.trim().length > 0
+																									? target.value
+																									: undefined
+																						}
+																					: entry
+																			)
+																		);
+																	}}
+																/>
+															</label>
 															<label class="space-y-1">
 																<span class="theme-text-muted text-xs">Kind</span>
 																<select
