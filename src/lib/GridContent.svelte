@@ -30,6 +30,7 @@
 	}: Props = $props();
 
 	let dialogEl: HTMLDialogElement | undefined;
+	let helpDialogEl: HTMLDialogElement | undefined;
 	let draftData = $state<GridContentData>({});
 
 	const inferFieldName = (fieldKey: string) => {
@@ -237,9 +238,17 @@
 		dialogEl?.close();
 	};
 
+	const closeHelpDialog = () => {
+		helpDialogEl?.close();
+	};
+
 	const onCancel = () => {
 		closeDialog();
 		handleEditCancel?.();
+	};
+
+	const onHelpCancel = () => {
+		closeHelpDialog();
 	};
 
 	const onOpen = () => {
@@ -247,9 +256,19 @@
 		dialogEl?.showModal();
 	};
 
+	const onHelpOpen = () => {
+		helpDialogEl?.showModal();
+	};
+
 	const onBackdropClick = (event: MouseEvent) => {
 		if (event.target === event.currentTarget) {
 			onCancel();
+		}
+	};
+
+	const onHelpBackdropClick = (event: MouseEvent) => {
+		if (event.target === event.currentTarget) {
+			onHelpCancel();
 		}
 	};
 
@@ -280,31 +299,46 @@
 </script>
 
 <div class="group relative">
-	<button
-		type="button"
-		class="theme-btn-light btn absolute top-0 right-0 z-10 rounded-md border p-1 opacity-0 transition-opacity group-hover:cursor-pointer group-hover:opacity-100 group-focus-within:opacity-100"
-		aria-label="Edit"
-		title="Edit"
-		onclick={onOpen}
+	<div
+		class="absolute top-0 right-0 z-10 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
 	>
-		<!-- TODO - consider edits at individual field level rather than group -->
-		<svg
-			viewBox="0 0 24 24"
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			class="h-4 w-4 stroke-current"
-			aria-hidden="true"
+		<button
+			type="button"
+			class="theme-btn-light btn rounded-md border p-1 cursor-pointer"
+			aria-label="Help"
+			title="Help"
+			onclick={onHelpOpen}
 		>
-			<path d="M12 20h9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-			<path
-				d="m16.5 3.5 4 4L7 21H3v-4L16.5 3.5Z"
-				stroke-width="1.5"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-			></path>
-		</svg>
-	</button>
-	<div class="pr-12">
+			<span class="inline-block h-4 w-4 text-center text-sm leading-4 font-semibold" aria-hidden="true">
+				?
+			</span>
+		</button>
+		<button
+			type="button"
+			class="theme-btn-light btn rounded-md border p-1 cursor-pointer"
+			aria-label="Edit"
+			title="Edit"
+			onclick={onOpen}
+		>
+			<!-- TODO - consider edits at individual field level rather than group -->
+			<svg
+				viewBox="0 0 24 24"
+				xmlns="http://www.w3.org/2000/svg"
+				fill="none"
+				class="h-4 w-4 stroke-current"
+				aria-hidden="true"
+			>
+				<path d="M12 20h9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+				<path
+					d="m16.5 3.5 4 4L7 21H3v-4L16.5 3.5Z"
+					stroke-width="1.5"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				></path>
+			</svg>
+		</button>
+	</div>
+	<div class="pr-16">
 		<GridContainerAuto maxCols={3} classes="gap-2">
 			{#each Object.entries(normalizedData) as [fieldKey, field] (fieldKey)}
 				{@const labeledParts = getLabeledDisplayParts(field)}
@@ -394,4 +428,25 @@
 			<button type="submit" class="theme-btn-dark btn rounded-md border px-3 py-1">Save</button>
 		</div>
 	</form>
+</dialog>
+
+<dialog
+	bind:this={helpDialogEl}
+	class="theme-dialog theme-dialog-backdrop m-auto w-[min(92vw,32rem)] rounded-md border p-0"
+	oncancel={onHelpCancel}
+	onclick={onHelpBackdropClick}
+>
+	<div class="flex flex-col gap-3 p-4">
+		<h3 class="text-lg leading-none font-semibold">Help</h3>
+		<p class="theme-text-muted text-sm">Help content coming soon.</p>
+		<div class="mt-1 flex justify-end">
+			<button
+				type="button"
+				class="theme-btn-light btn rounded-md border px-3 py-1"
+				onclick={onHelpCancel}
+			>
+				Close
+			</button>
+		</div>
+	</div>
 </dialog>
