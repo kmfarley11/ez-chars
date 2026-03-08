@@ -1,10 +1,5 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import {
-		annotationKinds,
-		annotationOrigins,
-		parseAnnotationTags
-	} from '$lib/characterGridHelpers';
 	import type { GridContentAnnotation, GridContentReference } from '$lib/gridContentTypes';
 	import {
 		DND_BEYOND_BASIC_RULES_REF_5E_2014,
@@ -20,6 +15,9 @@
 	}
 
 	let { annotations, onChange }: Props = $props();
+
+	const DEFAULT_ANNOTATION_KIND: GridContentAnnotation['kind'] = 'note';
+	const DEFAULT_ANNOTATION_ORIGIN: GridContentAnnotation['origin'] = 'user';
 
 	const toAnnotationEditorDomId = (annotationId: string): string => `annotation-editor-${annotationId}`;
 
@@ -50,8 +48,8 @@
 			...annotations,
 			{
 				id: newAnnotationId,
-				origin: 'user',
-				kind: 'note',
+				origin: DEFAULT_ANNOTATION_ORIGIN,
+				kind: DEFAULT_ANNOTATION_KIND,
 				text: ''
 			}
 		]);
@@ -224,83 +222,28 @@
 					class="space-y-2 rounded-md border px-2 py-2"
 				>
 					<summary class="theme-text-muted cursor-pointer text-xs">
-						{annotation.name ?? `Annotation ${annotationIdx + 1}`}: {annotation.kind}
-						({annotation.origin})
+						{annotation.name ?? `Annotation ${annotationIdx + 1}`}
 					</summary>
 					<div class="mt-2 space-y-2">
-						<div class="grid gap-2 md:grid-cols-2">
-							<label class="space-y-1">
-								<span class="theme-text-muted text-xs">Name</span>
-								<input
-									class="theme-input w-full rounded-md border px-2 py-1"
-									type="text"
-									data-annotation-name-input
-									value={annotation.name ?? ''}
-									oninput={(event) => {
-										const target = event.currentTarget as HTMLInputElement;
-										updateAnnotationAtIndex(annotationIdx, (entry) => ({
-											...entry,
-											name: target.value.trim().length > 0 ? target.value : undefined
-										}));
-									}}
-								/>
-							</label>
-							<label class="space-y-1">
-								<span class="theme-text-muted text-xs">Kind</span>
-								<select
-									class="theme-input w-full rounded-md border px-2 py-1"
-									value={annotation.kind}
-									onchange={(event) => {
-										const target = event.currentTarget as HTMLSelectElement;
-										updateAnnotationAtIndex(annotationIdx, (entry) => ({
-											...entry,
-											kind: target.value as GridContentAnnotation['kind']
-										}));
-									}}
-								>
-									{#each annotationKinds as optionKind (optionKind)}
-										<option value={optionKind}>{optionKind}</option>
-									{/each}
-								</select>
-							</label>
-							<label class="space-y-1">
-								<span class="theme-text-muted text-xs">Origin</span>
-								<select
-									class="theme-input w-full rounded-md border px-2 py-1"
-									value={annotation.origin}
-									onchange={(event) => {
-										const target = event.currentTarget as HTMLSelectElement;
-										updateAnnotationAtIndex(annotationIdx, (entry) => ({
-											...entry,
-											origin: target.value as GridContentAnnotation['origin']
-										}));
-									}}
-								>
-									{#each annotationOrigins as optionOrigin (optionOrigin)}
-										<option value={optionOrigin}>{optionOrigin}</option>
-									{/each}
-								</select>
-							</label>
-							<label class="space-y-1">
-								<span class="theme-text-muted text-xs">Tags (comma separated)</span>
-								<input
-									class="theme-input w-full rounded-md border px-2 py-1"
-									type="text"
-									value={(annotation.tags ?? []).join(', ')}
-									oninput={(event) => {
-										const target = event.currentTarget as HTMLInputElement;
-										const nextTags = parseAnnotationTags(target.value);
-										updateAnnotationAtIndex(annotationIdx, (entry) => ({
-											...entry,
-											tags: nextTags.length > 0 ? nextTags : undefined
-										}));
-									}}
-								/>
-							</label>
-						</div>
+						<label class="space-y-1">
+							<span class="theme-text-muted text-xs">Name (optional)</span>
+							<input
+								class="theme-input w-full rounded-md border px-2 py-1"
+								type="text"
+								data-annotation-name-input
+								value={annotation.name ?? ''}
+								oninput={(event) => {
+									const target = event.currentTarget as HTMLInputElement;
+									updateAnnotationAtIndex(annotationIdx, (entry) => ({
+										...entry,
+										name: target.value.trim().length > 0 ? target.value : undefined
+									}));
+								}}
+							/>
+						</label>
 
 						<label class="space-y-1">
-							<span class="theme-text-muted text-xs">Text</span>
+							<span class="theme-text-muted text-xs">Text (optional)</span>
 							<textarea
 								class="theme-input w-full rounded-md border px-2 py-1"
 								rows="3"
@@ -314,9 +257,8 @@
 							>
 						</label>
 
-						<details class="space-y-2" open>
-							<summary class="theme-text-muted cursor-pointer text-xs">Reference (optional)</summary
-							>
+						<div class="space-y-2">
+							<p class="theme-text-muted text-xs">Reference (optional)</p>
 							<div class="mt-2 space-y-1">
 								<div class="flex items-center justify-between gap-2 text-xs">
 									<label class="flex items-center gap-2">
@@ -407,7 +349,7 @@
 									/>
 								</label>
 							{/if}
-						</details>
+						</div>
 
 						<div class="flex justify-end">
 							<button
