@@ -1,93 +1,70 @@
-# WIP
+# ez-chars
 
-TODO : make a better readme someday 🙂
+`ez-chars` is a SvelteKit prototype for local-first tabletop RPG character sheets.
 
-In gist: this repo is meant to house web app(s) for filling, loading, & saving TTRPG character sheets. Mostly for me & my games/tables to avoid needing to use comprehensive VTTs or paid options when ppl simply wanna manage a character on their phone...
+## Current Focus
 
-The preference is to leverage free rules only in-app with guidance, but support free-text/freeform inputs abound.
+This repository is intentionally scoped to a narrow MVP:
 
-Intended game systems to support:
+- one system: D&D 5e 2014
+- editable, mobile-friendly character sheets
+- local-first persistence
+- JSON import/export for backup
+- optional annotations and source references
 
-1. [D&D 5e 2014](https://media.dndbeyond.com/compendium-images/srd/5.1/SRD_CC_v5.1.pdf)
-   - [sidekicks](https://media.wizards.com/2018/dnd/downloads/UA_Sidekicks.pdf)
-1. [Level Up Advanced 5e (a5e)](https://a5esrd.com/a5esrd)
-1. [Shadowdark RPG](https://www.thearcanelibrary.com/products/shadowdark-rpg-quickstart-set-pdf?srsltid=AfmBOoo2tasd5Vmqw4pQUZeBqLUxPHC6KcsXaV30qGvyYOpLgMt2FQwu) (i.e. [shadowdarklings.net](https://shadowdarklings.net/characters#!))
-1. [Cairn v1](https://cairnrpg.com/first-edition/cairn-srd/)
-1. [Cairn v2](https://cairnrpg.com/second-edition/)
-1. [D&D 5e 2024](https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf)
-1. other? (atla, numenara, daggerheart, etc.?)
+Everything else is long-term vision, not the immediate build target. For roadmap and future-scope notes, see `docs/vision/index.md`.
 
-Core Intents / Philosophies
+## Current State
 
-- TTRPG gaming should be essentially free and easy for players
-- TTRPG gaming should allow for you & your table to do _whatever_ it wants (within & without the official rule system)
-  - Character sheets should be less opinionated overall, providing guidance but flexibility to the player
-- Managing TTRPG characters should be straightforward from a phone or computer
+- the 5e 2014 schema and reusable grid editing primitives exist
+- the home page lists locally stored or seeded characters
+- the 5e sheet route exists, but only part of the full sheet is surfaced in the UI
+- localStorage persistence exists, but import/export, tests, CI, and a hardened storage adapter are still missing
 
-Initial approach...
+## Docs
 
-1. [ ] design a flexible & mobile UI for...
-   1. [x] 5e 2014
-   1. [ ] a5e
-   1. [x] shadowdark
-   1. [x] cairn 1e
-1. [x] consider how to be intentional with UI implementations to make character sheet data & components modular across systems
-1. [ ] implement after deciding on a lib/framework
-   - ~~vanilla html, css, js is attractive to enable custom & local hosting~~
-   - component based frameworks such as ~~React or~~ Svelte are attractive to augment modular code design...
-   - [ ] 5e 2014 sidekicks
-   - [ ] 5e 2014
-   - [ ] shadowdark
-   - [ ] cairn v1
-   - [ ] a5e
-   - [ ] cairn v2
-   - [ ] 5e 2024
-1. [x] host somewhere...
-   - [x] on github pages to start?
-1. [ ] support import / export
-   - client-based integration to start (preferably to dropbox or drive etc. eventually)
-     - [ ] json
-     - [ ] editable charsheet pdf would be lit
-     - markdown import/export may be a goal as well?
-   - support a backup tool
-     - external cloud?: gdrive, dropbox?
-     - integrated db?: mongo / postgres? (would likely require deployment migration to AWS, cloudflare, etc.)
+- coding-agent guide: `AGENTS.md`
+- current MVP definition: `docs/current-mvp.md`
+- prioritized MVP backlog: `docs/mvp-backlog.md`
+- docs index: `docs/index.md`
+- long-term vision: `docs/vision/index.md`
 
-The rest of the readme is WIP as i play with UI frameworks etc.
+## Development
 
-## maintaining
-
-NOTE: you'll need git-lfs installed to get the pdfs as well for local builds.
+You will need Git LFS installed to fetch the PDF assets used by the repo.
 
 ```bash
-npm i  # prefer node 20
+npm i  # prefer Node 20
 ```
 
-### running dev
+Run the dev server:
 
 ```bash
 npm run dev
 ```
 
-### running "prod"
+Run the main verification commands:
 
 ```bash
+npm run check
+npm run lint
 npm run build
 ```
 
-Open build/index.html in local browser. May require disabling of CORS?
+Preview the production build locally:
 
-### deploying
+```bash
+npm run preview
+```
+
+Deploy remains manual for now:
 
 ```bash
 npm run deploy
 ```
 
-FTODO: use github actions for cicd instead of manual with gh-pages?
-https://github.com/svelterust/counter/blob/main/.github/workflows/deploy.yml
-
-## licensing
+## Licensing
 
 - Source code in this repository is licensed under MIT. See `LICENSE`.
-- Included third-party assets (for example SRD PDFs in `docs/ext/`) retain their original licenses.
+- Included third-party assets, such as SRD PDFs under `docs/ext/`, retain their original licenses.
 - Third-party attributions and license details are listed in `THIRD_PARTY_NOTICES.md`.

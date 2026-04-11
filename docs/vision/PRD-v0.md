@@ -1,5 +1,9 @@
 # ez-chars — Product Requirements Document (PRD)
 
+> Status: legacy vision and roadmap document.
+>
+> This file is intentionally kept separate from the active MVP working set. For current implementation work, use `../../AGENTS.md`, `../current-mvp.md`, and `../mvp-backlog.md`.
+
 This document was derived from repo contents & local note contents via LLMs as of 2/6/2026. The intent of the document is to succinctly distill the design principles established and desired so far into 1 document for AI ingestion. There may be future versions of this document to help guide AI at varying points in the attempted product.
 
 ## 1. Overview

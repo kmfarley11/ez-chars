@@ -4,7 +4,7 @@ Run this quick check before deploy when touching theme or UI colors.
 
 ## 1) Theme switch behavior
 
-- Switch between `Ocean`, `Forest`, and `Sunset` in desktop navbar selector.
+- Switch through every available theme in the desktop navbar selector.
 - Reload page and confirm selected theme persists.
 - Repeat on mobile using collapsed right menu theme actions.
 
