@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import GridContent from '$lib/GridContent.svelte';
 	import GridContainer from '$lib/GridContainer.svelte';
 	import '../../../app.css';
@@ -23,14 +24,31 @@
 
 	interface Props {
 		data: {
-			id: string;
+			id: string | null;
 		};
 	}
 
 	const { data }: Props = $props();
-	const charIdx = $derived($charsArray.findIndex((char) => char.meta.id == data.id));
+	const homeHref = resolve('/');
+	const requestedCharacterId = $derived(data.id?.trim() ?? '');
+	const hasRequestedCharacterId = $derived(requestedCharacterId.length > 0);
+	const charIdx = $derived(
+		hasRequestedCharacterId
+			? $charsArray.findIndex((entry) => entry.meta.id === requestedCharacterId)
+			: -1
+	);
+	const hasMatchingCharacter = $derived(charIdx !== -1);
+	const showMissingOrInvalidIdState = $derived(!hasRequestedCharacterId || !hasMatchingCharacter);
+	const missingOrInvalidIdTitle = $derived(
+		hasRequestedCharacterId ? 'Character not found.' : 'No character selected.'
+	);
+	const missingOrInvalidIdDescription = $derived(
+		hasRequestedCharacterId
+			? `No local character matches the id "${requestedCharacterId}". Open a character from the home view or create a new one there.`
+			: 'This route needs a character id in the URL. Open a character from the home view or create a new one there.'
+	);
 	const char: CharacterDocument5e2014 = $derived(
-		charIdx === -1 ? emptyChar : ($charsArray[charIdx] ?? emptyChar)
+		hasMatchingCharacter ? ($charsArray[charIdx] ?? emptyChar) : emptyChar
 	) as CharacterDocument5e2014;
 
 	type AnnotationEntries = Record<string, Annotation>;
@@ -280,7 +298,7 @@
 	) => {
 		charsArray.update((entries) =>
 			entries.map((entry) => {
-				if (entry.meta.id !== data.id) return entry;
+				if (entry.meta.id !== requestedCharacterId) return entry;
 				if (entry.system.id !== 'dnd5e-2014') return entry;
 				return updateFn(entry as CharacterDocument5e2014);
 			})
@@ -333,69 +351,93 @@
 	};
 </script>
 
-<GridContainer pad={true} classes="rounded-lg" border={true}>
-	<GridContainer
-		heading="Meta / Top-level Info"
-		border={true}
-		pad={true}
-		flow="row"
-		count={1}
-		countMd={3}
-		classes="gap-3"
-	>
-		<GridContainer border={true} pad={true} classes="rounded-md">
-			<GridContent
-				handleEditSavePatches={handleGridPatchesSave}
-				{annotationEditorConfig}
-				data={metaPrimaryData}
-			/>
+{#if showMissingOrInvalidIdState}
+	<div class="px-4 py-4 sm:px-6">
+		<div
+			class="theme-grid-layer mx-auto max-w-3xl rounded-lg border p-6"
+			role="alert"
+			aria-live="polite"
+		>
+			<div class="space-y-4">
+				<div class="space-y-2">
+					<h1 class="text-2xl leading-none font-bold tracking-tight">
+						{missingOrInvalidIdTitle}
+					</h1>
+					<p class="theme-text-muted">{missingOrInvalidIdDescription}</p>
+				</div>
+				<div class="flex justify-start">
+					<a class="theme-btn-light btn rounded-md border px-3 py-1" href={homeHref}>
+						Back to Characters
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+{:else}
+	<GridContainer pad={true} classes="rounded-lg" border={true}>
+		<GridContainer
+			heading="Meta / Top-level Info"
+			border={true}
+			pad={true}
+			flow="row"
+			count={1}
+			countMd={3}
+			classes="gap-3"
+		>
+			<GridContainer border={true} pad={true} classes="rounded-md">
+				<GridContent
+					handleEditSavePatches={handleGridPatchesSave}
+					{annotationEditorConfig}
+					data={metaPrimaryData}
+				/>
+			</GridContainer>
+			<GridContainer border={true} pad={true} classes="rounded-md">
+				<GridContent
+					handleEditSavePatches={handleGridPatchesSave}
+					{annotationEditorConfig}
+					data={metaSecondaryData}
+				/>
+			</GridContainer>
+			<GridContainer border={true} pad={true} classes="rounded-md">
+				<GridContent
+					handleEditSavePatches={handleGridPatchesSave}
+					{annotationEditorConfig}
+					data={metaTertiaryData}
+				/>
+			</GridContainer>
 		</GridContainer>
-		<GridContainer border={true} pad={true} classes="rounded-md">
-			<GridContent
-				handleEditSavePatches={handleGridPatchesSave}
-				{annotationEditorConfig}
-				data={metaSecondaryData}
-			/>
-		</GridContainer>
-		<GridContainer border={true} pad={true} classes="rounded-md">
-			<GridContent
-				handleEditSavePatches={handleGridPatchesSave}
-				{annotationEditorConfig}
-				data={metaTertiaryData}
-			/>
+		<GridContainer
+			heading="Quick Reference"
+			border={true}
+			pad={true}
+			flow="row"
+			count={1}
+			countMd={3}
+			classes="mt-2 gap-3"
+		>
+			<GridContainer border={true} pad={true} classes="rounded-md">
+				<GridContent
+					handleEditSavePatches={handleGridPatchesSave}
+					{annotationEditorConfig}
+					data={quickRefPrimaryData}
+				/>
+			</GridContainer>
+			<GridContainer border={true} pad={true} classes="rounded-md">
+				<GridContent
+					handleEditSavePatches={handleGridPatchesSave}
+					{annotationEditorConfig}
+					data={quickRefMovementData}
+				/>
+			</GridContainer>
+			<GridContainer border={true} pad={true} classes="rounded-md">
+				<GridContent
+					handleEditSavePatches={handleGridPatchesSave}
+					{annotationEditorConfig}
+					data={quickRefSecondaryData}
+				/>
+			</GridContainer>
 		</GridContainer>
 	</GridContainer>
-	<GridContainer
-		heading="Quick Reference"
-		border={true}
-		pad={true}
-		flow="row"
-		count={1}
-		countMd={3}
-		classes="mt-2 gap-3"
-	>
-		<GridContainer border={true} pad={true} classes="rounded-md">
-			<GridContent
-				handleEditSavePatches={handleGridPatchesSave}
-				{annotationEditorConfig}
-				data={quickRefPrimaryData}
-			/>
-		</GridContainer>
-		<GridContainer border={true} pad={true} classes="rounded-md">
-			<GridContent
-				handleEditSavePatches={handleGridPatchesSave}
-				{annotationEditorConfig}
-				data={quickRefMovementData}
-			/>
-		</GridContainer>
-		<GridContainer border={true} pad={true} classes="rounded-md">
-			<GridContent
-				handleEditSavePatches={handleGridPatchesSave}
-				{annotationEditorConfig}
-				data={quickRefSecondaryData}
-			/>
-		</GridContainer>
-	</GridContainer>
-</GridContainer>
 
-TODO: all the rest of the info...
+	TODO: all the rest of the info...
+{/if}

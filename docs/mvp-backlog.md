@@ -62,36 +62,6 @@ Definition of done:
 - runtime information is visually distinct from organizational information
 - existing stored or seeded 5e data renders without obvious breakage
 
-### Add real character management
-
-Size:
-
-- medium; can be done in one pass if tightly scoped, otherwise split first
-
-Scope:
-
-- create new characters from the home view
-- delete characters
-- handle missing or invalid character ids cleanly
-
-Suggested implementation slices:
-
-1. Add a create-new-character flow from the home view.
-2. Add delete-character controls and persistence behavior.
-3. Add a clear missing-or-invalid-id state on the 5e sheet route.
-
-Status:
-
-- slice 1 is complete: the home view can now create and open a new 5e 2014 character
-- slice 2 is complete: the home view now exposes delete controls and persisted deletion behavior
-
-Definition of done:
-
-- a user can create a new 5e 2014 character from the home view
-- a user can delete a character from the home view or equivalent management surface
-- navigating to a missing or invalid character id shows a clear state instead of silently falling back
-- create and delete actions persist across reloads
-
 ### Implement JSON import/export
 
 Size:
@@ -221,4 +191,5 @@ Definition of done:
 
 - split the docs between the active MVP working set and long-term vision docs
 - established `AGENTS.md` as the shortest AI-facing entry point
+- completed the `Add real character management` backlog item
 - completed the `src/lib/*Grid*` cleanup backlog
