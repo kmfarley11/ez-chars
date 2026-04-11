@@ -1,5 +1,6 @@
 import { writable, type Writable } from 'svelte/store';
 import { browser } from '$app/environment';
+import { loadStoredCharacters, saveStoredCharacters } from './lib/characterStorage';
 import {
 	type CharacterWithSystemData,
 	type CharacterDocument5e2014,
@@ -278,30 +279,12 @@ const seedChars: CharacterWithSystemData[] = [
 	})
 ];
 
-const CHARS_STORAGE_KEY = 'ez-chars.characters.v1';
-
-const loadChars = (): CharacterWithSystemData[] => {
-	if (!browser) return seedChars;
-	try {
-		const raw = localStorage.getItem(CHARS_STORAGE_KEY);
-		if (!raw) return seedChars;
-		const parsed = JSON.parse(raw);
-		if (!Array.isArray(parsed)) return seedChars;
-		return parsed as CharacterWithSystemData[];
-	} catch {
-		return seedChars;
-	}
-};
-
-export let charsArray: Writable<CharacterWithSystemData[]> =
-	writable<CharacterWithSystemData[]>(loadChars());
+export let charsArray: Writable<CharacterWithSystemData[]> = writable<CharacterWithSystemData[]>(
+	loadStoredCharacters(seedChars)
+);
 
 if (browser) {
 	charsArray.subscribe((value) => {
-		try {
-			localStorage.setItem(CHARS_STORAGE_KEY, JSON.stringify(value));
-		} catch {
-			// Intentionally ignore storage write failures.
-		}
+		saveStoredCharacters(value);
 	});
 }

@@ -81,6 +81,10 @@ Suggested implementation slices:
 4. Add a versioned storage envelope or migration hook for future schema evolution.
 5. Add user-visible handling for invalid or outdated stored data where needed.
 
+Status:
+
+- slice 2 is complete: load/save behavior now lives in a dedicated storage adapter module
+
 Definition of done:
 
 - runtime state is no longer coupled to seed/demo fixtures in a single module
