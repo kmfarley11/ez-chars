@@ -61,43 +61,6 @@ Definition of done:
 - runtime information is visually distinct from organizational information
 - existing stored or seeded 5e data renders without obvious breakage
 
-### Extract and harden the storage layer
-
-Size:
-
-- oversized; implement by suggested slice, not as one pass
-
-Scope:
-
-- separate seed/demo data from the runtime store
-- validate persisted data with Zod on load
-- add a migration/versioning path for future schema changes
-
-Suggested implementation slices:
-
-1. Split seed/demo fixtures out of the current runtime store module.
-2. Introduce a dedicated storage adapter module for load/save behavior.
-3. Validate persisted character payloads at load time with Zod.
-4. Add a versioned storage envelope or migration hook for future schema evolution.
-5. Add user-visible handling for invalid or outdated stored data where needed.
-
-Status:
-
-- slice 1 is complete: seed/demo fixtures now live in an explicit fixtures module
-- slice 2 is complete: load/save behavior now lives in a dedicated storage adapter module
-- slice 3 is complete: persisted character payloads are validated with Zod at load time
-- slice 4 is complete: stored characters now use a versioned envelope with a legacy-format migration hook
-- slice 5 is complete: invalid or outdated stored data now triggers a user-visible recovery notice
-
-This backlog item is now complete.
-
-Definition of done:
-
-- runtime state is no longer coupled to seed/demo fixtures in a single module
-- persisted data is parsed and validated at the storage boundary instead of raw-cast
-- invalid or outdated stored data is handled predictably
-- the storage shape has an explicit place for schema versioning or migrations
-
 ### Add real character management
 
 Size:
