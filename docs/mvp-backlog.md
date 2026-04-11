@@ -11,37 +11,25 @@ Treat `current-mvp.md` as the boundary document and this file as the execution q
 
 ## How To Use This Backlog With AI
 
-### Prompting Rules
-
 - Pair this file with `AGENTS.md` and `docs/current-mvp.md`
-- Ask the AI to work on one top-level backlog item at a time
+- Work on one top-level backlog item at a time
 - Use the exact backlog item title in the prompt
-- Tell the AI not to expand scope into `docs/vision/*`
-- If the item is too large, ask the AI to decompose it into implementation slices and then execute only the first slice
+- For `small` items, hand the top-level item directly to the AI
+- For `medium`, `medium-to-large`, or `oversized` items, tell the AI to implement only one named suggested slice
+- Do not expand scope into other slices or `docs/vision/*`
 - Ask the AI to run verification commands when appropriate
-- Ask the AI to update this file or `docs/current-mvp.md` if completion status changes
+- Ask the AI to summarize what remains from the parent backlog item
+- Update this file or `docs/current-mvp.md` if the task meaningfully changes backlog or status
 
-### Good Prompt Pattern
-
-```text
-Use AGENTS.md, docs/current-mvp.md, and docs/mvp-backlog.md as the source of truth.
-Focus only on the backlog item "<exact item title>".
-Implement it for the current MVP only.
-Do not expand scope into docs/vision.
-Run check/lint/build when appropriate.
-Update the MVP docs if the task meaningfully changes backlog or status.
-```
-
-### Good Prompt Pattern For Large Items
+Prompt pattern:
 
 ```text
 Use AGENTS.md, docs/current-mvp.md, and docs/mvp-backlog.md as the source of truth.
-Focus only on the backlog item "<exact item title>".
-First break it into 3-5 implementation slices.
-Recommend the first slice.
-Then implement only that slice.
-Do not expand scope into docs/vision.
+Focus only on the backlog item "<exact top-level item title>".
+Implement only suggested slice <number>: "<exact slice text>".
+Do not expand scope into other slices or docs/vision.
 Run check/lint/build when appropriate.
+Summarize what remains from the parent backlog item.
 Update the MVP docs if the task meaningfully changes backlog or status.
 ```
 
@@ -49,10 +37,22 @@ Update the MVP docs if the task meaningfully changes backlog or status.
 
 ### Complete the 5e sheet surface
 
+Size:
+
+- oversized; implement by suggested slice, not as one pass
+
 Scope:
 
 - add abilities, saves, skills, attacks, spellcasting, features, inventory, and notes sections
 - keep the runtime vs organizational split explicit in the layout
+
+Suggested implementation slices:
+
+1. Add abilities, saves, and skills as an explicit runtime section.
+2. Add attacks and spellcasting as an explicit runtime section.
+3. Add features, inventory, and notes as organizational sections.
+4. Refine the page layout so runtime vs organizational information is visually and structurally clear.
+5. Run a render/edit pass against seeded data and fix breakage caused by the expanded surface.
 
 Definition of done:
 
@@ -63,11 +63,23 @@ Definition of done:
 
 ### Extract and harden the storage layer
 
+Size:
+
+- oversized; implement by suggested slice, not as one pass
+
 Scope:
 
 - separate seed/demo data from the runtime store
 - validate persisted data with Zod on load
 - add a migration/versioning path for future schema changes
+
+Suggested implementation slices:
+
+1. Split seed/demo fixtures out of the current runtime store module.
+2. Introduce a dedicated storage adapter module for load/save behavior.
+3. Validate persisted character payloads at load time with Zod.
+4. Add a versioned storage envelope or migration hook for future schema evolution.
+5. Add user-visible handling for invalid or outdated stored data where needed.
 
 Definition of done:
 
@@ -78,11 +90,21 @@ Definition of done:
 
 ### Add real character management
 
+Size:
+
+- medium; can be done in one pass if tightly scoped, otherwise split first
+
 Scope:
 
 - create new characters from the home view
 - delete characters
 - handle missing or invalid character ids cleanly
+
+Suggested implementation slices:
+
+1. Add a create-new-character flow from the home view.
+2. Add delete-character controls and persistence behavior.
+3. Add a clear missing-or-invalid-id state on the 5e sheet route.
 
 Definition of done:
 
@@ -93,10 +115,22 @@ Definition of done:
 
 ### Implement JSON import/export
 
+Size:
+
+- oversized; implement by suggested slice, not as one pass
+
 Scope:
 
 - export all locally stored characters
 - import with validation and user-visible error handling
+
+Suggested implementation slices:
+
+1. Define the exported JSON shape and import semantics.
+2. Add export UI and file download behavior.
+3. Add import UI and file selection behavior.
+4. Validate imported payloads and surface clear errors for invalid files or data.
+5. Finalize overwrite, merge, or replace behavior and document it in the UI or docs.
 
 Definition of done:
 
@@ -107,11 +141,23 @@ Definition of done:
 
 ### Add automated verification
 
+Size:
+
+- oversized; implement by suggested slice, not as one pass
+
 Scope:
 
 - add schema/parser tests
 - add storage adapter tests
 - add at least one end-to-end smoke path for create/edit/reload
+
+Suggested implementation slices:
+
+1. Choose and wire the test tooling and scripts for the repo.
+2. Add schema and parser tests around the current 5e model.
+3. Add storage adapter tests around load/save/invalid-data behavior.
+4. Add one end-to-end or integration smoke path for create/edit/reload.
+5. Document how to run the verification commands locally.
 
 Definition of done:
 
@@ -124,6 +170,19 @@ Definition of done:
 
 ### Add GitHub Actions for `check`, `lint`, and `build`
 
+Size:
+
+- small; safe to hand directly to AI
+
+Scope:
+
+- add a GitHub Actions workflow for the existing repo quality gates
+
+Suggested implementation slices:
+
+1. Add a workflow that runs `npm run check`, `npm run lint`, and `npm run build` on pull requests and pushes.
+2. Confirm the workflow uses the project’s expected Node and install steps.
+
 Definition of done:
 
 - GitHub Actions runs `check`, `lint`, and `build` on pushes or pull requests
@@ -131,6 +190,20 @@ Definition of done:
 - a failing quality gate produces a failing CI run
 
 ### Fix the theme bootstrap mismatch between the early `app.html` script and the runtime theme list
+
+Size:
+
+- small; safe to hand directly to AI
+
+Scope:
+
+- align the early boot theme logic with the runtime theme source of truth
+- preserve theme persistence across reloads
+
+Suggested implementation slices:
+
+1. Make the early bootstrap accept the full supported theme set.
+2. Verify that every runtime theme persists correctly and keep the checklist aligned.
 
 Definition of done:
 
@@ -140,6 +213,22 @@ Definition of done:
 
 ### Improve accessibility and mobile review of menus, dialogs, and sheet sections
 
+Size:
+
+- medium-to-large; scope to one surface before implementation if possible
+
+Scope:
+
+- review the MVP flow for mobile usability and obvious accessibility gaps
+- prioritize menus, dialogs, and sheet-section interaction surfaces
+
+Suggested implementation slices:
+
+1. Review and fix nav/menu behavior on phone-sized screens.
+2. Review and fix dialog accessibility and keyboard behavior.
+3. Review and fix sheet-section readability and interaction on mobile.
+4. Update the UI checklist to reflect any new review expectations.
+
 Definition of done:
 
 - critical menus and dialogs remain usable on phone-sized screens
@@ -147,6 +236,22 @@ Definition of done:
 - the review is reflected in the theme or UI checklist where useful
 
 ### Refactor the repo structure so stores, fixtures, schema, and 5e feature code are less entangled
+
+Size:
+
+- oversized and risky; only tackle in slices or alongside an active feature item
+
+Scope:
+
+- reduce coupling between stores, fixtures, schema modules, and 5e page-specific logic
+- improve navigability without changing behavior unnecessarily
+
+Suggested implementation slices:
+
+1. Move seed/demo data into an explicit fixtures module.
+2. Move storage logic into its own module.
+3. Extract 5e page-specific mapping logic into a feature-local module.
+4. Reorganize folders only after behavior-critical extractions are complete.
 
 Definition of done:
 
