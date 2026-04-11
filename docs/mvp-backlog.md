@@ -55,6 +55,10 @@ Suggested implementation slices:
 4. Refine the page layout so runtime vs organizational information is visually and structurally clear.
 5. Run a render/edit pass against seeded data and fix breakage caused by the expanded surface.
 
+Status:
+
+- slice 1 is complete: the 5e sheet now exposes abilities, saves, and skills as an explicit runtime section
+
 Definition of done:
 
 - the 5e sheet exposes all major MVP data sections called for in `current-mvp.md`

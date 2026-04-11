@@ -137,7 +137,7 @@ const updateGridFieldAtPath = (
 const updateGridFieldValueAtPath = (
 	field: GridContentField,
 	path: Array<GridContentPathSegment>,
-	nextValue: string | number
+	nextValue: string | number | boolean
 ): GridContentField =>
 	updateGridFieldAtPath(field, path, (leafField) => ({
 		...leafField,
@@ -147,7 +147,7 @@ const updateGridFieldValueAtPath = (
 export const updateGridDataAtPath = (
 	source: GridContentData,
 	path: Array<GridContentPathSegment>,
-	nextValue: string | number
+	nextValue: string | number | boolean
 ): GridContentData => {
 	const [head, ...rest] = path;
 	if (typeof head !== 'string') return source;

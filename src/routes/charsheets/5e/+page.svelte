@@ -9,8 +9,10 @@
 		DND_BEYOND_BASIC_RULES_REF_5E_2014,
 		SRD_REF_5E_2014,
 		annotationSchema,
+		type AbilityKey,
 		type Annotation,
-		type CharacterDocument5e2014
+		type CharacterDocument5e2014,
+		type Dnd5eSkillName
 	} from '../../../schema';
 	import { applyGridPatches } from '$lib/characterGridHelpers';
 	import type {
@@ -52,7 +54,37 @@
 	) as CharacterDocument5e2014;
 
 	type AnnotationEntries = Record<string, Annotation>;
-	type PrimitiveGridValue = string | number;
+	type PrimitiveGridValue = string | number | boolean;
+
+	const abilityMetadata: Array<{ key: AbilityKey; label: string; shortLabel: string }> = [
+		{ key: 'str', label: 'Strength', shortLabel: 'STR' },
+		{ key: 'dex', label: 'Dexterity', shortLabel: 'DEX' },
+		{ key: 'con', label: 'Constitution', shortLabel: 'CON' },
+		{ key: 'int', label: 'Intelligence', shortLabel: 'INT' },
+		{ key: 'wis', label: 'Wisdom', shortLabel: 'WIS' },
+		{ key: 'cha', label: 'Charisma', shortLabel: 'CHA' }
+	];
+
+	const skillMetadata: Array<{ name: Dnd5eSkillName; abilityKey: AbilityKey }> = [
+		{ name: 'Acrobatics', abilityKey: 'dex' },
+		{ name: 'Animal Handling', abilityKey: 'wis' },
+		{ name: 'Arcana', abilityKey: 'int' },
+		{ name: 'Athletics', abilityKey: 'str' },
+		{ name: 'Deception', abilityKey: 'cha' },
+		{ name: 'History', abilityKey: 'int' },
+		{ name: 'Insight', abilityKey: 'wis' },
+		{ name: 'Intimidation', abilityKey: 'cha' },
+		{ name: 'Investigation', abilityKey: 'int' },
+		{ name: 'Medicine', abilityKey: 'wis' },
+		{ name: 'Nature', abilityKey: 'int' },
+		{ name: 'Perception', abilityKey: 'wis' },
+		{ name: 'Performance', abilityKey: 'cha' },
+		{ name: 'Persuasion', abilityKey: 'cha' },
+		{ name: 'Religion', abilityKey: 'int' },
+		{ name: 'Sleight of Hand', abilityKey: 'dex' },
+		{ name: 'Stealth', abilityKey: 'dex' },
+		{ name: 'Survival', abilityKey: 'wis' }
+	];
 
 	const annotationEditorConfig: GridAnnotationEditorConfig = {
 		defaultKind: 'note',
@@ -138,6 +170,15 @@
 			value
 		};
 	};
+
+	const withEditOnlyFieldAnnotations = (
+		value: PrimitiveGridValue,
+		bindPath: GridContentBindPath,
+		options: Pick<GridContentField, 'fieldName' | 'label'> = {}
+	): GridContentField => ({
+		...withFieldAnnotations(value, bindPath, options),
+		editOnly: true
+	});
 
 	const metaPrimaryData = $derived<GridContentData>({
 		name: withFieldAnnotations(char.identity.name, ['identity', 'name']),
@@ -292,6 +333,106 @@
 		}
 	});
 
+	const abilitiesRuntimeData = $derived<GridContentData>(
+		Object.fromEntries(
+			abilityMetadata.map(({ key, label }) => [
+				key,
+				{
+					fieldName: label,
+					value: {
+						score: withFieldAnnotations(
+							char.systemData.abilities[key].score,
+							['systemData', 'abilities', key, 'score'],
+							{
+								fieldName: 'Score',
+								label: 'score'
+							}
+						),
+						mod: withFieldAnnotations(
+							char.systemData.abilities[key].mod ?? 0,
+							['systemData', 'abilities', key, 'mod'],
+							{
+								fieldName: 'Modifier',
+								label: 'mod'
+							}
+						)
+					}
+				}
+			])
+		)
+	);
+
+	const savesRuntimeData = $derived<GridContentData>(
+		Object.fromEntries(
+			abilityMetadata.map(({ key, label }) => {
+				const saveData = char.systemData.saves[key];
+				return [
+					key,
+					{
+						fieldName: label,
+						value: {
+							proficient: withEditOnlyFieldAnnotations(
+								saveData?.proficient ?? false,
+								['systemData', 'saves', key, 'proficient'],
+								{
+									fieldName: 'Proficient'
+								}
+							),
+							bonus: withFieldAnnotations(
+								saveData?.bonus ?? 0,
+								['systemData', 'saves', key, 'bonus'],
+								{
+									fieldName: 'Bonus'
+								}
+							)
+						}
+					}
+				];
+			})
+		)
+	);
+
+	const skillsRuntimeData = $derived<GridContentData>(
+		Object.fromEntries(
+			skillMetadata.map(({ name, abilityKey }) => {
+				const skillData = char.systemData.skills[name];
+				const abilityShortLabel =
+					abilityMetadata.find((entry) => entry.key === abilityKey)?.shortLabel ??
+					abilityKey.toUpperCase();
+				return [
+					name,
+					{
+						fieldName: name,
+						label: abilityShortLabel,
+						value: {
+							proficient: withEditOnlyFieldAnnotations(
+								skillData?.proficient ?? false,
+								['systemData', 'skills', name, 'proficient'],
+								{
+									fieldName: 'Proficient'
+								}
+							),
+							expertise: withEditOnlyFieldAnnotations(
+								skillData?.expertise ?? false,
+								['systemData', 'skills', name, 'expertise'],
+								{
+									fieldName: 'Expertise'
+								}
+							),
+							bonus: withFieldAnnotations(
+								skillData?.bonus ?? 0,
+								['systemData', 'skills', name, 'bonus'],
+								{
+									fieldName: 'Bonus'
+								}
+							)
+						}
+					}
+				];
+			})
+		)
+	);
+
 	const updateCurrent5eCharacter = (
 		// eslint-disable-next-line no-unused-vars
 		updateFn: (_entry: CharacterDocument5e2014) => CharacterDocument5e2014
@@ -434,6 +575,37 @@
 					handleEditSavePatches={handleGridPatchesSave}
 					{annotationEditorConfig}
 					data={quickRefSecondaryData}
+				/>
+			</GridContainer>
+		</GridContainer>
+		<GridContainer
+			heading="Runtime / Abilities, Saves, Skills"
+			border={true}
+			pad={true}
+			flow="row"
+			count={1}
+			countMd={3}
+			classes="mt-2 gap-3"
+		>
+			<GridContainer border={true} pad={true} classes="rounded-md">
+				<GridContent
+					handleEditSavePatches={handleGridPatchesSave}
+					{annotationEditorConfig}
+					data={abilitiesRuntimeData}
+				/>
+			</GridContainer>
+			<GridContainer border={true} pad={true} classes="rounded-md">
+				<GridContent
+					handleEditSavePatches={handleGridPatchesSave}
+					{annotationEditorConfig}
+					data={savesRuntimeData}
+				/>
+			</GridContainer>
+			<GridContainer border={true} pad={true} classes="rounded-md">
+				<GridContent
+					handleEditSavePatches={handleGridPatchesSave}
+					{annotationEditorConfig}
+					data={skillsRuntimeData}
 				/>
 			</GridContainer>
 		</GridContainer>

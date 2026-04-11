@@ -257,7 +257,25 @@
 													</span>
 												{/if}
 											</span>
-											{#if leaf.field.multiline}
+											{#if typeof leaf.field.value === 'boolean'}
+												<label class="flex items-center gap-2">
+													<input
+														class="theme-input h-4 w-4 rounded border"
+														type="checkbox"
+														checked={leaf.field.value}
+														aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
+														onchange={(event) => {
+															const target = event.currentTarget as HTMLInputElement;
+															draftData = updateGridDataAtPath(
+																draftData,
+																leaf.path,
+																target.checked
+															);
+														}}
+													/>
+													<span class="theme-text-muted text-xs">Enabled</span>
+												</label>
+											{:else if leaf.field.multiline}
 												<textarea
 													class="theme-input w-full rounded-md border px-2 py-1 font-mono text-sm"
 													rows="5"
@@ -324,7 +342,21 @@
 											</span>
 										{/if}
 									</span>
-									{#if leaf.field.multiline}
+									{#if typeof leaf.field.value === 'boolean'}
+										<label class="flex items-center gap-2">
+											<input
+												class="theme-input h-4 w-4 rounded border"
+												type="checkbox"
+												checked={leaf.field.value}
+												aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
+												onchange={(event) => {
+													const target = event.currentTarget as HTMLInputElement;
+													draftData = updateGridDataAtPath(draftData, leaf.path, target.checked);
+												}}
+											/>
+											<span class="theme-text-muted text-xs">Enabled</span>
+										</label>
+									{:else if leaf.field.multiline}
 										<textarea
 											class="theme-input w-full rounded-md border px-2 py-1 font-mono text-sm"
 											rows="5"
