@@ -83,6 +83,7 @@ Suggested implementation slices:
 Status:
 
 - slice 1 is complete: the home view can now create and open a new 5e 2014 character
+- slice 2 is complete: the home view now exposes delete controls and persisted deletion behavior
 
 Definition of done:
 

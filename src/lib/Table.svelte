@@ -4,18 +4,19 @@
 	import type { CharacterWithSystemData, Dnd5e2014SystemData } from '../schema';
 	import { capitalizeFirstLetter, anyToString } from './stringFormatters';
 	import TableHeader from './TableHeader.svelte';
-	import TableDataRow from './TableDataRow.svelte';
 
 	interface Props {
 		tableData: CharacterWithSystemData[];
 		onSelect: (rowData: CharacterWithSystemData) => void;
+		onDelete?: (rowData: CharacterWithSystemData) => void;
 	}
 
 	let {
 		tableData,
 		onSelect = (rowData) => {
 			alert(anyToString(rowData));
-		}
+		},
+		onDelete = undefined
 	}: Props = $props();
 
 	const columns: Array<{
@@ -41,22 +42,44 @@
 		{ header: 'created', value: (row) => row.meta.createdAt },
 		{ header: 'updated', value: (row) => row.meta.updatedAt }
 	];
+
+	const showDelete = $derived(typeof onDelete === 'function');
+	const headers = $derived(
+		showDelete
+			? [...columns.map((column) => column.header), 'actions']
+			: columns.map((column) => column.header)
+	);
 </script>
 
 <div class="max-w-full overflow-x-auto p-0">
 	<table
 		class="theme-table border-tools-table-outline w-full table-auto border-separate justify-between rounded-sm border-2 text-left"
 	>
-		<TableHeader
-			headers={columns.map((column) => column.header)}
-			formatHeader={capitalizeFirstLetter}
-		/>
+		<TableHeader {headers} formatHeader={capitalizeFirstLetter} />
 		<tbody>
 			{#each Object.values(tableData) as row (row.meta.id)}
-				<TableDataRow
-					cells={columns.map((column) => column.value(row) ?? '')}
-					onclick={() => onSelect(row)}
-				/>
+				<tr class="theme-table-row cursor-pointer" onclick={() => onSelect(row)}>
+					{#each columns as column, i (i)}
+						<td class="rounded-sm border p-2 text-left align-top wrap-break-word">
+							{column.value(row) ?? ''}
+						</td>
+					{/each}
+					{#if showDelete}
+						<td class="rounded-sm border p-2 text-right align-top">
+							<button
+								type="button"
+								class="theme-btn-light btn rounded-md border px-2 py-1 text-xs"
+								aria-label={`Delete ${row.identity.name?.trim() || row.meta.id}`}
+								onclick={(event) => {
+									event.stopPropagation();
+									onDelete?.(row);
+								}}
+							>
+								Delete
+							</button>
+						</td>
+					{/if}
+				</tr>
 			{/each}
 		</tbody>
 	</table>

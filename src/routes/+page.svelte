@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { charsArray, createNew5eCharacter } from '../data.js';
+	import { charsArray, createNew5eCharacter, deleteCharacterById } from '../data.js';
 
 	import Table from '$lib/Table.svelte';
 	import MenuItemButton from '$lib/MenuItemButton.svelte';
@@ -20,6 +20,13 @@
 	const handleCreateNew5eCharacter = () => {
 		const nextCharacter = createNew5eCharacter();
 		openCharacterSheet(nextCharacter.meta.id);
+	};
+
+	const handleCharacterDelete = (char: CharacterWithSystemData) => {
+		const characterLabel = char.identity.name?.trim() || char.meta.id;
+		const confirmed = window.confirm(`Delete "${characterLabel}"? This cannot be undone.`);
+		if (!confirmed) return;
+		deleteCharacterById(char.meta.id);
 	};
 </script>
 
@@ -58,5 +65,5 @@
 		</div>
 	</div>
 
-	<Table tableData={$charsArray} onSelect={handleCharSelect} />
+	<Table tableData={$charsArray} onSelect={handleCharSelect} onDelete={handleCharacterDelete} />
 </div>

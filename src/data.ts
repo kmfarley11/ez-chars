@@ -32,6 +32,10 @@ export const createNew5eCharacter = (): CharacterDocument5e2014 => {
 	return nextCharacter;
 };
 
+export const deleteCharacterById = (characterId: string): void => {
+	charsArray.update((entries) => entries.filter((entry) => entry.meta.id !== characterId));
+};
+
 if (browser) {
 	charsArray.subscribe((value) => {
 		if (skipInitialCharsPersist) {
