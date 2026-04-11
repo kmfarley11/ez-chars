@@ -12,11 +12,17 @@
 		getLabeledDisplayParts,
 		normalizeData
 	} from '$lib/gridContentHelpers';
-	import { updateGridAnnotationsAtPath, updateGridDataAtPath } from '$lib/characterGridHelpers';
+	import {
+		appendGridArrayItemAtPath,
+		updateGridAnnotationsAtPath,
+		updateGridDataAtPath
+	} from '$lib/characterGridHelpers';
 	import { displayOrPlaceholder } from '$lib/displayHelpers';
+	import { isGridFieldArray } from '$lib/gridFieldGuards';
 	import type {
 		GridAnnotationEditorConfig,
 		GridContentData,
+		GridContentField,
 		GridContentPatch
 	} from '$lib/gridContentTypes';
 
@@ -96,6 +102,14 @@
 			handleEditSave?.(draftData);
 		}
 		closeDialog();
+	};
+
+	const addArrayItem = (fieldKey: string, template: GridContentField) => {
+		draftData = appendGridArrayItemAtPath(
+			draftData,
+			[fieldKey],
+			structuredClone($state.snapshot(template))
+		);
 	};
 </script>
 
@@ -185,13 +199,27 @@
 		{#each Object.entries(draftData) as [fieldKey, field] (fieldKey)}
 			{@const leafInputs = collectLeafInputs(field, [fieldKey])}
 			<div class="space-y-1">
-				<p class="font-semibold">
-					{field.fieldName}
-					{#if field.label}
-						<span class="theme-text-muted text-xs italic"> ({field.label}) </span>
+				<div class="flex items-center justify-between gap-2">
+					<p class="font-semibold">
+						{field.fieldName}
+						{#if field.label}
+							<span class="theme-text-muted text-xs italic"> ({field.label}) </span>
+						{/if}
+					</p>
+					{#if isGridFieldArray(field.value) && field.addItemTemplate}
+						<button
+							type="button"
+							class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
+							onclick={() => addArrayItem(fieldKey, field.addItemTemplate!)}
+						>
+							{field.addItemLabel ?? 'Add'}
+						</button>
 					{/if}
-				</p>
+				</div>
 				<div class="space-y-2">
+					{#if leafInputs.length === 0}
+						<p class="theme-text-muted text-xs italic">No entries yet.</p>
+					{/if}
 					{#each leafInputs as leaf, idx (`${fieldKey}-${idx}-${leaf.path.join('.')}`)}
 						<div class="space-y-2 rounded-md border px-2 py-2">
 							<label class="space-y-1">

@@ -29,6 +29,8 @@ export type GridContentNestedFields = Record<string, GridContentField>;
 export type GridContentField = {
 	fieldName?: string;
 	label?: string;
+	addItemLabel?: string;
+	addItemTemplate?: GridContentField;
 	// Data-path contract:
 	// - Structural `path` is the field's position in the GridContentData tree (computed by traversal).
 	// - `bindPath` overrides where this field's value patch is written.

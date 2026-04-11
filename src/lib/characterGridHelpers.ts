@@ -184,6 +184,34 @@ export const updateGridAnnotationsAtPath = (
 	};
 };
 
+const appendGridFieldArrayItemAtPath = (
+	field: GridContentField,
+	path: Array<GridContentPathSegment>,
+	nextItem: GridContentField
+): GridContentField =>
+	updateGridFieldAtPath(field, path, (targetField) => {
+		if (!isGridFieldArray(targetField.value)) return targetField;
+		return {
+			...targetField,
+			value: [...targetField.value, nextItem]
+		};
+	});
+
+export const appendGridArrayItemAtPath = (
+	source: GridContentData,
+	path: Array<GridContentPathSegment>,
+	nextItem: GridContentField
+): GridContentData => {
+	const [head, ...rest] = path;
+	if (typeof head !== 'string') return source;
+	const target = source[head];
+	if (!target) return source;
+	return {
+		...source,
+		[head]: appendGridFieldArrayItemAtPath(target, rest, nextItem)
+	};
+};
+
 // ------------------------------------------------------------
 // Patch Application
 // ------------------------------------------------------------

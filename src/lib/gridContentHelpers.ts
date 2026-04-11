@@ -49,9 +49,13 @@ const shouldRenderField = (field: GridContentField) => !field.editOnly;
 export const normalizeField = (fieldKey: string, field: GridContentField): GridContentField => {
 	const normalizedName =
 		displayOrPlaceholder(field.fieldName, '').trim() || inferFieldName(fieldKey);
+	const normalizedAddItemTemplate = field.addItemTemplate
+		? normalizeField('item', field.addItemTemplate)
+		: undefined;
 	if (!isFieldArray(field.value) && !isNestedFields(field.value)) {
 		return {
 			...field,
+			addItemTemplate: normalizedAddItemTemplate,
 			fieldName: normalizedName
 		};
 	}
@@ -59,6 +63,7 @@ export const normalizeField = (fieldKey: string, field: GridContentField): GridC
 	if (isFieldArray(field.value)) {
 		return {
 			...field,
+			addItemTemplate: normalizedAddItemTemplate,
 			fieldName: normalizedName,
 			value: field.value.map((child, idx) => normalizeField(`item${idx + 1}`, child))
 		};
@@ -72,6 +77,7 @@ export const normalizeField = (fieldKey: string, field: GridContentField): GridC
 	);
 	return {
 		...field,
+		addItemTemplate: normalizedAddItemTemplate,
 		fieldName: normalizedName,
 		value: normalizedNested
 	};

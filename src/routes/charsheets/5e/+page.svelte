@@ -124,6 +124,21 @@
 	const metaPrimaryData = $derived<GridContentData>({
 		name: withFieldAnnotations(char.identity.name, ['identity', 'name']),
 		classLevels: {
+			addItemLabel: 'Add Class',
+			addItemTemplate: {
+				fieldName: 'Class',
+				value: {
+					name: {
+						fieldName: 'Name',
+						value: 'Class'
+					},
+					level: {
+						fieldName: 'Level',
+						value: 1
+					}
+				}
+			},
+			bindPath: ['systemData', 'classes'],
 			value: char.systemData.classes.map((entry, index) => ({
 				fieldName: `Class ${index + 1}`,
 				value: {
