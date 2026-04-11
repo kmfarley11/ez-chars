@@ -8,30 +8,31 @@
 			(() => {
 				try {
 					const key = 'ez-chars-theme';
-					const valid = ['ocean', 'forest', 'sunset'];
 					const stored = localStorage.getItem(key);
-					const next = valid.includes(stored ?? '') ? stored : 'ocean';
-					document.documentElement.dataset.theme = next;
+					// Runtime validation in src/lib/theme.ts is the theme source of truth.
+					if (typeof stored === 'string' && stored.length > 0) {
+						document.documentElement.dataset.theme = stored;
+					}
 				} catch {
-					document.documentElement.dataset.theme = 'ocean';
+					// Fall back to the default :root theme variables.
 				}
 			})();
 		</script>
-		<link href="/ez-chars/_app/immutable/entry/start.B6XwHWVc.js" rel="modulepreload">
-		<link href="/ez-chars/_app/immutable/chunks/BYiFAiZS.js" rel="modulepreload">
-		<link href="/ez-chars/_app/immutable/chunks/CsUyFAJZ.js" rel="modulepreload">
-		<link href="/ez-chars/_app/immutable/chunks/CDhl5YJy.js" rel="modulepreload">
-		<link href="/ez-chars/_app/immutable/entry/app.D29gdPYZ.js" rel="modulepreload">
-		<link href="/ez-chars/_app/immutable/chunks/CfrWuS9z.js" rel="modulepreload">
-		<link href="/ez-chars/_app/immutable/chunks/Dh4ZVii-.js" rel="modulepreload">
-		<link href="/ez-chars/_app/immutable/chunks/4aEFbxCQ.js" rel="modulepreload">
+		<link href="/ez-chars/_app/immutable/entry/start.CfqwLQqi.js" rel="modulepreload">
+		<link href="/ez-chars/_app/immutable/chunks/CRjQAuhl.js" rel="modulepreload">
+		<link href="/ez-chars/_app/immutable/chunks/YRHY5GUw.js" rel="modulepreload">
+		<link href="/ez-chars/_app/immutable/chunks/-GWcLkRC.js" rel="modulepreload">
+		<link href="/ez-chars/_app/immutable/entry/app.C7to8iVm.js" rel="modulepreload">
+		<link href="/ez-chars/_app/immutable/chunks/Dl94x6rS.js" rel="modulepreload">
+		<link href="/ez-chars/_app/immutable/chunks/D--zEaPY.js" rel="modulepreload">
+		<link href="/ez-chars/_app/immutable/chunks/Bit5gsvl.js" rel="modulepreload">
 		
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">
 			<script>
 				{
-					__sveltekit_1ep5fis = {
+					__sveltekit_1hvtf97 = {
 						base: "/ez-chars",
 						assets: "/ez-chars"
 					};
@@ -39,8 +40,8 @@
 					const element = document.currentScript.parentElement;
 
 					Promise.all([
-						import("/ez-chars/_app/immutable/entry/start.B6XwHWVc.js"),
-						import("/ez-chars/_app/immutable/entry/app.D29gdPYZ.js")
+						import("/ez-chars/_app/immutable/entry/start.CfqwLQqi.js"),
+						import("/ez-chars/_app/immutable/entry/app.C7to8iVm.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element);
 					});
