@@ -80,6 +80,10 @@ Suggested implementation slices:
 2. Add delete-character controls and persistence behavior.
 3. Add a clear missing-or-invalid-id state on the 5e sheet route.
 
+Status:
+
+- slice 1 is complete: the home view can now create and open a new 5e 2014 character
+
 Definition of done:
 
 - a user can create a new 5e 2014 character from the home view

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { charsArray } from '../data.js';
+	import { charsArray, createNew5eCharacter } from '../data.js';
 
 	import Table from '$lib/Table.svelte';
 	import MenuItemButton from '$lib/MenuItemButton.svelte';
@@ -9,9 +9,17 @@
 	import { FULL_2014_SRD_HREF, OFFICIAL_2014_CHAR_SHEET_HREF } from '$lib/urlHelpers.js';
 
 	const charsheetHref = resolve('/charsheets/5e');
+	const openCharacterSheet = (charId: string) => {
+		location.href = `${charsheetHref}?id=${encodeURIComponent(charId)}`;
+	};
+
 	const handleCharSelect = (char: CharacterWithSystemData) => {
-		const charId = encodeURIComponent(char.meta.id);
-		location.href = `${charsheetHref}?id=${charId}`;
+		openCharacterSheet(char.meta.id);
+	};
+
+	const handleCreateNew5eCharacter = () => {
+		const nextCharacter = createNew5eCharacter();
+		openCharacterSheet(nextCharacter.meta.id);
 	};
 </script>
 
@@ -42,13 +50,10 @@
 			</p>
 		</div>
 		<div class="-ml-1">
-			<MenuButton text="System Selection!" iconVariant="chevron" align="left">
-				<MenuItemButton
-					onclick={() => {
-						location.href = charsheetHref;
-					}}>2014 5e Character</MenuItemButton
+			<MenuButton text="Create Character" iconVariant="chevron" align="left">
+				<MenuItemButton onclick={handleCreateNew5eCharacter}
+					>Create New 2014 5e Character</MenuItemButton
 				>
-				<MenuItemButton onclick={() => alert('todo')}>2014 5e Character</MenuItemButton>
 			</MenuButton>
 		</div>
 	</div>

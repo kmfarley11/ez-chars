@@ -26,6 +26,12 @@ export let charsArray: Writable<CharacterWithSystemData[]> = writable<CharacterW
 	initialCharactersLoad.characters
 );
 
+export const createNew5eCharacter = (): CharacterDocument5e2014 => {
+	const nextCharacter = create5e2014Character();
+	charsArray.update((entries) => [...entries, nextCharacter]);
+	return nextCharacter;
+};
+
 if (browser) {
 	charsArray.subscribe((value) => {
 		if (skipInitialCharsPersist) {

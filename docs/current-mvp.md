@@ -50,7 +50,7 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 
 ### Partial
 
-- home/list view exists but lacks full character management
+- home/list view supports opening and creating characters but lacks full character management
 - 5e sheet route exists but only covers part of the schema
 - annotation/reference UI exists for surfaced fields
 
