@@ -83,6 +83,7 @@ Suggested implementation slices:
 
 Status:
 
+- slice 1 is complete: seed/demo fixtures now live in an explicit fixtures module
 - slice 2 is complete: load/save behavior now lives in a dedicated storage adapter module
 
 Definition of done:
