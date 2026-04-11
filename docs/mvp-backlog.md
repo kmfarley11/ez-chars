@@ -86,7 +86,10 @@ Status:
 - slice 1 is complete: seed/demo fixtures now live in an explicit fixtures module
 - slice 2 is complete: load/save behavior now lives in a dedicated storage adapter module
 - slice 3 is complete: persisted character payloads are validated with Zod at load time
+- slice 4 is complete: stored characters now use a versioned envelope with a legacy-format migration hook
 - slice 5 is complete: invalid or outdated stored data now triggers a user-visible recovery notice
+
+This backlog item is now complete.
 
 Definition of done:
 

@@ -45,7 +45,7 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 - SvelteKit app scaffold
 - 5e 2014 schema/model foundation
 - reusable grid display/editing primitives
-- localStorage persistence with load-time schema validation and recovery notice
+- localStorage persistence with load-time schema validation, versioned storage envelope, and recovery notice
 - theme system
 
 ### Partial
@@ -58,6 +58,5 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 
 - full 5e sheet coverage
 - import/export
-- storage migrations
 - tests and CI
 - polished empty states and invalid-id handling
