@@ -140,6 +140,23 @@ const joinLabels = (...labels: Array<string | undefined>): string | undefined =>
 	return parts.join(' / ');
 };
 
+const toRawGridFieldValue = (field: GridContentField): unknown => {
+	if (!isFieldArray(field.value) && !isNestedFields(field.value)) {
+		return field.value;
+	}
+
+	if (isFieldArray(field.value)) {
+		return field.value.map((entry) => toRawGridFieldValue(entry));
+	}
+
+	return Object.fromEntries(
+		Object.entries(field.value).map(([childKey, childField]) => [
+			childKey,
+			toRawGridFieldValue(childField)
+		])
+	);
+};
+
 // ------------------------------------------------------------
 // Field Traversal Helpers
 // ------------------------------------------------------------
@@ -206,20 +223,27 @@ export const collectHelpAnnotationGroups = (source: GridContentData): Array<Help
 // Convert current draft into atomic write operations for model-level patch handlers.
 export const collectPatchesFromData = (source: GridContentData): Array<GridContentPatch> =>
 	Object.entries(source).flatMap(([fieldKey, field]) =>
-		collectLeafInputs(field, [fieldKey], undefined, undefined, fieldKey).flatMap((leaf) => {
-			if (isFieldArray(leaf.field.value) || isNestedFields(leaf.field.value)) return [];
-			const patches: Array<GridContentPatch> = [
-				{
-					path: leaf.bindPath ?? leaf.path,
-					value: leaf.field.value
-				}
-			];
-			if (leaf.field.annotationBindPath) {
-				patches.push({
-					path: leaf.field.annotationBindPath,
-					value: leaf.field.annotations ?? []
-				});
-			}
-			return patches;
-		})
+		isFieldArray(field.value) && field.bindPath
+			? [
+					{
+						path: field.bindPath,
+						value: toRawGridFieldValue(field)
+					}
+				]
+			: collectLeafInputs(field, [fieldKey], undefined, undefined, fieldKey).flatMap((leaf) => {
+					if (isFieldArray(leaf.field.value) || isNestedFields(leaf.field.value)) return [];
+					const patches: Array<GridContentPatch> = [
+						{
+							path: leaf.bindPath ?? leaf.path,
+							value: leaf.field.value
+						}
+					];
+					if (leaf.field.annotationBindPath) {
+						patches.push({
+							path: leaf.field.annotationBindPath,
+							value: leaf.field.annotations ?? []
+						});
+					}
+					return patches;
+				})
 	);

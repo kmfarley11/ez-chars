@@ -14,6 +14,7 @@
 	} from '$lib/gridContentHelpers';
 	import {
 		appendGridArrayItemAtPath,
+		removeGridArrayItemAtPath,
 		updateGridAnnotationsAtPath,
 		updateGridDataAtPath
 	} from '$lib/characterGridHelpers';
@@ -111,6 +112,10 @@
 			structuredClone($state.snapshot(template))
 		);
 	};
+
+	const removeArrayItem = (fieldKey: string, itemIdx: number) => {
+		draftData = removeGridArrayItemAtPath(draftData, [fieldKey], itemIdx);
+	};
 </script>
 
 <div class="group relative">
@@ -197,7 +202,6 @@
 	<form class="flex flex-col gap-3 p-4" onsubmit={onSubmit}>
 		<h3 class="text-lg leading-none font-semibold">Edit Fields</h3>
 		{#each Object.entries(draftData) as [fieldKey, field] (fieldKey)}
-			{@const leafInputs = collectLeafInputs(field, [fieldKey])}
 			<div class="space-y-1">
 				<div class="flex items-center justify-between gap-2">
 					<p class="font-semibold">
@@ -216,63 +220,159 @@
 						</button>
 					{/if}
 				</div>
-				<div class="space-y-2">
-					{#if leafInputs.length === 0}
-						<p class="theme-text-muted text-xs italic">No entries yet.</p>
-					{/if}
-					{#each leafInputs as leaf, idx (`${fieldKey}-${idx}-${leaf.path.join('.')}`)}
-						<div class="space-y-2 rounded-md border px-2 py-2">
-							<label class="space-y-1">
-								<span class="theme-text-muted text-xs">
-									{leaf.field.fieldName}
-									{#if leaf.joinedLabel}
-										<span class="theme-text-muted text-xs italic"> ({leaf.joinedLabel}) </span>
-									{/if}
-								</span>
-								{#if leaf.field.multiline}
-									<textarea
-										class="theme-input w-full rounded-md border px-2 py-1 font-mono text-sm"
-										rows="5"
-										aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
-										oninput={(event) => {
-											const target = event.currentTarget as HTMLTextAreaElement;
-											draftData = updateGridDataAtPath(draftData, leaf.path, target.value);
-										}}>{displayOrPlaceholder(leaf.field.value, '')}</textarea
+				{#if isGridFieldArray(field.value)}
+					<div class="space-y-2">
+						{#if field.value.length === 0}
+							<p class="theme-text-muted text-xs italic">No entries yet.</p>
+						{/if}
+						{#each field.value as arrayItem, itemIdx (`${fieldKey}-${itemIdx}`)}
+							{@const itemLeafInputs = collectLeafInputs(
+								arrayItem,
+								[fieldKey, itemIdx],
+								undefined,
+								field.bindPath,
+								itemIdx
+							)}
+							<div class="space-y-2 rounded-md border px-2 py-2">
+								<div class="flex items-center justify-between gap-2">
+									<p class="text-sm font-semibold">
+										{arrayItem.fieldName ?? `${field.fieldName} ${itemIdx + 1}`}
+									</p>
+									<button
+										type="button"
+										class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
+										onclick={() => removeArrayItem(fieldKey, itemIdx)}
 									>
-								{:else}
-									<input
-										class="theme-input w-full rounded-md border px-2 py-1"
-										type={typeof leaf.field.value === 'number' ? 'number' : 'text'}
-										step={typeof leaf.field.value === 'number' ? '1' : undefined}
-										value={displayOrPlaceholder(leaf.field.value, '')}
-										aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
-										oninput={(event) => {
-											const target = event.currentTarget as HTMLInputElement;
-											const parsed = Number(target.value);
-											const nextValue =
-												typeof leaf.field.value === 'number' && Number.isFinite(parsed)
-													? parsed
-													: target.value;
-											draftData = updateGridDataAtPath(draftData, leaf.path, nextValue);
+										Remove
+									</button>
+								</div>
+								{#each itemLeafInputs as leaf, leafIdx (`${fieldKey}-${itemIdx}-${leafIdx}-${leaf.path.join('.')}`)}
+									<div class="space-y-2 rounded-md border px-2 py-2">
+										<label class="space-y-1">
+											<span class="theme-text-muted text-xs">
+												{leaf.field.fieldName}
+												{#if leaf.joinedLabel}
+													<span class="theme-text-muted text-xs italic">
+														({leaf.joinedLabel})
+													</span>
+												{/if}
+											</span>
+											{#if leaf.field.multiline}
+												<textarea
+													class="theme-input w-full rounded-md border px-2 py-1 font-mono text-sm"
+													rows="5"
+													aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
+													oninput={(event) => {
+														const target = event.currentTarget as HTMLTextAreaElement;
+														draftData = updateGridDataAtPath(draftData, leaf.path, target.value);
+													}}>{displayOrPlaceholder(leaf.field.value, '')}</textarea
+												>
+											{:else}
+												<input
+													class="theme-input w-full rounded-md border px-2 py-1"
+													type={typeof leaf.field.value === 'number' ? 'number' : 'text'}
+													step={typeof leaf.field.value === 'number' ? '1' : undefined}
+													value={displayOrPlaceholder(leaf.field.value, '')}
+													aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
+													oninput={(event) => {
+														const target = event.currentTarget as HTMLInputElement;
+														const parsed = Number(target.value);
+														const nextValue =
+															typeof leaf.field.value === 'number' && Number.isFinite(parsed)
+																? parsed
+																: target.value;
+														draftData = updateGridDataAtPath(draftData, leaf.path, nextValue);
+													}}
+												/>
+											{/if}
+										</label>
+
+										{#if leaf.field.annotationBindPath}
+											<GridContentAnnotationsEditor
+												annotations={leaf.field.annotations ?? []}
+												referenceTemplates={annotationEditorConfig?.referenceTemplates}
+												defaultKind={annotationEditorConfig?.defaultKind}
+												defaultOrigin={annotationEditorConfig?.defaultOrigin}
+												onChange={(nextAnnotations) => {
+													draftData = updateGridAnnotationsAtPath(
+														draftData,
+														leaf.path,
+														nextAnnotations
+													);
+												}}
+											/>
+										{/if}
+									</div>
+								{/each}
+							</div>
+						{/each}
+					</div>
+				{:else}
+					{@const leafInputs = collectLeafInputs(field, [fieldKey])}
+					<div class="space-y-2">
+						{#if leafInputs.length === 0}
+							<p class="theme-text-muted text-xs italic">No entries yet.</p>
+						{/if}
+						{#each leafInputs as leaf, idx (`${fieldKey}-${idx}-${leaf.path.join('.')}`)}
+							<div class="space-y-2 rounded-md border px-2 py-2">
+								<label class="space-y-1">
+									<span class="theme-text-muted text-xs">
+										{leaf.field.fieldName}
+										{#if leaf.joinedLabel}
+											<span class="theme-text-muted text-xs italic">
+												({leaf.joinedLabel})
+											</span>
+										{/if}
+									</span>
+									{#if leaf.field.multiline}
+										<textarea
+											class="theme-input w-full rounded-md border px-2 py-1 font-mono text-sm"
+											rows="5"
+											aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
+											oninput={(event) => {
+												const target = event.currentTarget as HTMLTextAreaElement;
+												draftData = updateGridDataAtPath(draftData, leaf.path, target.value);
+											}}>{displayOrPlaceholder(leaf.field.value, '')}</textarea
+										>
+									{:else}
+										<input
+											class="theme-input w-full rounded-md border px-2 py-1"
+											type={typeof leaf.field.value === 'number' ? 'number' : 'text'}
+											step={typeof leaf.field.value === 'number' ? '1' : undefined}
+											value={displayOrPlaceholder(leaf.field.value, '')}
+											aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
+											oninput={(event) => {
+												const target = event.currentTarget as HTMLInputElement;
+												const parsed = Number(target.value);
+												const nextValue =
+													typeof leaf.field.value === 'number' && Number.isFinite(parsed)
+														? parsed
+														: target.value;
+												draftData = updateGridDataAtPath(draftData, leaf.path, nextValue);
+											}}
+										/>
+									{/if}
+								</label>
+
+								{#if leaf.field.annotationBindPath}
+									<GridContentAnnotationsEditor
+										annotations={leaf.field.annotations ?? []}
+										referenceTemplates={annotationEditorConfig?.referenceTemplates}
+										defaultKind={annotationEditorConfig?.defaultKind}
+										defaultOrigin={annotationEditorConfig?.defaultOrigin}
+										onChange={(nextAnnotations) => {
+											draftData = updateGridAnnotationsAtPath(
+												draftData,
+												leaf.path,
+												nextAnnotations
+											);
 										}}
 									/>
 								{/if}
-							</label>
-
-							{#if leaf.field.annotationBindPath}
-								<GridContentAnnotationsEditor
-									annotations={leaf.field.annotations ?? []}
-									referenceTemplates={annotationEditorConfig?.referenceTemplates}
-									defaultKind={annotationEditorConfig?.defaultKind}
-									defaultOrigin={annotationEditorConfig?.defaultOrigin}
-									onChange={(nextAnnotations) => {
-										draftData = updateGridAnnotationsAtPath(draftData, leaf.path, nextAnnotations);
-									}}
-								/>
-							{/if}
-						</div>
-					{/each}
-				</div>
+							</div>
+						{/each}
+					</div>
+				{/if}
 			</div>
 		{/each}
 		<div class="mt-1 flex justify-end gap-2">

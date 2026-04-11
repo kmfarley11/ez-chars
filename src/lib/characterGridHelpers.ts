@@ -212,6 +212,34 @@ export const appendGridArrayItemAtPath = (
 	};
 };
 
+const removeGridFieldArrayItemAtPath = (
+	field: GridContentField,
+	path: Array<GridContentPathSegment>,
+	removeIndex: number
+): GridContentField =>
+	updateGridFieldAtPath(field, path, (targetField) => {
+		if (!isGridFieldArray(targetField.value)) return targetField;
+		return {
+			...targetField,
+			value: targetField.value.filter((_, idx) => idx !== removeIndex)
+		};
+	});
+
+export const removeGridArrayItemAtPath = (
+	source: GridContentData,
+	path: Array<GridContentPathSegment>,
+	removeIndex: number
+): GridContentData => {
+	const [head, ...rest] = path;
+	if (typeof head !== 'string') return source;
+	const target = source[head];
+	if (!target) return source;
+	return {
+		...source,
+		[head]: removeGridFieldArrayItemAtPath(target, rest, removeIndex)
+	};
+};
+
 // ------------------------------------------------------------
 // Patch Application
 // ------------------------------------------------------------
