@@ -16,6 +16,7 @@ Treat `current-mvp.md` as the boundary document and this file as the execution q
 - Use the exact backlog item title in the prompt
 - For `small` items, hand the top-level item directly to the AI
 - For `medium`, `medium-to-large`, or `oversized` items, tell the AI to implement only one named suggested slice
+- If the task is about the 5e sheet's intended layout or information grouping, also point the AI at `docs/ez-chars-5e-rough.excalidraw` as the design reference
 - Do not expand scope into other slices or `docs/vision/*`
 - Ask the AI to run verification commands when appropriate
 - Ask the AI to summarize what remains from the parent backlog item
@@ -27,6 +28,7 @@ Prompt pattern:
 Use AGENTS.md, docs/current-mvp.md, and docs/mvp-backlog.md as the source of truth.
 Focus only on the backlog item "<exact top-level item title>".
 Implement only suggested slice <number>: "<exact slice text>".
+If this task is about the 5e sheet's design or layout, also use docs/ez-chars-5e-rough.excalidraw as the design reference.
 Do not expand scope into other slices or docs/vision.
 Run check/lint/build when appropriate.
 Explain briefly how I can manually verify the changes.
@@ -49,15 +51,16 @@ Scope:
 
 Suggested implementation slices:
 
-1. Add abilities, saves, and skills as an explicit runtime section.
-2. Add attacks and spellcasting as an explicit runtime section.
-3. Add features, inventory, and notes as organizational sections.
-4. Refine the page layout so runtime vs organizational information is visually and structurally clear.
-5. Run a render/edit pass against seeded data and fix breakage caused by the expanded surface.
+1. Finish the abilities/proficiencies runtime section as a proficiency-bonus row plus six ability-based columns.
+2. Simplify saves and skills in that section to MVP proficiency indicators; defer expertise and ad hoc bonuses to annotations.
+3. Add attacks and spellcasting as an explicit runtime section.
+4. Add features, inventory, and notes as organizational sections.
+5. Refine the page layout so runtime vs organizational information is visually and structurally clear.
+6. Run a render/edit pass against seeded data and fix breakage caused by the expanded surface.
 
 Status:
 
-- slice 1 is complete: the 5e sheet now exposes abilities, saves, and skills as an explicit runtime section
+- first pass landed: abilities, saves, and skills are surfaced, but the runtime block does not yet match the intended ability-centered layout
 
 Definition of done:
 
