@@ -8,12 +8,13 @@
 			(() => {
 				try {
 					const key = 'ez-chars-theme';
-					const valid = ['ocean', 'forest', 'sunset'];
 					const stored = localStorage.getItem(key);
-					const next = valid.includes(stored ?? '') ? stored : 'ocean';
-					document.documentElement.dataset.theme = next;
+					// Runtime validation in src/lib/theme.ts is the theme source of truth.
+					if (typeof stored === 'string' && stored.length > 0) {
+						document.documentElement.dataset.theme = stored;
+					}
 				} catch {
-					document.documentElement.dataset.theme = 'ocean';
+					// Fall back to the default :root theme variables.
 				}
 			})();
 		</script>

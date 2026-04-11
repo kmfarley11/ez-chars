@@ -162,28 +162,6 @@ Definition of done:
 - the workflow is committed in `.github/workflows/`
 - a failing quality gate produces a failing CI run
 
-### Fix the theme bootstrap mismatch between the early `app.html` script and the runtime theme list
-
-Size:
-
-- small; safe to hand directly to AI
-
-Scope:
-
-- align the early boot theme logic with the runtime theme source of truth
-- preserve theme persistence across reloads
-
-Suggested implementation slices:
-
-1. Make the early bootstrap accept the full supported theme set.
-2. Verify that every runtime theme persists correctly and keep the checklist aligned.
-
-Definition of done:
-
-- the early theme bootstrap and runtime theme source agree on the full theme set
-- every available theme persists correctly across reloads
-- the theme smoke checklist reflects the real supported themes
-
 ### Improve accessibility and mobile review of menus, dialogs, and sheet sections
 
 Size:

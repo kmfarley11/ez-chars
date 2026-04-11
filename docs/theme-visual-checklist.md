@@ -4,8 +4,10 @@ Run this quick check before deploy when touching theme or UI colors.
 
 ## 1) Theme switch behavior
 
-- Switch through every available theme in the desktop navbar selector.
-- Reload page and confirm selected theme persists.
+- Switch through every available theme in the desktop navbar selector:
+  `Seafarer`, `Verdant Wilds`, `Ember Dusk`, `Rose Court`, and `Arcane Veil`.
+- Reload after each theme change and confirm the selected theme persists.
+- Hard refresh after each theme change and confirm the page paints in the saved theme on first load.
 - Repeat on mobile using collapsed right menu theme actions.
 
 ## 2) Core surface contrast
