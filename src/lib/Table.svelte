@@ -1,6 +1,7 @@
 <!-- https://svelte.dev/playground/7b02f45e49744502bf5f03cb61375f9f?version=5.30.2 -->
 <script lang="ts">
 	/* eslint-disable no-unused-vars */
+	import DialogButton from './DialogButton.svelte';
 	import type { CharacterWithSystemData, Dnd5e2014SystemData } from '../schema';
 	import { capitalizeFirstLetter, anyToString } from './stringFormatters';
 	import TableHeader from './TableHeader.svelte';
@@ -65,18 +66,40 @@
 						</td>
 					{/each}
 					{#if showDelete}
-						<td class="rounded-sm border p-2 text-right align-top">
-							<button
-								type="button"
-								class="theme-btn-light btn rounded-md border px-2 py-1 text-xs"
-								aria-label={`Delete ${row.identity.name?.trim() || row.meta.id}`}
-								onclick={(event) => {
-									event.stopPropagation();
-									onDelete?.(row);
-								}}
+						<td
+							class="rounded-sm border p-2 text-right align-top"
+							onclick={(event) => event.stopPropagation()}
+						>
+							<DialogButton
+								title="Delete character"
+								ariaLabel={`Delete ${row.identity.name?.trim() || row.meta.id}`}
+								closeText="Cancel"
+								triggerVariant="compact"
 							>
 								Delete
-							</button>
+								{#snippet dialogContent()}
+									<div class="space-y-2 px-1 py-1 text-left text-sm">
+										<h3 class="text-lg leading-none font-semibold">Delete character?</h3>
+										<p class="theme-text-muted">
+											This will permanently remove
+											<strong>{row.identity.name?.trim() || row.meta.id}</strong>
+											from local storage.
+										</p>
+									</div>
+								{/snippet}
+								{#snippet actions(closeDialog: () => void)}
+									<button
+										type="button"
+										class="theme-btn-dark btn cursor-pointer rounded-md border px-3 py-1"
+										onclick={() => {
+											onDelete?.(row);
+											closeDialog();
+										}}
+									>
+										Delete
+									</button>
+								{/snippet}
+							</DialogButton>
 						</td>
 					{/if}
 				</tr>

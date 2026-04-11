@@ -23,9 +23,6 @@
 	};
 
 	const handleCharacterDelete = (char: CharacterWithSystemData) => {
-		const characterLabel = char.identity.name?.trim() || char.meta.id;
-		const confirmed = window.confirm(`Delete "${characterLabel}"? This cannot be undone.`);
-		if (!confirmed) return;
 		deleteCharacterById(char.meta.id);
 	};
 </script>

@@ -4,11 +4,20 @@
 		title,
 		ariaLabel,
 		closeText = 'Close',
-		children,
-		dialogContent
+		triggerVariant = 'icon',
+		children = undefined,
+		dialogContent = undefined,
+		actions = undefined
 	} = $props();
 
 	let colors = $derived(shadingVariant === 'dark' ? 'theme-btn-dark' : 'theme-btn-light');
+	let normalizedTriggerVariant = $derived(triggerVariant === 'compact' ? 'compact' : 'icon');
+	let triggerWrapperClass = $derived(normalizedTriggerVariant === 'compact' ? '' : 'p-1');
+	let triggerButtonClass = $derived(
+		normalizedTriggerVariant === 'compact'
+			? 'btn inline-flex px-2 py-1 text-sm items-center justify-center rounded-md border p-1 leading-none'
+			: 'btn inline-flex h-10 w-10 items-center justify-center rounded-md border p-1 leading-none'
+	);
 
 	/** @type {HTMLDialogElement | undefined} */
 	let dialogEl;
@@ -35,10 +44,10 @@
 	};
 </script>
 
-<div class="p-1">
+<div class={triggerWrapperClass}>
 	<button
 		type="button"
-		class="btn inline-flex h-10 w-10 items-center justify-center rounded-md border p-1 leading-none {colors}"
+		class="{triggerButtonClass} cursor-pointer {colors}"
 		aria-label={ariaLabel ?? title}
 		{title}
 		onclick={openDialog}
@@ -57,14 +66,15 @@
 		<div class="flex-1 pb-4">
 			{@render dialogContent?.()}
 		</div>
-		<div class="flex justify-end">
+		<div class="flex justify-end gap-2">
 			<button
 				type="button"
-				class="theme-btn-light btn rounded-md border px-3 py-1"
+				class="theme-btn-light btn cursor-pointer rounded-md border px-3 py-1"
 				onclick={closeDialog}
 			>
 				{closeText}
 			</button>
+			{@render actions?.(closeDialog)}
 		</div>
 	</div>
 </dialog>
