@@ -29,8 +29,9 @@ Focus only on the backlog item "<exact top-level item title>".
 Implement only suggested slice <number>: "<exact slice text>".
 Do not expand scope into other slices or docs/vision.
 Run check/lint/build when appropriate.
+Explain briefly how I can manually verify the changes.
 Summarize what remains from the parent backlog item.
-Update the MVP docs if the task meaningfully changes backlog or status.
+Update the MVP docs if the task meaningfully changes backlog or status. Prune the backlog item when its fully complete.
 ```
 
 ## P0
