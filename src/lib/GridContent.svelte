@@ -118,13 +118,13 @@
 	};
 </script>
 
-<div class="group relative">
+<div class="group relative min-h-8">
 	<div
-		class="absolute top-0 right-0 z-10 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+		class="absolute inset-y-0 right-0 z-10 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
 	>
 		<button
 			type="button"
-			class="theme-btn-light btn rounded-md border p-1 cursor-pointer"
+			class="theme-btn-light btn inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border p-0 leading-none"
 			aria-label="Help"
 			title="Help"
 			onclick={onHelpOpen}
@@ -138,7 +138,7 @@
 		</button>
 		<button
 			type="button"
-			class="theme-btn-light btn rounded-md border p-1 cursor-pointer"
+			class="theme-btn-light btn inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border p-0 leading-none"
 			aria-label="Edit"
 			title="Edit"
 			onclick={onOpen}
@@ -161,7 +161,7 @@
 			</svg>
 		</button>
 	</div>
-	<div class="pr-16">
+	<div class="pr-24">
 		<GridContainerAuto maxCols={3} classes="gap-2">
 			{#each Object.entries(normalizedData) as [fieldKey, field] (fieldKey)}
 				{@const labeledParts = getLabeledDisplayParts(field)}
