@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import type { CharacterWithSystemData } from '../schema';
+import { safeParseStoredCharacterDocuments, type CharacterWithSystemData } from '../schema';
 
 const CHARS_STORAGE_KEY = 'ez-chars.characters.v1';
 
@@ -13,9 +13,10 @@ export const loadStoredCharacters = (
 		if (!raw) return fallback;
 
 		const parsed = JSON.parse(raw);
-		if (!Array.isArray(parsed)) return fallback;
+		const validated = safeParseStoredCharacterDocuments(parsed);
+		if (!validated.success) return fallback;
 
-		return parsed as CharacterWithSystemData[];
+		return validated.data;
 	} catch {
 		return fallback;
 	}

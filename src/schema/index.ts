@@ -9,7 +9,18 @@ export * from './core';
 export * from './system.5e2014';
 export * from './zod';
 
+export const characterDocumentSchema = z.union([
+	characterDocument5e2014Schema,
+	characterDocumentCoreSchema
+]);
+
+export const storedCharacterDocumentsSchema = z.array(characterDocumentSchema);
+
 export type CharacterDocument5e2014 = z.infer<typeof characterDocument5e2014Schema>;
 export type CharacterDocumentUnknown = z.infer<typeof characterDocumentCoreSchema>;
 
 export type CharacterWithSystemData = CharacterDocument5e2014 | CharacterDocumentUnknown;
+
+export function safeParseStoredCharacterDocuments(input: unknown) {
+	return storedCharacterDocumentsSchema.safeParse(input);
+}
