@@ -169,6 +169,23 @@
 	color: var(--color-brand-hover);
 }
 
+.theme-checkbox-readonly {
+	appearance: auto;
+	-webkit-appearance: checkbox;
+	accent-color: color-mix(in oklab, var(--color-brand) 42%, var(--color-surface-border) 58%);
+	background-color: transparent;
+	border-color: transparent;
+	color: var(--color-surface-text);
+}
+
+.theme-checkbox-readonly:disabled {
+	cursor: not-allowed;
+	opacity: 0.72;
+	filter: saturate(0.72);
+	outline: 1px dashed var(--color-surface-border);
+	outline-offset: 1px;
+}
+
 .theme-page {
 	min-height: 100dvh;
 	background: linear-gradient(180deg, var(--color-page-bg-start), var(--color-page-bg-end));

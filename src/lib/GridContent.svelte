@@ -171,7 +171,17 @@
 					<p class="min-w-0">
 						<span data-grid-auto-item class="inline-block">
 							<span class="font-semibold">{field.fieldName}:</span>
-							{#if labeledParts}
+							{#if typeof field.value === 'boolean'}
+								<span class="ml-1 inline-flex align-middle">
+									<input
+										class="theme-input theme-checkbox-readonly h-4 w-4 cursor-not-allowed rounded border"
+										type="checkbox"
+										checked={field.value}
+										aria-label={`${field.fieldName}: ${field.value ? 'enabled' : 'disabled'}`}
+										disabled
+									/>
+								</span>
+							{:else if labeledParts}
 								{#each labeledParts as part, idx (`${fieldKey}-${idx}`)}
 									{#if idx > 0}
 										<span aria-hidden="true" class="mx-1">/</span>
