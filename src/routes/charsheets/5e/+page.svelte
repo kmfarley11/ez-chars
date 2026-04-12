@@ -171,15 +171,6 @@
 		};
 	};
 
-	const withEditOnlyFieldAnnotations = (
-		value: PrimitiveGridValue,
-		bindPath: GridContentBindPath,
-		options: Pick<GridContentField, 'fieldName' | 'label'> = {}
-	): GridContentField => ({
-		...withFieldAnnotations(value, bindPath, options),
-		editOnly: true
-	});
-
 	const metaPrimaryData = $derived<GridContentData>({
 		name: withFieldAnnotations(char.identity.name, ['identity', 'name']),
 		classLevels: {
@@ -381,56 +372,24 @@
 					],
 					[
 						'save',
-						{
-							fieldName: 'Save',
-							value: {
-								proficient: withEditOnlyFieldAnnotations(
-									saveData?.proficient ?? false,
-									['systemData', 'saves', key, 'proficient'],
-									{
-										fieldName: 'Proficient'
-									}
-								),
-								bonus: withFieldAnnotations(
-									saveData?.bonus ?? 0,
-									['systemData', 'saves', key, 'bonus'],
-									{
-										fieldName: 'Bonus'
-									}
-								)
+						withFieldAnnotations(
+							saveData?.proficient ?? false,
+							['systemData', 'saves', key, 'proficient'],
+							{
+								fieldName: 'Save'
 							}
-						}
+						)
 					],
 					...skillsForAbility.map(({ name }) => {
-						const skillData = char.systemData.skills[name];
 						return [
 							name,
-							{
-								fieldName: name,
-								value: {
-									proficient: withEditOnlyFieldAnnotations(
-										skillData?.proficient ?? false,
-										['systemData', 'skills', name, 'proficient'],
-										{
-											fieldName: 'Proficient'
-										}
-									),
-									expertise: withEditOnlyFieldAnnotations(
-										skillData?.expertise ?? false,
-										['systemData', 'skills', name, 'expertise'],
-										{
-											fieldName: 'Expertise'
-										}
-									),
-									bonus: withFieldAnnotations(
-										skillData?.bonus ?? 0,
-										['systemData', 'skills', name, 'bonus'],
-										{
-											fieldName: 'Bonus'
-										}
-									)
+							withFieldAnnotations(
+								char.systemData.skills[name]?.proficient ?? false,
+								['systemData', 'skills', name, 'proficient'],
+								{
+									fieldName: name
 								}
-							} satisfies GridContentField
+							) satisfies GridContentField
 						] as const;
 					})
 				])

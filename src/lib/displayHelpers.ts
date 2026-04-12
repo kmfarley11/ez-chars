@@ -4,6 +4,9 @@ export const displayOrPlaceholder = (value: unknown, placeholder = '___'): strin
 		const trimmed = value.trim();
 		return trimmed.length === 0 ? placeholder : trimmed;
 	}
+	if (typeof value === 'boolean') {
+		return value ? '[x]' : '[ ]';
+	}
 	if (Array.isArray(value)) {
 		if (value.length === 0) return placeholder;
 		const formatted = value

@@ -60,7 +60,7 @@ Suggested implementation slices:
 
 Status:
 
-- slice 1 is complete: the runtime block now uses a proficiency-bonus row plus six ability-based columns; later slices still need to simplify the displayed save/skill model and finish the rest of the sheet
+- slices 1-2 are complete: the runtime block now uses a proficiency-bonus row plus six ability-based columns, and saves/skills are simplified to MVP proficiency indicators; later slices still need to finish the rest of the sheet
 
 Definition of done:
 
