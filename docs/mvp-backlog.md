@@ -53,10 +53,14 @@ Suggested implementation slices:
 
 1. Finish the abilities/proficiencies runtime section as a proficiency-bonus row plus six ability-based columns.
 2. Simplify saves and skills in that section to MVP proficiency indicators; defer expertise and ad hoc bonuses to annotations.
-3. Add attacks and spellcasting as an explicit runtime section.
-4. Add features, inventory, and notes as organizational sections.
-5. Refine the page layout so runtime vs organizational information is visually and structurally clear.
-6. Run a render/edit pass against seeded data and fix breakage caused by the expanded surface.
+3. Add spells as an explicit runtime section per the excalidraw.
+4. Add features & traits & misc proficiencies to the ability score section per the excalidraw
+5. Add inventory as a dedicated runtime section per the excalidraw
+6. Add background, roleplay, & notes as an organizational section per the excalidraw.
+7. Refine the page layout so runtime vs organizational information is visually and structurally clear.
+8. Run a render/edit pass against seeded data and fix breakage caused by the expanded surface.
+9. Fix the styling on grid content so that it doesn't wrap the skill boxes and score vs. mod stuff
+10. (wip/tbd) evaluate the org
 
 Status:
 
