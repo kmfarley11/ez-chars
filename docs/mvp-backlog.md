@@ -60,7 +60,7 @@ Suggested implementation slices:
 
 Status:
 
-- first pass landed: abilities, saves, and skills are surfaced, but the runtime block does not yet match the intended ability-centered layout
+- slice 1 is complete: the runtime block now uses a proficiency-bonus row plus six ability-based columns; later slices still need to simplify the displayed save/skill model and finish the rest of the sheet
 
 Definition of done:
 

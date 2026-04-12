@@ -60,8 +60,8 @@
 		{ key: 'str', label: 'Strength', shortLabel: 'STR' },
 		{ key: 'dex', label: 'Dexterity', shortLabel: 'DEX' },
 		{ key: 'con', label: 'Constitution', shortLabel: 'CON' },
-		{ key: 'int', label: 'Intelligence', shortLabel: 'INT' },
 		{ key: 'wis', label: 'Wisdom', shortLabel: 'WIS' },
+		{ key: 'int', label: 'Intelligence', shortLabel: 'INT' },
 		{ key: 'cha', label: 'Charisma', shortLabel: 'CHA' }
 	];
 
@@ -333,104 +333,109 @@
 		}
 	});
 
-	const abilitiesRuntimeData = $derived<GridContentData>(
-		Object.fromEntries(
-			abilityMetadata.map(({ key, label }) => [
+	const proficiencyBonusRuntimeData = $derived<GridContentData>({
+		proficiencyBonus: withFieldAnnotations(
+			char.systemData.proficiencyBonus,
+			['systemData', 'proficiencyBonus'],
+			{
+				fieldName: 'Prof. Bonus'
+			}
+		)
+	});
+
+	const abilityRuntimeColumns = $derived<
+		Array<{ key: AbilityKey; shortLabel: string; data: GridContentData }>
+	>(
+		abilityMetadata.map(({ key, shortLabel }) => {
+			const abilityData = char.systemData.abilities[key];
+			const saveData = char.systemData.saves[key];
+			const skillsForAbility = skillMetadata.filter((entry) => entry.abilityKey === key);
+
+			return {
 				key,
-				{
-					fieldName: label,
-					value: {
-						score: withFieldAnnotations(
-							char.systemData.abilities[key].score,
-							['systemData', 'abilities', key, 'score'],
-							{
-								fieldName: 'Score',
-								label: 'score'
+				shortLabel,
+				data: Object.fromEntries([
+					[
+						'ability',
+						{
+							fieldName: shortLabel,
+							value: {
+								score: withFieldAnnotations(
+									abilityData.score,
+									['systemData', 'abilities', key, 'score'],
+									{
+										fieldName: 'Score',
+										label: 'score'
+									}
+								),
+								mod: withFieldAnnotations(
+									abilityData.mod ?? 0,
+									['systemData', 'abilities', key, 'mod'],
+									{
+										fieldName: 'Modifier',
+										label: 'mod'
+									}
+								)
 							}
-						),
-						mod: withFieldAnnotations(
-							char.systemData.abilities[key].mod ?? 0,
-							['systemData', 'abilities', key, 'mod'],
-							{
-								fieldName: 'Modifier',
-								label: 'mod'
+						}
+					],
+					[
+						'save',
+						{
+							fieldName: 'Save',
+							value: {
+								proficient: withEditOnlyFieldAnnotations(
+									saveData?.proficient ?? false,
+									['systemData', 'saves', key, 'proficient'],
+									{
+										fieldName: 'Proficient'
+									}
+								),
+								bonus: withFieldAnnotations(
+									saveData?.bonus ?? 0,
+									['systemData', 'saves', key, 'bonus'],
+									{
+										fieldName: 'Bonus'
+									}
+								)
 							}
-						)
-					}
-				}
-			])
-		)
-	);
-
-	const savesRuntimeData = $derived<GridContentData>(
-		Object.fromEntries(
-			abilityMetadata.map(({ key, label }) => {
-				const saveData = char.systemData.saves[key];
-				return [
-					key,
-					{
-						fieldName: label,
-						value: {
-							proficient: withEditOnlyFieldAnnotations(
-								saveData?.proficient ?? false,
-								['systemData', 'saves', key, 'proficient'],
-								{
-									fieldName: 'Proficient'
-								}
-							),
-							bonus: withFieldAnnotations(
-								saveData?.bonus ?? 0,
-								['systemData', 'saves', key, 'bonus'],
-								{
-									fieldName: 'Bonus'
-								}
-							)
 						}
-					}
-				];
-			})
-		)
-	);
-
-	const skillsRuntimeData = $derived<GridContentData>(
-		Object.fromEntries(
-			skillMetadata.map(({ name, abilityKey }) => {
-				const skillData = char.systemData.skills[name];
-				const abilityShortLabel =
-					abilityMetadata.find((entry) => entry.key === abilityKey)?.shortLabel ??
-					abilityKey.toUpperCase();
-				return [
-					name,
-					{
-						fieldName: name,
-						label: abilityShortLabel,
-						value: {
-							proficient: withEditOnlyFieldAnnotations(
-								skillData?.proficient ?? false,
-								['systemData', 'skills', name, 'proficient'],
-								{
-									fieldName: 'Proficient'
+					],
+					...skillsForAbility.map(({ name }) => {
+						const skillData = char.systemData.skills[name];
+						return [
+							name,
+							{
+								fieldName: name,
+								value: {
+									proficient: withEditOnlyFieldAnnotations(
+										skillData?.proficient ?? false,
+										['systemData', 'skills', name, 'proficient'],
+										{
+											fieldName: 'Proficient'
+										}
+									),
+									expertise: withEditOnlyFieldAnnotations(
+										skillData?.expertise ?? false,
+										['systemData', 'skills', name, 'expertise'],
+										{
+											fieldName: 'Expertise'
+										}
+									),
+									bonus: withFieldAnnotations(
+										skillData?.bonus ?? 0,
+										['systemData', 'skills', name, 'bonus'],
+										{
+											fieldName: 'Bonus'
+										}
+									)
 								}
-							),
-							expertise: withEditOnlyFieldAnnotations(
-								skillData?.expertise ?? false,
-								['systemData', 'skills', name, 'expertise'],
-								{
-									fieldName: 'Expertise'
-								}
-							),
-							bonus: withFieldAnnotations(
-								skillData?.bonus ?? 0,
-								['systemData', 'skills', name, 'bonus'],
-								{
-									fieldName: 'Bonus'
-								}
-							)
-						}
-					}
-				];
-			})
-		)
+							} satisfies GridContentField
+						] as const;
+					})
+				])
+			};
+		})
 	);
 
 	const updateCurrent5eCharacter = (
@@ -579,34 +584,32 @@
 			</GridContainer>
 		</GridContainer>
 		<GridContainer
-			heading="Runtime / Abilities, Saves, Skills"
+			heading="Runtime / Abilities & Proficiencies"
 			border={true}
 			pad={true}
 			flow="row"
 			count={1}
-			countMd={3}
 			classes="mt-2 gap-3"
 		>
 			<GridContainer border={true} pad={true} classes="rounded-md">
 				<GridContent
 					handleEditSavePatches={handleGridPatchesSave}
 					{annotationEditorConfig}
-					data={abilitiesRuntimeData}
+					displayMaxCols={1}
+					data={proficiencyBonusRuntimeData}
 				/>
 			</GridContainer>
-			<GridContainer border={true} pad={true} classes="rounded-md">
-				<GridContent
-					handleEditSavePatches={handleGridPatchesSave}
-					{annotationEditorConfig}
-					data={savesRuntimeData}
-				/>
-			</GridContainer>
-			<GridContainer border={true} pad={true} classes="rounded-md">
-				<GridContent
-					handleEditSavePatches={handleGridPatchesSave}
-					{annotationEditorConfig}
-					data={skillsRuntimeData}
-				/>
+			<GridContainer flow="row" count={1} countMd={3} countLg={6} classes="gap-3">
+				{#each abilityRuntimeColumns as column (column.key)}
+					<GridContainer border={true} pad={true} classes="rounded-md">
+						<GridContent
+							handleEditSavePatches={handleGridPatchesSave}
+							{annotationEditorConfig}
+							displayMaxCols={1}
+							data={column.data}
+						/>
+					</GridContainer>
+				{/each}
 			</GridContainer>
 		</GridContainer>
 	</GridContainer>

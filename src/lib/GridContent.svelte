@@ -29,6 +29,7 @@
 
 	interface Props {
 		data: GridContentData;
+		displayMaxCols?: number;
 		// Optional domain-level annotation behavior injected by page/feature layers.
 		annotationEditorConfig?: GridAnnotationEditorConfig;
 		// eslint-disable-next-line no-unused-vars
@@ -40,6 +41,7 @@
 
 	let {
 		data,
+		displayMaxCols = 3,
 		annotationEditorConfig = undefined,
 		handleEditSave,
 		handleEditSavePatches,
@@ -162,7 +164,7 @@
 		</button>
 	</div>
 	<div class="pr-24">
-		<GridContainerAuto maxCols={3} classes="gap-2">
+		<GridContainerAuto maxCols={displayMaxCols} classes="gap-2">
 			{#each Object.entries(normalizedData) as [fieldKey, field] (fieldKey)}
 				{@const labeledParts = getLabeledDisplayParts(field)}
 				<GridContainer classes="min-w-0">
