@@ -13,7 +13,7 @@ Treat `current-mvp.md` as the boundary document and this file as the execution q
 
 - Pair this file with `AGENTS.md` and `docs/current-mvp.md`
 - Work on one top-level backlog item at a time
-- Use the exact backlog item title in the prompt
+- Use the exact backlog item id from the `ID:` line in the prompt; keep the human-readable title in this file for context
 - For `small` items, hand the top-level item directly to the AI
 - For `medium`, `medium-to-large`, or `oversized` items, tell the AI to implement only one named suggested slice
 - If the task is about the 5e sheet's intended layout or information grouping, also point the AI at `docs/ez-chars-5e-rough.excalidraw` as the design reference
@@ -26,7 +26,7 @@ Prompt pattern:
 
 ```text
 Use AGENTS.md, docs/current-mvp.md, and docs/mvp-backlog.md as the source of truth.
-Focus only on the backlog item "<exact top-level item title>".
+Focus only on the backlog item "<exact top-level id>".
 Implement only suggested slice <number>: "<exact slice text>".
 If this task is about the 5e sheet's design or layout, also use docs/ez-chars-5e-rough.excalidraw as the design reference.
 Do not expand scope into other slices or docs/vision.
@@ -39,6 +39,10 @@ Update the MVP docs if the task meaningfully changes backlog or status. Prune th
 ## P0
 
 ### Complete the 5e sheet surface
+
+ID:
+
+- `p0-010`
 
 Size:
 
@@ -75,6 +79,10 @@ Definition of done:
 
 ### Implement JSON import/export
 
+ID:
+
+- `p0-020`
+
 Size:
 
 - oversized; implement by suggested slice, not as one pass
@@ -100,6 +108,10 @@ Definition of done:
 - import does not silently corrupt or partially overwrite data without a defined rule
 
 ### Add automated verification
+
+ID:
+
+- `p0-030`
 
 Size:
 
@@ -130,6 +142,10 @@ Definition of done:
 
 ### Add GitHub Actions for `check`, `lint`, and `build`
 
+ID:
+
+- `p1-010`
+
 Size:
 
 - small; safe to hand directly to AI
@@ -150,6 +166,10 @@ Definition of done:
 - a failing quality gate produces a failing CI run
 
 ### Improve accessibility and mobile review of menus, dialogs, and sheet sections
+
+ID:
+
+- `p1-020`
 
 Size:
 
@@ -175,6 +195,10 @@ Definition of done:
 
 ### Refine field-level editing and annotation UX
 
+ID:
+
+- `p1-030`
+
 Size:
 
 - medium-to-large; scope to one interaction slice before implementation
@@ -197,8 +221,8 @@ Suggested implementation slices:
 Dependency notes:
 
 - Start with slice 1 of this item first so the target interaction model is explicit before abstraction work hardens around the wrong UX.
-- After slice 1 is decided, most of the remaining implementation for this item should depend on `Stabilize field-level binding and patch flows`, especially slices 2-4.
-- In practice, the expected order is: UX slice 1 -> binding/patch slices -> UX slices 2-5 -> optional repo-structure cleanup.
+- After slice 1 is decided, most of the remaining implementation for this item should depend on `p1-040`, especially slices 2-4.
+- In practice, the expected order is: `p1-030` slice 1 -> `p1-040` slices -> `p1-030` slices 2-5 -> optional `p1-050` cleanup.
 
 Definition of done:
 
@@ -208,6 +232,10 @@ Definition of done:
 - the grid component structure is clearer about display mode vs inline-edit mode vs annotation mode
 
 ### Stabilize field-level binding and patch flows
+
+ID:
+
+- `p1-040`
 
 Size:
 
@@ -231,7 +259,7 @@ Suggested implementation slices:
 
 Dependency notes:
 
-- This item should usually begin only after slice 1 of `Refine field-level editing and annotation UX` establishes the intended interaction model.
+- This item should usually begin only after slice 1 of `p1-030` establishes the intended interaction model.
 - Once that interaction model is chosen, this item becomes the main technical prerequisite for most of the remaining inline-edit UX work.
 - This item is an enabler for field-level editing and annotation UX, not a standalone data-layer redesign.
 - This item should make future backend support easier, but current implementations should stay client-driven and local-first unless a backlog item explicitly introduces remote behavior.
@@ -245,6 +273,10 @@ Definition of done:
 - the abstraction is proven on at least one current sheet surface and is clear enough to reuse
 
 ### Refactor the repo structure so stores, fixtures, schema, and 5e feature code are less entangled
+
+ID:
+
+- `p1-050`
 
 Size:
 
