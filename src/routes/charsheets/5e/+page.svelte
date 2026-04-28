@@ -86,6 +86,26 @@
 		{ name: 'Survival', abilityKey: 'wis' }
 	];
 
+	const spellSlotLevelMetadata: Array<{
+		key: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
+		label: string;
+	}> = [
+		{ key: '1', label: '1st' },
+		{ key: '2', label: '2nd' },
+		{ key: '3', label: '3rd' },
+		{ key: '4', label: '4th' },
+		{ key: '5', label: '5th' },
+		{ key: '6', label: '6th' },
+		{ key: '7', label: '7th' },
+		{ key: '8', label: '8th' },
+		{ key: '9', label: '9th' }
+	];
+
+	const spellLevelLabel = (level: number | undefined): string => {
+		if (level === 0) return 'Cantrip';
+		return spellSlotLevelMetadata.find((entry) => Number(entry.key) === level)?.label ?? 'Spell';
+	};
+
 	const annotationEditorConfig: GridAnnotationEditorConfig = {
 		defaultKind: 'note',
 		defaultOrigin: 'user',
@@ -170,6 +190,15 @@
 			value
 		};
 	};
+
+	const withEditOnlyFieldAnnotations = (
+		value: PrimitiveGridValue,
+		bindPath: GridContentBindPath,
+		options: Pick<GridContentField, 'fieldName' | 'label'> = {}
+	): GridContentField => ({
+		...withFieldAnnotations(value, bindPath, options),
+		editOnly: true
+	});
 
 	const metaPrimaryData = $derived<GridContentData>({
 		name: withFieldAnnotations(char.identity.name, ['identity', 'name']),
@@ -397,6 +426,132 @@
 		})
 	);
 
+	const defaultSpellcastingAbility = $derived<AbilityKey>(
+		char.systemData.spellcasting?.ability ??
+			char.systemData.classes.find((entry) => entry.spellcasting?.ability)?.spellcasting?.ability ??
+			'int'
+	);
+
+	const spellcastingRuntimeData = $derived<GridContentData>({
+		ability: withFieldAnnotations(
+			char.systemData.spellcasting?.ability ?? defaultSpellcastingAbility,
+			['systemData', 'spellcasting', 'ability'],
+			{
+				fieldName: 'Ability'
+			}
+		),
+		spellSaveDC: withFieldAnnotations(
+			char.systemData.spellcasting?.spellSaveDC ?? 0,
+			['systemData', 'spellcasting', 'spellSaveDC'],
+			{
+				fieldName: 'Save DC'
+			}
+		),
+		spellAttackBonus: withFieldAnnotations(
+			char.systemData.spellcasting?.spellAttackBonus ?? 0,
+			['systemData', 'spellcasting', 'spellAttackBonus'],
+			{
+				fieldName: 'Attack Bonus'
+			}
+		)
+	});
+
+	const spellSlotRuntimeCards = $derived<
+		Array<{ key: string; label: string; data: GridContentData }>
+	>(
+		spellSlotLevelMetadata.map(({ key, label }) => ({
+			key,
+			label,
+			data: {
+				slots: {
+					fieldName: label,
+					value: {
+						used: withFieldAnnotations(
+							char.systemData.spellcasting?.slots?.[key]?.used ?? 0,
+							['systemData', 'spellcasting', 'slots', key, 'used'],
+							{
+								fieldName: 'Used'
+							}
+						),
+						max: withFieldAnnotations(
+							char.systemData.spellcasting?.slots?.[key]?.max ?? 0,
+							['systemData', 'spellcasting', 'slots', key, 'max'],
+							{
+								fieldName: 'Max'
+							}
+						)
+					}
+				}
+			}
+		}))
+	);
+
+	const spellsRuntimeData = $derived<GridContentData>({
+		spells: {
+			fieldName: 'Spell List',
+			addItemLabel: 'Add Spell',
+			addItemTemplate: {
+				fieldName: 'Spell',
+				value: {
+					name: {
+						fieldName: 'Name',
+						value: 'Spell'
+					},
+					level: {
+						fieldName: 'Level',
+						value: 1
+					},
+					prepared: {
+						fieldName: 'Prepared',
+						value: false,
+						editOnly: true
+					},
+					notes: {
+						fieldName: 'Notes',
+						value: '',
+						editOnly: true,
+						multiline: true
+					}
+				}
+			},
+			bindPath: ['systemData', 'spellcasting', 'spells'],
+			value: (char.systemData.spellcasting?.spells ?? []).map((spell, index) => ({
+				fieldName: spellLevelLabel(spell.level),
+				value: {
+					name: {
+						fieldName: 'Name',
+						bindPath: ['systemData', 'spellcasting', 'spells', index, 'name'],
+						value: spell.name
+					},
+					level: withEditOnlyFieldAnnotations(
+						spell.level ?? 1,
+						['systemData', 'spellcasting', 'spells', index, 'level'],
+						{
+							fieldName: 'Level'
+						}
+					),
+					prepared: withEditOnlyFieldAnnotations(
+						spell.prepared ?? false,
+						['systemData', 'spellcasting', 'spells', index, 'prepared'],
+						{
+							fieldName: 'Prepared'
+						}
+					),
+					notes: {
+						...withEditOnlyFieldAnnotations(
+							spell.notes ?? '',
+							['systemData', 'spellcasting', 'spells', index, 'notes'],
+							{
+								fieldName: 'Notes'
+							}
+						),
+						multiline: true
+					}
+				}
+			}))
+		}
+	});
+
 	const updateCurrent5eCharacter = (
 		// eslint-disable-next-line no-unused-vars
 		updateFn: (_entry: CharacterDocument5e2014) => CharacterDocument5e2014
@@ -440,8 +595,58 @@
 		return entries;
 	};
 
+	const pathsEqual = (left: GridContentBindPath, right: GridContentBindPath): boolean =>
+		left.length === right.length && left.every((segment, idx) => segment === right[idx]);
+
+	const pathStartsWith = (path: GridContentBindPath, prefix: GridContentBindPath): boolean =>
+		prefix.every((segment, idx) => path[idx] === segment);
+
+	const withSpellcastingDefaults = (patches: Array<GridContentPatch>): Array<GridContentPatch> => {
+		const normalized = [...patches];
+		const touchesSpellcasting = normalized.some((patch) =>
+			pathStartsWith(patch.path, ['systemData', 'spellcasting'])
+		);
+
+		if (!touchesSpellcasting) return normalized;
+
+		const abilityPath: GridContentBindPath = ['systemData', 'spellcasting', 'ability'];
+		if (
+			char.systemData.spellcasting?.ability === undefined &&
+			!normalized.some((patch) => pathsEqual(patch.path, abilityPath))
+		) {
+			normalized.unshift({
+				path: abilityPath,
+				value: defaultSpellcastingAbility
+			});
+		}
+
+		for (const { key } of spellSlotLevelMetadata) {
+			const usedPath: GridContentBindPath = ['systemData', 'spellcasting', 'slots', key, 'used'];
+			const maxPath: GridContentBindPath = ['systemData', 'spellcasting', 'slots', key, 'max'];
+			const touchesUsed = normalized.some((patch) => pathsEqual(patch.path, usedPath));
+			const touchesMax = normalized.some((patch) => pathsEqual(patch.path, maxPath));
+			const currentSlot = char.systemData.spellcasting?.slots?.[key];
+
+			if ((touchesUsed || touchesMax) && currentSlot?.used === undefined && !touchesUsed) {
+				normalized.push({
+					path: usedPath,
+					value: 0
+				});
+			}
+
+			if ((touchesUsed || touchesMax) && currentSlot?.max === undefined && !touchesMax) {
+				normalized.push({
+					path: maxPath,
+					value: 0
+				});
+			}
+		}
+
+		return normalized;
+	};
+
 	const normalizeGridPatches = (patches: Array<GridContentPatch>): Array<GridContentPatch> =>
-		patches.flatMap((patch) => {
+		withSpellcastingDefaults(patches).flatMap((patch) => {
 			if (!isSystemDataAnnotationPath(patch.path)) return [patch];
 			if (!isValidAnnotationArray(patch.value)) return [];
 			if (patch.value.length === 0) return [{ ...patch, value: undefined }];
@@ -570,6 +775,44 @@
 						/>
 					</GridContainer>
 				{/each}
+			</GridContainer>
+		</GridContainer>
+		<GridContainer
+			heading="Runtime / Spells"
+			border={true}
+			pad={true}
+			flow="row"
+			count={1}
+			classes="mt-2 gap-3"
+		>
+			<GridContainer border={true} pad={true} classes="rounded-md">
+				<GridContent
+					handleEditSavePatches={handleGridPatchesSave}
+					{annotationEditorConfig}
+					data={spellcastingRuntimeData}
+				/>
+			</GridContainer>
+			<GridContainer flow="row" count={1} countMd={3} countLg={5} classes="gap-3">
+				{#each spellSlotRuntimeCards as slotCard (slotCard.key)}
+					<GridContainer border={true} pad={true} classes="rounded-md">
+						<GridContent
+							handleEditSavePatches={handleGridPatchesSave}
+							{annotationEditorConfig}
+							displayAlign="center"
+							displayMaxCols={1}
+							data={slotCard.data}
+						/>
+					</GridContainer>
+				{/each}
+			</GridContainer>
+			<GridContainer border={true} pad={true} classes="rounded-md">
+				<GridContent
+					handleEditSavePatches={handleGridPatchesSave}
+					{annotationEditorConfig}
+					displayArrayMode="stack"
+					displayMaxCols={1}
+					data={spellsRuntimeData}
+				/>
 			</GridContainer>
 		</GridContainer>
 	</GridContainer>

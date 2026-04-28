@@ -31,6 +31,7 @@
 		data: GridContentData;
 		displayMaxCols?: number;
 		displayAlign?: 'left' | 'center';
+		displayArrayMode?: 'inline' | 'stack';
 		// Optional domain-level annotation behavior injected by page/feature layers.
 		annotationEditorConfig?: GridAnnotationEditorConfig;
 		// eslint-disable-next-line no-unused-vars
@@ -44,6 +45,7 @@
 		data,
 		displayMaxCols = 3,
 		displayAlign = 'left',
+		displayArrayMode = 'inline',
 		annotationEditorConfig = undefined,
 		handleEditSave,
 		handleEditSavePatches,
@@ -202,6 +204,22 @@
 										<span class="theme-text-muted text-xs italic">&nbsp;({part.label})</span>
 									{/if}
 								{/each}
+							{:else if displayArrayMode === 'stack' && isGridFieldArray(field.value)}
+								<span class="font-semibold">{field.fieldName}:</span>
+								<span class="mt-1 flex flex-col gap-1">
+									{#if field.value.length === 0}
+										<span class="theme-text-muted text-sm italic">No entries yet.</span>
+									{:else}
+										{#each field.value as arrayEntry, arrayIdx (`${fieldKey}-${arrayIdx}`)}
+											<span class="inline-block">
+												{#if arrayEntry.fieldName}
+													<span class="font-semibold">{arrayEntry.fieldName}:</span>
+												{/if}
+												{formatFieldValue(arrayEntry, '___', ' ')}
+											</span>
+										{/each}
+									{/if}
+								</span>
 							{:else}
 								<span class="font-semibold">{field.fieldName}:</span>
 								{formatFieldValue(field)}

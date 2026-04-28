@@ -69,7 +69,7 @@ Suggested implementation slices:
 
 Status:
 
-- slices 1-2 are complete: the runtime block now uses a proficiency-bonus row plus six ability-based columns, and saves/skills are simplified to MVP proficiency indicators; later slices still need to finish the rest of the sheet
+- slices 1-3 are complete: the runtime surface now covers abilities/proficiencies plus an explicit spells section; later slices still need to finish the rest of the sheet and refine layout/details
 
 Definition of done:
 
