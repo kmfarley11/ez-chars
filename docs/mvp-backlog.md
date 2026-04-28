@@ -69,7 +69,7 @@ Suggested implementation slices:
 
 Status:
 
-- slices 1-3 are complete: the runtime surface now covers abilities/proficiencies plus an explicit spells section; later slices still need to finish the rest of the sheet and refine layout/details
+- slices 1-4 are complete: the runtime surface now covers abilities/proficiencies, traits/class-features/misc proficiency cards, and an explicit spells section; later slices still need to finish the rest of the sheet and refine layout/details
 
 Definition of done:
 
@@ -288,6 +288,7 @@ Scope:
 - reduce coupling between stores, fixtures, schema modules, and 5e page-specific logic
 - keep this item focused on module ownership and navigability, not as a substitute for the field-binding/patch abstraction work
 - improve navigability without changing behavior unnecessarily
+- review duplicated or provenance-bound schema storage that currently forces awkward feature-layer glue
 
 Dependency notes:
 
@@ -300,6 +301,7 @@ Suggested implementation slices:
 2. Move storage logic into its own module.
 3. Extract 5e page-specific mapping and binding glue into feature-local modules.
 4. Reorganize folders only after behavior-critical extractions are complete.
+5. Review duplicated 5e schema storage such as proficiencies/languages split across multiple origins, and document or refactor where cross-origin player-earned data should live.
 
 Definition of done:
 

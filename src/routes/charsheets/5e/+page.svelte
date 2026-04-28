@@ -13,6 +13,7 @@
 		type Annotation,
 		type CharacterDocument5e2014,
 		type Dnd5eSkillName,
+		type FeatureRef,
 		type SpellLevel,
 		type SpellRef
 	} from '../../../schema';
@@ -58,6 +59,9 @@
 	type AnnotationEntries = Record<string, Annotation>;
 	type PrimitiveGridValue = string | number | boolean;
 	type SpellListLevel = SpellLevel;
+	type ProficiencyLanguageSource = 'race' | 'background';
+	// eslint-disable-next-line no-unused-vars
+	type GridIndexBindPathResolver = (_index: number) => GridContentBindPath;
 
 	const abilityMetadata: Array<{ key: AbilityKey; label: string; shortLabel: string }> = [
 		{ key: 'str', label: 'Strength', shortLabel: 'STR' },
@@ -105,6 +109,8 @@
 	];
 
 	const spellListLevelPathPrefix = '__spellLevelList';
+	const proficiencyLanguagesPathPrefix = '__proficiencyLanguages';
+	const classFeatureListPathPrefix = '__classFeatures';
 
 	const spellListLevelBindPath = (level: SpellListLevel): GridContentBindPath => [
 		spellListLevelPathPrefix,
@@ -195,6 +201,81 @@
 			value
 		};
 	};
+
+	const createStringListField = (
+		fieldName: string,
+		bindPath: GridContentBindPath,
+		values: Array<string>,
+		itemFieldName: string,
+		itemPlaceholder: string,
+		itemBindPathForIndex?: GridIndexBindPathResolver
+	): GridContentField => ({
+		fieldName,
+		addItemLabel: `Add ${itemFieldName}`,
+		addItemTemplate: {
+			fieldName: itemFieldName,
+			value: itemPlaceholder
+		},
+		bindPath,
+		value: values.map((entry, index) =>
+			itemBindPathForIndex
+				? {
+						fieldName: itemFieldName,
+						value: {
+							name: withFieldAnnotations(entry, itemBindPathForIndex(index), {
+								fieldName: 'Name'
+							})
+						}
+					}
+				: {
+						fieldName: itemFieldName,
+						value: entry
+					}
+		)
+	});
+
+	const createFeatureRefListField = (
+		fieldName: string,
+		bindPath: GridContentBindPath,
+		values: Array<FeatureRef>,
+		itemFieldName: string,
+		itemBindPathForIndex?: GridIndexBindPathResolver
+	): GridContentField => ({
+		fieldName,
+		addItemLabel: `Add ${itemFieldName}`,
+		addItemTemplate: {
+			fieldName: itemFieldName,
+			value: {
+				name: {
+					fieldName: 'Name',
+					value: itemFieldName
+				}
+			}
+		},
+		bindPath,
+		value: values.map((entry, index) => ({
+			fieldName: itemFieldName,
+			value: {
+				name: itemBindPathForIndex
+					? withFieldAnnotations(entry.name, [...itemBindPathForIndex(index), 'name'], {
+							fieldName: 'Name'
+						})
+					: {
+							fieldName: 'Name',
+							value: entry.name
+						},
+				...(entry.featureId
+					? {
+							featureId: {
+								fieldName: 'Feature Id',
+								value: entry.featureId,
+								editOnly: true
+							} satisfies GridContentField
+						}
+					: {})
+			}
+		}))
+	});
 
 	const metaPrimaryData = $derived<GridContentData>({
 		name: withFieldAnnotations(char.identity.name, ['identity', 'name']),
@@ -428,6 +509,135 @@
 			'int'
 	);
 
+	const defaultRaceName = $derived(
+		char.systemData.race?.name ?? char.identity.ancestryLineage ?? 'Ancestry'
+	);
+
+	const defaultBackgroundName = $derived(
+		char.systemData.background?.name ?? char.identity.background ?? 'Background'
+	);
+
+	const defaultProficiencyLanguageSource = $derived<ProficiencyLanguageSource>(
+		char.systemData.background?.name !== undefined || char.identity.background !== undefined
+			? 'background'
+			: 'race'
+	);
+
+	const traitRuntimeData = $derived<GridContentData>({
+		traits: createFeatureRefListField(
+			'Traits',
+			['systemData', 'race', 'traits'],
+			char.systemData.race?.traits ?? [],
+			'Trait',
+			(index) => ['systemData', 'race', 'traits', index]
+		)
+	});
+
+	const proficiencyLanguagesRuntimeData = $derived<GridContentData>({
+		languages: {
+			fieldName: 'Prof. Languages',
+			addItemLabel: 'Add Language',
+			addItemTemplate: {
+				fieldName: 'Language',
+				value: {
+					name: {
+						fieldName: 'Name',
+						value: 'Language'
+					},
+					source: {
+						fieldName: 'Source',
+						value: defaultProficiencyLanguageSource,
+						editOnly: true,
+						options: ['race', 'background']
+					}
+				}
+			},
+			bindPath: [proficiencyLanguagesPathPrefix],
+			value: [
+				...(char.systemData.race?.languages ?? []).map((entry, index) => ({
+					fieldName: 'Language',
+					value: {
+						name: withFieldAnnotations(entry, ['systemData', 'race', 'languages', index], {
+							fieldName: 'Name'
+						}),
+						source: {
+							fieldName: 'Source',
+							value: 'race' as const,
+							editOnly: true,
+							options: ['race', 'background']
+						}
+					}
+				})),
+				...(char.systemData.background?.proficiencies?.languages ?? []).map((entry, index) => ({
+					fieldName: 'Language',
+					value: {
+						name: withFieldAnnotations(
+							entry,
+							['systemData', 'background', 'proficiencies', 'languages', index],
+							{
+								fieldName: 'Name'
+							}
+						),
+						source: {
+							fieldName: 'Source',
+							value: 'background' as const,
+							editOnly: true,
+							options: ['race', 'background']
+						}
+					}
+				}))
+			]
+		}
+	});
+
+	const proficiencyToolsRuntimeData = $derived<GridContentData>({
+		tools: createStringListField(
+			'Prof. Tools',
+			['systemData', 'background', 'proficiencies', 'tools'],
+			char.systemData.background?.proficiencies?.tools ?? [],
+			'Tool',
+			'Tool',
+			(index) => ['systemData', 'background', 'proficiencies', 'tools', index]
+		)
+	});
+
+	const classFeaturesRuntimeData = $derived<GridContentData>({
+		features: {
+			fieldName: 'Class Features',
+			bindPath: [classFeatureListPathPrefix],
+			value: char.systemData.classes.flatMap((entry, classIndex) =>
+				(entry.features ?? []).map((feature, featureIndex) => ({
+					fieldName: entry.subclass ? `${entry.name} (${entry.subclass})` : entry.name,
+					value: {
+						name: withFieldAnnotations(
+							feature.name,
+							['systemData', 'classes', classIndex, 'features', featureIndex, 'name'],
+							{
+								fieldName: 'Name'
+							}
+						),
+						classIndex: {
+							fieldName: 'Class Index',
+							value: classIndex,
+							editOnly: true,
+							hidden: true
+						},
+						...(feature.featureId
+							? {
+									featureId: {
+										fieldName: 'Feature Id',
+										value: feature.featureId,
+										editOnly: true,
+										hidden: true
+									} satisfies GridContentField
+								}
+							: {})
+					}
+				}))
+			)
+		}
+	});
+
 	const spellcastingRuntimeData = $derived<GridContentData>({
 		ability: withFieldAnnotations(
 			char.systemData.spellcasting?.ability ?? defaultSpellcastingAbility,
@@ -483,14 +693,19 @@
 				},
 				bindPath: spellListLevelBindPath(level),
 				value: currentSpells
-					.filter((spell) => (spell.level ?? 0) === level)
-					.map((spell) => ({
+					.flatMap((spell, spellIndex) =>
+						(spell.level ?? 0) === level ? [{ spell, spellIndex }] : []
+					)
+					.map(({ spell, spellIndex }) => ({
 						fieldName: level === 0 ? 'Cantrip' : 'Spell',
 						value: {
-							name: {
-								fieldName: 'Name',
-								value: spell.name
-							},
+							name: withFieldAnnotations(
+								spell.name,
+								['systemData', 'spellcasting', 'spells', spellIndex, 'name'],
+								{
+									fieldName: 'Name'
+								}
+							),
 							prepared: {
 								fieldName: 'Prepared',
 								value: spell.prepared ?? false,
@@ -598,6 +813,16 @@
 	): path is [typeof spellListLevelPathPrefix, SpellListLevel] =>
 		path.length === 2 && path[0] === spellListLevelPathPrefix && typeof path[1] === 'number';
 
+	const isProficiencyLanguagesPath = (
+		path: GridContentBindPath
+	): path is [typeof proficiencyLanguagesPathPrefix] =>
+		path.length === 1 && path[0] === proficiencyLanguagesPathPrefix;
+
+	const isClassFeatureListPath = (
+		path: GridContentBindPath
+	): path is [typeof classFeatureListPathPrefix] =>
+		path.length === 1 && path[0] === classFeatureListPathPrefix;
+
 	const normalizeSpellLevelValue = (level: SpellListLevel, value: unknown): Array<SpellRef> => {
 		if (!Array.isArray(value)) return [];
 		return value.flatMap((candidate) => {
@@ -629,6 +854,81 @@
 			path: ['systemData', 'spellcasting', 'spells'],
 			value: mergedSpells
 		};
+	};
+
+	const normalizeProficiencyLanguageValue = (
+		value: unknown
+	): Record<ProficiencyLanguageSource, Array<string>> => {
+		const next: Record<ProficiencyLanguageSource, Array<string>> = {
+			race: [],
+			background: []
+		};
+		if (!Array.isArray(value)) return next;
+
+		for (const candidate of value) {
+			if (!isObjectRecord(candidate)) continue;
+			const name = typeof candidate.name === 'string' ? candidate.name.trim() : '';
+			if (name.length === 0) continue;
+			const source: ProficiencyLanguageSource = candidate.source === 'race' ? 'race' : 'background';
+			next[source].push(name);
+		}
+
+		return next;
+	};
+
+	const mergeProficiencyLanguagePatches = (value: unknown): Array<GridContentPatch> => {
+		const nextLanguages = normalizeProficiencyLanguageValue(value);
+		const patches: Array<GridContentPatch> = [];
+		if (nextLanguages.race.length > 0 || char.systemData.race?.languages !== undefined) {
+			patches.push({
+				path: ['systemData', 'race', 'languages'],
+				value: nextLanguages.race
+			});
+		}
+		if (
+			nextLanguages.background.length > 0 ||
+			char.systemData.background?.proficiencies?.languages !== undefined
+		) {
+			patches.push({
+				path: ['systemData', 'background', 'proficiencies', 'languages'],
+				value: nextLanguages.background
+			});
+		}
+		return patches;
+	};
+
+	const mergeClassFeaturePatches = (value: unknown): Array<GridContentPatch> => {
+		const nextFeaturesByClass: Array<Array<FeatureRef>> = [];
+		if (Array.isArray(value)) {
+			for (const candidate of value) {
+				if (!isObjectRecord(candidate)) continue;
+				const name = typeof candidate.name === 'string' ? candidate.name.trim() : '';
+				const classIndex =
+					typeof candidate.classIndex === 'number' && Number.isInteger(candidate.classIndex)
+						? candidate.classIndex
+						: undefined;
+				if (name.length === 0 || classIndex === undefined) continue;
+				const currentEntries = nextFeaturesByClass[classIndex] ?? [];
+				currentEntries.push({
+					name,
+					...(typeof candidate.featureId === 'string' && candidate.featureId.trim().length > 0
+						? { featureId: candidate.featureId }
+						: {})
+				});
+				nextFeaturesByClass[classIndex] = currentEntries;
+			}
+		}
+
+		return char.systemData.classes.flatMap((entry, classIndex) => {
+			const nextFeatures = nextFeaturesByClass[classIndex] ?? [];
+			if (nextFeatures.length === 0 && entry.features === undefined) return [];
+			return [
+				{
+					path: ['systemData', 'classes', classIndex, 'features'],
+					value: nextFeatures
+				}
+			];
+		});
 	};
 
 	const withSpellcastingDefaults = (patches: Array<GridContentPatch>): Array<GridContentPatch> => {
@@ -675,20 +975,81 @@
 		return normalized;
 	};
 
-	const normalizeGridPatches = (patches: Array<GridContentPatch>): Array<GridContentPatch> =>
-		withSpellcastingDefaults(
-			patches.map((patch) =>
-				isSpellLevelListPath(patch.path) ? mergeSpellLevelPatch(patch.path[1], patch.value) : patch
-			)
-		).flatMap((patch) => {
-			if (!isSystemDataAnnotationPath(patch.path)) return [patch];
-			if (!isValidAnnotationArray(patch.value)) return [];
-			if (patch.value.length === 0) return [{ ...patch, value: undefined }];
-			const entries = annotationEntriesFromArray(patch.value);
-			return Object.keys(entries).length > 0
-				? [{ ...patch, value: entries as AnnotationEntries }]
-				: [];
+	const withIdentityBackedDefaults = (
+		patches: Array<GridContentPatch>
+	): Array<GridContentPatch> => {
+		const normalized = [...patches];
+		const raceNamePath: GridContentBindPath = ['systemData', 'race', 'name'];
+		if (
+			normalized.some((patch) => pathStartsWith(patch.path, ['systemData', 'race'])) &&
+			char.systemData.race?.name === undefined &&
+			!normalized.some((patch) => pathsEqual(patch.path, raceNamePath))
+		) {
+			normalized.unshift({
+				path: raceNamePath,
+				value: defaultRaceName
+			});
+		}
+
+		const backgroundNamePath: GridContentBindPath = ['systemData', 'background', 'name'];
+		if (
+			normalized.some((patch) => pathStartsWith(patch.path, ['systemData', 'background'])) &&
+			char.systemData.background?.name === undefined &&
+			!normalized.some((patch) => pathsEqual(patch.path, backgroundNamePath))
+		) {
+			normalized.unshift({
+				path: backgroundNamePath,
+				value: defaultBackgroundName
+			});
+		}
+
+		return normalized;
+	};
+
+	const toAnnotationPatches = (patch: GridContentPatch): Array<GridContentPatch> => {
+		if (!isSystemDataAnnotationPath(patch.path)) return [patch];
+		if (!isValidAnnotationArray(patch.value)) return [];
+		if (patch.value.length === 0) return [{ ...patch, value: undefined }];
+		const entries = annotationEntriesFromArray(patch.value);
+		return Object.keys(entries).length > 0
+			? [{ ...patch, value: entries as AnnotationEntries }]
+			: [];
+	};
+
+	const valuesEqual = (left: unknown, right: unknown): boolean =>
+		JSON.stringify(left) === JSON.stringify(right);
+
+	const dropNoopPatches = (patches: Array<GridContentPatch>): Array<GridContentPatch> =>
+		patches.filter((patch) => {
+			const currentValue = getValueAtPath(char, patch.path);
+			if (typeof patch.value === 'undefined') return typeof currentValue !== 'undefined';
+			if (Array.isArray(patch.value) && patch.value.length === 0 && currentValue === undefined) {
+				return false;
+			}
+			return !valuesEqual(currentValue, patch.value);
 		});
+
+	const normalizeGridPatches = (patches: Array<GridContentPatch>): Array<GridContentPatch> =>
+		withIdentityBackedDefaults(
+			withSpellcastingDefaults(
+				dropNoopPatches(
+					patches
+						.flatMap((patch) => {
+							if (isSpellLevelListPath(patch.path)) {
+								return [mergeSpellLevelPatch(patch.path[1], patch.value)];
+							}
+							if (isProficiencyLanguagesPath(patch.path)) {
+								return mergeProficiencyLanguagePatches(patch.value);
+							}
+							if (isClassFeatureListPath(patch.path)) {
+								return mergeClassFeaturePatches(patch.value);
+							}
+							return [patch];
+						})
+						.flatMap((patch) => toAnnotationPatches(patch))
+				)
+			)
+		);
 
 	const handleGridPatchesSave = (patches: Array<GridContentPatch>) => {
 		updateCurrent5eCharacter((entry) => applyGridPatches(entry, normalizeGridPatches(patches)));
@@ -782,7 +1143,7 @@
 			</GridContainer>
 		</GridContainer>
 		<GridContainer
-			heading="Abilities & Proficiencies"
+			heading="Abilities & Proficiencies, Features & Traits"
 			border={true}
 			pad={true}
 			flow="row"
@@ -809,6 +1170,44 @@
 						/>
 					</GridContainer>
 				{/each}
+			</GridContainer>
+			<GridContainer flow="row" count={1} countMd={2} countLg={4} classes="gap-3">
+				<GridContainer border={true} pad={true} classes="rounded-md">
+					<GridContent
+						handleEditSavePatches={handleGridPatchesSave}
+						{annotationEditorConfig}
+						displayArrayMode="stack"
+						displayMaxCols={1}
+						data={proficiencyLanguagesRuntimeData}
+					/>
+				</GridContainer>
+				<GridContainer border={true} pad={true} classes="rounded-md">
+					<GridContent
+						handleEditSavePatches={handleGridPatchesSave}
+						{annotationEditorConfig}
+						displayArrayMode="stack"
+						displayMaxCols={1}
+						data={proficiencyToolsRuntimeData}
+					/>
+				</GridContainer>
+				<GridContainer border={true} pad={true} classes="rounded-md">
+					<GridContent
+						handleEditSavePatches={handleGridPatchesSave}
+						{annotationEditorConfig}
+						displayArrayMode="stack"
+						displayMaxCols={1}
+						data={classFeaturesRuntimeData}
+					/>
+				</GridContainer>
+				<GridContainer border={true} pad={true} classes="rounded-md">
+					<GridContent
+						handleEditSavePatches={handleGridPatchesSave}
+						{annotationEditorConfig}
+						displayArrayMode="stack"
+						displayMaxCols={1}
+						data={traitRuntimeData}
+					/>
+				</GridContainer>
 			</GridContainer>
 		</GridContainer>
 		<GridContainer

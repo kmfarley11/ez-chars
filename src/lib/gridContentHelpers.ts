@@ -44,7 +44,7 @@ const inferFieldName = (fieldKey: string) => {
 export const isFieldArray = isGridFieldArray;
 export const isNestedFields = isGridNestedFields;
 
-const shouldRenderField = (field: GridContentField) => !field.editOnly;
+const shouldRenderField = (field: GridContentField) => !field.editOnly && !field.hidden;
 
 export const normalizeField = (fieldKey: string, field: GridContentField): GridContentField => {
 	const normalizedName =
@@ -228,7 +228,19 @@ export const collectPatchesFromData = (source: GridContentData): Array<GridConte
 					{
 						path: field.bindPath,
 						value: toRawGridFieldValue(field)
-					}
+					},
+					// TODO(mvp): newly added top-level array items only gain stable annotation bind paths
+					// after their first save, because those annotation paths are derived from stored array indices.
+					...collectLeafInputs(field, [fieldKey], undefined, undefined, fieldKey).flatMap((leaf) =>
+						leaf.field.annotationBindPath
+							? [
+									{
+										path: leaf.field.annotationBindPath,
+										value: leaf.field.annotations ?? []
+									}
+								]
+							: []
+					)
 				]
 			: collectLeafInputs(field, [fieldKey], undefined, undefined, fieldKey).flatMap((leaf) => {
 					if (isFieldArray(leaf.field.value) || isNestedFields(leaf.field.value)) return [];

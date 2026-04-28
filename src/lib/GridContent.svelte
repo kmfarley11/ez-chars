@@ -272,6 +272,7 @@
 								field.bindPath,
 								itemIdx
 							)}
+							{@const visibleItemLeafInputs = itemLeafInputs.filter((leaf) => !leaf.field.hidden)}
 							<div class="space-y-2 rounded-md border px-2 py-2">
 								<div class="flex items-center justify-between gap-2">
 									<p class="text-sm font-semibold">
@@ -285,7 +286,7 @@
 										Remove
 									</button>
 								</div>
-								{#each itemLeafInputs as leaf, leafIdx (`${fieldKey}-${itemIdx}-${leafIdx}-${leaf.path.join('.')}`)}
+								{#each visibleItemLeafInputs as leaf, leafIdx (`${fieldKey}-${itemIdx}-${leafIdx}-${leaf.path.join('.')}`)}
 									<div class="space-y-2 rounded-md border px-2 py-2">
 										<label class="space-y-1">
 											<span class="theme-text-muted text-xs">
@@ -324,6 +325,20 @@
 														draftData = updateGridDataAtPath(draftData, leaf.path, target.value);
 													}}>{displayOrPlaceholder(leaf.field.value, '')}</textarea
 												>
+											{:else if leaf.field.options && typeof leaf.field.value === 'string'}
+												<select
+													class="theme-input w-full rounded-md border px-2 py-1"
+													value={leaf.field.value}
+													aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
+													onchange={(event) => {
+														const target = event.currentTarget as HTMLSelectElement;
+														draftData = updateGridDataAtPath(draftData, leaf.path, target.value);
+													}}
+												>
+													{#each leaf.field.options as option (option)}
+														<option value={option}>{option}</option>
+													{/each}
+												</select>
 											{:else}
 												<input
 													class="theme-input w-full rounded-md border px-2 py-1"
@@ -370,7 +385,7 @@
 						{#if leafInputs.length === 0}
 							<p class="theme-text-muted text-xs italic">No entries yet.</p>
 						{/if}
-						{#each leafInputs as leaf, idx (`${fieldKey}-${idx}-${leaf.path.join('.')}`)}
+						{#each leafInputs.filter((leaf) => !leaf.field.hidden) as leaf, idx (`${fieldKey}-${idx}-${leaf.path.join('.')}`)}
 							<div class="space-y-2 rounded-md border px-2 py-2">
 								<label class="space-y-1">
 									<span class="theme-text-muted text-xs">
@@ -405,6 +420,20 @@
 												draftData = updateGridDataAtPath(draftData, leaf.path, target.value);
 											}}>{displayOrPlaceholder(leaf.field.value, '')}</textarea
 										>
+									{:else if leaf.field.options && typeof leaf.field.value === 'string'}
+										<select
+											class="theme-input w-full rounded-md border px-2 py-1"
+											value={leaf.field.value}
+											aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
+											onchange={(event) => {
+												const target = event.currentTarget as HTMLSelectElement;
+												draftData = updateGridDataAtPath(draftData, leaf.path, target.value);
+											}}
+										>
+											{#each leaf.field.options as option (option)}
+												<option value={option}>{option}</option>
+											{/each}
+										</select>
 									{:else}
 										<input
 											class="theme-input w-full rounded-md border px-2 py-1"

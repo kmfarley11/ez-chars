@@ -30,6 +30,8 @@ export type GridContentNestedFields = Record<string, GridContentField>;
 export type GridContentField = {
 	fieldName?: string;
 	label?: string;
+	hidden?: boolean;
+	options?: string[];
 	addItemLabel?: string;
 	addItemTemplate?: GridContentField;
 	// Data-path contract:

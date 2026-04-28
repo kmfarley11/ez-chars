@@ -83,6 +83,10 @@ export type SpellRef = z.infer<typeof spellRefSchema>;
 export type Dnd5e2014SystemData = z.infer<typeof dnd5e2014SystemDataSchema>;
 export type CharacterDocument5e2014 = z.infer<typeof characterDocument5e2014Schema>;
 
+// TODO(p1-050): review duplicated proficiency storage such as languages split across
+// race/background. Players may gain proficiencies during play that are not cleanly tied
+// to those origins, so the 5e schema likely needs a clearer shared or provenance-aware home.
+
 export const SRD_REF_5E_2014: Reference = {
 	kind: 'pdf',
 	locator: {
