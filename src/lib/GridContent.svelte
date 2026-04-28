@@ -122,7 +122,7 @@
 
 <div class="group relative min-h-8">
 	<div
-		class="absolute inset-y-0 right-0 z-10 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+		class="pointer-events-none absolute top-1.5 right-1.5 z-10 flex -translate-y-2 translate-x-2 items-start gap-1.5 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100"
 	>
 		<button
 			type="button"
@@ -163,7 +163,7 @@
 			</svg>
 		</button>
 	</div>
-	<div class="pr-24">
+	<div>
 		<GridContainerAuto maxCols={displayMaxCols} classes="gap-2">
 			{#each Object.entries(normalizedData) as [fieldKey, field] (fieldKey)}
 				{@const labeledParts = getLabeledDisplayParts(field)}
