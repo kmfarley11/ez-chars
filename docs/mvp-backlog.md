@@ -183,7 +183,7 @@ Scope:
 
 - reduce the mismatch between runtime sheet editing needs and the current bulk edit-dialog workflow
 - move toward direct field interaction for editing while preserving access to field annotations
-- define the target interaction model before heavy implementation work; later implementation slices should lean on the shared field-binding/patch abstraction item instead of page-specific glue
+- define the target interaction model before heavy implementation work; later implementation slices should lean on the shared field-binding/patch abstraction item instead of page-specific glue or transport-specific code
 - avoid locking the UX to desktop-only gestures; any annotation access pattern must still work for touch and keyboard users
 
 Suggested implementation slices:
@@ -217,26 +217,30 @@ Scope:
 
 - extract a shared field-scoped binding model from the current page- and card-wide grid edit flow
 - make per-field reads, drafts, value saves, and annotation saves explicit without requiring page-specific bulk-form glue
+- keep the abstraction transport-agnostic and API-ready: model local edits in a way that can later map cleanly to remote create/read/patch/replace/delete flows without putting HTTP or auth concerns into field components
 - support inline sheet editing and annotation work without turning this into a generalized data-layer rewrite
 
 Suggested implementation slices:
 
-1. Define the field-scoped binding contract around read paths, value patch paths, annotation patch paths, and save semantics.
-2. Separate value patch projection from annotation patch projection so field components can consume them independently.
-3. Introduce field-scoped draft/edit/cancel helpers that do not require opening a card-wide dialog.
-4. Prove the abstraction on one current runtime sheet surface before wider rollout.
-5. Document how grid components, page layers, and data/store layers divide responsibility.
+1. Define the field-scoped binding contract around read paths, value patch paths, annotation patch paths, commit boundaries, and save semantics.
+2. Define a local-first mutation envelope whose semantics can later map cleanly to create/read/patch/replace/delete flows, while remaining transport-agnostic in the current app.
+3. Separate value patch projection from annotation patch projection so field components can consume them independently.
+4. Introduce field-scoped draft/edit/cancel helpers that do not require opening a card-wide dialog.
+5. Prove the abstraction on one current runtime sheet surface before wider rollout, with the page layer applying local changes immediately and an optional persistence/sync layer left as a lower-level concern.
+6. Document how grid components, page layers, and data/store layers divide responsibility, including that field components must not know about HTTP endpoints, auth, or remote transport details.
 
 Dependency notes:
 
 - This item should usually begin only after slice 1 of `Refine field-level editing and annotation UX` establishes the intended interaction model.
 - Once that interaction model is chosen, this item becomes the main technical prerequisite for most of the remaining inline-edit UX work.
 - This item is an enabler for field-level editing and annotation UX, not a standalone data-layer redesign.
+- This item should make future backend support easier, but current implementations should stay client-driven and local-first unless a backlog item explicitly introduces remote behavior.
 
 Definition of done:
 
 - a field component can read and write a single bound path without page-specific save glue
 - value edits and annotation edits use consistent patch semantics
+- the abstraction is transport-agnostic and API-ready enough that a future remote adapter could consume the same mutation semantics without rewriting field components
 - inline edit flows no longer depend on a card-wide bulk form
 - the abstraction is proven on at least one current sheet surface and is clear enough to reuse
 
