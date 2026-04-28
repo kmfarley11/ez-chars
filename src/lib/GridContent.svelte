@@ -170,9 +170,8 @@
 				<GridContainer classes="min-w-0">
 					<p class="min-w-0">
 						<span data-grid-auto-item class="inline-block">
-							<span class="font-semibold">{field.fieldName}:</span>
 							{#if typeof field.value === 'boolean'}
-								<span class="ml-1 inline-flex align-middle">
+								<span class="inline-flex items-center gap-2 align-middle">
 									<input
 										class="theme-input theme-checkbox-readonly h-4 w-4 cursor-not-allowed rounded border"
 										type="checkbox"
@@ -180,8 +179,10 @@
 										aria-label={`${field.fieldName}: ${field.value ? 'enabled' : 'disabled'}`}
 										disabled
 									/>
+									<span class="font-semibold">{field.fieldName}</span>
 								</span>
 							{:else if labeledParts}
+								<span class="font-semibold">{field.fieldName}:</span>
 								{#each labeledParts as part, idx (`${fieldKey}-${idx}`)}
 									{#if idx > 0}
 										<span aria-hidden="true" class="mx-1">/</span>
@@ -192,6 +193,7 @@
 									{/if}
 								{/each}
 							{:else}
+								<span class="font-semibold">{field.fieldName}:</span>
 								{formatFieldValue(field)}
 							{/if}
 							{#if field.label}
