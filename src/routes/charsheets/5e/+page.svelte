@@ -782,7 +782,7 @@
 			</GridContainer>
 		</GridContainer>
 		<GridContainer
-			heading="Runtime / Abilities & Proficiencies"
+			heading="Abilities & Proficiencies"
 			border={true}
 			pad={true}
 			flow="row"
@@ -812,7 +812,7 @@
 			</GridContainer>
 		</GridContainer>
 		<GridContainer
-			heading="Runtime / Spells"
+			heading="Spells"
 			border={true}
 			pad={true}
 			flow="row"
@@ -823,6 +823,7 @@
 				<GridContent
 					handleEditSavePatches={handleGridPatchesSave}
 					{annotationEditorConfig}
+					displayAlign="center"
 					data={spellcastingRuntimeData}
 				/>
 			</GridContainer>
