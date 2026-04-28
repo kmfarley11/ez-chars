@@ -30,6 +30,7 @@
 	interface Props {
 		data: GridContentData;
 		displayMaxCols?: number;
+		displayAlign?: 'left' | 'center';
 		// Optional domain-level annotation behavior injected by page/feature layers.
 		annotationEditorConfig?: GridAnnotationEditorConfig;
 		// eslint-disable-next-line no-unused-vars
@@ -42,6 +43,7 @@
 	let {
 		data,
 		displayMaxCols = 3,
+		displayAlign = 'left',
 		annotationEditorConfig = undefined,
 		handleEditSave,
 		handleEditSavePatches,
@@ -118,6 +120,12 @@
 	const removeArrayItem = (fieldKey: string, itemIdx: number) => {
 		draftData = removeGridArrayItemAtPath(draftData, [fieldKey], itemIdx);
 	};
+
+	const displayItemClass = $derived(
+		displayAlign === 'center'
+			? 'inline-flex items-center justify-center text-center'
+			: 'inline-block'
+	);
 </script>
 
 <div class="group relative min-h-8">
@@ -167,9 +175,11 @@
 		<GridContainerAuto maxCols={displayMaxCols} classes="gap-2">
 			{#each Object.entries(normalizedData) as [fieldKey, field] (fieldKey)}
 				{@const labeledParts = getLabeledDisplayParts(field)}
-				<GridContainer classes="min-w-0">
-					<p class="min-w-0">
-						<span data-grid-auto-item class="inline-block">
+				<GridContainer
+					classes={displayAlign === 'center' ? 'flex min-w-0 justify-center' : 'min-w-0'}
+				>
+					<p class={displayAlign === 'center' ? 'min-w-0 text-center' : 'min-w-0'}>
+						<span data-grid-auto-item class={displayItemClass}>
 							{#if typeof field.value === 'boolean'}
 								<span class="inline-flex items-center gap-2 align-middle">
 									<input

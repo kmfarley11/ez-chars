@@ -554,6 +554,7 @@
 				<GridContent
 					handleEditSavePatches={handleGridPatchesSave}
 					{annotationEditorConfig}
+					displayAlign="center"
 					displayMaxCols={1}
 					data={proficiencyBonusRuntimeData}
 				/>
