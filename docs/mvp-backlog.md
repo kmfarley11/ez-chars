@@ -15,7 +15,8 @@ Treat `current-mvp.md` as the boundary document and this file as the execution q
 - Work on one top-level backlog item at a time
 - Use the exact backlog item id from the `ID:` line in the prompt; keep the human-readable title in this file for context
 - For `small` items, hand the top-level item directly to the AI
-- For `medium`, `medium-to-large`, or `oversized` items, tell the AI to implement only one named suggested slice
+- For `medium`, `medium-to-large`, or `oversized` items, tell the AI to implement only one numbered suggested slice
+- If a slice description is unusually close to another slice or otherwise ambiguous, include the exact slice text as an extra clarification, but this should not be required in the normal case
 - If the task is about the 5e sheet's intended layout or information grouping, also point the AI at `docs/ez-chars-5e-rough.excalidraw` as the design reference
 - Do not expand scope into other slices or `docs/vision/*`
 - Ask the AI to run verification commands when appropriate
@@ -27,7 +28,7 @@ Prompt pattern:
 ```text
 Use AGENTS.md, docs/current-mvp.md, and docs/mvp-backlog.md as the source of truth.
 Focus only on the backlog item "<exact top-level id>".
-Implement only suggested slice <number>: "<exact slice text>".
+Implement only suggested slice <number>.
 If this task is about the 5e sheet's design or layout, also use docs/ez-chars-5e-rough.excalidraw as the design reference.
 Do not expand scope into other slices or docs/vision.
 Run check/lint/build when appropriate.
