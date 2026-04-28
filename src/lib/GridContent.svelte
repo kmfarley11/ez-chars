@@ -180,7 +180,7 @@
 				<GridContainer
 					classes={displayAlign === 'center' ? 'flex min-w-0 justify-center' : 'min-w-0'}
 				>
-					<p class={displayAlign === 'center' ? 'min-w-0 text-center' : 'min-w-0'}>
+					<div class={displayAlign === 'center' ? 'min-w-0 text-center' : 'min-w-0'}>
 						<span data-grid-auto-item class={displayItemClass}>
 							{#if typeof field.value === 'boolean'}
 								<span class="inline-flex items-center gap-2 align-middle">
@@ -206,18 +206,15 @@
 								{/each}
 							{:else if displayArrayMode === 'stack' && isGridFieldArray(field.value)}
 								<span class="font-semibold">{field.fieldName}:</span>
-								<span class="mt-1 flex flex-col gap-1">
+								<span class="mt-1 block">
 									{#if field.value.length === 0}
 										<span class="theme-text-muted text-sm italic">No entries yet.</span>
 									{:else}
-										{#each field.value as arrayEntry, arrayIdx (`${fieldKey}-${arrayIdx}`)}
-											<span class="inline-block">
-												{#if arrayEntry.fieldName}
-													<span class="font-semibold">{arrayEntry.fieldName}:</span>
-												{/if}
-												{formatFieldValue(arrayEntry, '___', ' ')}
-											</span>
-										{/each}
+										<ul class="mt-1 list-disc space-y-1 pl-5">
+											{#each field.value as arrayEntry, arrayIdx (`${fieldKey}-${arrayIdx}`)}
+												<li>{formatFieldValue(arrayEntry, '___', ' ')}</li>
+											{/each}
+										</ul>
 									{/if}
 								</span>
 							{:else}
@@ -228,7 +225,7 @@
 								<span class="theme-text-muted text-xs italic"> ({field.label}) </span>
 							{/if}
 						</span>
-					</p>
+					</div>
 				</GridContainer>
 			{/each}
 		</GridContainerAuto>

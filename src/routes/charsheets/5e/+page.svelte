@@ -12,7 +12,9 @@
 		type AbilityKey,
 		type Annotation,
 		type CharacterDocument5e2014,
-		type Dnd5eSkillName
+		type Dnd5eSkillName,
+		type SpellLevel,
+		type SpellRef
 	} from '../../../schema';
 	import { applyGridPatches } from '$lib/characterGridHelpers';
 	import type {
@@ -55,6 +57,7 @@
 
 	type AnnotationEntries = Record<string, Annotation>;
 	type PrimitiveGridValue = string | number | boolean;
+	type SpellListLevel = SpellLevel;
 
 	const abilityMetadata: Array<{ key: AbilityKey; label: string; shortLabel: string }> = [
 		{ key: 'str', label: 'Strength', shortLabel: 'STR' },
@@ -101,10 +104,12 @@
 		{ key: '9', label: '9th' }
 	];
 
-	const spellLevelLabel = (level: number | undefined): string => {
-		if (level === 0) return 'Cantrip';
-		return spellSlotLevelMetadata.find((entry) => Number(entry.key) === level)?.label ?? 'Spell';
-	};
+	const spellListLevelPathPrefix = '__spellLevelList';
+
+	const spellListLevelBindPath = (level: SpellListLevel): GridContentBindPath => [
+		spellListLevelPathPrefix,
+		level
+	];
 
 	const annotationEditorConfig: GridAnnotationEditorConfig = {
 		defaultKind: 'note',
@@ -190,15 +195,6 @@
 			value
 		};
 	};
-
-	const withEditOnlyFieldAnnotations = (
-		value: PrimitiveGridValue,
-		bindPath: GridContentBindPath,
-		options: Pick<GridContentField, 'fieldName' | 'label'> = {}
-	): GridContentField => ({
-		...withFieldAnnotations(value, bindPath, options),
-		editOnly: true
-	});
 
 	const metaPrimaryData = $derived<GridContentData>({
 		name: withFieldAnnotations(char.identity.name, ['identity', 'name']),
@@ -459,98 +455,94 @@
 	const spellSlotRuntimeCards = $derived<
 		Array<{ key: string; label: string; data: GridContentData }>
 	>(
-		spellSlotLevelMetadata.map(({ key, label }) => ({
-			key,
-			label,
-			data: {
-				slots: {
-					fieldName: label,
-					value: {
-						used: withFieldAnnotations(
-							char.systemData.spellcasting?.slots?.[key]?.used ?? 0,
-							['systemData', 'spellcasting', 'slots', key, 'used'],
-							{
-								fieldName: 'Used'
-							}
-						),
-						max: withFieldAnnotations(
-							char.systemData.spellcasting?.slots?.[key]?.max ?? 0,
-							['systemData', 'spellcasting', 'slots', key, 'max'],
-							{
-								fieldName: 'Max'
-							}
-						)
-					}
-				}
-			}
-		}))
-	);
+		(() => {
+			const currentSpells = char.systemData.spellcasting?.spells ?? [];
 
-	const spellsRuntimeData = $derived<GridContentData>({
-		spells: {
-			fieldName: 'Spell List',
-			addItemLabel: 'Add Spell',
-			addItemTemplate: {
-				fieldName: 'Spell',
-				value: {
-					name: {
-						fieldName: 'Name',
-						value: 'Spell'
-					},
-					level: {
-						fieldName: 'Level',
-						value: 1
-					},
-					prepared: {
-						fieldName: 'Prepared',
-						value: false,
-						editOnly: true
-					},
-					notes: {
-						fieldName: 'Notes',
-						value: '',
-						editOnly: true,
-						multiline: true
+			const createSpellListField = (level: SpellListLevel): GridContentField => ({
+				fieldName: level === 0 ? 'Cantrips' : 'Spells',
+				addItemLabel: level === 0 ? 'Add Cantrip' : 'Add Spell',
+				addItemTemplate: {
+					fieldName: level === 0 ? 'Cantrip' : 'Spell',
+					value: {
+						name: {
+							fieldName: 'Name',
+							value: level === 0 ? 'Cantrip' : 'Spell'
+						},
+						prepared: {
+							fieldName: 'Prepared',
+							value: false,
+							editOnly: true
+						},
+						notes: {
+							fieldName: 'Notes',
+							value: '',
+							editOnly: true,
+							multiline: true
+						}
 					}
-				}
-			},
-			bindPath: ['systemData', 'spellcasting', 'spells'],
-			value: (char.systemData.spellcasting?.spells ?? []).map((spell, index) => ({
-				fieldName: spellLevelLabel(spell.level),
-				value: {
-					name: {
-						fieldName: 'Name',
-						bindPath: ['systemData', 'spellcasting', 'spells', index, 'name'],
-						value: spell.name
-					},
-					level: withEditOnlyFieldAnnotations(
-						spell.level ?? 1,
-						['systemData', 'spellcasting', 'spells', index, 'level'],
-						{
-							fieldName: 'Level'
-						}
-					),
-					prepared: withEditOnlyFieldAnnotations(
-						spell.prepared ?? false,
-						['systemData', 'spellcasting', 'spells', index, 'prepared'],
-						{
-							fieldName: 'Prepared'
-						}
-					),
-					notes: {
-						...withEditOnlyFieldAnnotations(
-							spell.notes ?? '',
-							['systemData', 'spellcasting', 'spells', index, 'notes'],
-							{
-								fieldName: 'Notes'
+				},
+				bindPath: spellListLevelBindPath(level),
+				value: currentSpells
+					.filter((spell) => (spell.level ?? 0) === level)
+					.map((spell) => ({
+						fieldName: level === 0 ? 'Cantrip' : 'Spell',
+						value: {
+							name: {
+								fieldName: 'Name',
+								value: spell.name
+							},
+							prepared: {
+								fieldName: 'Prepared',
+								value: spell.prepared ?? false,
+								editOnly: true
+							},
+							notes: {
+								fieldName: 'Notes',
+								value: spell.notes ?? '',
+								editOnly: true,
+								multiline: true
 							}
-						),
-						multiline: true
+						}
+					}))
+			});
+
+			return [
+				{
+					key: 'cantrips',
+					label: 'Cantrips',
+					data: {
+						spells: createSpellListField(0)
 					}
-				}
-			}))
-		}
-	});
+				},
+				...spellSlotLevelMetadata.map(({ key, label }) => ({
+					key,
+					label,
+					data: {
+						slots: {
+							fieldName: label,
+							value: {
+								used: withFieldAnnotations(
+									char.systemData.spellcasting?.slots?.[key]?.used ?? 0,
+									['systemData', 'spellcasting', 'slots', key, 'used'],
+									{
+										fieldName: 'Used'
+									}
+								),
+								max: withFieldAnnotations(
+									char.systemData.spellcasting?.slots?.[key]?.max ?? 0,
+									['systemData', 'spellcasting', 'slots', key, 'max'],
+									{
+										fieldName: 'Max'
+									}
+								)
+							}
+						},
+						spells: createSpellListField(Number(key) as SpellListLevel)
+					}
+				}))
+			];
+		})()
+	);
 
 	const updateCurrent5eCharacter = (
 		// eslint-disable-next-line no-unused-vars
@@ -601,6 +593,44 @@
 	const pathStartsWith = (path: GridContentBindPath, prefix: GridContentBindPath): boolean =>
 		prefix.every((segment, idx) => path[idx] === segment);
 
+	const isSpellLevelListPath = (
+		path: GridContentBindPath
+	): path is [typeof spellListLevelPathPrefix, SpellListLevel] =>
+		path.length === 2 && path[0] === spellListLevelPathPrefix && typeof path[1] === 'number';
+
+	const normalizeSpellLevelValue = (level: SpellListLevel, value: unknown): Array<SpellRef> => {
+		if (!Array.isArray(value)) return [];
+		return value.flatMap((candidate) => {
+			if (!isObjectRecord(candidate)) return [];
+			const name =
+				typeof candidate.name === 'string' ? candidate.name : level === 0 ? 'Cantrip' : 'Spell';
+			const nextSpell: SpellRef = {
+				name,
+				level
+			};
+			if (typeof candidate.prepared === 'boolean') {
+				nextSpell.prepared = candidate.prepared;
+			}
+			if (typeof candidate.notes === 'string') {
+				nextSpell.notes = candidate.notes;
+			}
+			return [nextSpell];
+		});
+	};
+
+	const mergeSpellLevelPatch = (level: SpellListLevel, value: unknown): GridContentPatch => {
+		const currentSpells = char.systemData.spellcasting?.spells ?? [];
+		const nextLevelSpells = normalizeSpellLevelValue(level, value);
+		const mergedSpells = [
+			...currentSpells.filter((spell) => (spell.level ?? 0) !== level),
+			...nextLevelSpells
+		].sort((left, right) => (left.level ?? 0) - (right.level ?? 0));
+		return {
+			path: ['systemData', 'spellcasting', 'spells'],
+			value: mergedSpells
+		};
+	};
+
 	const withSpellcastingDefaults = (patches: Array<GridContentPatch>): Array<GridContentPatch> => {
 		const normalized = [...patches];
 		const touchesSpellcasting = normalized.some((patch) =>
@@ -646,7 +676,11 @@
 	};
 
 	const normalizeGridPatches = (patches: Array<GridContentPatch>): Array<GridContentPatch> =>
-		withSpellcastingDefaults(patches).flatMap((patch) => {
+		withSpellcastingDefaults(
+			patches.map((patch) =>
+				isSpellLevelListPath(patch.path) ? mergeSpellLevelPatch(patch.path[1], patch.value) : patch
+			)
+		).flatMap((patch) => {
 			if (!isSystemDataAnnotationPath(patch.path)) return [patch];
 			if (!isValidAnnotationArray(patch.value)) return [];
 			if (patch.value.length === 0) return [{ ...patch, value: undefined }];
@@ -798,21 +832,12 @@
 						<GridContent
 							handleEditSavePatches={handleGridPatchesSave}
 							{annotationEditorConfig}
-							displayAlign="center"
+							displayArrayMode="stack"
 							displayMaxCols={1}
 							data={slotCard.data}
 						/>
 					</GridContainer>
 				{/each}
-			</GridContainer>
-			<GridContainer border={true} pad={true} classes="rounded-md">
-				<GridContent
-					handleEditSavePatches={handleGridPatchesSave}
-					{annotationEditorConfig}
-					displayArrayMode="stack"
-					displayMaxCols={1}
-					data={spellsRuntimeData}
-				/>
 			</GridContainer>
 		</GridContainer>
 	</GridContainer>
