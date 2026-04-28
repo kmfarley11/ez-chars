@@ -173,6 +173,73 @@ Definition of done:
 - obvious focus, keyboard, or labeling issues in the main MVP flow are corrected
 - the review is reflected in the theme or UI checklist where useful
 
+### Refine field-level editing and annotation UX
+
+Size:
+
+- medium-to-large; scope to one interaction slice before implementation
+
+Scope:
+
+- reduce the mismatch between runtime sheet editing needs and the current bulk edit-dialog workflow
+- move toward direct field interaction for editing while preserving access to field annotations
+- define the target interaction model before heavy implementation work; later implementation slices should lean on the shared field-binding/patch abstraction item instead of page-specific glue
+- avoid locking the UX to desktop-only gestures; any annotation access pattern must still work for touch and keyboard users
+
+Suggested implementation slices:
+
+1. Define the target field interaction model for the MVP: primary click/tap edits a field, while annotations open through a secondary gesture or explicit affordance that also works on mobile.
+2. Apply the shared field-binding/patch abstractions to let individual primitive fields enter edit mode without opening a bulk form for the whole card.
+3. Add field-level annotation access and viewing behavior without regressing current annotation data or help content.
+4. Decide whether the existing bulk edit dialog stays as a fallback for multi-field edits or is reduced to non-runtime surfaces only.
+5. Run a keyboard, touch, and focus-management pass on the new interaction model and document any new expectations in the UI checklist.
+
+Dependency notes:
+
+- Start with slice 1 of this item first so the target interaction model is explicit before abstraction work hardens around the wrong UX.
+- After slice 1 is decided, most of the remaining implementation for this item should depend on `Stabilize field-level binding and patch flows`, especially slices 2-4.
+- In practice, the expected order is: UX slice 1 -> binding/patch slices -> UX slices 2-5 -> optional repo-structure cleanup.
+
+Definition of done:
+
+- a user can directly edit individual runtime-relevant fields from the sheet without depending on a card-wide bulk form
+- field annotations remain accessible from the same surfaces without hidden desktop-only assumptions
+- the resulting interaction model is usable on mouse, keyboard, and touch flows
+- the grid component structure is clearer about display mode vs inline-edit mode vs annotation mode
+
+### Stabilize field-level binding and patch flows
+
+Size:
+
+- medium-to-large; implement by slice before broad rollout
+
+Scope:
+
+- extract a shared field-scoped binding model from the current page- and card-wide grid edit flow
+- make per-field reads, drafts, value saves, and annotation saves explicit without requiring page-specific bulk-form glue
+- support inline sheet editing and annotation work without turning this into a generalized data-layer rewrite
+
+Suggested implementation slices:
+
+1. Define the field-scoped binding contract around read paths, value patch paths, annotation patch paths, and save semantics.
+2. Separate value patch projection from annotation patch projection so field components can consume them independently.
+3. Introduce field-scoped draft/edit/cancel helpers that do not require opening a card-wide dialog.
+4. Prove the abstraction on one current runtime sheet surface before wider rollout.
+5. Document how grid components, page layers, and data/store layers divide responsibility.
+
+Dependency notes:
+
+- This item should usually begin only after slice 1 of `Refine field-level editing and annotation UX` establishes the intended interaction model.
+- Once that interaction model is chosen, this item becomes the main technical prerequisite for most of the remaining inline-edit UX work.
+- This item is an enabler for field-level editing and annotation UX, not a standalone data-layer redesign.
+
+Definition of done:
+
+- a field component can read and write a single bound path without page-specific save glue
+- value edits and annotation edits use consistent patch semantics
+- inline edit flows no longer depend on a card-wide bulk form
+- the abstraction is proven on at least one current sheet surface and is clear enough to reuse
+
 ### Refactor the repo structure so stores, fixtures, schema, and 5e feature code are less entangled
 
 Size:
@@ -182,13 +249,19 @@ Size:
 Scope:
 
 - reduce coupling between stores, fixtures, schema modules, and 5e page-specific logic
+- keep this item focused on module ownership and navigability, not as a substitute for the field-binding/patch abstraction work
 - improve navigability without changing behavior unnecessarily
+
+Dependency notes:
+
+- This item is a cleanup/supporting refactor, not the primary dependency for inline field editing.
+- Prefer landing the first usable field-binding/patch abstraction before using this item to reorganize where those modules live.
 
 Suggested implementation slices:
 
 1. Move seed/demo data into an explicit fixtures module.
 2. Move storage logic into its own module.
-3. Extract 5e page-specific mapping logic into a feature-local module.
+3. Extract 5e page-specific mapping and binding glue into feature-local modules.
 4. Reorganize folders only after behavior-critical extractions are complete.
 
 Definition of done:
