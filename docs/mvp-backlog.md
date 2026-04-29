@@ -186,6 +186,7 @@ Suggested implementation slices:
 2. Review and fix dialog accessibility and keyboard behavior.
 3. Review and fix sheet-section readability and interaction on mobile.
 4. Update the UI checklist to reflect any new review expectations.
+5. Review and diagnose performance issues in the 5e character page, why might quick scrolling look jagged?
 
 Definition of done:
 
