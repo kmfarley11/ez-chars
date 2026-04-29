@@ -302,6 +302,8 @@ Suggested implementation slices:
 3. Extract 5e page-specific mapping and binding glue into feature-local modules.
 4. Reorganize folders only after behavior-critical extractions are complete.
 5. Review duplicated 5e schema storage such as proficiencies/languages split across multiple origins, and document or refactor where cross-origin player-earned data should live.
+6. Review inventory storage compared to excalidraw visuals then follow up on schema vs. page implementations. Ensure there is a dedicated space for coinage vs. weapons vs. armor vs. other. And ensure that weapons vs. armor can house proficiency vs. damage type details as applicable.
+7. Follow up on inventory visuals to more closely match the excalidraw visuals after the schema gets properly updated.
 
 Definition of done:
 

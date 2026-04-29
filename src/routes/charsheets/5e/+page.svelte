@@ -61,7 +61,10 @@
 	type PrimitiveGridValue = string | number | boolean;
 	type SpellListLevel = SpellLevel;
 	type ProficiencyLanguageSource = 'race' | 'background';
-	type InventoryGroup = 'equipped' | 'other';
+	// TODO - update the schema to better fit the intended visuals. weapons & armor/shields deserve their own attention
+	//	and should mark proficiency vs. damage type particulars where applicable
+	type InventoryGroup = 'weapons' | 'armorShields' | 'other';
+	type CurrencyDenomination = 'pp' | 'gp' | 'ep' | 'sp' | 'cp';
 	// eslint-disable-next-line no-unused-vars
 	type GridIndexBindPathResolver = (_index: number) => GridContentBindPath;
 
@@ -114,6 +117,63 @@
 	const proficiencyLanguagesPathPrefix = '__proficiencyLanguages';
 	const classFeatureListPathPrefix = '__classFeatures';
 	const inventoryListPathPrefix = '__inventory';
+	const inventoryCurrencyPathPrefix = '__inventoryCurrency';
+	const inventoryWeaponTag = 'inventory:weapon';
+	const inventoryArmorShieldTag = 'inventory:armor-shield';
+	const inventoryCurrencyTagPrefix = 'inventory:currency:';
+	const inventoryWeaponKeywords = [
+		'axe',
+		'bow',
+		'club',
+		'crossbow',
+		'dagger',
+		'dart',
+		'flail',
+		'halberd',
+		'hammer',
+		'javelin',
+		'lance',
+		'mace',
+		'maul',
+		'morningstar',
+		'pike',
+		'quarterstaff',
+		'rapier',
+		'scimitar',
+		'shortbow',
+		'shortsword',
+		'sling',
+		'spear',
+		'staff',
+		'sword',
+		'trident',
+		'war pick',
+		'warhammer',
+		'whip'
+	] as const;
+	const inventoryArmorShieldKeywords = [
+		'armor',
+		'breastplate',
+		'chain',
+		'helm',
+		'hide',
+		'leather',
+		'mail',
+		'padded',
+		'plate',
+		'ring',
+		'scale',
+		'shield',
+		'splint',
+		'studded'
+	] as const;
+	const inventoryCurrencyMetadata: Array<{ key: CurrencyDenomination; label: string }> = [
+		{ key: 'pp', label: 'PP' },
+		{ key: 'gp', label: 'GP' },
+		{ key: 'ep', label: 'EP' },
+		{ key: 'sp', label: 'SP' },
+		{ key: 'cp', label: 'CP' }
+	];
 
 	const spellListLevelBindPath = (level: SpellListLevel): GridContentBindPath => [
 		spellListLevelPathPrefix,
@@ -298,10 +358,66 @@
 		}))
 	});
 
+	const currencyTagForDenomination = (denomination: CurrencyDenomination): string =>
+		`${inventoryCurrencyTagPrefix}${denomination}`;
+
+	const isCurrencyDenomination = (value: string): value is CurrencyDenomination =>
+		inventoryCurrencyMetadata.some((entry) => entry.key === value);
+
+	const hasInventoryTag = (item: Item, tag: string): boolean => item.tags?.includes(tag) === true;
+
+	const getCurrencyDenominationForItem = (item: Item): CurrencyDenomination | undefined => {
+		for (const tag of item.tags ?? []) {
+			if (!tag.startsWith(inventoryCurrencyTagPrefix)) continue;
+			const denomination = tag.slice(inventoryCurrencyTagPrefix.length);
+			if (isCurrencyDenomination(denomination)) return denomination;
+		}
+		return undefined;
+	};
+
+	const isCurrencyInventoryItem = (item: Item): boolean =>
+		getCurrencyDenominationForItem(item) !== undefined;
+
+	const inferLegacyInventoryGroup = (item: Item): InventoryGroup => {
+		const normalizedName = item.name.trim().toLowerCase();
+		if (inventoryWeaponKeywords.some((keyword) => normalizedName.includes(keyword))) {
+			return 'weapons';
+		}
+		if (inventoryArmorShieldKeywords.some((keyword) => normalizedName.includes(keyword))) {
+			return 'armorShields';
+		}
+		return 'other';
+	};
+
+	const getInventoryGroupForItem = (item: Item): InventoryGroup => {
+		if (hasInventoryTag(item, inventoryWeaponTag)) return 'weapons';
+		if (hasInventoryTag(item, inventoryArmorShieldTag)) return 'armorShields';
+		return inferLegacyInventoryGroup(item);
+	};
+
+	const withInventoryGroupTags = (
+		tags: Array<string> | undefined,
+		group: InventoryGroup
+	): Array<string> | undefined => {
+		const preservedTags = (tags ?? []).filter(
+			(tag) =>
+				tag !== inventoryWeaponTag &&
+				tag !== inventoryArmorShieldTag &&
+				!tag.startsWith(inventoryCurrencyTagPrefix)
+		);
+		if (group === 'weapons') {
+			preservedTags.push(inventoryWeaponTag);
+		} else if (group === 'armorShields') {
+			preservedTags.push(inventoryArmorShieldTag);
+		}
+		return preservedTags.length > 0 ? preservedTags : undefined;
+	};
+
 	const createInventoryListField = (
 		fieldName: string,
 		items: Array<Item>,
-		group: InventoryGroup
+		group: InventoryGroup,
+		itemPlaceholder: string
 	): GridContentField => ({
 		fieldName,
 		addItemLabel: 'Add Item',
@@ -310,7 +426,7 @@
 			value: {
 				name: {
 					fieldName: 'Name',
-					value: 'Gear'
+					value: itemPlaceholder
 				},
 				notes: {
 					fieldName: 'Detail',
@@ -334,7 +450,7 @@
 				},
 				equipped: {
 					fieldName: 'Equipped',
-					value: group === 'equipped',
+					value: group !== 'other',
 					editOnly: true
 				}
 			}
@@ -743,17 +859,47 @@
 		}
 	});
 
+	const inventoryCurrencyRuntimeData = $derived<GridContentData>(
+		Object.fromEntries(
+			inventoryCurrencyMetadata.map(({ key, label }) => [
+				key,
+				{
+					fieldName: label,
+					bindPath: [inventoryCurrencyPathPrefix, key],
+					value: (() => {
+						const currencyItem = (char.inventory ?? []).find(
+							(item) => getCurrencyDenominationForItem(item) === key
+						);
+						return currencyItem?.quantity ?? 0;
+					})()
+				} satisfies GridContentField
+			])
+		)
+	);
+
 	const inventoryRuntimeCards = $derived<Array<{ key: InventoryGroup; data: GridContentData }>>(
 		(() => {
-			const inventory = char.inventory ?? [];
+			const inventory = (char.inventory ?? []).filter((item) => !isCurrencyInventoryItem(item));
 			return [
 				{
-					key: 'equipped' as const,
+					key: 'weapons' as const,
 					data: {
 						items: createInventoryListField(
-							'Equipped Gear',
-							inventory.filter((item) => item.equipped === true),
-							'equipped'
+							'Weapons',
+							inventory.filter((item) => getInventoryGroupForItem(item) === 'weapons'),
+							'weapons',
+							'Weapon'
+						)
+					}
+				},
+				{
+					key: 'armorShields' as const,
+					data: {
+						items: createInventoryListField(
+							'Armor & Shields',
+							inventory.filter((item) => getInventoryGroupForItem(item) === 'armorShields'),
+							'armorShields',
+							'Armor'
 						)
 					}
 				},
@@ -762,8 +908,9 @@
 					data: {
 						items: createInventoryListField(
 							'Other Gear',
-							inventory.filter((item) => item.equipped !== true),
-							'other'
+							inventory.filter((item) => getInventoryGroupForItem(item) === 'other'),
+							'other',
+							'Gear'
 						)
 					}
 				}
@@ -961,7 +1108,20 @@
 	): path is [typeof inventoryListPathPrefix, InventoryGroup] =>
 		path.length === 2 &&
 		path[0] === inventoryListPathPrefix &&
-		(path[1] === 'equipped' || path[1] === 'other');
+		(path[1] === 'weapons' || path[1] === 'armorShields' || path[1] === 'other');
+
+	const isInventoryCurrencyFieldPath = (
+		path: GridContentBindPath
+	): path is [typeof inventoryCurrencyPathPrefix, CurrencyDenomination] =>
+		path.length === 2 &&
+		path[0] === inventoryCurrencyPathPrefix &&
+		typeof path[1] === 'string' &&
+		isCurrencyDenomination(path[1]);
+
+	const isInventoryCurrencyPatchPath = (
+		path: GridContentBindPath
+	): path is [typeof inventoryCurrencyPathPrefix] =>
+		path.length === 1 && path[0] === inventoryCurrencyPathPrefix;
 
 	const normalizeSpellLevelValue = (level: SpellListLevel, value: unknown): Array<SpellRef> => {
 		if (!Array.isArray(value)) return [];
@@ -1087,13 +1247,14 @@
 					: createId();
 			const currentItem = currentItemsById[currentId];
 			const equipped =
-				typeof candidate.equipped === 'boolean' ? candidate.equipped : group === 'equipped';
+				typeof candidate.equipped === 'boolean' ? candidate.equipped : group !== 'other';
 
 			return [
 				{
 					...currentItem,
 					id: currentId,
 					name,
+					tags: withInventoryGroupTags(currentItem?.tags, group),
 					equipped,
 					quantity:
 						typeof candidate.quantity === 'number' && Number.isFinite(candidate.quantity)
@@ -1116,20 +1277,96 @@
 	): Array<GridContentPatch> => {
 		const currentInventory = char.inventory ?? [];
 		const normalizedItems = normalizeInventoryListValue(value, group);
-		const stableEquipped = currentInventory.filter((item) => item.equipped === true);
-		const stableOther = currentInventory.filter((item) => item.equipped !== true);
-		const editedEquipped = normalizedItems.filter((item) => item.equipped === true);
-		const editedOther = normalizedItems.filter((item) => item.equipped !== true);
+		const currencyItems = currentInventory.filter((item) => isCurrencyInventoryItem(item));
+		const stableWeapons = currentInventory.filter(
+			(item) => !isCurrencyInventoryItem(item) && getInventoryGroupForItem(item) === 'weapons'
+		);
+		const stableArmorShields = currentInventory.filter(
+			(item) => !isCurrencyInventoryItem(item) && getInventoryGroupForItem(item) === 'armorShields'
+		);
+		const stableOther = currentInventory.filter(
+			(item) => !isCurrencyInventoryItem(item) && getInventoryGroupForItem(item) === 'other'
+		);
 
-		const nextInventory =
-			group === 'equipped'
-				? [...editedEquipped, ...stableOther, ...editedOther]
-				: [...stableEquipped, ...editedEquipped, ...editedOther];
+		const nextInventory = [
+			...(group === 'weapons' ? normalizedItems : stableWeapons),
+			...(group === 'armorShields' ? normalizedItems : stableArmorShields),
+			...(group === 'other' ? normalizedItems : stableOther),
+			...currencyItems
+		];
 
 		return [
 			{
 				path: ['inventory'],
 				value: nextInventory
+			}
+		];
+	};
+
+	const normalizeCurrencyAmount = (value: unknown): number => {
+		if (typeof value !== 'number' || !Number.isFinite(value)) return 0;
+		return Math.max(0, Math.floor(value));
+	};
+
+	const coalesceInventoryCurrencyPatches = (
+		patches: Array<GridContentPatch>
+	): Array<GridContentPatch> => {
+		const currencyPatches = patches.filter((patch) => isInventoryCurrencyFieldPath(patch.path));
+		if (currencyPatches.length === 0) return patches;
+
+		const nextCurrencyValues = Object.fromEntries(
+			inventoryCurrencyMetadata.map(({ key }) => {
+				const currentItem = (char.inventory ?? []).find(
+					(item) => getCurrencyDenominationForItem(item) === key
+				);
+				return [key, currentItem?.quantity ?? 0];
+			})
+		) as Record<CurrencyDenomination, number>;
+
+		for (const patch of currencyPatches) {
+			const denomination = patch.path[1] as CurrencyDenomination;
+			nextCurrencyValues[denomination] = normalizeCurrencyAmount(patch.value);
+		}
+
+		return [
+			...patches.filter((patch) => !isInventoryCurrencyFieldPath(patch.path)),
+			{
+				path: [inventoryCurrencyPathPrefix],
+				value: nextCurrencyValues
+			}
+		];
+	};
+
+	const mergeInventoryCurrencyPatch = (value: unknown): Array<GridContentPatch> => {
+		const currentInventory = char.inventory ?? [];
+		const stableItems = currentInventory.filter((item) => !isCurrencyInventoryItem(item));
+		const currentCurrencyItemsByDenomination = Object.fromEntries(
+			currentInventory.flatMap((item) => {
+				const denomination = getCurrencyDenominationForItem(item);
+				return denomination ? [[denomination, item] as const] : [];
+			})
+		) as Partial<Record<CurrencyDenomination, Item>>;
+
+		const nextCurrencyValues = isObjectRecord(value) ? value : {};
+		const nextCurrencyItems = inventoryCurrencyMetadata.flatMap(({ key, label }) => {
+			const amount = normalizeCurrencyAmount(nextCurrencyValues[key]);
+			if (amount === 0) return [];
+			const currentItem = currentCurrencyItemsByDenomination[key];
+			return [
+				{
+					...currentItem,
+					id: currentItem?.id ?? createId(),
+					name: label,
+					quantity: amount,
+					tags: [currencyTagForDenomination(key)]
+				} satisfies Item
+			];
+		});
+
+		return [
+			{
+				path: ['inventory'],
+				value: [...stableItems, ...nextCurrencyItems]
 			}
 		];
 	};
@@ -1236,7 +1473,7 @@
 		withIdentityBackedDefaults(
 			withSpellcastingDefaults(
 				dropNoopPatches(
-					patches
+					coalesceInventoryCurrencyPatches(patches)
 						.flatMap((patch) => {
 							if (isSpellLevelListPath(patch.path)) {
 								return [mergeSpellLevelPatch(patch.path[1], patch.value)];
@@ -1249,6 +1486,9 @@
 							}
 							if (isInventoryListPath(patch.path)) {
 								return mergeInventoryPatches(patch.path[1], patch.value);
+							}
+							if (isInventoryCurrencyPatchPath(patch.path)) {
+								return mergeInventoryCurrencyPatch(patch.value);
 							}
 							return [patch];
 						})
@@ -1454,7 +1694,16 @@
 			count={1}
 			classes="mt-2 gap-3"
 		>
-			<GridContainer flow="row" count={1} countMd={2} classes="gap-3">
+			<GridContainer border={true} pad={true} classes="rounded-md">
+				<GridContent
+					handleEditSavePatches={handleGridPatchesSave}
+					{annotationEditorConfig}
+					displayAlign="center"
+					displayMaxCols={5}
+					data={inventoryCurrencyRuntimeData}
+				/>
+			</GridContainer>
+			<GridContainer flow="row" count={1} countMd={3} classes="gap-3">
 				{#each inventoryRuntimeCards as inventoryCard (inventoryCard.key)}
 					<GridContainer border={true} pad={true} classes="rounded-md">
 						<GridContent
