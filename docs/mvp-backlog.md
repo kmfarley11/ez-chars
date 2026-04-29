@@ -65,11 +65,10 @@ Suggested implementation slices:
 7. Refine the page layout so runtime vs organizational information is visually and structurally clear.
 8. Run a render/edit pass against seeded data and fix breakage caused by the expanded surface.
 9. Fix the styling on grid content so that it doesn't wrap the skill boxes and score vs. mod stuff
-10. (wip/tbd) evaluate the org
 
 Status:
 
-- slices 1-5 are complete: the runtime surface now covers abilities/proficiencies, traits/class-features/misc proficiency cards, an explicit spells section, and a dedicated inventory/equipment section; later slices still need to finish the rest of the sheet and refine layout/details
+- slices 1-5 & 9 are complete: the runtime surface now covers abilities/proficiencies, traits/class-features/misc proficiency cards, an explicit spells section, and a dedicated inventory/equipment section; other slices still need to finish the rest of the sheet and refine layout/details
 
 Definition of done:
 

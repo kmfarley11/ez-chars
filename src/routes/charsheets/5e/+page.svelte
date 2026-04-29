@@ -1525,197 +1525,195 @@
 		</div>
 	</div>
 {:else}
-	<GridContainer pad={true} classes="rounded-lg" border={true}>
-		<GridContainer
-			heading="Meta / Top-level Info"
-			border={true}
-			pad={true}
-			flow="row"
-			count={1}
-			countMd={3}
-			classes="gap-3"
-		>
-			<GridContainer border={true} pad={true} classes="rounded-md">
-				<GridContent
-					handleEditSavePatches={handleGridPatchesSave}
-					{annotationEditorConfig}
-					data={metaPrimaryData}
-				/>
-			</GridContainer>
-			<GridContainer border={true} pad={true} classes="rounded-md">
-				<GridContent
-					handleEditSavePatches={handleGridPatchesSave}
-					{annotationEditorConfig}
-					data={metaSecondaryData}
-				/>
-			</GridContainer>
-			<GridContainer border={true} pad={true} classes="rounded-md">
-				<GridContent
-					handleEditSavePatches={handleGridPatchesSave}
-					{annotationEditorConfig}
-					data={metaTertiaryData}
-				/>
-			</GridContainer>
+	<GridContainer
+		heading="Meta / Top-level Info"
+		border={true}
+		pad={true}
+		flow="row"
+		count={1}
+		countMd={3}
+		classes="gap-3"
+	>
+		<GridContainer border={true} pad={true} classes="rounded-md">
+			<GridContent
+				handleEditSavePatches={handleGridPatchesSave}
+				{annotationEditorConfig}
+				data={metaPrimaryData}
+			/>
 		</GridContainer>
-		<GridContainer
-			heading="Quick Reference"
-			border={true}
-			pad={true}
-			flow="row"
-			count={1}
-			countMd={3}
-			classes="mt-2 gap-3"
-		>
-			<GridContainer border={true} pad={true} classes="rounded-md">
-				<GridContent
-					handleEditSavePatches={handleGridPatchesSave}
-					{annotationEditorConfig}
-					data={quickRefPrimaryData}
-				/>
-			</GridContainer>
-			<GridContainer border={true} pad={true} classes="rounded-md">
-				<GridContent
-					handleEditSavePatches={handleGridPatchesSave}
-					{annotationEditorConfig}
-					data={quickRefMovementData}
-				/>
-			</GridContainer>
-			<GridContainer border={true} pad={true} classes="rounded-md">
-				<GridContent
-					handleEditSavePatches={handleGridPatchesSave}
-					{annotationEditorConfig}
-					data={quickRefSecondaryData}
-				/>
-			</GridContainer>
+		<GridContainer border={true} pad={true} classes="rounded-md">
+			<GridContent
+				handleEditSavePatches={handleGridPatchesSave}
+				{annotationEditorConfig}
+				data={metaSecondaryData}
+			/>
 		</GridContainer>
-		<GridContainer
-			heading="Abilities & Proficiencies, Features & Traits"
-			border={true}
-			pad={true}
-			flow="row"
-			count={1}
-			classes="mt-2 gap-3"
-		>
+		<GridContainer border={true} pad={true} classes="rounded-md">
+			<GridContent
+				handleEditSavePatches={handleGridPatchesSave}
+				{annotationEditorConfig}
+				data={metaTertiaryData}
+			/>
+		</GridContainer>
+	</GridContainer>
+	<GridContainer
+		heading="Quick Reference"
+		border={true}
+		pad={true}
+		flow="row"
+		count={1}
+		countMd={3}
+		classes="mt-2 gap-3"
+	>
+		<GridContainer border={true} pad={true} classes="rounded-md">
+			<GridContent
+				handleEditSavePatches={handleGridPatchesSave}
+				{annotationEditorConfig}
+				data={quickRefPrimaryData}
+			/>
+		</GridContainer>
+		<GridContainer border={true} pad={true} classes="rounded-md">
+			<GridContent
+				handleEditSavePatches={handleGridPatchesSave}
+				{annotationEditorConfig}
+				data={quickRefMovementData}
+			/>
+		</GridContainer>
+		<GridContainer border={true} pad={true} classes="rounded-md">
+			<GridContent
+				handleEditSavePatches={handleGridPatchesSave}
+				{annotationEditorConfig}
+				data={quickRefSecondaryData}
+			/>
+		</GridContainer>
+	</GridContainer>
+	<GridContainer
+		heading="Abilities & Proficiencies, Features & Traits"
+		border={true}
+		pad={true}
+		flow="row"
+		count={1}
+		classes="mt-2 gap-3"
+	>
+		<GridContainer border={true} pad={true} classes="rounded-md">
+			<GridContent
+				handleEditSavePatches={handleGridPatchesSave}
+				{annotationEditorConfig}
+				displayAlign="center"
+				displayMaxCols={1}
+				data={proficiencyBonusRuntimeData}
+			/>
+		</GridContainer>
+		<GridContainer flow="row" count={1} countMd={3} countLg={6} classes="gap-3">
+			{#each abilityRuntimeColumns as column (column.key)}
+				<GridContainer border={true} pad={true} classes="rounded-md">
+					<GridContent
+						handleEditSavePatches={handleGridPatchesSave}
+						{annotationEditorConfig}
+						displayMaxCols={1}
+						data={column.data}
+					/>
+				</GridContainer>
+			{/each}
+		</GridContainer>
+		<GridContainer flow="row" count={1} countMd={2} countLg={4} classes="gap-3">
 			<GridContainer border={true} pad={true} classes="rounded-md">
 				<GridContent
 					handleEditSavePatches={handleGridPatchesSave}
 					{annotationEditorConfig}
-					displayAlign="center"
+					displayArrayMode="stack"
 					displayMaxCols={1}
-					data={proficiencyBonusRuntimeData}
+					data={proficiencyLanguagesRuntimeData}
 				/>
 			</GridContainer>
-			<GridContainer flow="row" count={1} countMd={3} countLg={6} classes="gap-3">
-				{#each abilityRuntimeColumns as column (column.key)}
-					<GridContainer border={true} pad={true} classes="rounded-md">
-						<GridContent
-							handleEditSavePatches={handleGridPatchesSave}
-							{annotationEditorConfig}
-							displayMaxCols={1}
-							data={column.data}
-						/>
-					</GridContainer>
-				{/each}
-			</GridContainer>
-			<GridContainer flow="row" count={1} countMd={2} countLg={4} classes="gap-3">
-				<GridContainer border={true} pad={true} classes="rounded-md">
-					<GridContent
-						handleEditSavePatches={handleGridPatchesSave}
-						{annotationEditorConfig}
-						displayArrayMode="stack"
-						displayMaxCols={1}
-						data={proficiencyLanguagesRuntimeData}
-					/>
-				</GridContainer>
-				<GridContainer border={true} pad={true} classes="rounded-md">
-					<GridContent
-						handleEditSavePatches={handleGridPatchesSave}
-						{annotationEditorConfig}
-						displayArrayMode="stack"
-						displayMaxCols={1}
-						data={proficiencyToolsRuntimeData}
-					/>
-				</GridContainer>
-				<GridContainer border={true} pad={true} classes="rounded-md">
-					<GridContent
-						handleEditSavePatches={handleGridPatchesSave}
-						{annotationEditorConfig}
-						displayArrayMode="stack"
-						displayMaxCols={1}
-						data={classFeaturesRuntimeData}
-					/>
-				</GridContainer>
-				<GridContainer border={true} pad={true} classes="rounded-md">
-					<GridContent
-						handleEditSavePatches={handleGridPatchesSave}
-						{annotationEditorConfig}
-						displayArrayMode="stack"
-						displayMaxCols={1}
-						data={traitRuntimeData}
-					/>
-				</GridContainer>
-			</GridContainer>
-		</GridContainer>
-		<GridContainer
-			heading="Spells"
-			border={true}
-			pad={true}
-			flow="row"
-			count={1}
-			classes="mt-2 gap-3"
-		>
 			<GridContainer border={true} pad={true} classes="rounded-md">
 				<GridContent
 					handleEditSavePatches={handleGridPatchesSave}
 					{annotationEditorConfig}
-					displayAlign="center"
-					data={spellcastingRuntimeData}
+					displayArrayMode="stack"
+					displayMaxCols={1}
+					data={proficiencyToolsRuntimeData}
 				/>
 			</GridContainer>
-			<GridContainer flow="row" count={1} countMd={3} countLg={5} classes="gap-3">
-				{#each spellSlotRuntimeCards as slotCard (slotCard.key)}
-					<GridContainer border={true} pad={true} classes="rounded-md">
-						<GridContent
-							handleEditSavePatches={handleGridPatchesSave}
-							{annotationEditorConfig}
-							displayArrayMode="stack"
-							displayMaxCols={1}
-							data={slotCard.data}
-						/>
-					</GridContainer>
-				{/each}
-			</GridContainer>
-		</GridContainer>
-		<GridContainer
-			heading="Inventory / Equipment"
-			border={true}
-			pad={true}
-			flow="row"
-			count={1}
-			classes="mt-2 gap-3"
-		>
 			<GridContainer border={true} pad={true} classes="rounded-md">
 				<GridContent
 					handleEditSavePatches={handleGridPatchesSave}
 					{annotationEditorConfig}
-					displayAlign="center"
-					displayMaxCols={5}
-					data={inventoryCurrencyRuntimeData}
+					displayArrayMode="stack"
+					displayMaxCols={1}
+					data={classFeaturesRuntimeData}
 				/>
 			</GridContainer>
-			<GridContainer flow="row" count={1} countMd={3} classes="gap-3">
-				{#each inventoryRuntimeCards as inventoryCard (inventoryCard.key)}
-					<GridContainer border={true} pad={true} classes="rounded-md">
-						<GridContent
-							handleEditSavePatches={handleGridPatchesSave}
-							{annotationEditorConfig}
-							displayArrayMode="stack"
-							displayMaxCols={1}
-							data={inventoryCard.data}
-						/>
-					</GridContainer>
-				{/each}
+			<GridContainer border={true} pad={true} classes="rounded-md">
+				<GridContent
+					handleEditSavePatches={handleGridPatchesSave}
+					{annotationEditorConfig}
+					displayArrayMode="stack"
+					displayMaxCols={1}
+					data={traitRuntimeData}
+				/>
 			</GridContainer>
+		</GridContainer>
+	</GridContainer>
+	<GridContainer
+		heading="Spells"
+		border={true}
+		pad={true}
+		flow="row"
+		count={1}
+		classes="mt-2 gap-3"
+	>
+		<GridContainer border={true} pad={true} classes="rounded-md">
+			<GridContent
+				handleEditSavePatches={handleGridPatchesSave}
+				{annotationEditorConfig}
+				displayAlign="center"
+				data={spellcastingRuntimeData}
+			/>
+		</GridContainer>
+		<GridContainer flow="row" count={1} countMd={3} countLg={5} classes="gap-3">
+			{#each spellSlotRuntimeCards as slotCard (slotCard.key)}
+				<GridContainer border={true} pad={true} classes="rounded-md">
+					<GridContent
+						handleEditSavePatches={handleGridPatchesSave}
+						{annotationEditorConfig}
+						displayArrayMode="stack"
+						displayMaxCols={1}
+						data={slotCard.data}
+					/>
+				</GridContainer>
+			{/each}
+		</GridContainer>
+	</GridContainer>
+	<GridContainer
+		heading="Inventory / Equipment"
+		border={true}
+		pad={true}
+		flow="row"
+		count={1}
+		classes="mt-2 gap-3"
+	>
+		<GridContainer border={true} pad={true} classes="rounded-md">
+			<GridContent
+				handleEditSavePatches={handleGridPatchesSave}
+				{annotationEditorConfig}
+				displayAlign="center"
+				displayMaxCols={5}
+				data={inventoryCurrencyRuntimeData}
+			/>
+		</GridContainer>
+		<GridContainer flow="row" count={1} countMd={3} classes="gap-3">
+			{#each inventoryRuntimeCards as inventoryCard (inventoryCard.key)}
+				<GridContainer border={true} pad={true} classes="rounded-md">
+					<GridContent
+						handleEditSavePatches={handleGridPatchesSave}
+						{annotationEditorConfig}
+						displayArrayMode="stack"
+						displayMaxCols={1}
+						data={inventoryCard.data}
+					/>
+				</GridContainer>
+			{/each}
 		</GridContainer>
 	</GridContainer>
 
