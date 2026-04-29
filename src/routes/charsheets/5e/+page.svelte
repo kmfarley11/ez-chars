@@ -14,6 +14,7 @@
 		type CharacterDocument5e2014,
 		type Dnd5eSkillName,
 		type FeatureRef,
+		type Item,
 		type SpellLevel,
 		type SpellRef
 	} from '../../../schema';
@@ -60,6 +61,7 @@
 	type PrimitiveGridValue = string | number | boolean;
 	type SpellListLevel = SpellLevel;
 	type ProficiencyLanguageSource = 'race' | 'background';
+	type InventoryGroup = 'equipped' | 'other';
 	// eslint-disable-next-line no-unused-vars
 	type GridIndexBindPathResolver = (_index: number) => GridContentBindPath;
 
@@ -111,6 +113,7 @@
 	const spellListLevelPathPrefix = '__spellLevelList';
 	const proficiencyLanguagesPathPrefix = '__proficiencyLanguages';
 	const classFeatureListPathPrefix = '__classFeatures';
+	const inventoryListPathPrefix = '__inventory';
 
 	const spellListLevelBindPath = (level: SpellListLevel): GridContentBindPath => [
 		spellListLevelPathPrefix,
@@ -162,6 +165,9 @@
 		if (bindPath[0] === 'identity') {
 			return ['systemData', 'annotations', 'identity', ...bindPath.slice(1), '_annotations'];
 		}
+		if (bindPath[0] === 'inventory' && typeof bindPath[1] === 'number') {
+			return ['inventory', bindPath[1], 'annotations'];
+		}
 		return undefined;
 	};
 
@@ -170,6 +176,21 @@
 	): Array<GridContentAnnotation> => {
 		if (!annotationBindPath) return [];
 		const value = getValueAtPath(char, annotationBindPath);
+		if (Array.isArray(value)) {
+			return value.flatMap((entry, idx) => {
+				const parsed = annotationSchema.safeParse(entry);
+				if (!parsed.success) return [];
+				return [
+					{
+						...parsed.data,
+						id:
+							typeof parsed.data.id === 'string' && parsed.data.id.trim().length > 0
+								? parsed.data.id
+								: String(idx)
+					}
+				];
+			});
+		}
 		if (!isObjectRecord(value)) return [];
 		return Object.entries(value).flatMap(([key, entry]) => {
 			const parsed = annotationSchema.safeParse(entry);
@@ -273,6 +294,90 @@
 							} satisfies GridContentField
 						}
 					: {})
+			}
+		}))
+	});
+
+	const createInventoryListField = (
+		fieldName: string,
+		items: Array<Item>,
+		group: InventoryGroup
+	): GridContentField => ({
+		fieldName,
+		addItemLabel: 'Add Item',
+		addItemTemplate: {
+			fieldName: 'Item',
+			value: {
+				name: {
+					fieldName: 'Name',
+					value: 'Gear'
+				},
+				notes: {
+					fieldName: 'Detail',
+					value: '',
+					multiline: true
+				},
+				quantity: {
+					fieldName: 'Quantity',
+					value: 1,
+					editOnly: true
+				},
+				weight: {
+					fieldName: 'Weight',
+					value: 0,
+					editOnly: true
+				},
+				value: {
+					fieldName: 'Value',
+					value: '',
+					editOnly: true
+				},
+				equipped: {
+					fieldName: 'Equipped',
+					value: group === 'equipped',
+					editOnly: true
+				}
+			}
+		},
+		bindPath: [inventoryListPathPrefix, group],
+		value: items.map((item) => ({
+			fieldName: 'Item',
+			value: {
+				name: {
+					fieldName: 'Name',
+					value: item.name
+				},
+				notes: {
+					fieldName: 'Detail',
+					value: item.notes ?? '',
+					multiline: true
+				},
+				quantity: {
+					fieldName: 'Quantity',
+					value: item.quantity ?? 1,
+					editOnly: true
+				},
+				weight: {
+					fieldName: 'Weight',
+					value: item.weight ?? 0,
+					editOnly: true
+				},
+				value: {
+					fieldName: 'Value',
+					value: item.value ?? '',
+					editOnly: true
+				},
+				equipped: {
+					fieldName: 'Equipped',
+					value: item.equipped ?? false,
+					editOnly: true
+				},
+				id: {
+					fieldName: 'Item Id',
+					value: item.id,
+					editOnly: true,
+					hidden: true
+				}
 			}
 		}))
 	});
@@ -638,6 +743,34 @@
 		}
 	});
 
+	const inventoryRuntimeCards = $derived<Array<{ key: InventoryGroup; data: GridContentData }>>(
+		(() => {
+			const inventory = char.inventory ?? [];
+			return [
+				{
+					key: 'equipped' as const,
+					data: {
+						items: createInventoryListField(
+							'Equipped Gear',
+							inventory.filter((item) => item.equipped === true),
+							'equipped'
+						)
+					}
+				},
+				{
+					key: 'other' as const,
+					data: {
+						items: createInventoryListField(
+							'Other Gear',
+							inventory.filter((item) => item.equipped !== true),
+							'other'
+						)
+					}
+				}
+			];
+		})()
+	);
+
 	const spellcastingRuntimeData = $derived<GridContentData>({
 		ability: withFieldAnnotations(
 			char.systemData.spellcasting?.ability ?? defaultSpellcastingAbility,
@@ -823,6 +956,13 @@
 	): path is [typeof classFeatureListPathPrefix] =>
 		path.length === 1 && path[0] === classFeatureListPathPrefix;
 
+	const isInventoryListPath = (
+		path: GridContentBindPath
+	): path is [typeof inventoryListPathPrefix, InventoryGroup] =>
+		path.length === 2 &&
+		path[0] === inventoryListPathPrefix &&
+		(path[1] === 'equipped' || path[1] === 'other');
+
 	const normalizeSpellLevelValue = (level: SpellListLevel, value: unknown): Array<SpellRef> => {
 		if (!Array.isArray(value)) return [];
 		return value.flatMap((candidate) => {
@@ -929,6 +1069,69 @@
 				}
 			];
 		});
+	};
+
+	const normalizeInventoryListValue = (value: unknown, group: InventoryGroup): Array<Item> => {
+		if (!Array.isArray(value)) return [];
+		const currentItemsById = Object.fromEntries(
+			(char.inventory ?? []).map((item) => [item.id, item])
+		) as Record<string, Item>;
+		return value.flatMap((candidate) => {
+			if (!isObjectRecord(candidate)) return [];
+			const name = typeof candidate.name === 'string' ? candidate.name.trim() : '';
+			if (name.length === 0) return [];
+
+			const currentId =
+				typeof candidate.id === 'string' && candidate.id.trim().length > 0
+					? candidate.id
+					: createId();
+			const currentItem = currentItemsById[currentId];
+			const equipped =
+				typeof candidate.equipped === 'boolean' ? candidate.equipped : group === 'equipped';
+
+			return [
+				{
+					...currentItem,
+					id: currentId,
+					name,
+					equipped,
+					quantity:
+						typeof candidate.quantity === 'number' && Number.isFinite(candidate.quantity)
+							? candidate.quantity
+							: currentItem?.quantity,
+					weight:
+						typeof candidate.weight === 'number' && Number.isFinite(candidate.weight)
+							? candidate.weight
+							: currentItem?.weight,
+					value: typeof candidate.value === 'string' ? candidate.value : currentItem?.value,
+					notes: typeof candidate.notes === 'string' ? candidate.notes : currentItem?.notes
+				}
+			];
+		});
+	};
+
+	const mergeInventoryPatches = (
+		group: InventoryGroup,
+		value: unknown
+	): Array<GridContentPatch> => {
+		const currentInventory = char.inventory ?? [];
+		const normalizedItems = normalizeInventoryListValue(value, group);
+		const stableEquipped = currentInventory.filter((item) => item.equipped === true);
+		const stableOther = currentInventory.filter((item) => item.equipped !== true);
+		const editedEquipped = normalizedItems.filter((item) => item.equipped === true);
+		const editedOther = normalizedItems.filter((item) => item.equipped !== true);
+
+		const nextInventory =
+			group === 'equipped'
+				? [...editedEquipped, ...stableOther, ...editedOther]
+				: [...stableEquipped, ...editedEquipped, ...editedOther];
+
+		return [
+			{
+				path: ['inventory'],
+				value: nextInventory
+			}
+		];
 	};
 
 	const withSpellcastingDefaults = (patches: Array<GridContentPatch>): Array<GridContentPatch> => {
@@ -1043,6 +1246,9 @@
 							}
 							if (isClassFeatureListPath(patch.path)) {
 								return mergeClassFeaturePatches(patch.value);
+							}
+							if (isInventoryListPath(patch.path)) {
+								return mergeInventoryPatches(patch.path[1], patch.value);
 							}
 							return [patch];
 						})
@@ -1235,6 +1441,28 @@
 							displayArrayMode="stack"
 							displayMaxCols={1}
 							data={slotCard.data}
+						/>
+					</GridContainer>
+				{/each}
+			</GridContainer>
+		</GridContainer>
+		<GridContainer
+			heading="Inventory / Equipment"
+			border={true}
+			pad={true}
+			flow="row"
+			count={1}
+			classes="mt-2 gap-3"
+		>
+			<GridContainer flow="row" count={1} countMd={2} classes="gap-3">
+				{#each inventoryRuntimeCards as inventoryCard (inventoryCard.key)}
+					<GridContainer border={true} pad={true} classes="rounded-md">
+						<GridContent
+							handleEditSavePatches={handleGridPatchesSave}
+							{annotationEditorConfig}
+							displayArrayMode="stack"
+							displayMaxCols={1}
+							data={inventoryCard.data}
 						/>
 					</GridContainer>
 				{/each}

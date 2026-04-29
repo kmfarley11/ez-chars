@@ -69,7 +69,7 @@ Suggested implementation slices:
 
 Status:
 
-- slices 1-4 are complete: the runtime surface now covers abilities/proficiencies, traits/class-features/misc proficiency cards, and an explicit spells section; later slices still need to finish the rest of the sheet and refine layout/details
+- slices 1-5 are complete: the runtime surface now covers abilities/proficiencies, traits/class-features/misc proficiency cards, an explicit spells section, and a dedicated inventory/equipment section; later slices still need to finish the rest of the sheet and refine layout/details
 
 Definition of done:
 

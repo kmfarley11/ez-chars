@@ -51,7 +51,7 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 
 ### Partial
 
-- 5e sheet route now covers top-level info, quick reference, an ability-centered abilities/proficiencies/features/traits runtime section, and a spells runtime section, but still only part of the schema
+- 5e sheet route now covers top-level info, quick reference, an ability-centered abilities/proficiencies/features/traits runtime section, a spells runtime section, and an inventory runtime section, but still only part of the schema
 - annotation/reference UI exists for surfaced fields
 
 ### Missing
