@@ -15,6 +15,7 @@
 		type Dnd5eSkillName,
 		type FeatureRef,
 		type Item,
+		type NoteBlock,
 		type SpellLevel,
 		type SpellRef
 	} from '../../../schema';
@@ -118,6 +119,8 @@
 	const classFeatureListPathPrefix = '__classFeatures';
 	const inventoryListPathPrefix = '__inventory';
 	const inventoryCurrencyPathPrefix = '__inventoryCurrency';
+	const roleplayNotePathPrefix = '__roleplayNote';
+	const scratchpadNotesPathPrefix = '__scratchpadNotes';
 	const inventoryWeaponTag = 'inventory:weapon';
 	const inventoryArmorShieldTag = 'inventory:armor-shield';
 	const inventoryCurrencyTagPrefix = 'inventory:currency:';
@@ -174,6 +177,17 @@
 		{ key: 'sp', label: 'SP' },
 		{ key: 'cp', label: 'CP' }
 	];
+	const roleplayNoteMetadata = [
+		{ key: 'motives', title: 'Motives' },
+		{ key: 'personalityTraits', title: 'Personality Traits' },
+		{ key: 'ideals', title: 'Ideals' },
+		{ key: 'bonds', title: 'Bonds' },
+		{ key: 'flaws', title: 'Flaws' },
+		{ key: 'otherBackgroundHistory', title: 'Other Background/History' },
+		{ key: 'factionsOrgs', title: 'Factions & Orgs' },
+		{ key: 'otherCharacterInfo', title: 'Other Character Info' }
+	] as const;
+	type RoleplayNoteKey = (typeof roleplayNoteMetadata)[number]['key'];
 
 	const spellListLevelBindPath = (level: SpellListLevel): GridContentBindPath => [
 		spellListLevelPathPrefix,
@@ -270,7 +284,7 @@
 	const withFieldAnnotations = (
 		value: PrimitiveGridValue,
 		bindPath: GridContentBindPath,
-		options: Pick<GridContentField, 'fieldName' | 'label'> = {}
+		options: Pick<GridContentField, 'fieldName' | 'label' | 'multiline'> = {}
 	): GridContentField => {
 		const annotationBindPath = toSystemDataAnnotationPath(bindPath);
 		if (!annotationBindPath) return { ...options, bindPath, value };
@@ -497,6 +511,31 @@
 			}
 		}))
 	});
+
+	const roleplayNoteTitleForKey = (key: RoleplayNoteKey): string =>
+		roleplayNoteMetadata.find((entry) => entry.key === key)?.title ?? key;
+
+	const isRoleplayNoteTitle = (title: string | undefined): boolean =>
+		roleplayNoteMetadata.some((entry) => entry.title === title);
+
+	const getRoleplayNote = (key: RoleplayNoteKey): NoteBlock | undefined =>
+		(char.notes ?? []).find((note) => note.title === roleplayNoteTitleForKey(key));
+
+	const createRoleplayNoteData = (keys: Array<RoleplayNoteKey>): GridContentData =>
+		Object.fromEntries(
+			keys.map((key) => {
+				const title = roleplayNoteTitleForKey(key);
+				return [
+					key,
+					{
+						fieldName: title,
+						bindPath: [roleplayNotePathPrefix, key],
+						value: getRoleplayNote(key)?.body ?? '',
+						multiline: true
+					} satisfies GridContentField
+				];
+			})
+		);
 
 	const metaPrimaryData = $derived<GridContentData>({
 		name: withFieldAnnotations(char.identity.name, ['identity', 'name']),
@@ -918,6 +957,92 @@
 		})()
 	);
 
+	const organizationalBackgroundData = $derived<GridContentData>({
+		background: withFieldAnnotations(
+			char.systemData.background?.name ?? char.identity.background ?? '',
+			['systemData', 'background', 'name'],
+			{
+				fieldName: 'Background'
+			}
+		),
+		appearance: withFieldAnnotations(char.identity.appearance ?? '', ['identity', 'appearance'], {
+			fieldName: 'Appearance',
+			multiline: true
+		}),
+		description: withFieldAnnotations(
+			char.identity.description ?? '',
+			['identity', 'description'],
+			{
+				fieldName: 'Description',
+				multiline: true
+			}
+		)
+	});
+
+	const roleplayPrimaryData = $derived<GridContentData>(
+		createRoleplayNoteData(['motives', 'personalityTraits', 'ideals', 'bonds', 'flaws'])
+	);
+
+	const roleplaySecondaryData = $derived<GridContentData>(
+		createRoleplayNoteData(['otherBackgroundHistory', 'factionsOrgs', 'otherCharacterInfo'])
+	);
+
+	const scratchpadNotesData = $derived<GridContentData>({
+		notes: {
+			fieldName: 'Misc. Notes & Scratchpad',
+			addItemLabel: 'Add Note',
+			addItemTemplate: {
+				fieldName: 'Note',
+				value: {
+					title: {
+						fieldName: 'Title',
+						value: 'Note'
+					},
+					body: {
+						fieldName: 'Body',
+						value: '',
+						multiline: true
+					},
+					kind: {
+						fieldName: 'Kind',
+						value: 'other',
+						editOnly: true,
+						options: ['quick', 'session', 'lore', 'rules', 'other']
+					}
+				}
+			},
+			bindPath: [scratchpadNotesPathPrefix],
+			value: (char.notes ?? [])
+				.filter((note) => !isRoleplayNoteTitle(note.title))
+				.map((note) => ({
+					fieldName: 'Note',
+					value: {
+						title: {
+							fieldName: 'Title',
+							value: note.title ?? ''
+						},
+						body: {
+							fieldName: 'Body',
+							value: note.body,
+							multiline: true
+						},
+						kind: {
+							fieldName: 'Kind',
+							value: note.kind ?? 'other',
+							editOnly: true,
+							options: ['quick', 'session', 'lore', 'rules', 'other']
+						},
+						id: {
+							fieldName: 'Note Id',
+							value: note.id,
+							editOnly: true,
+							hidden: true
+						}
+					}
+				}))
+		}
+	});
+
 	const spellcastingRuntimeData = $derived<GridContentData>({
 		ability: withFieldAnnotations(
 			char.systemData.spellcasting?.ability ?? defaultSpellcastingAbility,
@@ -1122,6 +1247,19 @@
 		path: GridContentBindPath
 	): path is [typeof inventoryCurrencyPathPrefix] =>
 		path.length === 1 && path[0] === inventoryCurrencyPathPrefix;
+
+	const isRoleplayNotePath = (
+		path: GridContentBindPath
+	): path is [typeof roleplayNotePathPrefix, RoleplayNoteKey] =>
+		path.length === 2 &&
+		path[0] === roleplayNotePathPrefix &&
+		typeof path[1] === 'string' &&
+		roleplayNoteMetadata.some((entry) => entry.key === path[1]);
+
+	const isScratchpadNotesPath = (
+		path: GridContentBindPath
+	): path is [typeof scratchpadNotesPathPrefix] =>
+		path.length === 1 && path[0] === scratchpadNotesPathPrefix;
 
 	const normalizeSpellLevelValue = (level: SpellListLevel, value: unknown): Array<SpellRef> => {
 		if (!Array.isArray(value)) return [];
@@ -1371,6 +1509,94 @@
 		];
 	};
 
+	const normalizeScratchpadNotesValue = (value: unknown): Array<NoteBlock> => {
+		if (!Array.isArray(value)) return [];
+		const currentNotesById = Object.fromEntries(
+			(char.notes ?? []).map((note) => [note.id, note])
+		) as Record<string, NoteBlock>;
+
+		return value.flatMap((candidate) => {
+			if (!isObjectRecord(candidate)) return [];
+			const title = typeof candidate.title === 'string' ? candidate.title.trim() : '';
+			const body = typeof candidate.body === 'string' ? candidate.body : '';
+			if (title.length === 0 && body.trim().length === 0) return [];
+
+			const currentId =
+				typeof candidate.id === 'string' && candidate.id.trim().length > 0
+					? candidate.id
+					: createId();
+			const currentNote = currentNotesById[currentId];
+			const kind =
+				candidate.kind === 'quick' ||
+				candidate.kind === 'session' ||
+				candidate.kind === 'lore' ||
+				candidate.kind === 'rules' ||
+				candidate.kind === 'other'
+					? candidate.kind
+					: currentNote?.kind;
+
+			return [
+				{
+					...currentNote,
+					id: currentId,
+					...(title.length > 0 ? { title } : {}),
+					body,
+					...(kind ? { kind } : {})
+				} satisfies NoteBlock
+			];
+		});
+	};
+
+	const coalesceOrganizationalNotePatches = (
+		patches: Array<GridContentPatch>
+	): Array<GridContentPatch> => {
+		const roleplayPatches = patches.filter((patch) => isRoleplayNotePath(patch.path));
+		const scratchpadPatch = patches.find((patch) => isScratchpadNotesPath(patch.path));
+		if (roleplayPatches.length === 0 && !scratchpadPatch) return patches;
+
+		const currentNotes = char.notes ?? [];
+		const nextRoleplayBodies = Object.fromEntries(
+			roleplayNoteMetadata.map(({ key }) => [key, getRoleplayNote(key)?.body ?? ''])
+		) as Record<RoleplayNoteKey, string>;
+
+		for (const patch of roleplayPatches) {
+			const key = patch.path[1] as RoleplayNoteKey;
+			nextRoleplayBodies[key] = typeof patch.value === 'string' ? patch.value : '';
+		}
+
+		const nextScratchpadNotes = scratchpadPatch
+			? normalizeScratchpadNotesValue(scratchpadPatch.value)
+			: currentNotes.filter((note) => !isRoleplayNoteTitle(note.title));
+
+		const nextRoleplayNotes = roleplayNoteMetadata.flatMap(({ key, title }) => {
+			const body = nextRoleplayBodies[key];
+			if (body.trim().length === 0) return [];
+			const currentNote = getRoleplayNote(key);
+			return [
+				{
+					...currentNote,
+					id: currentNote?.id ?? createId(),
+					title,
+					body,
+					kind: currentNote?.kind ?? 'lore'
+				} satisfies NoteBlock
+			];
+		});
+
+		return [
+			...patches.filter(
+				(patch) => !isRoleplayNotePath(patch.path) && !isScratchpadNotesPath(patch.path)
+			),
+			{
+				path: ['notes'],
+				value:
+					nextScratchpadNotes.length > 0 || nextRoleplayNotes.length > 0
+						? [...nextScratchpadNotes, ...nextRoleplayNotes]
+						: undefined
+			}
+		];
+	};
+
 	const withSpellcastingDefaults = (patches: Array<GridContentPatch>): Array<GridContentPatch> => {
 		const normalized = [...patches];
 		const touchesSpellcasting = normalized.some((patch) =>
@@ -1473,7 +1699,7 @@
 		withIdentityBackedDefaults(
 			withSpellcastingDefaults(
 				dropNoopPatches(
-					coalesceInventoryCurrencyPatches(patches)
+					coalesceOrganizationalNotePatches(coalesceInventoryCurrencyPatches(patches))
 						.flatMap((patch) => {
 							if (isSpellLevelListPath(patch.path)) {
 								return [mergeSpellLevelPatch(patch.path[1], patch.value)];
@@ -1716,6 +1942,48 @@
 			{/each}
 		</GridContainer>
 	</GridContainer>
-
-	TODO: all the rest of the info...
+	<GridContainer
+		heading="Background, Roleplay, & Notes"
+		border={true}
+		pad={true}
+		flow="row"
+		count={1}
+		classes="mt-2 gap-3"
+	>
+		<GridContainer flow="row" count={1} countMd={3} classes="gap-3">
+			<GridContainer border={true} pad={true} classes="rounded-md">
+				<GridContent
+					handleEditSavePatches={handleGridPatchesSave}
+					{annotationEditorConfig}
+					displayMaxCols={1}
+					data={organizationalBackgroundData}
+				/>
+			</GridContainer>
+			<GridContainer border={true} pad={true} classes="rounded-md">
+				<GridContent
+					handleEditSavePatches={handleGridPatchesSave}
+					{annotationEditorConfig}
+					displayMaxCols={1}
+					data={roleplayPrimaryData}
+				/>
+			</GridContainer>
+			<GridContainer border={true} pad={true} classes="rounded-md">
+				<GridContent
+					handleEditSavePatches={handleGridPatchesSave}
+					{annotationEditorConfig}
+					displayMaxCols={1}
+					data={roleplaySecondaryData}
+				/>
+			</GridContainer>
+		</GridContainer>
+		<GridContainer border={true} pad={true} classes="rounded-md">
+			<GridContent
+				handleEditSavePatches={handleGridPatchesSave}
+				{annotationEditorConfig}
+				displayArrayMode="stack"
+				displayMaxCols={1}
+				data={scratchpadNotesData}
+			/>
+		</GridContainer>
+	</GridContainer>
 {/if}
