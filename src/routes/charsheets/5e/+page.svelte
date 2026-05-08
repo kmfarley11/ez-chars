@@ -11,6 +11,7 @@
 		annotationSchema,
 		type AbilityKey,
 		type Annotation,
+		type Attack,
 		type CharacterDocument5e2014,
 		type Dnd5eSkillName,
 		type FeatureRef,
@@ -119,6 +120,7 @@
 	];
 
 	const spellListLevelPathPrefix = '__spellLevelList';
+	const attackListPathPrefix = '__attacks';
 	const proficiencyLanguagesPathPrefix = '__proficiencyLanguages';
 	const classFeatureListPathPrefix = '__classFeatures';
 	const inventoryListPathPrefix = '__inventory';
@@ -514,6 +516,83 @@
 				}
 			}
 		}))
+	});
+
+	const attackRuntimeData = $derived<GridContentData>({
+		attacks: {
+			fieldName: 'Attacks (runtime summary)',
+			addItemLabel: 'Add Attack',
+			addItemTemplate: {
+				fieldName: 'Attack',
+				value: {
+					name: {
+						fieldName: 'Name',
+						value: 'Attack'
+					},
+					kind: {
+						fieldName: 'Kind',
+						value: 'melee',
+						options: ['melee', 'ranged', 'spell', 'other']
+					},
+					toHit: {
+						fieldName: 'Hit Modifier',
+						value: ''
+					},
+					damage: {
+						fieldName: 'Damage',
+						value: ''
+					},
+					reachOrRange: {
+						fieldName: 'Reach/Range',
+						value: ''
+					},
+					notes: {
+						fieldName: 'Notes',
+						value: '',
+						multiline: true,
+						editOnly: true
+					}
+				}
+			},
+			bindPath: [attackListPathPrefix],
+			value: (char.systemData.attacks ?? []).map((attack, attackIndex) => ({
+				fieldName: 'Attack',
+				value: {
+					name: withFieldAnnotations(attack.name, ['systemData', 'attacks', attackIndex, 'name'], {
+						fieldName: 'Name'
+					}),
+					kind: {
+						fieldName: 'Kind',
+						value: attack.kind ?? 'other',
+						options: ['melee', 'ranged', 'spell', 'other']
+					},
+					toHit: {
+						fieldName: 'To Hit',
+						value: attack.toHit ?? ''
+					},
+					reachOrRange: {
+						fieldName: 'Reach/Range',
+						value: attack.reachOrRange ?? ''
+					},
+					damage: {
+						fieldName: 'Damage',
+						value: attack.damage ?? ''
+					},
+					notes: {
+						fieldName: 'Notes',
+						value: attack.notes ?? '',
+						multiline: true,
+						editOnly: true
+					},
+					id: {
+						fieldName: 'Attack Id',
+						value: attack.id,
+						editOnly: true,
+						hidden: true
+					}
+				}
+			}))
+		}
 	});
 
 	const roleplayNoteTitleForKey = (key: RoleplayNoteKey): string =>
@@ -1222,6 +1301,9 @@
 	): path is [typeof spellListLevelPathPrefix, SpellListLevel] =>
 		path.length === 2 && path[0] === spellListLevelPathPrefix && typeof path[1] === 'number';
 
+	const isAttackListPath = (path: GridContentBindPath): path is [typeof attackListPathPrefix] =>
+		path.length === 1 && path[0] === attackListPathPrefix;
+
 	const isProficiencyLanguagesPath = (
 		path: GridContentBindPath
 	): path is [typeof proficiencyLanguagesPathPrefix] =>
@@ -1295,6 +1377,62 @@
 		return {
 			path: ['systemData', 'spellcasting', 'spells'],
 			value: mergedSpells
+		};
+	};
+
+	const normalizeAttackListValue = (value: unknown): Array<Attack> => {
+		if (!Array.isArray(value)) return [];
+		const currentAttacksById = Object.fromEntries(
+			(char.systemData.attacks ?? []).map((attack) => [attack.id, attack])
+		) as Record<string, Attack>;
+
+		return value.flatMap((candidate) => {
+			if (!isObjectRecord(candidate)) return [];
+			const name = typeof candidate.name === 'string' ? candidate.name.trim() : '';
+			if (name.length === 0) return [];
+
+			const currentId =
+				typeof candidate.id === 'string' && candidate.id.trim().length > 0
+					? candidate.id
+					: createId();
+			const currentAttack = currentAttacksById[currentId];
+			const kind =
+				candidate.kind === 'melee' ||
+				candidate.kind === 'ranged' ||
+				candidate.kind === 'spell' ||
+				candidate.kind === 'other'
+					? candidate.kind
+					: currentAttack?.kind;
+
+			const toHit =
+				typeof candidate.toHit === 'number' && Number.isFinite(candidate.toHit)
+					? candidate.toHit
+					: typeof candidate.toHit === 'string' && candidate.toHit.trim().length > 0
+						? Number(candidate.toHit)
+						: undefined;
+
+			return [
+				{
+					...currentAttack,
+					id: currentId,
+					name,
+					...(kind ? { kind } : {}),
+					...(typeof toHit === 'number' && Number.isFinite(toHit) ? { toHit } : {}),
+					...(typeof candidate.reachOrRange === 'string'
+						? { reachOrRange: candidate.reachOrRange }
+						: {}),
+					...(typeof candidate.damage === 'string' ? { damage: candidate.damage } : {}),
+					...(typeof candidate.notes === 'string' ? { notes: candidate.notes } : {})
+				} satisfies Attack
+			];
+		});
+	};
+
+	const mergeAttackListPatch = (value: unknown): GridContentPatch => {
+		const nextAttacks = normalizeAttackListValue(value);
+		return {
+			path: ['systemData', 'attacks'],
+			value: nextAttacks.length > 0 ? nextAttacks : undefined
 		};
 	};
 
@@ -1708,6 +1846,9 @@
 							if (isSpellLevelListPath(patch.path)) {
 								return [mergeSpellLevelPatch(patch.path[1], patch.value)];
 							}
+							if (isAttackListPath(patch.path)) {
+								return [mergeAttackListPatch(patch.value)];
+							}
 							if (isProficiencyLanguagesPath(patch.path)) {
 								return mergeProficiencyLanguagePatches(patch.value);
 							}
@@ -1850,6 +1991,24 @@
 							handleEditSavePatches={handleGridPatchesSave}
 							{annotationEditorConfig}
 							data={quickRefSecondaryData}
+						/>
+					</GridContainer>
+				</GridContainer>
+				<GridContainer
+					heading="Attacks / Runtime Summary"
+					border={true}
+					pad={true}
+					flow="row"
+					count={1}
+					classes="gap-3"
+				>
+					<GridContainer border={true} pad={true} classes="rounded-md">
+						<GridContent
+							handleEditSavePatches={handleGridPatchesSave}
+							{annotationEditorConfig}
+							displayArrayMode="stack"
+							displayMaxCols={1}
+							data={attackRuntimeData}
 						/>
 					</GridContainer>
 				</GridContainer>

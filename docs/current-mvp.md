@@ -48,15 +48,15 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 - localStorage persistence with load-time schema validation, versioned storage envelope, and recovery notice
 - basic character management: create, open, and delete from the home view, plus clear invalid-id handling on the 5e route
 - theme system
+- major 5e sheet surface for the MVP: overview, quick reference, abilities/proficiencies/features/traits, attacks, spells, inventory, and background/roleplay/notes, with runtime and organizational regions visually separated
 
 ### Partial
 
-- 5e sheet route now covers top-level info, quick reference, an ability-centered abilities/proficiencies/features/traits runtime section, spells and inventory runtime sections, and a background/roleplay/notes organizational section, with runtime and organizational regions visually separated, but still only part of the schema
+- 5e sheet route still does not expose every optional schema field or deeper 5e detail
 - annotation/reference UI exists for surfaced fields
 
 ### Missing
 
-- full 5e sheet coverage
 - import/export
 - tests and CI
 - polished empty states

@@ -39,44 +39,6 @@ Update the MVP docs if the task meaningfully changes backlog or status. Prune th
 
 ## P0
 
-### Complete the 5e sheet surface
-
-ID:
-
-- `p0-010`
-
-Size:
-
-- oversized; implement by suggested slice, not as one pass
-
-Scope:
-
-- add abilities, saves, skills, attacks, spellcasting, features, inventory, and notes sections
-- keep the runtime vs organizational split explicit in the layout
-
-Suggested implementation slices:
-
-1. Finish the abilities/proficiencies runtime section as a proficiency-bonus row plus six ability-based columns.
-2. Simplify saves and skills in that section to MVP proficiency indicators; defer expertise and ad hoc bonuses to annotations.
-3. Add spells as an explicit runtime section per the excalidraw.
-4. Add features & traits & misc proficiencies to the ability score section per the excalidraw
-5. Add inventory as a dedicated runtime section per the excalidraw
-6. Add background, roleplay, & notes as an organizational section per the excalidraw.
-7. Refine the page layout so runtime vs organizational information is visually and structurally clear.
-8. Run a render/edit pass against seeded data and fix breakage caused by the expanded surface.
-9. Fix the styling on grid content so that it doesn't wrap the skill boxes and score vs. mod stuff
-
-Status:
-
-- slices 1-7 & 9 are complete: the sheet surface now covers abilities/proficiencies, traits/class-features/misc proficiency cards, explicit spells and inventory/equipment runtime sections, and a background/roleplay/notes organizational section, with runtime and organizational regions visually separated; the remaining slice needs to verify the expanded surface against seeded data
-
-Definition of done:
-
-- the 5e sheet exposes all major MVP data sections called for in `current-mvp.md`
-- a user can view and edit those sections from the 5e sheet route
-- runtime information is visually distinct from organizational information
-- existing stored or seeded 5e data renders without obvious breakage
-
 ### Implement JSON import/export
 
 ID:
@@ -139,6 +101,34 @@ Definition of done:
 - verification meaningfully reduces the risk of storage or sheet-regression bugs
 
 ## P1
+
+### Link runtime attacks to source weapons, spells, and features
+
+ID:
+
+- `p1-005`
+
+Size:
+
+- medium; scope after the MVP sheet and import/export flows are stable
+
+Scope:
+
+- keep the current `Attacks` section as a user-driven runtime summary
+- make it possible for attack rows to optionally reference source records from inventory, spells, or features
+- avoid hard-coupling attacks to a single source because some table actions are custom, combined, conditional, or improvised
+
+Suggested implementation slices:
+
+1. Define a lightweight source reference shape for attacks, such as inventory item, spell, feature, or custom.
+2. Add UI affordances to show whether an attack is custom or linked to a source record.
+3. Consider source-based attack suggestions without overwriting user-edited runtime summaries.
+
+Definition of done:
+
+- attacks can remain fully manual
+- an attack can optionally point back to the item, spell, or feature it summarizes
+- source links improve navigation or editing without making the runtime attack list redundant or fragile
 
 ### Add GitHub Actions for `check`, `lint`, and `build`
 
@@ -318,3 +308,4 @@ Definition of done:
 - established `AGENTS.md` as the shortest AI-facing entry point
 - completed the `Add real character management` backlog item
 - completed the `src/lib/*Grid*` cleanup backlog
+- completed `p0-010`: the 5e sheet now exposes the major MVP runtime and organizational sections, including seeded attacks data, with check/lint/build passing
