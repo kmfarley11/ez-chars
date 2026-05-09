@@ -39,6 +39,8 @@ Update the MVP docs if the task meaningfully changes backlog or status. Prune th
 
 ## P0
 
+Next recommended target: start with `p0-040` slice 1 to profile the 5e sheet scroll jank. If profiling shows a localized rendering/layout fix, land that before continuing JSON import/export.
+
 ### Implement JSON import/export
 
 ID:
@@ -99,6 +101,47 @@ Definition of done:
 - at least one automated smoke path exercises core user flow
 - the test command or commands are documented and runnable in the repo
 - verification meaningfully reduces the risk of storage or sheet-regression bugs
+
+### Improve 5e sheet scroll performance
+
+ID:
+
+- `p0-040`
+
+Size:
+
+- medium-to-large; diagnose first, then implement targeted slices
+
+Scope:
+
+- reduce visible jank/stutter when quickly scrolling the expanded 5e sheet
+- focus on rendering, layout measurement, paint cost, and hidden DOM weight rather than broad feature refactors
+- preserve the current sheet behavior while reducing unnecessary work during scroll
+
+Current suspicion:
+
+- `GridContainerAuto` is likely expensive at scale because each `GridContent` instance mounts resize and mutation observers, queries measured children, reads layout widths, and may update column count
+- each `GridContent` currently renders edit/help dialogs even when closed, increasing hidden DOM size across the full sheet
+- nested bordered/shadowed `theme-grid-layer` cards may increase paint cost during fast scroll
+- hover/focus edit controls may trigger opacity transitions as the pointer crosses many cards while scrolling
+- the large 5e page module and derived data projections are a maintainability/update-cost concern, but are less likely to be the direct cause of scroll jank unless profiling shows scripting/layout spikes
+
+Suggested implementation slices:
+
+1. Profile the 5e sheet in Chrome Performance with paint flashing and identify whether the dominant cost is scripting/layout or paint/compositing.
+2. Make `GridContainerAuto` measurement opt-in or replace it with CSS grid behavior for surfaces that do not require runtime width measurement.
+3. Remove or narrow the `MutationObserver` in `GridContainerAuto`; prefer mount/resize recalculation unless profiling proves content mutation measurement is necessary.
+4. Lazy-render `GridContent` edit/help dialogs only after the user opens them.
+5. Reduce inner card paint cost by simplifying nested shadows or moving depth cues to cheaper border/background treatments.
+6. Review hover/focus edit controls for scroll-induced transition churn and disable or simplify transitions where they cause jank.
+7. Re-profile desktop and phone-sized viewports and document the expected performance smoke check.
+
+Definition of done:
+
+- fast scrolling the seeded 5e sheet is visibly smoother on desktop and phone-sized viewports
+- profiling confirms the main source of jank was addressed
+- `npm run check`, `npm run lint`, and `npm run build` pass
+- any remaining known performance risks are documented with follow-up slices or backlog items
 
 ## P1
 
@@ -176,7 +219,7 @@ Suggested implementation slices:
 2. Review and fix dialog accessibility and keyboard behavior.
 3. Review and fix sheet-section readability and interaction on mobile.
 4. Update the UI checklist to reflect any new review expectations.
-5. Review and diagnose performance issues in the 5e character page, why might quick scrolling look jagged?
+5. Re-check mobile sheet interaction after `p0-040` lands, but keep performance diagnosis and fixes in `p0-040`.
 
 Definition of done:
 
@@ -213,7 +256,7 @@ Dependency notes:
 
 - Start with slice 1 of this item first so the target interaction model is explicit before abstraction work hardens around the wrong UX.
 - After slice 1 is decided, most of the remaining implementation for this item should depend on `p1-040`, especially slices 2-4.
-- In practice, the expected order is: `p1-030` slice 1 -> `p1-040` slices -> `p1-030` slices 2-5 -> optional `p1-050` cleanup.
+- In practice, the expected order is: `p1-030` slice 1 -> `p1-040` slices -> `p1-030` slices 2-5 -> optional `p1-045`/`p1-050` cleanup.
 
 Definition of done:
 
@@ -263,6 +306,42 @@ Definition of done:
 - inline edit flows no longer depend on a card-wide bulk form
 - the abstraction is proven on at least one current sheet surface and is clear enough to reuse
 
+### Extract 5e sheet projection and patch logic from the route
+
+ID:
+
+- `p1-045`
+
+Size:
+
+- medium-to-large; implement after the performance pass and after the initial field-binding direction is clear
+
+Scope:
+
+- reduce the size and responsibility of `src/routes/charsheets/5e/+page.svelte`
+- move 5e-specific `GridContentData` projection builders out of the route
+- move virtual path constants and patch normalization helpers into feature-local modules
+- keep the route focused on selected-character lookup, layout composition, collapse state, and save dispatch
+- do not define the inline-edit interaction model or shared field-binding contract; that belongs to `p1-030` and `p1-040`
+- do not reorganize unrelated stores, fixtures, or schema folders; that belongs to `p1-050`
+- preserve current behavior unless a slice explicitly supports an active feature item
+
+Suggested implementation slices:
+
+1. Extract static 5e sheet metadata and options: ability metadata, skill metadata, spell slot metadata, runtime action options, inventory tags, and roleplay note metadata.
+2. Extract pure projection builders for current sheet surfaces: overview, quick reference, abilities/proficiencies/features/traits, runtime actions, spells, inventory, and organizational notes.
+3. Extract patch normalization helpers for virtual paths: runtime actions, spell levels, proficiency languages, class features, inventory groups/currency, and organizational notes.
+4. Add focused tests around projection and patch helpers once `p0-030` test tooling exists.
+5. Leave `+page.svelte` as mostly layout/orchestration and verify no user-visible behavior changed.
+
+Definition of done:
+
+- `+page.svelte` no longer owns most 5e-specific projection or patch normalization logic
+- virtual path handling has a clearer feature-local home
+- extracted helpers are easier to test and reuse
+- existing sheet editing behavior remains unchanged
+- `npm run check`, `npm run lint`, and `npm run build` pass
+
 ### Refactor the repo structure so stores, fixtures, schema, and 5e feature code are less entangled
 
 ID:
@@ -277,6 +356,7 @@ Scope:
 
 - reduce coupling between stores, fixtures, schema modules, and 5e page-specific logic
 - keep this item focused on module ownership and navigability, not as a substitute for the field-binding/patch abstraction work
+- do not duplicate `p1-045`; route-level 5e projection and patch extraction should happen there first
 - improve navigability without changing behavior unnecessarily
 - review duplicated or provenance-bound schema storage that currently forces awkward feature-layer glue
 
@@ -284,12 +364,13 @@ Dependency notes:
 
 - This item is a cleanup/supporting refactor, not the primary dependency for inline field editing.
 - Prefer landing the first usable field-binding/patch abstraction before using this item to reorganize where those modules live.
+- Prefer landing `p1-045` before moving or reorganizing 5e feature modules more broadly.
 
 Suggested implementation slices:
 
 1. Move seed/demo data into an explicit fixtures module.
 2. Move storage logic into its own module.
-3. Extract 5e page-specific mapping and binding glue into feature-local modules.
+3. Integrate the feature-local modules created by `p1-045` into the broader folder structure if their final location needs adjustment.
 4. Reorganize folders only after behavior-critical extractions are complete.
 5. Review duplicated 5e schema storage such as proficiencies/languages split across multiple origins, and document or refactor where cross-origin player-earned data should live.
 6. Review inventory storage compared to excalidraw visuals then follow up on schema vs. page implementations. Ensure there is a dedicated space for coinage vs. weapons vs. armor vs. other. And ensure that weapons vs. armor can house proficiency vs. damage type details as applicable.
