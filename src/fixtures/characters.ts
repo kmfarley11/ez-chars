@@ -164,14 +164,22 @@ export const seedChars: CharacterWithSystemData[] = [
 				}
 			],
 
-			attacks: [
+			runtimeActions: [
 				{
 					id: 'atk-1',
 					name: 'Longsword',
-					kind: 'melee',
-					toHit: 5,
-					reachOrRange: '5 ft',
-					damage: '1d8+2 slashing'
+					timing: 'action',
+					category: 'attack',
+					target: 'one creature within 5 ft',
+					notes: '+5 to hit; 1d8+2 slashing.'
+				},
+				{
+					id: 'act-1',
+					name: 'Second Wind',
+					timing: 'bonusAction',
+					category: 'effect',
+					target: 'self',
+					notes: 'Regain hit points once per short rest.'
 				}
 			],
 
@@ -260,14 +268,14 @@ export const seedChars: CharacterWithSystemData[] = [
 				}
 			],
 
-			attacks: [
+			runtimeActions: [
 				{
 					id: 'atk-1',
 					name: 'Spear',
-					kind: 'melee',
-					toHit: 4,
-					reachOrRange: '5 ft (20/60)',
-					damage: '1d6+2 piercing'
+					timing: 'action',
+					category: 'attack',
+					target: 'one creature within 5 ft or 20/60 ft',
+					notes: '+4 to hit; 1d6+2 piercing.'
 				}
 			]
 		}

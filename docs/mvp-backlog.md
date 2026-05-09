@@ -102,7 +102,7 @@ Definition of done:
 
 ## P1
 
-### Link runtime attacks to source weapons, spells, and features
+### Link runtime actions to source weapons, spells, and features
 
 ID:
 
@@ -114,21 +114,21 @@ Size:
 
 Scope:
 
-- keep the current `Attacks` section as a user-driven runtime summary
-- make it possible for attack rows to optionally reference source records from inventory, spells, or features
-- avoid hard-coupling attacks to a single source because some table actions are custom, combined, conditional, or improvised
+- keep the current action-economy runtime summary fully user-driven
+- make it possible for runtime action rows to optionally reference source records from inventory, spells, or features
+- avoid hard-coupling actions to a single source because table actions can be custom, combined, conditional, supportive, or improvised
 
 Suggested implementation slices:
 
-1. Define a lightweight source reference shape for attacks, such as inventory item, spell, feature, or custom.
-2. Add UI affordances to show whether an attack is custom or linked to a source record.
-3. Consider source-based attack suggestions without overwriting user-edited runtime summaries.
+1. Define a lightweight source reference shape for runtime actions, such as inventory item, spell, feature, or custom.
+2. Add UI affordances to show whether an action is custom or linked to a source record.
+3. Consider source-based action suggestions without overwriting user-edited runtime summaries.
 
 Definition of done:
 
-- attacks can remain fully manual
-- an attack can optionally point back to the item, spell, or feature it summarizes
-- source links improve navigation or editing without making the runtime attack list redundant or fragile
+- runtime actions can remain fully manual
+- an action can optionally point back to the item, spell, or feature it summarizes
+- source links improve navigation or editing without making the runtime action list redundant or fragile
 
 ### Add GitHub Actions for `check`, `lint`, and `build`
 
@@ -308,4 +308,4 @@ Definition of done:
 - established `AGENTS.md` as the shortest AI-facing entry point
 - completed the `Add real character management` backlog item
 - completed the `src/lib/*Grid*` cleanup backlog
-- completed `p0-010`: the 5e sheet now exposes the major MVP runtime and organizational sections, including seeded attacks data, with check/lint/build passing
+- completed `p0-010`: the 5e sheet now exposes the major MVP runtime and organizational sections, including seeded runtime action data, with check/lint/build passing

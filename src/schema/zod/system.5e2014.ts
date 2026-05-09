@@ -184,15 +184,13 @@ export const classLevelSchema = z
 	})
 	.strict();
 
-export const attackSchema = z
+export const runtimeActionSchema = z
 	.object({
 		id: z.string().min(1),
 		name: z.string().min(1),
-		kind: z.enum(['melee', 'ranged', 'spell', 'other']).optional(),
-		toHit: z.number().optional(),
-		reachOrRange: z.string().optional(),
+		timing: z.enum(['action', 'bonusAction', 'reaction', 'free', 'other']).optional(),
+		category: z.enum(['attack', 'effect', 'other']).optional(),
 		target: z.string().optional(),
-		damage: z.string().optional(),
 		notes: z.string().optional(),
 		annotations: z.array(annotationSchema).optional()
 	})
@@ -310,7 +308,8 @@ export const dnd5e2014SystemDataSchema = z
 		race: raceChoiceSchema.optional(),
 		background: backgroundChoiceSchema.optional(),
 		classes: z.array(classLevelSchema),
-		attacks: z.array(attackSchema).optional(),
+		runtimeActions: z.array(runtimeActionSchema).optional(),
+		attacks: z.array(runtimeActionSchema).optional(),
 		spellcasting: spellcastingBlockSchema.optional(),
 		annotations: mirroredSystemDataAnnotationsSchema.optional()
 	})

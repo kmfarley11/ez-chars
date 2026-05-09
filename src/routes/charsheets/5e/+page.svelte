@@ -11,12 +11,12 @@
 		annotationSchema,
 		type AbilityKey,
 		type Annotation,
-		type Attack,
 		type CharacterDocument5e2014,
 		type Dnd5eSkillName,
 		type FeatureRef,
 		type Item,
 		type NoteBlock,
+		type RuntimeAction,
 		type SpellLevel,
 		type SpellRef
 	} from '../../../schema';
@@ -120,7 +120,7 @@
 	];
 
 	const spellListLevelPathPrefix = '__spellLevelList';
-	const attackListPathPrefix = '__attacks';
+	const runtimeActionListPathPrefix = '__runtimeActions';
 	const proficiencyLanguagesPathPrefix = '__proficiencyLanguages';
 	const classFeatureListPathPrefix = '__classFeatures';
 	const inventoryListPathPrefix = '__inventory';
@@ -518,32 +518,31 @@
 		}))
 	});
 
-	const attackRuntimeData = $derived<GridContentData>({
-		attacks: {
-			fieldName: 'Attacks (runtime summary)',
-			addItemLabel: 'Add Attack',
+	const runtimeActions = $derived(char.systemData.runtimeActions ?? char.systemData.attacks ?? []);
+
+	const runtimeActionData = $derived<GridContentData>({
+		actions: {
+			fieldName: 'Runtime Actions',
+			addItemLabel: 'Add Action',
 			addItemTemplate: {
-				fieldName: 'Attack',
+				fieldName: 'Action',
 				value: {
 					name: {
 						fieldName: 'Name',
-						value: 'Attack'
+						value: 'Action'
 					},
-					kind: {
-						fieldName: 'Kind',
-						value: 'melee',
-						options: ['melee', 'ranged', 'spell', 'other']
+					timing: {
+						fieldName: 'Timing',
+						value: 'action',
+						options: ['action', 'bonusAction', 'reaction', 'free', 'other']
 					},
-					toHit: {
-						fieldName: 'Hit Modifier',
-						value: ''
+					category: {
+						fieldName: 'Category',
+						value: 'effect',
+						options: ['attack', 'effect', 'other']
 					},
-					damage: {
-						fieldName: 'Damage',
-						value: ''
-					},
-					reachOrRange: {
-						fieldName: 'Reach/Range',
+					target: {
+						fieldName: 'Target',
 						value: ''
 					},
 					notes: {
@@ -554,39 +553,40 @@
 					}
 				}
 			},
-			bindPath: [attackListPathPrefix],
-			value: (char.systemData.attacks ?? []).map((attack, attackIndex) => ({
-				fieldName: 'Attack',
+			bindPath: [runtimeActionListPathPrefix],
+			value: runtimeActions.map((action, actionIndex) => ({
+				fieldName: 'Action',
 				value: {
-					name: withFieldAnnotations(attack.name, ['systemData', 'attacks', attackIndex, 'name'], {
-						fieldName: 'Name'
-					}),
-					kind: {
-						fieldName: 'Kind',
-						value: attack.kind ?? 'other',
-						options: ['melee', 'ranged', 'spell', 'other']
+					name: withFieldAnnotations(
+						action.name,
+						['systemData', 'runtimeActions', actionIndex, 'name'],
+						{
+							fieldName: 'Name'
+						}
+					),
+					timing: {
+						fieldName: 'Timing',
+						value: action.timing ?? 'action',
+						options: ['action', 'bonusAction', 'reaction', 'free', 'other']
 					},
-					toHit: {
-						fieldName: 'To Hit',
-						value: attack.toHit ?? ''
+					category: {
+						fieldName: 'Category',
+						value: action.category ?? 'attack',
+						options: ['attack', 'effect', 'other']
 					},
-					reachOrRange: {
-						fieldName: 'Reach/Range',
-						value: attack.reachOrRange ?? ''
-					},
-					damage: {
-						fieldName: 'Damage',
-						value: attack.damage ?? ''
+					target: {
+						fieldName: 'Target',
+						value: action.target ?? ''
 					},
 					notes: {
 						fieldName: 'Notes',
-						value: attack.notes ?? '',
+						value: action.notes ?? '',
 						multiline: true,
 						editOnly: true
 					},
 					id: {
-						fieldName: 'Attack Id',
-						value: attack.id,
+						fieldName: 'Action Id',
+						value: action.id,
 						editOnly: true,
 						hidden: true
 					}
@@ -1301,8 +1301,10 @@
 	): path is [typeof spellListLevelPathPrefix, SpellListLevel] =>
 		path.length === 2 && path[0] === spellListLevelPathPrefix && typeof path[1] === 'number';
 
-	const isAttackListPath = (path: GridContentBindPath): path is [typeof attackListPathPrefix] =>
-		path.length === 1 && path[0] === attackListPathPrefix;
+	const isRuntimeActionListPath = (
+		path: GridContentBindPath
+	): path is [typeof runtimeActionListPathPrefix] =>
+		path.length === 1 && path[0] === runtimeActionListPathPrefix;
 
 	const isProficiencyLanguagesPath = (
 		path: GridContentBindPath
@@ -1380,11 +1382,11 @@
 		};
 	};
 
-	const normalizeAttackListValue = (value: unknown): Array<Attack> => {
+	const normalizeRuntimeActionListValue = (value: unknown): Array<RuntimeAction> => {
 		if (!Array.isArray(value)) return [];
-		const currentAttacksById = Object.fromEntries(
-			(char.systemData.attacks ?? []).map((attack) => [attack.id, attack])
-		) as Record<string, Attack>;
+		const currentActionsById = Object.fromEntries(
+			runtimeActions.map((action) => [action.id, action])
+		) as Record<string, RuntimeAction>;
 
 		return value.flatMap((candidate) => {
 			if (!isObjectRecord(candidate)) return [];
@@ -1395,45 +1397,48 @@
 				typeof candidate.id === 'string' && candidate.id.trim().length > 0
 					? candidate.id
 					: createId();
-			const currentAttack = currentAttacksById[currentId];
-			const kind =
-				candidate.kind === 'melee' ||
-				candidate.kind === 'ranged' ||
-				candidate.kind === 'spell' ||
-				candidate.kind === 'other'
-					? candidate.kind
-					: currentAttack?.kind;
-
-			const toHit =
-				typeof candidate.toHit === 'number' && Number.isFinite(candidate.toHit)
-					? candidate.toHit
-					: typeof candidate.toHit === 'string' && candidate.toHit.trim().length > 0
-						? Number(candidate.toHit)
-						: undefined;
+			const currentAction = currentActionsById[currentId];
+			const timing =
+				candidate.timing === 'action' ||
+				candidate.timing === 'bonusAction' ||
+				candidate.timing === 'reaction' ||
+				candidate.timing === 'free' ||
+				candidate.timing === 'other'
+					? candidate.timing
+					: currentAction?.timing;
+			const category =
+				candidate.category === 'attack' ||
+				candidate.category === 'effect' ||
+				candidate.category === 'other'
+					? candidate.category
+					: currentAction?.category;
 
 			return [
 				{
-					...currentAttack,
+					...currentAction,
 					id: currentId,
 					name,
-					...(kind ? { kind } : {}),
-					...(typeof toHit === 'number' && Number.isFinite(toHit) ? { toHit } : {}),
-					...(typeof candidate.reachOrRange === 'string'
-						? { reachOrRange: candidate.reachOrRange }
-						: {}),
-					...(typeof candidate.damage === 'string' ? { damage: candidate.damage } : {}),
+					...(timing ? { timing } : {}),
+					...(category ? { category } : {}),
+					...(typeof candidate.target === 'string' ? { target: candidate.target } : {}),
 					...(typeof candidate.notes === 'string' ? { notes: candidate.notes } : {})
-				} satisfies Attack
+				} satisfies RuntimeAction
 			];
 		});
 	};
 
-	const mergeAttackListPatch = (value: unknown): GridContentPatch => {
-		const nextAttacks = normalizeAttackListValue(value);
-		return {
-			path: ['systemData', 'attacks'],
-			value: nextAttacks.length > 0 ? nextAttacks : undefined
-		};
+	const mergeRuntimeActionListPatch = (value: unknown): Array<GridContentPatch> => {
+		const nextActions = normalizeRuntimeActionListValue(value);
+		return [
+			{
+				path: ['systemData', 'runtimeActions'],
+				value: nextActions.length > 0 ? nextActions : undefined
+			},
+			{
+				path: ['systemData', 'attacks'],
+				value: undefined
+			}
+		];
 	};
 
 	const normalizeProficiencyLanguageValue = (
@@ -1846,8 +1851,8 @@
 							if (isSpellLevelListPath(patch.path)) {
 								return [mergeSpellLevelPatch(patch.path[1], patch.value)];
 							}
-							if (isAttackListPath(patch.path)) {
-								return [mergeAttackListPatch(patch.value)];
+							if (isRuntimeActionListPath(patch.path)) {
+								return mergeRuntimeActionListPatch(patch.value);
 							}
 							if (isProficiencyLanguagesPath(patch.path)) {
 								return mergeProficiencyLanguagePatches(patch.value);
@@ -1995,7 +2000,7 @@
 					</GridContainer>
 				</GridContainer>
 				<GridContainer
-					heading="Attacks / Runtime Summary"
+					heading="Actions / Runtime Summary"
 					border={true}
 					pad={true}
 					flow="row"
@@ -2008,7 +2013,7 @@
 							{annotationEditorConfig}
 							displayArrayMode="stack"
 							displayMaxCols={1}
-							data={attackRuntimeData}
+							data={runtimeActionData}
 						/>
 					</GridContainer>
 				</GridContainer>

@@ -18,7 +18,7 @@ import {
 	backgroundChoiceSchema,
 	classLevelSchema,
 	featureRefSchema,
-	attackSchema,
+	runtimeActionSchema,
 	spellcastingBlockSchema,
 	spellSlotsSchema,
 	spellRefSchema,
@@ -54,7 +54,7 @@ export {
 	backgroundChoiceSchema,
 	classLevelSchema,
 	featureRefSchema,
-	attackSchema,
+	runtimeActionSchema,
 	spellcastingBlockSchema,
 	spellSlotsSchema,
 	spellRefSchema,
@@ -76,7 +76,7 @@ export type RaceChoice = z.infer<typeof raceChoiceSchema>;
 export type BackgroundChoice = z.infer<typeof backgroundChoiceSchema>;
 export type ClassLevel = z.infer<typeof classLevelSchema>;
 export type FeatureRef = z.infer<typeof featureRefSchema>;
-export type Attack = z.infer<typeof attackSchema>;
+export type RuntimeAction = z.infer<typeof runtimeActionSchema>;
 export type SpellcastingBlock = z.infer<typeof spellcastingBlockSchema>;
 export type SpellSlots = z.infer<typeof spellSlotsSchema>;
 export type SpellRef = z.infer<typeof spellRefSchema>;
