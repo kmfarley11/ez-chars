@@ -153,6 +153,18 @@ Slice 6 status:
 - Follow-up tightened pointer behavior so wheel scrolling clears visible controls and stationary cursors do not reveal controls just because content scrolls underneath them
 - Still needs re-profiling with slice 7 to confirm whether hover churn remains a meaningful contributor
 
+Slice 7 findings and smoke check:
+
+- Re-profiled seeded `char-001` and `char-002` routes after slices 4, 5, and 6 using the same headless Chrome DevTools scripted fast-scroll trace as slice 1, plus a phone-sized `390x844` viewport pass
+- Desktop DOM footprint dropped from roughly 1,570 nodes and 75 closed dialogs to roughly 1,125-1,138 nodes and one app-level dialog; measured grid items and themed grid-layer cards stayed at 94 and 44
+- Desktop traces still showed no meaningful `Layout`, `UpdateLayoutTree`, or `RecalculateStyles` time during scripted scroll
+- Desktop raster/draw/compositing remained the dominant trace shape, but raster task time improved directionally: `char-001` `RasterizerTaskImpl::RunOnWorkerThread` was about 139 ms vs. about 171 ms in slice 1, and `char-002` was about 97 ms vs. about 115 ms in slice 1
+- Phone-sized traces also showed no layout/style recalculation during scripted scroll; top costs were main-frame animation/draw and raster work, with about 50-62 ms of rasterizer task time
+- Manual follow-up confirmed Help/Edit controls no longer flash during quick scroll and remain open/closed as expected
+- Manual follow-up also confirmed fast-scroll jank is improved but still present, most noticeably through the dense Abilities & Proficiencies and Spells regions
+- Expected manual smoke check: open a seeded 5e sheet, expand the main regions, quick-scroll desktop and mobile/narrow viewports, confirm Help/Edit controls do not flash while wheel scrolling under a stationary cursor, then open/close one Help and Edit dialog and confirm closed dialogs are not retained across the sheet
+- Remaining risk: the dense Abilities & Proficiencies and Spells regions still concentrate many `GridContent`/`GridContainerAuto` surfaces, so the next data-driven target is `GridContainerAuto` measurement/observer behavior in slices 2 and 3
+
 Suggested implementation slices:
 
 1. Profile the 5e sheet in Chrome Performance with paint flashing and identify whether the dominant cost is scripting/layout or paint/compositing.
