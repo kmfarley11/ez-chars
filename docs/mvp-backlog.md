@@ -165,6 +165,20 @@ Slice 7 findings and smoke check:
 - Expected manual smoke check: open a seeded 5e sheet, expand the main regions, quick-scroll desktop and mobile/narrow viewports, confirm Help/Edit controls do not flash while wheel scrolling under a stationary cursor, then open/close one Help and Edit dialog and confirm closed dialogs are not retained across the sheet
 - Remaining risk: the dense Abilities & Proficiencies and Spells regions still concentrate many `GridContent`/`GridContainerAuto` surfaces, so the next data-driven target is `GridContainerAuto` measurement/observer behavior in slices 2 and 3
 
+Slice 2 attempt and revert:
+
+- Tried replacing default `GridContainerAuto` runtime measurement with CSS auto-fit columns, leaving measured layout behind an opt-in flag
+- Follow-up tuning tightened CSS row spacing and wrapping, but the sheet still looked worse than the measured layout in spell/proficiency cards and long-value movement rows
+- Re-profiled scripted fast scroll after the attempt and did not find a meaningful performance win; some main-frame/raster timings were flat or worse versus slice 7
+- Reverted the CSS auto-fit attempt and restored the prior measured layout because the layout regression was not justified by the measured performance result
+- Any future slice 2 attempt should be narrower than a wholesale default-layout swap, likely scoped to specific dense surfaces only after proving visual parity and a measurable scroll improvement
+
+Slice 3 status:
+
+- Implemented by removing the broad subtree `MutationObserver` from `GridContainerAuto`
+- Auto measurement still runs on mount, resize, and reactive measurement input changes, preserving the measured layout that looked better than the attempted CSS auto-fit replacement
+- Tradeoff: if a content-only edit changes intrinsic text width without resizing the container, the column count may not recalculate until a resize/remount; keep an eye on edited dense cards during manual verification
+
 Suggested implementation slices:
 
 1. Profile the 5e sheet in Chrome Performance with paint flashing and identify whether the dominant cost is scripting/layout or paint/compositing.

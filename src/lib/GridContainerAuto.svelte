@@ -113,21 +113,10 @@
 		});
 		resizeObserver.observe(layoutEl);
 
-		// Content edits can change measured text width without resizing the container.
-		const mutationObserver = new MutationObserver(() => {
-			scheduleRecalculate();
-		});
-		mutationObserver.observe(layoutEl, {
-			subtree: true,
-			childList: true,
-			characterData: true
-		});
-
 		void tick().then(scheduleRecalculate);
 
 		return () => {
 			resizeObserver.disconnect();
-			mutationObserver.disconnect();
 			cancelScheduledRecalculate();
 		};
 	});
