@@ -1985,6 +1985,7 @@
 						<GridContent
 							handleEditSavePatches={handleGridPatchesSave}
 							{annotationEditorConfig}
+							displayMaxCols={2}
 							data={quickRefPrimaryData}
 						/>
 					</GridContainer>
@@ -1999,6 +2000,7 @@
 						<GridContent
 							handleEditSavePatches={handleGridPatchesSave}
 							{annotationEditorConfig}
+							displayMaxCols={1}
 							data={quickRefSecondaryData}
 						/>
 					</GridContainer>
