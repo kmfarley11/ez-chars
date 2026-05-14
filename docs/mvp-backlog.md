@@ -140,6 +140,12 @@ Slice 5 status:
 - Preserves the existing boxed sheet hierarchy while reducing per-card raster/paint work during fast scroll
 - Still needs re-profiling after the remaining slices to confirm the end-to-end jank target on desktop and phone-sized viewports
 
+Slice 4 status:
+
+- Implemented by lazy-rendering `GridContent` edit/help dialogs only after the user opens them
+- Removes the previously observed always-mounted closed dialogs from the initial sheet DOM while preserving edit/help behavior
+- Still needs re-profiling to quantify the resulting DOM reduction and scroll impact
+
 Suggested implementation slices:
 
 1. Profile the 5e sheet in Chrome Performance with paint flashing and identify whether the dominant cost is scripting/layout or paint/compositing.

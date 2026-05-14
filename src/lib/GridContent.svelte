@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import GridContainer from '$lib/GridContainer.svelte';
 	import GridContentAnnotationsDisplay from '$lib/GridContentAnnotationsDisplay.svelte';
 	import GridContentAnnotationsEditor from '$lib/GridContentAnnotationsEditor.svelte';
@@ -52,9 +53,11 @@
 		handleEditCancel = undefined
 	}: Props = $props();
 
-	let dialogEl: HTMLDialogElement | undefined;
-	let helpDialogEl: HTMLDialogElement | undefined;
+	let dialogEl = $state<HTMLDialogElement>();
+	let helpDialogEl = $state<HTMLDialogElement>();
 	let draftData = $state<GridContentData>({});
+	let shouldRenderEditDialog = $state(false);
+	let shouldRenderHelpDialog = $state(false);
 
 	const normalizedData = $derived<GridContentData>(normalizeData(data));
 
@@ -64,10 +67,12 @@
 
 	const closeDialog = () => {
 		dialogEl?.close();
+		shouldRenderEditDialog = false;
 	};
 
 	const closeHelpDialog = () => {
 		helpDialogEl?.close();
+		shouldRenderHelpDialog = false;
 	};
 
 	const onCancel = () => {
@@ -79,12 +84,16 @@
 		closeHelpDialog();
 	};
 
-	const onOpen = () => {
+	const onOpen = async () => {
 		draftData = structuredClone(normalizedData);
+		shouldRenderEditDialog = true;
+		await tick();
 		dialogEl?.showModal();
 	};
 
-	const onHelpOpen = () => {
+	const onHelpOpen = async () => {
+		shouldRenderHelpDialog = true;
+		await tick();
 		helpDialogEl?.showModal();
 	};
 
@@ -232,297 +241,301 @@
 	</div>
 </div>
 
-<dialog
-	bind:this={dialogEl}
-	class="theme-dialog theme-dialog-backdrop m-auto w-[min(92vw,32rem)] rounded-md border p-0"
-	oncancel={onCancel}
-	onclick={onBackdropClick}
->
-	<form class="flex flex-col gap-3 p-4" onsubmit={onSubmit}>
-		<h3 class="text-lg leading-none font-semibold">Edit Fields</h3>
-		{#each Object.entries(draftData) as [fieldKey, field] (fieldKey)}
-			<div class="space-y-1">
-				<div class="flex items-center justify-between gap-2">
-					<p class="font-semibold">
-						{field.fieldName}
-						{#if field.label}
-							<span class="theme-text-muted text-xs italic"> ({field.label}) </span>
+{#if shouldRenderEditDialog}
+	<dialog
+		bind:this={dialogEl}
+		class="theme-dialog theme-dialog-backdrop m-auto w-[min(92vw,32rem)] rounded-md border p-0"
+		oncancel={onCancel}
+		onclick={onBackdropClick}
+	>
+		<form class="flex flex-col gap-3 p-4" onsubmit={onSubmit}>
+			<h3 class="text-lg leading-none font-semibold">Edit Fields</h3>
+			{#each Object.entries(draftData) as [fieldKey, field] (fieldKey)}
+				<div class="space-y-1">
+					<div class="flex items-center justify-between gap-2">
+						<p class="font-semibold">
+							{field.fieldName}
+							{#if field.label}
+								<span class="theme-text-muted text-xs italic"> ({field.label}) </span>
+							{/if}
+						</p>
+						{#if isGridFieldArray(field.value) && field.addItemTemplate}
+							<button
+								type="button"
+								class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
+								onclick={() => addArrayItem(fieldKey, field.addItemTemplate!)}
+							>
+								{field.addItemLabel ?? 'Add'}
+							</button>
 						{/if}
-					</p>
-					{#if isGridFieldArray(field.value) && field.addItemTemplate}
-						<button
-							type="button"
-							class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
-							onclick={() => addArrayItem(fieldKey, field.addItemTemplate!)}
-						>
-							{field.addItemLabel ?? 'Add'}
-						</button>
-					{/if}
-				</div>
-				{#if isGridFieldArray(field.value)}
-					<div class="space-y-2">
-						{#if field.value.length === 0}
-							<p class="theme-text-muted text-xs italic">No entries yet.</p>
-						{/if}
-						{#each field.value as arrayItem, itemIdx (`${fieldKey}-${itemIdx}`)}
-							{@const itemLeafInputs = collectLeafInputs(
-								arrayItem,
-								[fieldKey, itemIdx],
-								undefined,
-								field.bindPath,
-								itemIdx
-							)}
-							{@const visibleItemLeafInputs = itemLeafInputs.filter((leaf) => !leaf.field.hidden)}
-							<div class="space-y-2 rounded-md border px-2 py-2">
-								<div class="flex items-center justify-between gap-2">
-									<p class="text-sm font-semibold">
-										{arrayItem.fieldName ?? `${field.fieldName} ${itemIdx + 1}`}
-									</p>
-									<button
-										type="button"
-										class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
-										onclick={() => removeArrayItem(fieldKey, itemIdx)}
-									>
-										Remove
-									</button>
-								</div>
-								{#each visibleItemLeafInputs as leaf, leafIdx (`${fieldKey}-${itemIdx}-${leafIdx}-${leaf.path.join('.')}`)}
-									<div class="space-y-2 rounded-md border px-2 py-2">
-										<label class="space-y-1">
-											<span class="theme-text-muted text-xs">
-												{leaf.field.fieldName}
-												{#if leaf.joinedLabel}
-													<span class="theme-text-muted text-xs italic">
-														({leaf.joinedLabel})
-													</span>
-												{/if}
-											</span>
-											{#if typeof leaf.field.value === 'boolean'}
-												<label class="flex items-center gap-2">
-													<input
-														class="theme-input h-4 w-4 rounded border"
-														type="checkbox"
-														checked={leaf.field.value}
+					</div>
+					{#if isGridFieldArray(field.value)}
+						<div class="space-y-2">
+							{#if field.value.length === 0}
+								<p class="theme-text-muted text-xs italic">No entries yet.</p>
+							{/if}
+							{#each field.value as arrayItem, itemIdx (`${fieldKey}-${itemIdx}`)}
+								{@const itemLeafInputs = collectLeafInputs(
+									arrayItem,
+									[fieldKey, itemIdx],
+									undefined,
+									field.bindPath,
+									itemIdx
+								)}
+								{@const visibleItemLeafInputs = itemLeafInputs.filter((leaf) => !leaf.field.hidden)}
+								<div class="space-y-2 rounded-md border px-2 py-2">
+									<div class="flex items-center justify-between gap-2">
+										<p class="text-sm font-semibold">
+											{arrayItem.fieldName ?? `${field.fieldName} ${itemIdx + 1}`}
+										</p>
+										<button
+											type="button"
+											class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
+											onclick={() => removeArrayItem(fieldKey, itemIdx)}
+										>
+											Remove
+										</button>
+									</div>
+									{#each visibleItemLeafInputs as leaf, leafIdx (`${fieldKey}-${itemIdx}-${leafIdx}-${leaf.path.join('.')}`)}
+										<div class="space-y-2 rounded-md border px-2 py-2">
+											<label class="space-y-1">
+												<span class="theme-text-muted text-xs">
+													{leaf.field.fieldName}
+													{#if leaf.joinedLabel}
+														<span class="theme-text-muted text-xs italic">
+															({leaf.joinedLabel})
+														</span>
+													{/if}
+												</span>
+												{#if typeof leaf.field.value === 'boolean'}
+													<label class="flex items-center gap-2">
+														<input
+															class="theme-input h-4 w-4 rounded border"
+															type="checkbox"
+															checked={leaf.field.value}
+															aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
+															onchange={(event) => {
+																const target = event.currentTarget as HTMLInputElement;
+																draftData = updateGridDataAtPath(
+																	draftData,
+																	leaf.path,
+																	target.checked
+																);
+															}}
+														/>
+														<span class="theme-text-muted text-xs">Enabled</span>
+													</label>
+												{:else if leaf.field.multiline}
+													<textarea
+														class="theme-input w-full rounded-md border px-2 py-1 font-mono text-sm"
+														rows="5"
+														aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
+														oninput={(event) => {
+															const target = event.currentTarget as HTMLTextAreaElement;
+															draftData = updateGridDataAtPath(draftData, leaf.path, target.value);
+														}}>{displayOrPlaceholder(leaf.field.value, '')}</textarea
+													>
+												{:else if leaf.field.options && typeof leaf.field.value === 'string'}
+													<select
+														class="theme-input w-full rounded-md border px-2 py-1"
+														value={leaf.field.value}
 														aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
 														onchange={(event) => {
+															const target = event.currentTarget as HTMLSelectElement;
+															draftData = updateGridDataAtPath(draftData, leaf.path, target.value);
+														}}
+													>
+														{#each leaf.field.options as option (option)}
+															<option value={option}>{option}</option>
+														{/each}
+													</select>
+												{:else}
+													<input
+														class="theme-input w-full rounded-md border px-2 py-1"
+														type={typeof leaf.field.value === 'number' ? 'number' : 'text'}
+														step={typeof leaf.field.value === 'number' ? '1' : undefined}
+														value={displayOrPlaceholder(leaf.field.value, '')}
+														aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
+														oninput={(event) => {
 															const target = event.currentTarget as HTMLInputElement;
-															draftData = updateGridDataAtPath(
-																draftData,
-																leaf.path,
-																target.checked
-															);
+															const parsed = Number(target.value);
+															const nextValue =
+																typeof leaf.field.value === 'number' && Number.isFinite(parsed)
+																	? parsed
+																	: target.value;
+															draftData = updateGridDataAtPath(draftData, leaf.path, nextValue);
 														}}
 													/>
-													<span class="theme-text-muted text-xs">Enabled</span>
-												</label>
-											{:else if leaf.field.multiline}
-												<textarea
-													class="theme-input w-full rounded-md border px-2 py-1 font-mono text-sm"
-													rows="5"
-													aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
-													oninput={(event) => {
-														const target = event.currentTarget as HTMLTextAreaElement;
-														draftData = updateGridDataAtPath(draftData, leaf.path, target.value);
-													}}>{displayOrPlaceholder(leaf.field.value, '')}</textarea
-												>
-											{:else if leaf.field.options && typeof leaf.field.value === 'string'}
-												<select
-													class="theme-input w-full rounded-md border px-2 py-1"
-													value={leaf.field.value}
-													aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
-													onchange={(event) => {
-														const target = event.currentTarget as HTMLSelectElement;
-														draftData = updateGridDataAtPath(draftData, leaf.path, target.value);
-													}}
-												>
-													{#each leaf.field.options as option (option)}
-														<option value={option}>{option}</option>
-													{/each}
-												</select>
-											{:else}
-												<input
-													class="theme-input w-full rounded-md border px-2 py-1"
-													type={typeof leaf.field.value === 'number' ? 'number' : 'text'}
-													step={typeof leaf.field.value === 'number' ? '1' : undefined}
-													value={displayOrPlaceholder(leaf.field.value, '')}
-													aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
-													oninput={(event) => {
-														const target = event.currentTarget as HTMLInputElement;
-														const parsed = Number(target.value);
-														const nextValue =
-															typeof leaf.field.value === 'number' && Number.isFinite(parsed)
-																? parsed
-																: target.value;
-														draftData = updateGridDataAtPath(draftData, leaf.path, nextValue);
+												{/if}
+											</label>
+
+											{#if leaf.field.annotationBindPath}
+												<GridContentAnnotationsEditor
+													annotations={leaf.field.annotations ?? []}
+													referenceTemplates={annotationEditorConfig?.referenceTemplates}
+													defaultKind={annotationEditorConfig?.defaultKind}
+													defaultOrigin={annotationEditorConfig?.defaultOrigin}
+													onChange={(nextAnnotations) => {
+														draftData = updateGridAnnotationsAtPath(
+															draftData,
+															leaf.path,
+															nextAnnotations
+														);
 													}}
 												/>
 											{/if}
-										</label>
-
-										{#if leaf.field.annotationBindPath}
-											<GridContentAnnotationsEditor
-												annotations={leaf.field.annotations ?? []}
-												referenceTemplates={annotationEditorConfig?.referenceTemplates}
-												defaultKind={annotationEditorConfig?.defaultKind}
-												defaultOrigin={annotationEditorConfig?.defaultOrigin}
-												onChange={(nextAnnotations) => {
-													draftData = updateGridAnnotationsAtPath(
-														draftData,
-														leaf.path,
-														nextAnnotations
-													);
-												}}
-											/>
-										{/if}
-									</div>
-								{/each}
-							</div>
-						{/each}
-					</div>
-				{:else}
-					{@const leafInputs = collectLeafInputs(field, [fieldKey])}
-					<div class="space-y-2">
-						{#if leafInputs.length === 0}
-							<p class="theme-text-muted text-xs italic">No entries yet.</p>
-						{/if}
-						{#each leafInputs.filter((leaf) => !leaf.field.hidden) as leaf, idx (`${fieldKey}-${idx}-${leaf.path.join('.')}`)}
-							<div class="space-y-2 rounded-md border px-2 py-2">
-								<label class="space-y-1">
-									<span class="theme-text-muted text-xs">
-										{leaf.field.fieldName}
-										{#if leaf.joinedLabel}
-											<span class="theme-text-muted text-xs italic">
-												({leaf.joinedLabel})
-											</span>
-										{/if}
-									</span>
-									{#if typeof leaf.field.value === 'boolean'}
-										<label class="flex items-center gap-2">
-											<input
-												class="theme-input h-4 w-4 rounded border"
-												type="checkbox"
-												checked={leaf.field.value}
+										</div>
+									{/each}
+								</div>
+							{/each}
+						</div>
+					{:else}
+						{@const leafInputs = collectLeafInputs(field, [fieldKey])}
+						<div class="space-y-2">
+							{#if leafInputs.length === 0}
+								<p class="theme-text-muted text-xs italic">No entries yet.</p>
+							{/if}
+							{#each leafInputs.filter((leaf) => !leaf.field.hidden) as leaf, idx (`${fieldKey}-${idx}-${leaf.path.join('.')}`)}
+								<div class="space-y-2 rounded-md border px-2 py-2">
+									<label class="space-y-1">
+										<span class="theme-text-muted text-xs">
+											{leaf.field.fieldName}
+											{#if leaf.joinedLabel}
+												<span class="theme-text-muted text-xs italic">
+													({leaf.joinedLabel})
+												</span>
+											{/if}
+										</span>
+										{#if typeof leaf.field.value === 'boolean'}
+											<label class="flex items-center gap-2">
+												<input
+													class="theme-input h-4 w-4 rounded border"
+													type="checkbox"
+													checked={leaf.field.value}
+													aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
+													onchange={(event) => {
+														const target = event.currentTarget as HTMLInputElement;
+														draftData = updateGridDataAtPath(draftData, leaf.path, target.checked);
+													}}
+												/>
+												<span class="theme-text-muted text-xs">Enabled</span>
+											</label>
+										{:else if leaf.field.multiline}
+											<textarea
+												class="theme-input w-full rounded-md border px-2 py-1 font-mono text-sm"
+												rows="5"
+												aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
+												oninput={(event) => {
+													const target = event.currentTarget as HTMLTextAreaElement;
+													draftData = updateGridDataAtPath(draftData, leaf.path, target.value);
+												}}>{displayOrPlaceholder(leaf.field.value, '')}</textarea
+											>
+										{:else if leaf.field.options && typeof leaf.field.value === 'string'}
+											<select
+												class="theme-input w-full rounded-md border px-2 py-1"
+												value={leaf.field.value}
 												aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
 												onchange={(event) => {
+													const target = event.currentTarget as HTMLSelectElement;
+													draftData = updateGridDataAtPath(draftData, leaf.path, target.value);
+												}}
+											>
+												{#each leaf.field.options as option (option)}
+													<option value={option}>{option}</option>
+												{/each}
+											</select>
+										{:else}
+											<input
+												class="theme-input w-full rounded-md border px-2 py-1"
+												type={typeof leaf.field.value === 'number' ? 'number' : 'text'}
+												step={typeof leaf.field.value === 'number' ? '1' : undefined}
+												value={displayOrPlaceholder(leaf.field.value, '')}
+												aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
+												oninput={(event) => {
 													const target = event.currentTarget as HTMLInputElement;
-													draftData = updateGridDataAtPath(draftData, leaf.path, target.checked);
+													const parsed = Number(target.value);
+													const nextValue =
+														typeof leaf.field.value === 'number' && Number.isFinite(parsed)
+															? parsed
+															: target.value;
+													draftData = updateGridDataAtPath(draftData, leaf.path, nextValue);
 												}}
 											/>
-											<span class="theme-text-muted text-xs">Enabled</span>
-										</label>
-									{:else if leaf.field.multiline}
-										<textarea
-											class="theme-input w-full rounded-md border px-2 py-1 font-mono text-sm"
-											rows="5"
-											aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
-											oninput={(event) => {
-												const target = event.currentTarget as HTMLTextAreaElement;
-												draftData = updateGridDataAtPath(draftData, leaf.path, target.value);
-											}}>{displayOrPlaceholder(leaf.field.value, '')}</textarea
-										>
-									{:else if leaf.field.options && typeof leaf.field.value === 'string'}
-										<select
-											class="theme-input w-full rounded-md border px-2 py-1"
-											value={leaf.field.value}
-											aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
-											onchange={(event) => {
-												const target = event.currentTarget as HTMLSelectElement;
-												draftData = updateGridDataAtPath(draftData, leaf.path, target.value);
-											}}
-										>
-											{#each leaf.field.options as option (option)}
-												<option value={option}>{option}</option>
-											{/each}
-										</select>
-									{:else}
-										<input
-											class="theme-input w-full rounded-md border px-2 py-1"
-											type={typeof leaf.field.value === 'number' ? 'number' : 'text'}
-											step={typeof leaf.field.value === 'number' ? '1' : undefined}
-											value={displayOrPlaceholder(leaf.field.value, '')}
-											aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
-											oninput={(event) => {
-												const target = event.currentTarget as HTMLInputElement;
-												const parsed = Number(target.value);
-												const nextValue =
-													typeof leaf.field.value === 'number' && Number.isFinite(parsed)
-														? parsed
-														: target.value;
-												draftData = updateGridDataAtPath(draftData, leaf.path, nextValue);
+										{/if}
+									</label>
+
+									{#if leaf.field.annotationBindPath}
+										<GridContentAnnotationsEditor
+											annotations={leaf.field.annotations ?? []}
+											referenceTemplates={annotationEditorConfig?.referenceTemplates}
+											defaultKind={annotationEditorConfig?.defaultKind}
+											defaultOrigin={annotationEditorConfig?.defaultOrigin}
+											onChange={(nextAnnotations) => {
+												draftData = updateGridAnnotationsAtPath(
+													draftData,
+													leaf.path,
+													nextAnnotations
+												);
 											}}
 										/>
 									{/if}
-								</label>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				</div>
+			{/each}
+			<div class="mt-1 flex justify-end gap-2">
+				<button
+					type="button"
+					class="theme-btn-light btn rounded-md border px-3 py-1"
+					onclick={onCancel}
+				>
+					Cancel
+				</button>
+				<button type="submit" class="theme-btn-dark btn rounded-md border px-3 py-1">Save</button>
+			</div>
+		</form>
+	</dialog>
+{/if}
 
-								{#if leaf.field.annotationBindPath}
-									<GridContentAnnotationsEditor
-										annotations={leaf.field.annotations ?? []}
-										referenceTemplates={annotationEditorConfig?.referenceTemplates}
-										defaultKind={annotationEditorConfig?.defaultKind}
-										defaultOrigin={annotationEditorConfig?.defaultOrigin}
-										onChange={(nextAnnotations) => {
-											draftData = updateGridAnnotationsAtPath(
-												draftData,
-												leaf.path,
-												nextAnnotations
-											);
-										}}
-									/>
+{#if shouldRenderHelpDialog}
+	<dialog
+		bind:this={helpDialogEl}
+		class="theme-dialog theme-dialog-backdrop m-auto w-[min(92vw,32rem)] rounded-md border p-0"
+		oncancel={onHelpCancel}
+		onclick={onHelpBackdropClick}
+	>
+		<div class="flex flex-col gap-3 p-4">
+			<h3 class="text-lg leading-none font-semibold">Help</h3>
+			{#if helpAnnotationGroups.length === 0}
+				<p class="theme-text-muted text-sm">
+					No field annotations available. Add some via the edit menu!
+				</p>
+			{:else}
+				<div class="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
+					{#each helpAnnotationGroups as group (group.key)}
+						<div class="space-y-1 rounded-md border px-2 py-2">
+							<p class="text-sm font-semibold">
+								{group.title}
+								{#if group.joinedLabel}
+									<span class="theme-text-muted text-xs italic"> ({group.joinedLabel}) </span>
 								{/if}
-							</div>
-						{/each}
-					</div>
-				{/if}
+							</p>
+							<GridContentAnnotationsDisplay annotations={group.annotations} />
+						</div>
+					{/each}
+				</div>
+			{/if}
+			<div class="mt-1 flex justify-end">
+				<button
+					type="button"
+					class="theme-btn-light btn rounded-md border px-3 py-1"
+					onclick={onHelpCancel}
+				>
+					Close
+				</button>
 			</div>
-		{/each}
-		<div class="mt-1 flex justify-end gap-2">
-			<button
-				type="button"
-				class="theme-btn-light btn rounded-md border px-3 py-1"
-				onclick={onCancel}
-			>
-				Cancel
-			</button>
-			<button type="submit" class="theme-btn-dark btn rounded-md border px-3 py-1">Save</button>
 		</div>
-	</form>
-</dialog>
-
-<dialog
-	bind:this={helpDialogEl}
-	class="theme-dialog theme-dialog-backdrop m-auto w-[min(92vw,32rem)] rounded-md border p-0"
-	oncancel={onHelpCancel}
-	onclick={onHelpBackdropClick}
->
-	<div class="flex flex-col gap-3 p-4">
-		<h3 class="text-lg leading-none font-semibold">Help</h3>
-		{#if helpAnnotationGroups.length === 0}
-			<p class="theme-text-muted text-sm">
-				No field annotations available. Add some via the edit menu!
-			</p>
-		{:else}
-			<div class="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
-				{#each helpAnnotationGroups as group (group.key)}
-					<div class="space-y-1 rounded-md border px-2 py-2">
-						<p class="text-sm font-semibold">
-							{group.title}
-							{#if group.joinedLabel}
-								<span class="theme-text-muted text-xs italic"> ({group.joinedLabel}) </span>
-							{/if}
-						</p>
-						<GridContentAnnotationsDisplay annotations={group.annotations} />
-					</div>
-				{/each}
-			</div>
-		{/if}
-		<div class="mt-1 flex justify-end">
-			<button
-				type="button"
-				class="theme-btn-light btn rounded-md border px-3 py-1"
-				onclick={onHelpCancel}
-			>
-				Close
-			</button>
-		</div>
-	</div>
-</dialog>
+	</dialog>
+{/if}
