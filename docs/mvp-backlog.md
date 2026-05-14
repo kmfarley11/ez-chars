@@ -39,7 +39,7 @@ Update the MVP docs if the task meaningfully changes backlog or status. Prune th
 
 ## P0
 
-Next recommended target: start with `p0-040` slice 1 to profile the 5e sheet scroll jank. If profiling shows a localized rendering/layout fix, land that before continuing JSON import/export.
+Next recommended target: start with `p0-020` slice 1 to define JSON import/export shape and import semantics.
 
 ### Implement JSON import/export
 
@@ -101,100 +101,6 @@ Definition of done:
 - at least one automated smoke path exercises core user flow
 - the test command or commands are documented and runnable in the repo
 - verification meaningfully reduces the risk of storage or sheet-regression bugs
-
-### Improve 5e sheet scroll performance
-
-ID:
-
-- `p0-040`
-
-Size:
-
-- medium-to-large; diagnose first, then implement targeted slices
-
-Scope:
-
-- reduce visible jank/stutter when quickly scrolling the expanded 5e sheet
-- focus on rendering, layout measurement, paint cost, and hidden DOM weight rather than broad feature refactors
-- preserve the current sheet behavior while reducing unnecessary work during scroll
-
-Current suspicion:
-
-- `GridContainerAuto` is likely expensive at scale because each `GridContent` instance mounts resize and mutation observers, queries measured children, reads layout widths, and may update column count
-- each `GridContent` currently renders edit/help dialogs even when closed, increasing hidden DOM size across the full sheet
-- nested bordered/shadowed `theme-grid-layer` cards may increase paint cost during fast scroll
-- hover/focus edit controls may trigger opacity transitions as the pointer crosses many cards while scrolling
-- the large 5e page module and derived data projections are a maintainability/update-cost concern, but are less likely to be the direct cause of scroll jank unless profiling shows scripting/layout spikes
-
-Slice 1 findings:
-
-- Headless Chrome DevTools trace against seeded `char-001` and `char-002` routes showed no meaningful `Layout`, `UpdateLayoutTree`, or `RecalculateStyles` time during scripted fast scroll
-- The dominant trace cost was raster/draw/compositing work, with top events including `RasterizerTaskImpl::RunOnWorkerThread`, `RasterTask`, `DisplayItemList::Raster`, `ProxyMain::BeginMainFrame`, and `MainFrame.Draw`
-- DOM footprint during the trace was roughly 1,570 nodes, 75 closed dialogs, 94 measured grid items, 44 themed grid-layer cards, and a 4,600-4,800px document height
-- `GridContainerAuto` observers remain a likely mount/resize/edit cost, but the captured fast-scroll jank is more strongly pointing at paint/raster/card-surface cost than repeated layout measurement
-- Trace was collected through headless Chrome DevTools Protocol, not a visual paint-flashing session, so a headed Chrome paint-flashing check should still confirm the visual diagnosis when implementing fixes
-
-Slice 5 status:
-
-- Implemented by replacing the blurred outer `theme-grid-layer` shadows with cheaper depth cues from background tint and border contrast
-- Preserves the existing boxed sheet hierarchy while reducing per-card raster/paint work during fast scroll
-- Still needs re-profiling after the remaining slices to confirm the end-to-end jank target on desktop and phone-sized viewports
-
-Slice 4 status:
-
-- Implemented by lazy-rendering `GridContent` edit/help dialogs only after the user opens them
-- Removes the previously observed always-mounted closed dialogs from the initial sheet DOM while preserving edit/help behavior
-- Still needs re-profiling to quantify the resulting DOM reduction and scroll impact
-
-Slice 6 status:
-
-- Implemented by removing opacity transitions from `GridContent` help/edit controls
-- Keeps keyboard focus reveal while limiting hover reveal to fine-pointer devices, reducing scroll-induced hover animation work
-- Follow-up tightened pointer behavior so wheel scrolling clears visible controls and stationary cursors do not reveal controls just because content scrolls underneath them
-- Still needs re-profiling with slice 7 to confirm whether hover churn remains a meaningful contributor
-
-Slice 7 findings and smoke check:
-
-- Re-profiled seeded `char-001` and `char-002` routes after slices 4, 5, and 6 using the same headless Chrome DevTools scripted fast-scroll trace as slice 1, plus a phone-sized `390x844` viewport pass
-- Desktop DOM footprint dropped from roughly 1,570 nodes and 75 closed dialogs to roughly 1,125-1,138 nodes and one app-level dialog; measured grid items and themed grid-layer cards stayed at 94 and 44
-- Desktop traces still showed no meaningful `Layout`, `UpdateLayoutTree`, or `RecalculateStyles` time during scripted scroll
-- Desktop raster/draw/compositing remained the dominant trace shape, but raster task time improved directionally: `char-001` `RasterizerTaskImpl::RunOnWorkerThread` was about 139 ms vs. about 171 ms in slice 1, and `char-002` was about 97 ms vs. about 115 ms in slice 1
-- Phone-sized traces also showed no layout/style recalculation during scripted scroll; top costs were main-frame animation/draw and raster work, with about 50-62 ms of rasterizer task time
-- Manual follow-up confirmed Help/Edit controls no longer flash during quick scroll and remain open/closed as expected
-- Manual follow-up also confirmed fast-scroll jank is improved but still present, most noticeably through the dense Abilities & Proficiencies and Spells regions
-- Expected manual smoke check: open a seeded 5e sheet, expand the main regions, quick-scroll desktop and mobile/narrow viewports, confirm Help/Edit controls do not flash while wheel scrolling under a stationary cursor, then open/close one Help and Edit dialog and confirm closed dialogs are not retained across the sheet
-- Remaining risk: the dense Abilities & Proficiencies and Spells regions still concentrate many `GridContent`/`GridContainerAuto` surfaces, so the next data-driven target is `GridContainerAuto` measurement/observer behavior in slices 2 and 3
-
-Slice 2 attempt and revert:
-
-- Tried replacing default `GridContainerAuto` runtime measurement with CSS auto-fit columns, leaving measured layout behind an opt-in flag
-- Follow-up tuning tightened CSS row spacing and wrapping, but the sheet still looked worse than the measured layout in spell/proficiency cards and long-value movement rows
-- Re-profiled scripted fast scroll after the attempt and did not find a meaningful performance win; some main-frame/raster timings were flat or worse versus slice 7
-- Reverted the CSS auto-fit attempt and restored the prior measured layout because the layout regression was not justified by the measured performance result
-- Any future slice 2 attempt should be narrower than a wholesale default-layout swap, likely scoped to specific dense surfaces only after proving visual parity and a measurable scroll improvement
-
-Slice 3 status:
-
-- Implemented by removing the broad subtree `MutationObserver` from `GridContainerAuto`
-- Auto measurement still runs on mount, resize, and reactive measurement input changes, preserving the measured layout that looked better than the attempted CSS auto-fit replacement
-- Tradeoff: if a content-only edit changes intrinsic text width without resizing the container, the column count may not recalculate until a resize/remount; keep an eye on edited dense cards during manual verification
-
-Suggested implementation slices:
-
-1. Profile the 5e sheet in Chrome Performance with paint flashing and identify whether the dominant cost is scripting/layout or paint/compositing.
-2. Make `GridContainerAuto` measurement opt-in or replace it with CSS grid behavior for surfaces that do not require runtime width measurement.
-3. Remove or narrow the `MutationObserver` in `GridContainerAuto`; prefer mount/resize recalculation unless profiling proves content mutation measurement is necessary.
-4. Lazy-render `GridContent` edit/help dialogs only after the user opens them.
-5. Reduce inner card paint cost by simplifying nested shadows or moving depth cues to cheaper border/background treatments.
-6. Review hover/focus edit controls for scroll-induced transition churn and disable or simplify transitions where they cause jank.
-7. Re-profile desktop and phone-sized viewports and document the expected performance smoke check.
-
-Definition of done:
-
-- fast scrolling the seeded 5e sheet is visibly smoother on desktop and phone-sized viewports
-- profiling confirms the main source of jank was addressed
-- `npm run check`, `npm run lint`, and `npm run build` pass
-- any remaining known performance risks are documented with follow-up slices or backlog items
 
 ## P1
 
@@ -272,13 +178,53 @@ Suggested implementation slices:
 2. Review and fix dialog accessibility and keyboard behavior.
 3. Review and fix sheet-section readability and interaction on mobile.
 4. Update the UI checklist to reflect any new review expectations.
-5. Re-check mobile sheet interaction after `p0-040` lands, but keep performance diagnosis and fixes in `p0-040`.
+5. Re-check mobile sheet interaction after any sheet-performance follow-up lands, but keep performance diagnosis and fixes in `p1-025`.
 
 Definition of done:
 
 - critical menus and dialogs remain usable on phone-sized screens
 - obvious focus, keyboard, or labeling issues in the main MVP flow are corrected
 - the review is reflected in the theme or UI checklist where useful
+
+### Follow up on residual 5e sheet scroll performance
+
+ID:
+
+- `p1-025`
+
+Size:
+
+- medium-to-large; diagnose first, then implement narrowly
+
+Scope:
+
+- follow up on the remaining fast-scroll jank in the expanded 5e sheet after the focused P0 performance pass
+- prioritize the dense Abilities & Proficiencies and Spells regions where manual scrolling still shows the most visible stutter
+- preserve the measured layout quality that looked better than the attempted CSS auto-fit replacement
+- keep this separate from the field-editing UX work in `p1-030`, the field-binding abstraction in `p1-040`, and the route projection extraction in `p1-045`
+
+Migrated findings from `p0-040`:
+
+- Headless Chrome traces showed little meaningful layout/style recalculation during scripted fast scroll; the dominant trace shape was raster/draw/compositing work
+- Lazy-rendering edit/help dialogs reduced initial sheet DOM from roughly 1,570 nodes and 75 closed dialogs to roughly 1,125-1,138 nodes and one app-level dialog
+- Simplifying themed card shadows and removing scroll-induced hover transitions improved the issue directionally, and Help/Edit controls no longer flash during quick scroll
+- A broad CSS auto-fit replacement for `GridContainerAuto` was tried and reverted because it worsened spell/proficiency and long-value movement layouts without a meaningful measured performance win
+- Removing the broad subtree `MutationObserver` from `GridContainerAuto` made the code simpler and helped slightly, but the residual jank remains visible enough to deserve a later targeted pass
+
+Suggested implementation slices:
+
+1. Re-profile in a headed browser with visual paint/debug tooling and scripted scroll traces, focused on dense Abilities & Proficiencies and Spells surfaces.
+2. Prototype a narrow `GridContainerAuto` measurement change only for the specific dense surfaces that profiling identifies, and keep visual parity as a requirement.
+3. Evaluate whether targeted lazy mounting, section-level deferral, or reduced always-rendered dense content would improve scroll smoothness without hiding expected MVP sheet data.
+4. If profiling points at route/module update cost instead of paint, coordinate with `p1-045` rather than duplicating projection or patch extraction work here.
+5. Re-run desktop and phone-sized manual scroll checks plus `npm run check`, `npm run lint`, and `npm run build`.
+
+Definition of done:
+
+- fast scrolling the dense 5e sheet regions is visibly smoother on desktop and phone-sized viewports
+- profiling shows a concrete improvement rather than only a code-shape cleanup
+- visual layout remains at least as good as the measured layout restored after the reverted CSS auto-fit attempt
+- any broader refactor discovered during the pass is linked to `p1-045` or `p1-050` instead of folded into this item
 
 ### Refine field-level editing and annotation UX
 
