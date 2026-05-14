@@ -39,7 +39,7 @@ Update the MVP docs if the task meaningfully changes backlog or status. Prune th
 
 ## P0
 
-Next recommended target: continue `p0-020` with slice 2 to add export UI and file download behavior.
+Next recommended target: continue `p0-020` with slice 3 to add import UI and file selection behavior.
 
 ### Implement JSON import/export
 
@@ -70,6 +70,12 @@ Slice 1 status:
 - Added `src/schema/importExport.ts` with `createCharacterExportEnvelope` and `safeParseCharacterExportEnvelope` so later UI slices can share the same contract.
 - Export shape is a versioned app-level envelope with `kind: "ez-chars.character-export"`, `version: 1`, `exportedAt`, optional app metadata, and all local character documents in `characters`.
 - Import semantics are intentionally non-destructive until the write mode is explicit: accepted files must match the export envelope and validate all characters; replace/merge and duplicate-id behavior remain for slice 5.
+
+Slice 2 status:
+
+- Added a home-screen `Export Characters` action that downloads all current local characters as formatted JSON.
+- The downloaded file uses the slice 1 public backup envelope from `createCharacterExportEnvelope`.
+- Import UI, validation messages, and merge/replace behavior remain intentionally unimplemented for later slices.
 
 Definition of done:
 
@@ -388,6 +394,16 @@ Definition of done:
 - high-churn feature work no longer depends on a catch-all module for unrelated concerns
 - the resulting structure is easier to navigate for both humans and coding agents
 - behavior remains unchanged except where the refactor explicitly supports an active backlog item
+
+### WIP other refactor/rework bucket
+
+This content is a work in progress to dump thoughts before execution or further organization.
+
+- create a generic button component (i.e. for export button) based on the menu button styling. Refactor the menu button to leverage it, consider if other buttons can also extend from a common base
+- export / import by-the-character
+- re-organize lib a bit better, consider a ui lib vs. utility lib
+  - consider the ui lib organizing by primitives vs. composites vs. patterns
+  - consider adding storybook to help playtest the concepts etc.
 
 ## Done Recently
 
