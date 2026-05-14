@@ -39,7 +39,7 @@ Update the MVP docs if the task meaningfully changes backlog or status. Prune th
 
 ## P0
 
-Next recommended target: start with `p0-020` slice 1 to define JSON import/export shape and import semantics.
+Next recommended target: continue `p0-020` with slice 2 to add export UI and file download behavior.
 
 ### Implement JSON import/export
 
@@ -63,6 +63,13 @@ Suggested implementation slices:
 3. Add import UI and file selection behavior.
 4. Validate imported payloads and surface clear errors for invalid files or data.
 5. Finalize overwrite, merge, or replace behavior and document it in the UI or docs.
+
+Slice 1 status:
+
+- Added `docs/import-export-json.md` to define the public MVP backup envelope and import semantics.
+- Added `src/schema/importExport.ts` with `createCharacterExportEnvelope` and `safeParseCharacterExportEnvelope` so later UI slices can share the same contract.
+- Export shape is a versioned app-level envelope with `kind: "ez-chars.character-export"`, `version: 1`, `exportedAt`, optional app metadata, and all local character documents in `characters`.
+- Import semantics are intentionally non-destructive until the write mode is explicit: accepted files must match the export envelope and validate all characters; replace/merge and duplicate-id behavior remain for slice 5.
 
 Definition of done:
 

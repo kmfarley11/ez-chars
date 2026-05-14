@@ -54,9 +54,10 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 
 - 5e sheet route still does not expose every optional schema field or deeper 5e detail
 - annotation/reference UI exists for surfaced fields
+- JSON import/export has a defined backup envelope and import semantics, but the UI and file handling are not implemented
 
 ### Missing
 
-- import/export
+- import/export UI and file handling
 - tests and CI
 - polished empty states

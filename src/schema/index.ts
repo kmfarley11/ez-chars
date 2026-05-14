@@ -6,6 +6,7 @@ import { characterDocumentCoreSchema } from './zod';
 import { safeParse5e2014CharacterDocument, type CharacterDocument5e2014 } from './system.5e2014';
 
 export * from './core';
+export * from './importExport';
 export * from './system.5e2014';
 export * from './zod';
 

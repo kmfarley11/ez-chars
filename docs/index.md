@@ -9,6 +9,7 @@ Use these docs for near-term implementation work:
 - `../AGENTS.md`: shortest current-state guide for coding agents
 - `current-mvp.md`: active MVP scope and success criteria
 - `mvp-backlog.md`: prioritized near-term engineering backlog
+- `import-export-json.md`: MVP JSON backup envelope and import semantics
 
 ## Maintenance And Reference
 
