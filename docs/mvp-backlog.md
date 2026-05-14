@@ -146,6 +146,13 @@ Slice 4 status:
 - Removes the previously observed always-mounted closed dialogs from the initial sheet DOM while preserving edit/help behavior
 - Still needs re-profiling to quantify the resulting DOM reduction and scroll impact
 
+Slice 6 status:
+
+- Implemented by removing opacity transitions from `GridContent` help/edit controls
+- Keeps keyboard focus reveal while limiting hover reveal to fine-pointer devices, reducing scroll-induced hover animation work
+- Follow-up tightened pointer behavior so wheel scrolling clears visible controls and stationary cursors do not reveal controls just because content scrolls underneath them
+- Still needs re-profiling with slice 7 to confirm whether hover churn remains a meaningful contributor
+
 Suggested implementation slices:
 
 1. Profile the 5e sheet in Chrome Performance with paint flashing and identify whether the dominant cost is scripting/layout or paint/compositing.

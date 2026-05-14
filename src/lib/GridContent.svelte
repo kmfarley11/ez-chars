@@ -58,6 +58,7 @@
 	let draftData = $state<GridContentData>({});
 	let shouldRenderEditDialog = $state(false);
 	let shouldRenderHelpDialog = $state(false);
+	let isPointerActionsVisible = $state(false);
 
 	const normalizedData = $derived<GridContentData>(normalizeData(data));
 
@@ -67,11 +68,13 @@
 
 	const closeDialog = () => {
 		dialogEl?.close();
+		if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
 		shouldRenderEditDialog = false;
 	};
 
 	const closeHelpDialog = () => {
 		helpDialogEl?.close();
+		if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
 		shouldRenderHelpDialog = false;
 	};
 
@@ -132,6 +135,15 @@
 		draftData = removeGridArrayItemAtPath(draftData, [fieldKey], itemIdx);
 	};
 
+	const revealPointerActions = (event: PointerEvent) => {
+		if (event.pointerType !== 'mouse') return;
+		isPointerActionsVisible = true;
+	};
+
+	const hidePointerActions = () => {
+		isPointerActionsVisible = false;
+	};
+
 	const isNumberInput = (field: GridContentField) =>
 		field.inputKind === 'number' || typeof field.value === 'number';
 
@@ -148,9 +160,16 @@
 	);
 </script>
 
-<div class="group relative min-h-8">
+<div
+	class="grid-content-shell relative min-h-8"
+	class:pointer-actions-visible={isPointerActionsVisible}
+	role="presentation"
+	onpointermove={revealPointerActions}
+	onpointerleave={hidePointerActions}
+	onwheel={hidePointerActions}
+>
 	<div
-		class="pointer-events-none absolute top-1.5 right-1.5 z-10 flex -translate-y-2 translate-x-2 items-start gap-1.5 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100"
+		class="grid-content-actions pointer-events-none absolute top-1.5 right-1.5 z-10 flex -translate-y-2 translate-x-2 items-start gap-1.5 opacity-0"
 	>
 		<button
 			type="button"
@@ -546,3 +565,17 @@
 		</div>
 	</dialog>
 {/if}
+
+<style>
+	.grid-content-shell:focus-within .grid-content-actions {
+		pointer-events: auto;
+		opacity: 1;
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.grid-content-shell.pointer-actions-visible .grid-content-actions {
+			pointer-events: auto;
+			opacity: 1;
+		}
+	}
+</style>
