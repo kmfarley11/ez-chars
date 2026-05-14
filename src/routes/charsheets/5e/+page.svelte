@@ -290,7 +290,7 @@
 	const withFieldAnnotations = (
 		value: PrimitiveGridValue,
 		bindPath: GridContentBindPath,
-		options: Pick<GridContentField, 'fieldName' | 'label' | 'multiline'> = {}
+		options: Pick<GridContentField, 'fieldName' | 'label' | 'multiline' | 'inputKind'> = {}
 	): GridContentField => {
 		const annotationBindPath = toSystemDataAnnotationPath(bindPath);
 		if (!annotationBindPath) return { ...options, bindPath, value };
@@ -707,6 +707,7 @@
 			char.systemData.combat?.speed ?? char.systemData.race?.speed ?? '',
 			['systemData', 'combat', 'speed'],
 			{
+				inputKind: 'number',
 				label: 'walking ft'
 			}
 		),
@@ -715,6 +716,7 @@
 			['systemData', 'combat', 'speedClimb'],
 			{
 				fieldName: 'Climb',
+				inputKind: 'number',
 				label: 'ft'
 			}
 		),
@@ -723,6 +725,7 @@
 			['systemData', 'combat', 'speedSwim'],
 			{
 				fieldName: 'Swim',
+				inputKind: 'number',
 				label: 'ft'
 			}
 		),
@@ -730,6 +733,7 @@
 			char.systemData.combat?.speedFly ?? char.systemData.race?.speedFly ?? '',
 			['systemData', 'combat', 'speedFly'],
 			{
+				inputKind: 'number',
 				label: 'ft'
 			}
 		)

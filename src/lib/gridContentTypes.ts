@@ -32,6 +32,7 @@ export type GridContentField = {
 	label?: string;
 	hidden?: boolean;
 	options?: string[];
+	inputKind?: 'text' | 'number';
 	addItemLabel?: string;
 	addItemTemplate?: GridContentField;
 	// Data-path contract:

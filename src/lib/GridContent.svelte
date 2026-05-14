@@ -132,6 +132,15 @@
 		draftData = removeGridArrayItemAtPath(draftData, [fieldKey], itemIdx);
 	};
 
+	const isNumberInput = (field: GridContentField) =>
+		field.inputKind === 'number' || typeof field.value === 'number';
+
+	const toEditedFieldValue = (field: GridContentField, rawValue: string): string | number => {
+		if (!isNumberInput(field)) return rawValue;
+		const parsed = Number(rawValue);
+		return Number.isFinite(parsed) ? parsed : 0;
+	};
+
 	const displayItemClass = $derived(
 		displayAlign === 'center'
 			? 'inline-flex items-center justify-center text-center'
@@ -352,18 +361,17 @@
 												{:else}
 													<input
 														class="theme-input w-full rounded-md border px-2 py-1"
-														type={typeof leaf.field.value === 'number' ? 'number' : 'text'}
-														step={typeof leaf.field.value === 'number' ? '1' : undefined}
+														type={isNumberInput(leaf.field) ? 'number' : 'text'}
+														step={isNumberInput(leaf.field) ? '1' : undefined}
 														value={displayOrPlaceholder(leaf.field.value, '')}
 														aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
 														oninput={(event) => {
 															const target = event.currentTarget as HTMLInputElement;
-															const parsed = Number(target.value);
-															const nextValue =
-																typeof leaf.field.value === 'number' && Number.isFinite(parsed)
-																	? parsed
-																	: target.value;
-															draftData = updateGridDataAtPath(draftData, leaf.path, nextValue);
+															draftData = updateGridDataAtPath(
+																draftData,
+																leaf.path,
+																toEditedFieldValue(leaf.field, target.value)
+															);
 														}}
 													/>
 												{/if}
@@ -447,18 +455,17 @@
 										{:else}
 											<input
 												class="theme-input w-full rounded-md border px-2 py-1"
-												type={typeof leaf.field.value === 'number' ? 'number' : 'text'}
-												step={typeof leaf.field.value === 'number' ? '1' : undefined}
+												type={isNumberInput(leaf.field) ? 'number' : 'text'}
+												step={isNumberInput(leaf.field) ? '1' : undefined}
 												value={displayOrPlaceholder(leaf.field.value, '')}
 												aria-label={`${field.fieldName} ${leaf.field.fieldName}`}
 												oninput={(event) => {
 													const target = event.currentTarget as HTMLInputElement;
-													const parsed = Number(target.value);
-													const nextValue =
-														typeof leaf.field.value === 'number' && Number.isFinite(parsed)
-															? parsed
-															: target.value;
-													draftData = updateGridDataAtPath(draftData, leaf.path, nextValue);
+													draftData = updateGridDataAtPath(
+														draftData,
+														leaf.path,
+														toEditedFieldValue(leaf.field, target.value)
+													);
 												}}
 											/>
 										{/if}
