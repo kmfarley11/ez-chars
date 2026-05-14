@@ -126,6 +126,20 @@ Current suspicion:
 - hover/focus edit controls may trigger opacity transitions as the pointer crosses many cards while scrolling
 - the large 5e page module and derived data projections are a maintainability/update-cost concern, but are less likely to be the direct cause of scroll jank unless profiling shows scripting/layout spikes
 
+Slice 1 findings:
+
+- Headless Chrome DevTools trace against seeded `char-001` and `char-002` routes showed no meaningful `Layout`, `UpdateLayoutTree`, or `RecalculateStyles` time during scripted fast scroll
+- The dominant trace cost was raster/draw/compositing work, with top events including `RasterizerTaskImpl::RunOnWorkerThread`, `RasterTask`, `DisplayItemList::Raster`, `ProxyMain::BeginMainFrame`, and `MainFrame.Draw`
+- DOM footprint during the trace was roughly 1,570 nodes, 75 closed dialogs, 94 measured grid items, 44 themed grid-layer cards, and a 4,600-4,800px document height
+- `GridContainerAuto` observers remain a likely mount/resize/edit cost, but the captured fast-scroll jank is more strongly pointing at paint/raster/card-surface cost than repeated layout measurement
+- Trace was collected through headless Chrome DevTools Protocol, not a visual paint-flashing session, so a headed Chrome paint-flashing check should still confirm the visual diagnosis when implementing fixes
+
+Slice 5 status:
+
+- Implemented by replacing the blurred outer `theme-grid-layer` shadows with cheaper depth cues from background tint and border contrast
+- Preserves the existing boxed sheet hierarchy while reducing per-card raster/paint work during fast scroll
+- Still needs re-profiling after the remaining slices to confirm the end-to-end jank target on desktop and phone-sized viewports
+
 Suggested implementation slices:
 
 1. Profile the 5e sheet in Chrome Performance with paint flashing and identify whether the dominant cost is scripting/layout or paint/compositing.
