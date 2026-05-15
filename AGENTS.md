@@ -16,7 +16,7 @@ Do not use `docs/vision/*` as the active backlog unless the task is explicitly a
 - Single-system MVP: D&D 5e 2014 only
 - Local-first web app; no backend or accounts
 - Editable, mobile-friendly character sheet
-- JSON import/export is part of the MVP but is not yet implemented
+- JSON import/export is implemented for MVP backup and restore
 - Additional systems, cloud sync, PDF workflows, and Storybook are deferred
 
 ## Current State
@@ -27,13 +27,14 @@ Do not use `docs/vision/*` as the active backlog unless the task is explicitly a
 - `src/data.ts` currently mixes seed data, store wiring, and localStorage persistence
 - `src/lib/*Grid*` contains the reusable grid display/editing primitives
 - The 5e UI currently exposes only part of the full schema
-- Import/export, robust validation at storage boundaries, tests, and CI are still missing
+- Vitest is wired for contract tests, but schema/storage/import-export coverage and CI are still incomplete
 
 ## Working Rules
 
 - Prefer completing the current 5e 2014 MVP before expanding systems
 - Keep current MVP docs up to date when scope or backlog changes
 - If a task touches storage or schema I/O, validate or migrate persisted data rather than raw-casting parsed JSON
+- If a task changes tested behavior or a stable data boundary, add or update the relevant Vitest contract tests in the same change
 - If a task affects current goals, update `docs/current-mvp.md` or `docs/mvp-backlog.md` in the same change
 
 ## Repo Map
@@ -49,9 +50,12 @@ Do not use `docs/vision/*` as the active backlog unless the task is explicitly a
 
 ## Quality Gates
 
+- `npm run test`
 - `npm run check`
 - `npm run lint`
 - `npm run build`
+
+Run the relevant subset for small/doc-only changes, but run all four before considering behavior, schema, storage, import/export, or release-sensitive work complete.
 
 ## Useful Context
 

@@ -19,7 +19,7 @@ Treat `current-mvp.md` as the boundary document and this file as the execution q
 - If a slice description is unusually close to another slice or otherwise ambiguous, include the exact slice text as an extra clarification, but this should not be required in the normal case
 - If the task is about the 5e sheet's intended layout or information grouping, also point the AI at `docs/ez-chars-5e-rough.excalidraw` as the design reference
 - Do not expand scope into other slices or `docs/vision/*`
-- Ask the AI to run verification commands when appropriate
+- Ask the AI to run verification commands when appropriate; include `npm run test` for behavior, schema, storage, import/export, or release-sensitive changes
 - Ask the AI to summarize what remains from the parent backlog item
 - Update this file or `docs/current-mvp.md` if the task meaningfully changes backlog or status
 
@@ -31,7 +31,7 @@ Focus only on the backlog item "<exact top-level id>".
 Implement only suggested slice <number>.
 If this task is about the 5e sheet's design or layout, also use docs/ez-chars-5e-rough.excalidraw as the design reference.
 Do not expand scope into other slices or docs/vision.
-Run check/lint/build when appropriate.
+Run test/check/lint/build when appropriate.
 Explain briefly how I can manually verify the changes.
 Summarize what remains from the parent backlog item.
 Update the MVP docs if the task meaningfully changes backlog or status. Prune the backlog item when its fully complete.
@@ -39,7 +39,7 @@ Update the MVP docs if the task meaningfully changes backlog or status. Prune th
 
 ## P0
 
-Next recommended target: continue P0 with `p0-030` slice 1 to choose and wire the test tooling and scripts.
+Next recommended target: continue `p0-030` with slice 2 to add schema/parser tests around the current 5e model and JSON import/export envelope.
 
 ### Add automated verification
 
@@ -72,6 +72,19 @@ Suggested implementation slices:
 4. Add focused import/export behavior tests for valid export parse, invalid payload rejection, replace-all import, and merge-new duplicate-ID handling.
 5. Add one end-to-end or integration smoke path for create/edit/reload after the contract tests exist, keeping it high-level and user-centric.
 6. Document how to run the verification commands locally.
+
+Slice 1 status:
+
+- Chose Vitest for fast Node-environment contract tests around schema, storage, and import/export behavior.
+- Added `npm run test` and `npm run test:watch` scripts; `test` currently uses `--passWithNoTests` so tooling can land before the first test files.
+- Configured Vitest in `vite.config.ts` to run non-global tests from `src/**/*.{test,spec}.{ts,js}`.
+- Browser-level smoke tooling is intentionally deferred until the stable contract tests exist.
+
+AI-agent verification expectations:
+
+- Future implementation prompts should ask agents to run `npm run test` alongside `npm run check`, `npm run lint`, and `npm run build` when the task touches behavior, schema, storage, import/export, or release-sensitive paths.
+- Once tests exist for a contract, agents should update those tests in the same change that alters the contract.
+- Doc-only and narrow style-only changes may run a smaller relevant subset, but agents should state what they skipped and why.
 
 Definition of done:
 

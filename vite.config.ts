@@ -1,3 +1,5 @@
+/// <reference types="vitest/config" />
+
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { type Plugin, type ResolvedConfig, type ViteDevServer, defineConfig } from 'vite';
@@ -17,6 +19,7 @@ const docsExtPlugin = (): Plugin => {
 	const sourceRelative = 'docs/ext';
 	let rootDir = process.cwd();
 	let outDir = 'dist';
+	let shouldCopyOnCloseBundle = false;
 
 	const copyDirectory = async (src: string, dest: string): Promise<void> => {
 		if (!existsSync(src)) return;
@@ -49,6 +52,7 @@ const docsExtPlugin = (): Plugin => {
 		configResolved(config: ResolvedConfig) {
 			rootDir = config.root;
 			outDir = config.build.outDir;
+			shouldCopyOnCloseBundle = config.command === 'build' && config.mode !== 'test';
 		},
 		configureServer(server: ViteDevServer) {
 			const normalizedBase = (server.config.base || '/').replace(/\/$/, '');
@@ -82,6 +86,7 @@ const docsExtPlugin = (): Plugin => {
 			server.middlewares.use(handler);
 		},
 		async closeBundle() {
+			if (!shouldCopyOnCloseBundle) return;
 			const sourceDir = pathResolve(rootDir, sourceRelative);
 			if (!existsSync(sourceDir)) return;
 			const destination = pathResolve(rootDir, outDir, 'docs/ext');
@@ -124,5 +129,10 @@ export default defineConfig({
 			})()
 		)
 	},
-	plugins: [tailwindcss(), sveltekit(), docsExtPlugin(), removeUndefinedCodeSplitting()]
+	plugins: [tailwindcss(), sveltekit(), docsExtPlugin(), removeUndefinedCodeSplitting()],
+	test: {
+		environment: 'node',
+		globals: false,
+		include: ['src/**/*.{test,spec}.{ts,js}']
+	}
 });

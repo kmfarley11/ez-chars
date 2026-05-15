@@ -47,6 +47,7 @@ Run the main verification commands:
 
 ```bash
 npm run check
+npm run test
 npm run lint
 npm run build
 ```
