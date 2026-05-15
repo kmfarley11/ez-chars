@@ -53,22 +53,30 @@ Size:
 
 Scope:
 
-- add schema/parser tests
-- add storage adapter tests
-- add at least one end-to-end smoke path for create/edit/reload
+- add contract-focused tests around schema parsing, storage boundaries, and JSON import/export
+- add storage adapter tests around load/save/invalid-data behavior
+- add only a thin end-to-end smoke path for create/edit/reload once the stable contract tests are in place
+- avoid brittle tests around current 5e route internals, exact DOM structure, grid layout, or component composition because planned P1 refactors may intentionally reshape those areas
+
+Testing strategy:
+
+- Prioritize tests that protect stable data contracts before refactors: 5e schema parsing, localStorage envelope load/save, invalid-data fallback, movement-number migration, JSON export envelope parsing, and import merge/replace duplicate-ID behavior.
+- Keep UI tests user-centric and sparse until the field-binding, route extraction, and layout/refactor direction is clearer.
+- Prefer tests that survive implementation refactors over tests that assert current component structure.
 
 Suggested implementation slices:
 
-1. Choose and wire the test tooling and scripts for the repo.
-2. Add schema and parser tests around the current 5e model.
-3. Add storage adapter tests around load/save/invalid-data behavior.
-4. Add one end-to-end or integration smoke path for create/edit/reload.
-5. Document how to run the verification commands locally.
+1. Choose and wire the test tooling and scripts for the repo, with a bias toward fast unit tests for stable contracts and a later thin browser smoke path.
+2. Add schema and parser tests around the current 5e model and JSON import/export envelope.
+3. Add storage adapter tests around load/save/invalid-data behavior, including migration and fallback behavior.
+4. Add focused import/export behavior tests for valid export parse, invalid payload rejection, replace-all import, and merge-new duplicate-ID handling.
+5. Add one end-to-end or integration smoke path for create/edit/reload after the contract tests exist, keeping it high-level and user-centric.
+6. Document how to run the verification commands locally.
 
 Definition of done:
 
-- automated tests cover schema parsing and storage boundary behavior
-- at least one automated smoke path exercises core user flow
+- automated tests cover schema parsing, JSON import/export contracts, and storage boundary behavior
+- at least one automated smoke path exercises core user flow without depending on exact 5e page layout internals
 - the test command or commands are documented and runnable in the repo
 - verification meaningfully reduces the risk of storage or sheet-regression bugs
 
