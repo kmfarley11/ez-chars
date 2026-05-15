@@ -140,6 +140,7 @@ export default defineConfig({
 		},
 		environment: 'node',
 		globals: false,
-		include: ['src/**/*.{test,spec}.{ts,js}']
+		include: ['src/**/*.{test,spec}.{ts,js}'],
+		setupFiles: ['src/test-utils/browser.setup.ts']
 	}
 });

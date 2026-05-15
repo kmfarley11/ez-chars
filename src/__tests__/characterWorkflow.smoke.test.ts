@@ -1,56 +1,15 @@
 import { get } from 'svelte/store';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { installMemoryLocalStorage } from '../test-utils/browser';
 
 vi.mock('$app/environment', () => ({
 	browser: true
 }));
 
-vi.hoisted(() => {
-	Object.defineProperty(globalThis, 'window', {
-		configurable: true,
-		value: {
-			location: {
-				origin: 'http://localhost'
-			}
-		}
-	});
-});
-
-class MemoryStorage implements Storage {
-	private items = new Map<string, string>();
-
-	get length() {
-		return this.items.size;
-	}
-
-	clear() {
-		this.items.clear();
-	}
-
-	getItem(key: string) {
-		return this.items.get(key) ?? null;
-	}
-
-	key(index: number) {
-		return Array.from(this.items.keys())[index] ?? null;
-	}
-
-	removeItem(key: string) {
-		this.items.delete(key);
-	}
-
-	setItem(key: string, value: string) {
-		this.items.set(key, value);
-	}
-}
-
 describe('local-first character workflow smoke', () => {
 	beforeEach(() => {
 		vi.resetModules();
-		Object.defineProperty(globalThis, 'localStorage', {
-			configurable: true,
-			value: new MemoryStorage()
-		});
+		installMemoryLocalStorage();
 	});
 
 	it('creates, edits, persists, and reloads a 5e character', async () => {

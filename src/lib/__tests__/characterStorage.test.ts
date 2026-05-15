@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { seedChars } from '../../fixtures/characters';
 import type { CharacterWithSystemData } from '../../schema';
 import { parse5e2014CharacterDocument } from '../../schema/system.5e2014';
+import { installMemoryLocalStorage } from '../../test-utils/browser';
 import {
 	clearStoredCharacters,
 	loadStoredCharacters,
@@ -12,56 +13,14 @@ vi.mock('$app/environment', () => ({
 	browser: true
 }));
 
-vi.hoisted(() => {
-	Object.defineProperty(globalThis, 'window', {
-		configurable: true,
-		value: {
-			location: {
-				origin: 'http://localhost'
-			}
-		}
-	});
-});
-
 const CHARS_STORAGE_KEY = 'ez-chars.characters.v1';
-
-class MemoryStorage implements Storage {
-	private items = new Map<string, string>();
-
-	get length() {
-		return this.items.size;
-	}
-
-	clear() {
-		this.items.clear();
-	}
-
-	getItem(key: string) {
-		return this.items.get(key) ?? null;
-	}
-
-	key(index: number) {
-		return Array.from(this.items.keys())[index] ?? null;
-	}
-
-	removeItem(key: string) {
-		this.items.delete(key);
-	}
-
-	setItem(key: string, value: string) {
-		this.items.set(key, value);
-	}
-}
 
 const cloneCharacters = (characters: CharacterWithSystemData[]) =>
 	JSON.parse(JSON.stringify(characters)) as CharacterWithSystemData[];
 
 describe('character storage adapter', () => {
 	beforeEach(() => {
-		Object.defineProperty(globalThis, 'localStorage', {
-			configurable: true,
-			value: new MemoryStorage()
-		});
+		installMemoryLocalStorage();
 	});
 
 	it('returns fallback characters without an issue when storage is empty', () => {
