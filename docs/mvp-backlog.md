@@ -30,6 +30,7 @@ Use AGENTS.md, docs/current-mvp.md, and docs/mvp-backlog.md as the source of tru
 Focus only on the backlog item "<exact top-level id>".
 Implement only suggested slice <number>.
 If this task is about the 5e sheet's design or layout, also use docs/ez-chars-5e-rough.excalidraw as the design reference.
+If this task is about p1-030 or p1-040, also use docs/field-interaction-model.md as the interaction and binding UX reference.
 Do not expand scope into other slices or docs/vision.
 Run verification according to docs/verification.md when appropriate.
 Explain briefly how I can manually verify the changes.
@@ -37,13 +38,15 @@ Summarize what remains from the parent backlog item.
 Update the MVP docs if the task meaningfully changes backlog or status. Prune the backlog item when its fully complete.
 ```
 
+When `p1-030` and `p1-040` are both complete, remove the extra `docs/field-interaction-model.md` prompt clause if the model has been absorbed into stable component docs, implementation comments, or the UI checklist.
+
 ## P0
 
 No active P0 items.
 
 ## P1
 
-Next recommended target: start `p1-030` with slice 1 to define the target field-level editing and annotation interaction model before technical binding work.
+Next recommended target: start `p1-040` with slice 1 to define the shared field-binding and patch contract that will support the documented field interaction model.
 
 ### Link runtime actions to source weapons, spells, and features
 
@@ -194,7 +197,7 @@ Scope:
 
 Suggested implementation slices:
 
-1. Define the target field interaction model for the MVP: primary click/tap edits a field, while annotations open through a secondary gesture or explicit affordance that also works on mobile.
+1. Complete. Target field interaction model is documented in [field-interaction-model.md](field-interaction-model.md): primary click/tap edits a primitive field, while annotations open through a secondary explicit affordance that also works on mobile, keyboard, and mouse.
 2. Apply the shared field-binding/patch abstractions to let individual primitive fields enter edit mode without opening a bulk form for the whole card.
 3. Add field-level annotation access and viewing behavior without regressing current annotation data or help content.
 4. Decide whether the existing bulk edit dialog stays as a fallback for multi-field edits or is reduced to non-runtime surfaces only.
@@ -202,9 +205,9 @@ Suggested implementation slices:
 
 Dependency notes:
 
-- Start with slice 1 of this item first so the target interaction model is explicit before abstraction work hardens around the wrong UX.
-- After slice 1 is decided, most of the remaining implementation for this item should depend on `p1-040`, especially slices 2-4.
-- In practice, the expected order is: `p1-030` slice 1 -> `p1-040` slices -> `p1-030` slices 2-5 -> optional `p1-045`/`p1-050` cleanup.
+- Slice 1 is complete; use [field-interaction-model.md](field-interaction-model.md) as the target UX model before abstraction work hardens around the wrong behavior.
+- Most of the remaining implementation for this item should depend on `p1-040`, especially slices 2-4.
+- In practice, the expected order is now: `p1-040` slices -> `p1-030` slices 2-5 -> optional `p1-045`/`p1-050` cleanup.
 
 Definition of done:
 
@@ -229,6 +232,7 @@ Scope:
 - make per-field reads, drafts, value saves, and annotation saves explicit without requiring page-specific bulk-form glue
 - keep the abstraction transport-agnostic and API-ready: model local edits in a way that can later map cleanly to remote create/read/patch/replace/delete flows without putting HTTP or auth concerns into field components
 - support inline sheet editing and annotation work without turning this into a generalized data-layer rewrite
+- use [field-interaction-model.md](field-interaction-model.md) as the UX contract for how value patches and annotation patches are emitted
 
 Suggested implementation slices:
 

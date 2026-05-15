@@ -10,6 +10,7 @@ Use these docs for near-term implementation work:
 - [current-mvp.md](current-mvp.md): active MVP scope and success criteria
 - [mvp-backlog.md](mvp-backlog.md): prioritized near-term engineering backlog
 - [import-export-json.md](import-export-json.md): MVP JSON backup envelope and import semantics
+- [field-interaction-model.md](field-interaction-model.md): target MVP model for field editing and annotations
 - [verification.md](verification.md): local test/check/lint/build command guide
 
 ## Maintenance And Reference

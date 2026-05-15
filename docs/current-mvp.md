@@ -55,7 +55,7 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 ### Partial
 
 - 5e sheet route still does not expose every optional schema field or deeper 5e detail
-- annotation/reference UI exists for surfaced fields
+- annotation/reference UI exists for surfaced fields, and the target direct field-editing interaction model is documented in [docs/field-interaction-model.md](field-interaction-model.md)
 
 ### Missing
 
