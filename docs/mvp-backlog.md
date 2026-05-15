@@ -4,24 +4,24 @@ This is the prioritized engineering backlog for the active MVP.
 
 Use this file with:
 
-- `../AGENTS.md`
-- `current-mvp.md`
+- [../AGENTS.md](../AGENTS.md)
+- [current-mvp.md](current-mvp.md)
 
-Treat `current-mvp.md` as the boundary document and this file as the execution queue.
+Treat [current-mvp.md](current-mvp.md) as the boundary document and this file as the execution queue.
 
 ## How To Use This Backlog With AI
 
-- Pair this file with `AGENTS.md` and `docs/current-mvp.md`
+- Pair this file with [AGENTS.md](../AGENTS.md) and [docs/current-mvp.md](current-mvp.md)
 - Work on one top-level backlog item at a time
 - Use the exact backlog item id from the `ID:` line in the prompt; keep the human-readable title in this file for context
 - For `small` items, hand the top-level item directly to the AI
 - For `medium`, `medium-to-large`, or `oversized` items, tell the AI to implement only one numbered suggested slice
 - If a slice description is unusually close to another slice or otherwise ambiguous, include the exact slice text as an extra clarification, but this should not be required in the normal case
-- If the task is about the 5e sheet's intended layout or information grouping, also point the AI at `docs/ez-chars-5e-rough.excalidraw` as the design reference
-- Do not expand scope into other slices or `docs/vision/*`
-- Ask the AI to run verification according to `docs/verification.md`
+- If the task is about the 5e sheet's intended layout or information grouping, also point the AI at [docs/ez-chars-5e-rough.excalidraw](ez-chars-5e-rough.excalidraw) as the design reference
+- Do not expand scope into other slices or [docs/vision/](vision/)
+- Ask the AI to run verification according to [docs/verification.md](verification.md)
 - Ask the AI to summarize what remains from the parent backlog item
-- Update this file or `docs/current-mvp.md` if the task meaningfully changes backlog or status
+- Update this file or [docs/current-mvp.md](current-mvp.md) if the task meaningfully changes backlog or status
 
 Prompt pattern:
 
@@ -156,7 +156,7 @@ Suggested implementation slices:
 2. Prototype a narrow `GridContainerAuto` measurement change only for the specific dense surfaces that profiling identifies, and keep visual parity as a requirement.
 3. Evaluate whether targeted lazy mounting, section-level deferral, or reduced always-rendered dense content would improve scroll smoothness without hiding expected MVP sheet data.
 4. If profiling points at route/module update cost instead of paint, coordinate with `p1-045` rather than duplicating projection or patch extraction work here.
-5. Re-run desktop and phone-sized manual scroll checks plus the relevant local verification from `docs/verification.md`.
+5. Re-run desktop and phone-sized manual scroll checks plus the relevant local verification from [docs/verification.md](verification.md).
 
 Definition of done:
 
@@ -256,7 +256,7 @@ Size:
 
 Scope:
 
-- reduce the size and responsibility of `src/routes/charsheets/5e/+page.svelte`
+- reduce the size and responsibility of [src/routes/charsheets/5e/+page.svelte](../src/routes/charsheets/5e/+page.svelte)
 - move 5e-specific `GridContentData` projection builders out of the route
 - move virtual path constants and patch normalization helpers into feature-local modules
 - keep the route focused on selected-character lookup, layout composition, collapse state, and save dispatch
@@ -270,15 +270,15 @@ Suggested implementation slices:
 2. Extract pure projection builders for current sheet surfaces: overview, quick reference, abilities/proficiencies/features/traits, runtime actions, spells, inventory, and organizational notes.
 3. Extract patch normalization helpers for virtual paths: runtime actions, spell levels, proficiency languages, class features, inventory groups/currency, and organizational notes.
 4. Add focused tests around projection and patch helpers once `p0-030` test tooling exists.
-5. Leave `+page.svelte` as mostly layout/orchestration and verify no user-visible behavior changed.
+5. Leave [+page.svelte](../src/routes/charsheets/5e/+page.svelte) as mostly layout/orchestration and verify no user-visible behavior changed.
 
 Definition of done:
 
-- `+page.svelte` no longer owns most 5e-specific projection or patch normalization logic
+- [+page.svelte](../src/routes/charsheets/5e/+page.svelte) no longer owns most 5e-specific projection or patch normalization logic
 - virtual path handling has a clearer feature-local home
 - extracted helpers are easier to test and reuse
 - existing sheet editing behavior remains unchanged
-- relevant local verification from `docs/verification.md` passes
+- relevant local verification from [docs/verification.md](verification.md) passes
 
 ### Refactor the repo structure so stores, fixtures, schema, and 5e feature code are less entangled
 
@@ -335,11 +335,11 @@ This content is a work in progress to dump thoughts before execution or further 
 ## Done Recently
 
 - split the docs between the active MVP working set and long-term vision docs
-- established `AGENTS.md` as the shortest AI-facing entry point
+- established [AGENTS.md](../AGENTS.md) as the shortest AI-facing entry point
 - completed the `Add real character management` backlog item
-- completed the `src/lib/*Grid*` cleanup backlog
+- completed the [src/lib/](../src/lib/) grid cleanup backlog
 - completed `p0-010`: the 5e sheet now exposes the major MVP runtime and organizational sections, including seeded runtime action data, with check/lint/build passing
 - completed the focused `p0-040` scroll-performance pass: reduced hidden dialog DOM, simplified hover/paint costs, removed broad `GridContainerAuto` mutation observation, and moved residual jank follow-up to `p1-025`
 - completed `p0-020`: JSON backup/restore supports a versioned export envelope, file download, import file selection, import validation, replace-all import, and merge-new import that skips duplicate character IDs
 - completed home action button polish: shared button chrome now aligns Create, Import, Export, and import apply actions consistently
-- completed `p0-030`: local automated verification now includes Vitest tooling, schema/import-export/storage contract tests, a create/edit/reload smoke path, V8 coverage reporting, shared browser test scaffolding, and `docs/verification.md`
+- completed `p0-030`: local automated verification now includes Vitest tooling, schema/import-export/storage contract tests, a create/edit/reload smoke path, V8 coverage reporting, shared browser test scaffolding, and [docs/verification.md](verification.md)

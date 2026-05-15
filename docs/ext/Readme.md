@@ -4,4 +4,4 @@ This folder organizes documentation from other sources (not my own). It is likel
 
 ## Attribution
 
-For full third-party notices & attributions, see `THIRD_PARTY_NOTICES.md` at repo root.
+For full third-party notices & attributions, see [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md) at repo root.

@@ -12,7 +12,7 @@ This repository is intentionally scoped to a narrow MVP:
 - JSON import/export for backup
 - optional annotations and source references
 
-Everything else is long-term vision, not the immediate build target. For roadmap and future-scope notes, see `docs/vision/index.md`.
+Everything else is long-term vision, not the immediate build target. For roadmap and future-scope notes, see [docs/vision/index.md](docs/vision/index.md).
 
 ## Current State
 
@@ -23,11 +23,11 @@ Everything else is long-term vision, not the immediate build target. For roadmap
 
 ## Docs
 
-- coding-agent guide: `AGENTS.md`
-- current MVP definition: `docs/current-mvp.md`
-- prioritized MVP backlog: `docs/mvp-backlog.md`
-- docs index: `docs/index.md`
-- long-term vision: `docs/vision/index.md`
+- coding-agent guide: [AGENTS.md](AGENTS.md)
+- current MVP definition: [docs/current-mvp.md](docs/current-mvp.md)
+- prioritized MVP backlog: [docs/mvp-backlog.md](docs/mvp-backlog.md)
+- docs index: [docs/index.md](docs/index.md)
+- long-term vision: [docs/vision/index.md](docs/vision/index.md)
 
 ## Development
 
@@ -43,7 +43,7 @@ Run the dev server:
 npm run dev
 ```
 
-Run local verification as described in `docs/verification.md`.
+Run local verification as described in [docs/verification.md](docs/verification.md).
 
 Preview the production build locally:
 
@@ -59,6 +59,6 @@ npm run deploy
 
 ## Licensing
 
-- Source code in this repository is licensed under MIT. See `LICENSE`.
-- Included third-party assets, such as SRD PDFs under `docs/ext/`, retain their original licenses.
-- Third-party attributions and license details are listed in `THIRD_PARTY_NOTICES.md`.
+- Source code in this repository is licensed under MIT. See [LICENSE](LICENSE).
+- Included third-party assets, such as SRD PDFs under [docs/ext/](docs/ext/), retain their original licenses.
+- Third-party attributions and license details are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

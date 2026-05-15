@@ -45,7 +45,7 @@ Invalid files are non-destructive: failed parsing or failed character validation
 
 ## Current Code Contract
 
-The shared contract lives in `src/schema/importExport.ts`:
+The shared contract lives in [src/schema/importExport.ts](../src/schema/importExport.ts):
 
 - `createCharacterExportEnvelope(characters)` creates the versioned export envelope.
 - `safeParseCharacterExportEnvelope(input)` validates the envelope and contained character documents.

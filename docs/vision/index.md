@@ -6,9 +6,9 @@ These docs are for human planning. They are not the source of truth for immediat
 
 For current coding work, use:
 
-- `../../AGENTS.md`
-- `../current-mvp.md`
-- `../mvp-backlog.md`
+- [../../AGENTS.md](../../AGENTS.md)
+- [../current-mvp.md](../current-mvp.md)
+- [../mvp-backlog.md](../mvp-backlog.md)
 
 ## Long-Term Themes
 
@@ -20,9 +20,9 @@ For current coding work, use:
 
 ## Links
 
-- `PRD-v0.md`: legacy long-form product and roadmap document
-- `system-design-notes.md`: preserved cross-system design notes and candidate systems
-- `../index.md`: docs map
-- `../ext/Readme.md`: third-party reference docs/assets
-- `../../README.md`: current repo overview
+- [PRD-v0.md](PRD-v0.md): legacy long-form product and roadmap document
+- [system-design-notes.md](system-design-notes.md): preserved cross-system design notes and candidate systems
+- [../index.md](../index.md): docs map
+- [../ext/Readme.md](../ext/Readme.md): third-party reference docs/assets
+- [../../README.md](../../README.md): current repo overview
 - GitHub repo: <https://github.com/kmfarley11/ez-chars>

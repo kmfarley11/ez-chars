@@ -1,6 +1,6 @@
 # Current MVP
 
-This document defines the only active product scope for near-term implementation. Use this doc with `docs/mvp-backlog.md` for day-to-day coding decisions.
+This document defines the only active product scope for near-term implementation. Use this doc with [docs/mvp-backlog.md](mvp-backlog.md) for day-to-day coding decisions.
 
 ## Product Statement
 
@@ -36,7 +36,7 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 - data survives reloads without corruption or silent shape drift
 - exported JSON can be imported back into the app
 - the main sheet is usable on phone-sized screens
-- local verification passes according to `docs/verification.md`
+- local verification passes according to [docs/verification.md](verification.md)
 
 ## Current Status
 
