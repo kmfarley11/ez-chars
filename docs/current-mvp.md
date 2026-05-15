@@ -55,9 +55,9 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 
 - 5e sheet route still does not expose every optional schema field or deeper 5e detail
 - annotation/reference UI exists for surfaced fields
-- automated verification has Vitest tooling wired, but contract tests and smoke coverage are not implemented
+- automated verification has Vitest tooling and initial schema/import-export contract tests, but storage tests and smoke coverage are not implemented
 
 ### Missing
 
-- contract tests, smoke coverage, and CI
+- storage contract tests, smoke coverage, and CI
 - polished empty states

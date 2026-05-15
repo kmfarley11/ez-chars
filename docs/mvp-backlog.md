@@ -39,7 +39,7 @@ Update the MVP docs if the task meaningfully changes backlog or status. Prune th
 
 ## P0
 
-Next recommended target: continue `p0-030` with slice 2 to add schema/parser tests around the current 5e model and JSON import/export envelope.
+Next recommended target: continue `p0-030` with slice 3 to add storage adapter tests around load/save/invalid-data behavior, including migration and fallback behavior.
 
 ### Add automated verification
 
@@ -76,9 +76,16 @@ Suggested implementation slices:
 Slice 1 status:
 
 - Chose Vitest for fast Node-environment contract tests around schema, storage, and import/export behavior.
-- Added `npm run test` and `npm run test:watch` scripts; `test` currently uses `--passWithNoTests` so tooling can land before the first test files.
+- Added `npm run test` and `npm run test:watch` scripts; `test` initially used `--passWithNoTests` so tooling could land before the first test files.
 - Configured Vitest in `vite.config.ts` to run non-global tests from `src/**/*.{test,spec}.{ts,js}`.
 - Browser-level smoke tooling is intentionally deferred until the stable contract tests exist.
+
+Slice 2 status:
+
+- Added Vitest contract tests for creating, parsing, and rejecting D&D 5e 2014 character documents.
+- Added tests proving seeded 5e fixture characters validate through the current schema parser.
+- Added JSON backup envelope tests for valid exports, raw-array rejection, unsupported version rejection, and invalid contained character rejection.
+- Removed `--passWithNoTests` from `npm run test` now that real test files exist.
 
 AI-agent verification expectations:
 
