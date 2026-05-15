@@ -172,7 +172,7 @@
 				>.
 			</p>
 		</div>
-		<div class="flex flex-wrap items-start gap-2">
+		<div class="flex flex-wrap items-start justify-between gap-2">
 			<div>
 				<MenuButton text="Create Character" iconVariant="chevron" align="left">
 					<MenuItemButton onclick={handleCreateNew5eCharacter}
@@ -180,43 +180,47 @@
 					>
 				</MenuButton>
 			</div>
-			<BaseButton onclick={handleExportCharacters}>Export Characters</BaseButton>
-			<div class="flex min-w-0 flex-col gap-1">
-				<input
-					bind:this={importFileInput}
-					class="sr-only"
-					type="file"
-					accept=".json,application/json"
-					aria-label="Choose character import JSON file"
-					onchange={handleImportFileSelect}
-				/>
-				<BaseButton onclick={handleChooseImportFile}>Choose Import File</BaseButton>
-				{#if selectedImportFileName}
-					<p class="theme-text-muted max-w-72 truncate text-sm">
-						Selected: {selectedImportFileName}
-					</p>
-				{/if}
-				{#if importValidationMessage}
-					<p
-						class="max-w-96 text-sm {importValidationState === 'error'
-							? 'text-red-700 dark:text-red-300'
-							: 'theme-text-muted'}"
-						role={importValidationState === 'error' ? 'alert' : 'status'}
-						aria-live="polite"
-					>
-						{importValidationMessage}
-					</p>
-				{/if}
-				{#if pendingImportEnvelope}
-					<div class="flex flex-wrap gap-2" aria-label="Apply imported characters">
-						<BaseButton size="sm" onclick={handleMergeImportedCharacters}>Merge New</BaseButton>
-						<BaseButton size="sm" onclick={handleReplaceImportedCharacters}>Replace All</BaseButton>
-					</div>
-					<p class="theme-text-muted max-w-96 text-xs">
-						Merge skips characters with IDs already in your local list. Replace discards the current
-						local list.
-					</p>
-				{/if}
+			<div class="ml-auto flex min-w-0 flex-wrap items-start justify-end gap-2">
+				<div class="flex min-w-0 flex-col items-end gap-1">
+					<input
+						bind:this={importFileInput}
+						class="sr-only"
+						type="file"
+						accept=".json,application/json"
+						aria-label="Choose character import JSON file"
+						onchange={handleImportFileSelect}
+					/>
+					<BaseButton onclick={handleChooseImportFile}>Import Characters</BaseButton>
+					{#if selectedImportFileName}
+						<p class="theme-text-muted max-w-72 truncate text-right text-sm">
+							Selected: {selectedImportFileName}
+						</p>
+					{/if}
+					{#if importValidationMessage}
+						<p
+							class="max-w-96 text-right text-sm {importValidationState === 'error'
+								? 'text-red-700 dark:text-red-300'
+								: 'theme-text-muted'}"
+							role={importValidationState === 'error' ? 'alert' : 'status'}
+							aria-live="polite"
+						>
+							{importValidationMessage}
+						</p>
+					{/if}
+					{#if pendingImportEnvelope}
+						<div class="flex flex-wrap justify-end gap-2" aria-label="Apply imported characters">
+							<BaseButton size="sm" onclick={handleMergeImportedCharacters}>Merge New</BaseButton>
+							<BaseButton size="sm" onclick={handleReplaceImportedCharacters}
+								>Replace All</BaseButton
+							>
+						</div>
+						<p class="theme-text-muted max-w-96 text-right text-xs">
+							Merge skips characters with IDs already in your local list. Replace discards the
+							current local list.
+						</p>
+					{/if}
+				</div>
+				<BaseButton onclick={handleExportCharacters}>Export Characters</BaseButton>
 			</div>
 		</div>
 	</div>
