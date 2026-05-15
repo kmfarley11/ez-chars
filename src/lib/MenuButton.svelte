@@ -1,22 +1,33 @@
-<script>
+<script lang="ts">
+	import { type Snippet } from 'svelte';
 	import OpenCloseToggleButton from './OpenCloseToggleButton.svelte';
 
-	/** @typedef {'left' | 'right'} MenuAlign */
+	type MenuAlign = 'left' | 'right';
+	type ButtonShadingVariant = 'dark' | 'light';
+	type IconVariant = 'chevron' | 'hamburger' | 'kebab';
+
+	interface Props {
+		children?: Snippet;
+		text?: string;
+		shadingVariant?: ButtonShadingVariant;
+		align?: MenuAlign;
+		iconVariant?: IconVariant;
+	}
+
 	let {
 		children = undefined,
 		text = undefined,
 		shadingVariant = 'light',
 		align = 'right',
 		iconVariant = 'hamburger'
-	} = $props();
+	}: Props = $props();
 	let isMenuOpen = $state(false);
 
 	const handleMenuClick = () => {
 		isMenuOpen = !isMenuOpen;
 	};
 
-	/** @param {FocusEvent} event */
-	const handleMenuFocusLoss = (event) => {
+	const handleMenuFocusLoss = (event: FocusEvent) => {
 		const { relatedTarget, currentTarget } = event;
 		if (
 			relatedTarget instanceof HTMLElement &&

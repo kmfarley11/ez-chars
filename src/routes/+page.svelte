@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import { charsArray, createNew5eCharacter, deleteCharacterById } from '../data.js';
 
+	import BaseButton from '$lib/BaseButton.svelte';
 	import Table from '$lib/Table.svelte';
 	import MenuItemButton from '$lib/MenuItemButton.svelte';
 	import MenuButton from '$lib/MenuButton.svelte';
@@ -172,20 +173,14 @@
 			</p>
 		</div>
 		<div class="flex flex-wrap items-start gap-2">
-			<div class="-ml-1">
+			<div>
 				<MenuButton text="Create Character" iconVariant="chevron" align="left">
 					<MenuItemButton onclick={handleCreateNew5eCharacter}
 						>Create New 2014 5e Character</MenuItemButton
 					>
 				</MenuButton>
 			</div>
-			<button
-				type="button"
-				class="theme-btn-light btn rounded-md border px-3 py-2 font-semibold"
-				onclick={handleExportCharacters}
-			>
-				Export Characters
-			</button>
+			<BaseButton onclick={handleExportCharacters}>Export Characters</BaseButton>
 			<div class="flex min-w-0 flex-col gap-1">
 				<input
 					bind:this={importFileInput}
@@ -195,13 +190,7 @@
 					aria-label="Choose character import JSON file"
 					onchange={handleImportFileSelect}
 				/>
-				<button
-					type="button"
-					class="theme-btn-light btn rounded-md border px-3 py-2 font-semibold"
-					onclick={handleChooseImportFile}
-				>
-					Choose Import File
-				</button>
+				<BaseButton onclick={handleChooseImportFile}>Choose Import File</BaseButton>
 				{#if selectedImportFileName}
 					<p class="theme-text-muted max-w-72 truncate text-sm">
 						Selected: {selectedImportFileName}
@@ -220,20 +209,8 @@
 				{/if}
 				{#if pendingImportEnvelope}
 					<div class="flex flex-wrap gap-2" aria-label="Apply imported characters">
-						<button
-							type="button"
-							class="theme-btn-light btn rounded-md border px-3 py-2 text-sm font-semibold"
-							onclick={handleMergeImportedCharacters}
-						>
-							Merge New
-						</button>
-						<button
-							type="button"
-							class="theme-btn-light btn rounded-md border px-3 py-2 text-sm font-semibold"
-							onclick={handleReplaceImportedCharacters}
-						>
-							Replace All
-						</button>
+						<BaseButton size="sm" onclick={handleMergeImportedCharacters}>Merge New</BaseButton>
+						<BaseButton size="sm" onclick={handleReplaceImportedCharacters}>Replace All</BaseButton>
 					</div>
 					<p class="theme-text-muted max-w-96 text-xs">
 						Merge skips characters with IDs already in your local list. Replace discards the current
