@@ -39,61 +39,7 @@ Update the MVP docs if the task meaningfully changes backlog or status. Prune th
 
 ## P0
 
-Next recommended target: finish `p0-020` with slice 5 to finalize replace, merge, and duplicate-id behavior.
-
-### Implement JSON import/export
-
-ID:
-
-- `p0-020`
-
-Size:
-
-- oversized; implement by suggested slice, not as one pass
-
-Scope:
-
-- export all locally stored characters
-- import with validation and user-visible error handling
-
-Suggested implementation slices:
-
-1. Define the exported JSON shape and import semantics.
-2. Add export UI and file download behavior.
-3. Add import UI and file selection behavior.
-4. Validate imported payloads and surface clear errors for invalid files or data.
-5. Finalize overwrite, merge, or replace behavior and document it in the UI or docs.
-
-Slice 1 status:
-
-- Added `docs/import-export-json.md` to define the public MVP backup envelope and import semantics.
-- Added `src/schema/importExport.ts` with `createCharacterExportEnvelope` and `safeParseCharacterExportEnvelope` so later UI slices can share the same contract.
-- Export shape is a versioned app-level envelope with `kind: "ez-chars.character-export"`, `version: 1`, `exportedAt`, optional app metadata, and all local character documents in `characters`.
-- Import semantics are intentionally non-destructive until the write mode is explicit: accepted files must match the export envelope and validate all characters; replace/merge and duplicate-id behavior remain for slice 5.
-
-Slice 2 status:
-
-- Added a home-screen `Export Characters` action that downloads all current local characters as formatted JSON.
-- The downloaded file uses the slice 1 public backup envelope from `createCharacterExportEnvelope`.
-- Import UI, validation messages, and merge/replace behavior remain intentionally unimplemented for later slices.
-
-Slice 3 status:
-
-- Added a home-screen import file picker that accepts JSON files and records the selected file name in the UI.
-- The selected file is not parsed, validated, or applied yet; those behaviors remain for slices 4 and 5.
-
-Slice 4 status:
-
-- The import file picker now reads selected JSON files and validates them against `safeParseCharacterExportEnvelope`.
-- Invalid JSON and unsupported/invalid ez-chars export data produce clear user-visible messages.
-- Valid imports show the number of characters ready to import, but still do not mutate local data until slice 5 defines replace/merge behavior.
-
-Definition of done:
-
-- a user can export current locally stored character data to JSON
-- a user can import valid JSON into the app
-- invalid JSON or invalid character payloads fail with a clear user-visible message
-- import does not silently corrupt or partially overwrite data without a defined rule
+Next recommended target: continue P0 with `p0-030` slice 1 to choose and wire the test tooling and scripts.
 
 ### Add automated verification
 
@@ -426,3 +372,4 @@ This content is a work in progress to dump thoughts before execution or further 
 - completed the `Add real character management` backlog item
 - completed the `src/lib/*Grid*` cleanup backlog
 - completed `p0-010`: the 5e sheet now exposes the major MVP runtime and organizational sections, including seeded runtime action data, with check/lint/build passing
+- completed `p0-020`: JSON import/export now supports a versioned backup envelope, export download, import validation, replace-all import, and merge-new import that skips duplicate character IDs

@@ -36,12 +36,12 @@ An import is valid only when:
 - `characters` is an array
 - every character validates through the same schema boundary used for stored character documents
 
-The eventual UI should make the write behavior explicit before changing local data:
+The UI makes the write behavior explicit before changing local data:
 
 - `replace`: discard current local characters and use the imported characters
-- `merge`: add imported characters, with duplicate `meta.id` handling made clear in the UI before commit
+- `merge`: add imported characters whose `meta.id` is not already present; skip imported characters with duplicate IDs
 
-Until the overwrite/merge UI slice is implemented, the contract should not silently choose collision behavior. Later slices should keep invalid files non-destructive: failed parsing or failed character validation must leave current local characters unchanged and surface a clear user-visible error.
+Invalid files are non-destructive: failed parsing or failed character validation leaves current local characters unchanged and surfaces a clear user-visible error.
 
 ## Current Code Contract
 

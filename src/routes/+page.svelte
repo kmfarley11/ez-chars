@@ -13,7 +13,7 @@
 	} from '../schema/index.js';
 	import { FULL_2014_SRD_HREF, OFFICIAL_2014_CHAR_SHEET_HREF } from '$lib/urlHelpers.js';
 
-	type ImportValidationState = 'idle' | 'reading' | 'valid' | 'error';
+	type ImportValidationState = 'idle' | 'reading' | 'valid' | 'error' | 'applied';
 
 	const charsheetHref = resolve('/charsheets/5e');
 	const jsonMimeType = 'application/json';
@@ -108,6 +108,41 @@
 		importValidationState = 'valid';
 		importValidationMessage = `Ready to import ${parsedEnvelope.data.characters.length} character${parsedEnvelope.data.characters.length === 1 ? '' : 's'}. Choose how to apply it in the next step.`;
 	};
+
+	const handleReplaceImportedCharacters = () => {
+		if (!pendingImportEnvelope) return;
+		const importedCount = pendingImportEnvelope.characters.length;
+		charsArray.set(pendingImportEnvelope.characters);
+		pendingImportEnvelope = undefined;
+		importValidationState = 'applied';
+		importValidationMessage = `Replaced local characters with ${importedCount} imported character${importedCount === 1 ? '' : 's'}.`;
+	};
+
+	const handleMergeImportedCharacters = () => {
+		if (!pendingImportEnvelope) return;
+		const importEnvelope = pendingImportEnvelope;
+
+		let addedCount = 0;
+		let skippedCount = 0;
+		charsArray.update((currentCharacters) => {
+			const existingIds = currentCharacters.map((character) => character.meta.id);
+			const newCharacters = importEnvelope.characters.filter((character) => {
+				if (existingIds.includes(character.meta.id)) {
+					skippedCount += 1;
+					return false;
+				}
+				addedCount += 1;
+				existingIds.push(character.meta.id);
+				return true;
+			});
+
+			return [...currentCharacters, ...newCharacters];
+		});
+
+		pendingImportEnvelope = undefined;
+		importValidationState = 'applied';
+		importValidationMessage = `Merged ${addedCount} new character${addedCount === 1 ? '' : 's'}${skippedCount > 0 ? ` and skipped ${skippedCount} duplicate ${skippedCount === 1 ? 'character' : 'characters'}` : ''}.`;
+	};
 </script>
 
 <div class="px-4 py-4 sm:px-6">
@@ -184,8 +219,25 @@
 					</p>
 				{/if}
 				{#if pendingImportEnvelope}
-					<p class="sr-only">
-						Validated import exported at {pendingImportEnvelope.exportedAt}.
+					<div class="flex flex-wrap gap-2" aria-label="Apply imported characters">
+						<button
+							type="button"
+							class="theme-btn-light btn rounded-md border px-3 py-2 text-sm font-semibold"
+							onclick={handleMergeImportedCharacters}
+						>
+							Merge New
+						</button>
+						<button
+							type="button"
+							class="theme-btn-light btn rounded-md border px-3 py-2 text-sm font-semibold"
+							onclick={handleReplaceImportedCharacters}
+						>
+							Replace All
+						</button>
+					</div>
+					<p class="theme-text-muted max-w-96 text-xs">
+						Merge skips characters with IDs already in your local list. Replace discards the current
+						local list.
 					</p>
 				{/if}
 			</div>

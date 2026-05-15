@@ -49,15 +49,14 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 - basic character management: create, open, and delete from the home view, plus clear invalid-id handling on the 5e route
 - theme system
 - major 5e sheet surface for the MVP: overview, quick reference, abilities/proficiencies/features/traits, action-economy runtime summaries, spells, inventory, and background/roleplay/notes, with runtime and organizational regions visually separated
+- JSON import/export with a versioned backup envelope, file download, file validation, replace behavior, and merge-new behavior that skips duplicate character IDs
 
 ### Partial
 
 - 5e sheet route still does not expose every optional schema field or deeper 5e detail
 - annotation/reference UI exists for surfaced fields
-- JSON import/export has a defined backup envelope, export file download, import file picker, and import validation, but import commit behavior is not implemented
 
 ### Missing
 
-- import commit behavior
 - tests and CI
 - polished empty states
