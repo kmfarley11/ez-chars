@@ -404,6 +404,9 @@ This content is a work in progress to dump thoughts before execution or further 
 - re-organize lib a bit better, consider a ui lib vs. utility lib
   - consider the ui lib organizing by primitives vs. composites vs. patterns
   - consider adding storybook to help playtest the concepts etc.
+- re-org the ux: consider meta & quickref being sticky, then tabulate 3 pillars: adventure, combat, roleplay? combat could have sticky header for summary
+  - note: the thought is to make most of the screen real-estate while avoiding complex UI. so less headers, but more clicking and less scrolling perhaps.
+  - implementing a drawer of sorts wouldn't be a bad idea either
 
 ## Done Recently
 
