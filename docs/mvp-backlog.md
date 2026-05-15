@@ -39,7 +39,7 @@ Update the MVP docs if the task meaningfully changes backlog or status. Prune th
 
 ## P0
 
-Next recommended target: continue `p0-020` with slice 3 to add import UI and file selection behavior.
+Next recommended target: continue `p0-020` with slice 4 to validate imported payloads and surface clear errors.
 
 ### Implement JSON import/export
 
@@ -76,6 +76,11 @@ Slice 2 status:
 - Added a home-screen `Export Characters` action that downloads all current local characters as formatted JSON.
 - The downloaded file uses the slice 1 public backup envelope from `createCharacterExportEnvelope`.
 - Import UI, validation messages, and merge/replace behavior remain intentionally unimplemented for later slices.
+
+Slice 3 status:
+
+- Added a home-screen import file picker that accepts JSON files and records the selected file name in the UI.
+- The selected file is not parsed, validated, or applied yet; those behaviors remain for slices 4 and 5.
 
 Definition of done:
 

@@ -10,6 +10,8 @@
 
 	const charsheetHref = resolve('/charsheets/5e');
 	const jsonMimeType = 'application/json';
+	let importFileInput = $state<HTMLInputElement>();
+	let selectedImportFileName = $state('');
 
 	const openCharacterSheet = (charId: string) => {
 		location.href = `${charsheetHref}?id=${encodeURIComponent(charId)}`;
@@ -48,6 +50,17 @@
 		link.click();
 		link.remove();
 		URL.revokeObjectURL(url);
+	};
+
+	const handleChooseImportFile = () => {
+		if (!importFileInput) return;
+		importFileInput.value = '';
+		importFileInput.click();
+	};
+
+	const handleImportFileSelect = (event: Event) => {
+		const input = event.currentTarget as HTMLInputElement;
+		selectedImportFileName = input.files?.[0]?.name ?? '';
 	};
 </script>
 
@@ -92,6 +105,28 @@
 			>
 				Export Characters
 			</button>
+			<div class="flex min-w-0 flex-col gap-1">
+				<input
+					bind:this={importFileInput}
+					class="sr-only"
+					type="file"
+					accept=".json,application/json"
+					aria-label="Choose character import JSON file"
+					onchange={handleImportFileSelect}
+				/>
+				<button
+					type="button"
+					class="theme-btn-light btn rounded-md border px-3 py-2 font-semibold"
+					onclick={handleChooseImportFile}
+				>
+					Choose Import File
+				</button>
+				{#if selectedImportFileName}
+					<p class="theme-text-muted max-w-72 truncate text-sm">
+						Selected: {selectedImportFileName}
+					</p>
+				{/if}
+			</div>
 		</div>
 	</div>
 
