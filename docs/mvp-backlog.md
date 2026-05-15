@@ -46,7 +46,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: continue `p1-040` with slice 2 to define the local-first mutation envelope that can carry the documented field binding contract.
+Next recommended target: continue `p1-040` with slice 3 to separate value patch projection from annotation patch projection using the documented field binding and mutation contract.
 
 ### Link runtime actions to source weapons, spells, and features
 
@@ -234,16 +234,20 @@ Scope:
 - keep the abstraction transport-agnostic and API-ready: model local edits in a way that can later map cleanly to remote create/read/patch/replace/delete flows without putting HTTP or auth concerns into field components
 - support inline sheet editing and annotation work without turning this into a generalized data-layer rewrite
 - use [field-interaction-model.md](field-interaction-model.md) as the UX contract for how value patches and annotation patches are emitted
-- use [field-binding-contract.md](field-binding-contract.md) as the field-scoped read, patch, commit, and save contract
+- use [field-binding-contract.md](field-binding-contract.md) as the field-scoped read, mutation, patch, commit, and save contract
+- use an existing RFC 6902 JSON Patch library for patch apply/validate behavior rather than hand-rolling the patch engine; prefer evaluating `rfc6902` first, then `fast-json-patch` if API, immutable-apply, typing, or maintenance tradeoffs warrant comparison
 
 Suggested implementation slices:
 
 1. Complete. Field-scoped binding contract around read paths, value patch paths, annotation patch paths, commit boundaries, and save semantics is documented in [field-binding-contract.md](field-binding-contract.md).
-2. Define a local-first mutation envelope whose semantics can later map cleanly to create/read/patch/replace/delete flows, while remaining transport-agnostic in the current app.
-3. Separate value patch projection from annotation patch projection so field components can consume them independently.
+2. Complete. Local-first mutation envelope is documented in [field-binding-contract.md](field-binding-contract.md) as an RFC 6902-style JSON Patch document using standard `add`, `remove`, `replace`, `move`, `copy`, and `test` operations directly, with primitive value replacement, annotation replacement, list replacement, insert, item update, item removal, and reorder semantics covered without transport details.
+3. Evaluate `rfc6902` against the current character data shape, JSON Pointer needs, immutable application expectations, validation/error behavior, and TypeScript ergonomics; compare `fast-json-patch` only if the first option has meaningful friction.
 4. Introduce field-scoped draft/edit/cancel helpers that do not require opening a card-wide dialog.
-5. Prove the abstraction on one current runtime sheet surface before wider rollout, with the page layer applying local changes immediately and an optional persistence/sync layer left as a lower-level concern.
-6. Document how grid components, page layers, and data/store layers divide responsibility, including that field components must not know about HTTP endpoints, auth, or remote transport details.
+5. Adopt the selected RFC 6902 library directly, using standard JSON Patch documents and RFC 6901 JSON Pointer strings as the app mutation format. Keep package imports centralized if useful, but avoid creating a custom patch wrapper; only add transitional pointer-conversion helpers if staged migration from existing array paths makes them necessary.
+6. Separate value patch projection from annotation patch projection so field components can consume them independently.
+7. Introduce field-scoped draft/edit/cancel helpers that do not require opening a card-wide dialog.
+8. Prove the abstraction on one current runtime sheet surface before wider rollout, with the page layer applying local changes immediately and an optional persistence/sync layer left as a lower-level concern.
+9. Document how grid components, page layers, and data/store layers divide responsibility, including that field components must not know about HTTP endpoints, auth, or remote transport details.
 
 Dependency notes:
 
@@ -251,6 +255,7 @@ Dependency notes:
 - Once that interaction model is chosen, this item becomes the main technical prerequisite for most of the remaining inline-edit UX work.
 - This item is an enabler for field-level editing and annotation UX, not a standalone data-layer redesign.
 - This item should make future backend support easier, but current implementations should stay client-driven and local-first unless a backlog item explicitly introduces remote behavior.
+- Prefer direct RFC 6902/6901 data shapes over compatibility shims. Centralize the selected library import if useful, but do not create a custom patch API over the standard. Existing array-based bind paths should migrate toward JSON Pointer strings; any conversion helper should be treated as transitional staging, not the target contract.
 
 Definition of done:
 
@@ -347,6 +352,7 @@ This content is a work in progress to dump thoughts before execution or further 
 - re-org the ux: consider meta & quickref being sticky, then tabulate 3 pillars: adventure, combat, roleplay? combat could have sticky header for summary
   - note: the thought is to make most of the screen real-estate while avoiding complex UI. so less headers, but more clicking and less scrolling perhaps.
   - implementing a drawer of sorts wouldn't be a bad idea either
+- evaluate a Svelte-compatible form library such as TanStack Form or Felte after the first field-binding proof surface lands; prefer reuse for draft state, validation display, dirty tracking, and array editor ergonomics if it keeps local source smaller than custom form infrastructure
 
 ## Done Recently
 
