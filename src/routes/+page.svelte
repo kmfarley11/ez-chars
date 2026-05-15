@@ -5,13 +5,23 @@
 	import Table from '$lib/Table.svelte';
 	import MenuItemButton from '$lib/MenuItemButton.svelte';
 	import MenuButton from '$lib/MenuButton.svelte';
-	import { createCharacterExportEnvelope, type CharacterWithSystemData } from '../schema/index.js';
+	import {
+		createCharacterExportEnvelope,
+		safeParseCharacterExportEnvelope,
+		type CharacterExportEnvelope,
+		type CharacterWithSystemData
+	} from '../schema/index.js';
 	import { FULL_2014_SRD_HREF, OFFICIAL_2014_CHAR_SHEET_HREF } from '$lib/urlHelpers.js';
+
+	type ImportValidationState = 'idle' | 'reading' | 'valid' | 'error';
 
 	const charsheetHref = resolve('/charsheets/5e');
 	const jsonMimeType = 'application/json';
 	let importFileInput = $state<HTMLInputElement>();
 	let selectedImportFileName = $state('');
+	let importValidationState = $state<ImportValidationState>('idle');
+	let importValidationMessage = $state('');
+	let pendingImportEnvelope = $state<CharacterExportEnvelope>();
 
 	const openCharacterSheet = (charId: string) => {
 		location.href = `${charsheetHref}?id=${encodeURIComponent(charId)}`;
@@ -55,12 +65,48 @@
 	const handleChooseImportFile = () => {
 		if (!importFileInput) return;
 		importFileInput.value = '';
+		selectedImportFileName = '';
+		importValidationState = 'idle';
+		importValidationMessage = '';
+		pendingImportEnvelope = undefined;
 		importFileInput.click();
 	};
 
-	const handleImportFileSelect = (event: Event) => {
+	const handleImportFileSelect = async (event: Event) => {
 		const input = event.currentTarget as HTMLInputElement;
-		selectedImportFileName = input.files?.[0]?.name ?? '';
+		const selectedFile = input.files?.[0];
+		selectedImportFileName = selectedFile?.name ?? '';
+		pendingImportEnvelope = undefined;
+
+		if (!selectedFile) {
+			importValidationState = 'idle';
+			importValidationMessage = '';
+			return;
+		}
+
+		importValidationState = 'reading';
+		importValidationMessage = 'Checking import file...';
+
+		let parsedJson: unknown;
+		try {
+			parsedJson = JSON.parse(await selectedFile.text());
+		} catch {
+			importValidationState = 'error';
+			importValidationMessage = 'That file is not valid JSON.';
+			return;
+		}
+
+		const parsedEnvelope = safeParseCharacterExportEnvelope(parsedJson);
+		if (!parsedEnvelope.success) {
+			importValidationState = 'error';
+			importValidationMessage =
+				'That JSON file is not a supported ez-chars character export, or one of its characters is invalid.';
+			return;
+		}
+
+		pendingImportEnvelope = parsedEnvelope.data;
+		importValidationState = 'valid';
+		importValidationMessage = `Ready to import ${parsedEnvelope.data.characters.length} character${parsedEnvelope.data.characters.length === 1 ? '' : 's'}. Choose how to apply it in the next step.`;
 	};
 </script>
 
@@ -124,6 +170,22 @@
 				{#if selectedImportFileName}
 					<p class="theme-text-muted max-w-72 truncate text-sm">
 						Selected: {selectedImportFileName}
+					</p>
+				{/if}
+				{#if importValidationMessage}
+					<p
+						class="max-w-96 text-sm {importValidationState === 'error'
+							? 'text-red-700 dark:text-red-300'
+							: 'theme-text-muted'}"
+						role={importValidationState === 'error' ? 'alert' : 'status'}
+						aria-live="polite"
+					>
+						{importValidationMessage}
+					</p>
+				{/if}
+				{#if pendingImportEnvelope}
+					<p class="sr-only">
+						Validated import exported at {pendingImportEnvelope.exportedAt}.
 					</p>
 				{/if}
 			</div>

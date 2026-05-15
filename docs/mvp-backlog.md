@@ -39,7 +39,7 @@ Update the MVP docs if the task meaningfully changes backlog or status. Prune th
 
 ## P0
 
-Next recommended target: continue `p0-020` with slice 4 to validate imported payloads and surface clear errors.
+Next recommended target: finish `p0-020` with slice 5 to finalize replace, merge, and duplicate-id behavior.
 
 ### Implement JSON import/export
 
@@ -81,6 +81,12 @@ Slice 3 status:
 
 - Added a home-screen import file picker that accepts JSON files and records the selected file name in the UI.
 - The selected file is not parsed, validated, or applied yet; those behaviors remain for slices 4 and 5.
+
+Slice 4 status:
+
+- The import file picker now reads selected JSON files and validates them against `safeParseCharacterExportEnvelope`.
+- Invalid JSON and unsupported/invalid ez-chars export data produce clear user-visible messages.
+- Valid imports show the number of characters ready to import, but still do not mutate local data until slice 5 defines replace/merge behavior.
 
 Definition of done:
 

@@ -54,10 +54,10 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 
 - 5e sheet route still does not expose every optional schema field or deeper 5e detail
 - annotation/reference UI exists for surfaced fields
-- JSON import/export has a defined backup envelope, export file download, and import file picker, but import validation and commit behavior are not implemented
+- JSON import/export has a defined backup envelope, export file download, import file picker, and import validation, but import commit behavior is not implemented
 
 ### Missing
 
-- import validation and commit behavior
+- import commit behavior
 - tests and CI
 - polished empty states
