@@ -39,7 +39,7 @@ Update the MVP docs if the task meaningfully changes backlog or status. Prune th
 
 ## P0
 
-Next recommended target: continue `p0-030` with slice 4 to add focused import/export behavior tests for replace-all and merge-new flows.
+Next recommended target: continue `p0-030` with slice 5 to add one thin user-centric smoke path for create/edit/reload.
 
 ### Add automated verification
 
@@ -94,6 +94,11 @@ Slice 3 status:
 - Added storage adapter contract tests for empty storage fallback, versioned save/load, and clear behavior.
 - Added migration coverage for legacy raw character arrays and legacy string movement values, including empty movement fields.
 - Added invalid-data fallback coverage for malformed JSON, unsupported storage envelope versions, and stored characters that fail schema validation.
+
+Slice 4 status:
+
+- Extracted import application into a pure `applyCharacterImport` helper so replace-all and merge-new behavior can be tested without brittle route internals.
+- Added import/export contract tests for replace-all imports and merge-new imports that skip duplicate character IDs, including duplicates already present locally and duplicates within the import payload.
 
 AI-agent verification expectations:
 

@@ -36,6 +36,14 @@ export type CharacterExportEnvelope = {
 	characters: CharacterWithSystemData[];
 };
 
+export type CharacterImportMode = 'replace' | 'merge-new';
+
+export type CharacterImportApplyResult = {
+	characters: CharacterWithSystemData[];
+	addedCount: number;
+	skippedDuplicateCount: number;
+};
+
 export const createCharacterExportEnvelope = (
 	characters: CharacterWithSystemData[]
 ): CharacterExportEnvelope => ({
@@ -63,6 +71,40 @@ export function safeParseCharacterExportEnvelope(
 			...parsedEnvelope.data,
 			characters: parsedCharacters.data
 		}
+	};
+}
+
+export function applyCharacterImport(
+	currentCharacters: CharacterWithSystemData[],
+	importEnvelope: CharacterExportEnvelope,
+	mode: CharacterImportMode
+): CharacterImportApplyResult {
+	if (mode === 'replace') {
+		return {
+			characters: importEnvelope.characters,
+			addedCount: importEnvelope.characters.length,
+			skippedDuplicateCount: 0
+		};
+	}
+
+	const existingIds = new Set(currentCharacters.map((character) => character.meta.id));
+	const newCharacters: CharacterWithSystemData[] = [];
+	let skippedDuplicateCount = 0;
+
+	for (const character of importEnvelope.characters) {
+		if (existingIds.has(character.meta.id)) {
+			skippedDuplicateCount += 1;
+			continue;
+		}
+
+		existingIds.add(character.meta.id);
+		newCharacters.push(character);
+	}
+
+	return {
+		characters: [...currentCharacters, ...newCharacters],
+		addedCount: newCharacters.length,
+		skippedDuplicateCount
 	};
 }
 

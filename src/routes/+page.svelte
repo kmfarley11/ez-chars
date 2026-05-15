@@ -7,6 +7,7 @@
 	import MenuItemButton from '$lib/MenuItemButton.svelte';
 	import MenuButton from '$lib/MenuButton.svelte';
 	import {
+		applyCharacterImport,
 		createCharacterExportEnvelope,
 		safeParseCharacterExportEnvelope,
 		type CharacterExportEnvelope,
@@ -112,37 +113,26 @@
 
 	const handleReplaceImportedCharacters = () => {
 		if (!pendingImportEnvelope) return;
-		const importedCount = pendingImportEnvelope.characters.length;
-		charsArray.set(pendingImportEnvelope.characters);
+		const importResult = applyCharacterImport($charsArray, pendingImportEnvelope, 'replace');
+		charsArray.set(importResult.characters);
 		pendingImportEnvelope = undefined;
 		importValidationState = 'applied';
-		importValidationMessage = `Replaced local characters with ${importedCount} imported character${importedCount === 1 ? '' : 's'}.`;
+		importValidationMessage = `Replaced local characters with ${importResult.addedCount} imported character${importResult.addedCount === 1 ? '' : 's'}.`;
 	};
 
 	const handleMergeImportedCharacters = () => {
 		if (!pendingImportEnvelope) return;
 		const importEnvelope = pendingImportEnvelope;
 
-		let addedCount = 0;
-		let skippedCount = 0;
+		let importResult: ReturnType<typeof applyCharacterImport> | undefined;
 		charsArray.update((currentCharacters) => {
-			const existingIds = currentCharacters.map((character) => character.meta.id);
-			const newCharacters = importEnvelope.characters.filter((character) => {
-				if (existingIds.includes(character.meta.id)) {
-					skippedCount += 1;
-					return false;
-				}
-				addedCount += 1;
-				existingIds.push(character.meta.id);
-				return true;
-			});
-
-			return [...currentCharacters, ...newCharacters];
+			importResult = applyCharacterImport(currentCharacters, importEnvelope, 'merge-new');
+			return importResult.characters;
 		});
 
 		pendingImportEnvelope = undefined;
 		importValidationState = 'applied';
-		importValidationMessage = `Merged ${addedCount} new character${addedCount === 1 ? '' : 's'}${skippedCount > 0 ? ` and skipped ${skippedCount} duplicate ${skippedCount === 1 ? 'character' : 'characters'}` : ''}.`;
+		importValidationMessage = `Merged ${importResult?.addedCount ?? 0} new character${importResult?.addedCount === 1 ? '' : 's'}${importResult && importResult.skippedDuplicateCount > 0 ? ` and skipped ${importResult.skippedDuplicateCount} duplicate ${importResult.skippedDuplicateCount === 1 ? 'character' : 'characters'}` : ''}.`;
 	};
 </script>
 

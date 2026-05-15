@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { seedChars } from '../../fixtures/characters';
 import {
+	applyCharacterImport,
 	CHARACTER_EXPORT_KIND,
 	CHARACTER_EXPORT_VERSION,
 	createCharacterExportEnvelope,
 	safeParseCharacterExportEnvelope
 } from '../importExport';
+import { create5e2014Character } from '../system.5e2014';
 
 describe('character import/export envelope', () => {
 	it('creates a parseable versioned backup envelope for character documents', () => {
@@ -47,5 +49,70 @@ describe('character import/export envelope', () => {
 		]);
 
 		expect(safeParseCharacterExportEnvelope(envelope).success).toBe(false);
+	});
+
+	it('replaces all current characters with imported characters', () => {
+		const currentCharacter = create5e2014Character({
+			name: 'Current Character',
+			meta: {
+				id: 'current-character'
+			}
+		});
+		const importedCharacter = create5e2014Character({
+			name: 'Imported Character',
+			meta: {
+				id: 'imported-character'
+			}
+		});
+		const envelope = createCharacterExportEnvelope([importedCharacter]);
+
+		const result = applyCharacterImport([currentCharacter], envelope, 'replace');
+
+		expect(result).toEqual({
+			characters: [importedCharacter],
+			addedCount: 1,
+			skippedDuplicateCount: 0
+		});
+	});
+
+	it('merges only new imported characters and skips duplicate ids', () => {
+		const currentCharacter = create5e2014Character({
+			name: 'Current Character',
+			meta: {
+				id: 'current-character'
+			}
+		});
+		const duplicateExistingCharacter = create5e2014Character({
+			name: 'Duplicate Existing Character',
+			meta: {
+				id: 'current-character'
+			}
+		});
+		const newImportedCharacter = create5e2014Character({
+			name: 'New Imported Character',
+			meta: {
+				id: 'new-imported-character'
+			}
+		});
+		const duplicateInsideImport = create5e2014Character({
+			name: 'Duplicate Inside Import',
+			meta: {
+				id: 'new-imported-character'
+			}
+		});
+		const envelope = createCharacterExportEnvelope([
+			duplicateExistingCharacter,
+			newImportedCharacter,
+			duplicateInsideImport
+		]);
+
+		const result = applyCharacterImport([currentCharacter], envelope, 'merge-new');
+
+		expect(result.characters.map((character) => character.meta.id)).toEqual([
+			'current-character',
+			'new-imported-character'
+		]);
+		expect(result.addedCount).toBe(1);
+		expect(result.skippedDuplicateCount).toBe(2);
 	});
 });
