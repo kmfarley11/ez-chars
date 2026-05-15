@@ -39,7 +39,7 @@ Update the MVP docs if the task meaningfully changes backlog or status. Prune th
 
 ## P0
 
-Next recommended target: continue `p0-030` with slice 3 to add storage adapter tests around load/save/invalid-data behavior, including migration and fallback behavior.
+Next recommended target: continue `p0-030` with slice 4 to add focused import/export behavior tests for replace-all and merge-new flows.
 
 ### Add automated verification
 
@@ -88,6 +88,12 @@ Slice 2 status:
 - Added tests proving seeded 5e fixture characters validate through the current schema parser.
 - Added JSON backup envelope tests for valid exports, raw-array rejection, unsupported version rejection, and invalid contained character rejection.
 - Removed `--passWithNoTests` from `npm run test` now that real test files exist.
+
+Slice 3 status:
+
+- Added storage adapter contract tests for empty storage fallback, versioned save/load, and clear behavior.
+- Added migration coverage for legacy raw character arrays and legacy string movement values, including empty movement fields.
+- Added invalid-data fallback coverage for malformed JSON, unsupported storage envelope versions, and stored characters that fail schema validation.
 
 AI-agent verification expectations:
 
