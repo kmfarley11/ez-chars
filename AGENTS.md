@@ -28,6 +28,7 @@ Do not use [docs/vision/](docs/vision/) as the active backlog unless the task is
 - [src/lib/](src/lib/) contains the reusable grid display/editing primitives
 - The 5e UI currently exposes only part of the full schema
 - Vitest is wired for contract tests, but storage coverage and CI are still incomplete
+- `immutable-json-patch` is the selected RFC 6902 patch library for the field-binding work; reuse the representative JSON Patch fixture in [src/test-utils/jsonPatchFixtures.ts](src/test-utils/jsonPatchFixtures.ts) for patch/binding tests
 
 ## Working Rules
 
@@ -54,6 +55,7 @@ Do not use [docs/vision/](docs/vision/) as the active backlog unless the task is
 
 Place Vitest files in nearby `__tests__` folders, such as [`src/schema/__tests__/`](src/schema/__tests__/), so contract tests stay close to the code they protect without mixing test files into implementation file lists.
 Use existing shared test scaffolding from [src/test-utils/](src/test-utils/) for browser-like globals or memory-backed storage; do not duplicate ad hoc `MemoryStorage` or `window` setup inside individual tests.
+Use [src/test-utils/jsonPatchFixtures.ts](src/test-utils/jsonPatchFixtures.ts) for representative nested JSON Patch fixture data; it is purpose-built patch scaffolding, not canonical 5e schema seed data.
 Use [docs/verification.md](docs/verification.md) as the canonical local command guide, including when to run the full gate set, smaller subsets, and coverage reporting.
 
 ## Useful Context

@@ -136,11 +136,13 @@ JSON Patch operations apply sequentially. List operations that use array indexes
 
 Slice 3 of `p1-040` evaluated the current direction enough to reject in-place patching as the default target. Current character data is plain JSON-compatible object and array data, so RFC 6902 patching is still a good fit for the domain model, but character sheets can become large and annotation-heavy. Patch application should not mutate the live character object, and whole-character clone-then-patch should not become the preferred long-term implementation if a practical non-mutating option exists.
 
-Implementation should compare RFC 6902 libraries with non-mutating application as a primary criterion:
+Slice 4 adopted [`immutable-json-patch`](https://www.npmjs.com/package/immutable-json-patch) as the selected RFC 6902 implementation for the current app.
 
-- [`immutable-json-patch`](https://www.npmjs.com/package/immutable-json-patch): current first implementation candidate. It is designed for immutable JSON Patch application, includes TypeScript declarations, has no runtime dependencies, supports reverting operations, and advertises shared data where possible. Its main risk is lower adoption than `fast-json-patch`, so implementation should verify API ergonomics, bundle fit, and representative patch behavior before broad rollout.
-- [`fast-json-patch`](https://www.npmjs.com/package/fast-json-patch): mature fallback candidate with broad adoption, TypeScript declarations, validation helpers, prototype-modification protection, and an explicit non-mutating `applyPatch` option. Its non-mutating mode clones before applying, so confirm whether that is performant enough on representative large character data before choosing it over an immutable-focused library.
-- [`rfc6902`](https://www.npmjs.com/package/rfc6902): spec-focused and includes RFC 6901 JSON Pointer support plus TypeScript declarations, but applies patches in place. Treat it as a lower-priority fallback only if its API advantages outweigh the cost of staging or clone/apply behavior for the current app.
+Evaluation summary:
+
+- `immutable-json-patch`: selected. It applies standard JSON Patch documents immutably, includes TypeScript declarations, has no runtime dependencies, supports reverting operations, exposes RFC 6901 pointer helpers, and preserves references for untouched branches in the local proof test. Its main risk remains lower adoption than `fast-json-patch`.
+- [`fast-json-patch`](https://www.npmjs.com/package/fast-json-patch): mature fallback candidate with broad adoption, TypeScript declarations, validation helpers, prototype-modification protection, and an explicit non-mutating `applyPatch` option. Its non-mutating mode clones before applying, so keep it as a fallback if `immutable-json-patch` shows API, validation, maintenance, or bundle friction.
+- [`rfc6902`](https://www.npmjs.com/package/rfc6902): spec-focused and includes RFC 6901 JSON Pointer support plus TypeScript declarations, but applies patches in place. Keep it as a lower-priority fallback because in-place application does not match the preferred state update model.
 
 In this context, immutable means the live character object is not changed during patch application. There are two different ways a library can provide that safety:
 
@@ -159,9 +161,9 @@ Selection criteria:
 - performs acceptably on a representative large character with annotations and nested lists
 - does not require spreading third-party-specific APIs through field components
 
-Current recommendation: prove `immutable-json-patch` first, compare `fast-json-patch` if maturity, validation behavior, or API friction appears during implementation, and keep `rfc6902` as a fallback rather than the default because of in-place application.
+The local proof lives in [jsonPatch.test.ts](../src/lib/__tests__/jsonPatch.test.ts). It verifies direct standard JSON Patch documents, non-mutating behavior, structural sharing for untouched branches, list operations guarded by `test`, and failed-test behavior without source mutation.
 
-Do not hand-roll RFC 6902 application or validation behavior unless available libraries fail a concrete project need. Implementation still needs to install/evaluate the selected candidate in this project and prove it against representative character patches before broader rollout.
+Do not hand-roll RFC 6902 application or validation behavior unless available libraries fail a concrete project need.
 
 ## Envelope Examples
 

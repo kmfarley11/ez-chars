@@ -47,7 +47,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: continue `p1-040` with slice 4 to evaluate and adopt an RFC 6902 library with non-mutating patch application as a primary criterion.
+Next recommended target: continue `p1-040` with slice 5 to separate value patch projection from annotation patch projection using standard JSON Patch payloads.
 
 ### Link runtime actions to source weapons, spells, and features
 
@@ -236,14 +236,15 @@ Scope:
 - support inline sheet editing and annotation work without turning this into a generalized data-layer rewrite
 - use [field-interaction-model.md](field-interaction-model.md) as the UX contract for how value patches and annotation patches are emitted
 - use [field-binding-contract.md](field-binding-contract.md) as the field-scoped read, mutation, patch, commit, and save contract
-- use an existing RFC 6902 JSON Patch library for patch apply/validate behavior rather than hand-rolling the patch engine; prefer evaluating `rfc6902` first, then `fast-json-patch` if API, immutable-apply, typing, or maintenance tradeoffs warrant comparison
+- use `immutable-json-patch` for RFC 6902 JSON Patch apply behavior rather than hand-rolling the patch engine; keep `fast-json-patch` as the mature fallback if implementation reveals API, validation, maintenance, or bundle friction
+- reuse [jsonPatchFixtures.ts](../src/test-utils/jsonPatchFixtures.ts) for representative nested JSON Patch fixture data in later patch/binding tests
 
 Suggested implementation slices:
 
 1. Complete. Field-scoped binding contract around read paths, value patch paths, annotation patch paths, commit boundaries, and save semantics is documented in [field-binding-contract.md](field-binding-contract.md).
 2. Complete. Local-first mutation envelope is documented in [field-binding-contract.md](field-binding-contract.md) as an RFC 6902-style JSON Patch document using standard `add`, `remove`, `replace`, `move`, `copy`, and `test` operations directly, with primitive value replacement, annotation replacement, list replacement, insert, item update, item removal, and reorder semantics covered without transport details.
-3. Complete. Library evaluation direction is documented in [field-binding-contract.md](field-binding-contract.md). Non-mutating patch application is now a primary selection criterion; current recommendation is to prove `immutable-json-patch` first, compare `fast-json-patch` if maturity, validation behavior, or API friction appears, and keep `rfc6902` as a lower-priority fallback because it patches in place.
-4. Adopt the selected RFC 6902 library directly, using standard JSON Patch documents and RFC 6901 JSON Pointer strings as the app mutation format. Prioritize non-mutating application, avoid whole-character cloning when practical, keep package imports centralized if useful, and avoid creating a custom patch wrapper. Only add transitional pointer-conversion helpers if staged migration from existing array paths makes them necessary.
+3. Complete. Library evaluation direction is documented in [field-binding-contract.md](field-binding-contract.md). Non-mutating patch application is now a primary selection criterion; `immutable-json-patch` was identified as the first proof candidate, `fast-json-patch` remains the mature fallback, and `rfc6902` is lower priority because it patches in place.
+4. Complete. Adopted `immutable-json-patch` directly and added [jsonPatch.test.ts](../src/lib/__tests__/jsonPatch.test.ts), backed by [jsonPatchFixtures.ts](../src/test-utils/jsonPatchFixtures.ts), to prove standard JSON Patch payloads, non-mutating application, structural sharing for untouched branches, guarded list operations, and failed-test behavior.
 5. Separate value patch projection from annotation patch projection so field components can consume them independently.
 6. Introduce field-scoped draft/edit/cancel helpers that do not require opening a card-wide dialog.
 7. Prove the abstraction on one current runtime sheet surface before wider rollout, with the page layer applying local changes immediately and an optional persistence/sync layer left as a lower-level concern.

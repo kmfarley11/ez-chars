@@ -47,6 +47,7 @@
 		"zod": "^4.3.6"
 	},
 	"dependencies": {
+		"immutable-json-patch": "^6.0.2",
 		"tailwind-merge": "^3.3.0"
 	}
 }
