@@ -39,7 +39,7 @@ Update the MVP docs if the task meaningfully changes backlog or status. Prune th
 
 ## P0
 
-Next recommended target: continue `p0-030` with slice 5 to add one thin user-centric smoke path for create/edit/reload.
+Next recommended target: continue `p0-030` with slice 6 to document how to run the verification commands locally.
 
 ### Add automated verification
 
@@ -99,6 +99,11 @@ Slice 4 status:
 
 - Extracted import application into a pure `applyCharacterImport` helper so replace-all and merge-new behavior can be tested without brittle route internals.
 - Added import/export contract tests for replace-all imports and merge-new imports that skip duplicate character IDs, including duplicates already present locally and duplicates within the import payload.
+
+Slice 5 status:
+
+- Added a thin local-first workflow smoke test that creates a 5e character, edits it through the character store, persists it to localStorage, reloads the data module, and verifies the edit survives.
+- Kept the smoke path integration-level rather than browser-layout-level so it protects the create/edit/reload user outcome without depending on current 5e route DOM structure.
 
 AI-agent verification expectations:
 
