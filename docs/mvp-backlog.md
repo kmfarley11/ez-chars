@@ -82,7 +82,7 @@ ID:
 
 Size:
 
-- medium; scope after the MVP sheet and import/export flows are stable
+- medium; scope after the MVP sheet is stable
 
 Scope:
 
@@ -356,8 +356,6 @@ Definition of done:
 
 This content is a work in progress to dump thoughts before execution or further organization.
 
-- create a generic button component (i.e. for export button) based on the menu button styling. Refactor the menu button to leverage it, consider if other buttons can also extend from a common base
-- export / import by-the-character
 - re-organize lib a bit better, consider a ui lib vs. utility lib
   - consider the ui lib organizing by primitives vs. composites vs. patterns
   - consider adding storybook to help playtest the concepts etc.
@@ -372,4 +370,6 @@ This content is a work in progress to dump thoughts before execution or further 
 - completed the `Add real character management` backlog item
 - completed the `src/lib/*Grid*` cleanup backlog
 - completed `p0-010`: the 5e sheet now exposes the major MVP runtime and organizational sections, including seeded runtime action data, with check/lint/build passing
-- completed `p0-020`: JSON import/export now supports a versioned backup envelope, export download, import validation, replace-all import, and merge-new import that skips duplicate character IDs
+- completed the focused `p0-040` scroll-performance pass: reduced hidden dialog DOM, simplified hover/paint costs, removed broad `GridContainerAuto` mutation observation, and moved residual jank follow-up to `p1-025`
+- completed `p0-020`: JSON backup/restore supports a versioned export envelope, file download, import file selection, import validation, replace-all import, and merge-new import that skips duplicate character IDs
+- completed home action button polish: shared button chrome now aligns Create, Import, Export, and import apply actions consistently
