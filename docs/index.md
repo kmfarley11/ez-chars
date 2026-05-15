@@ -11,6 +11,7 @@ Use these docs for near-term implementation work:
 - [mvp-backlog.md](mvp-backlog.md): prioritized near-term engineering backlog
 - [import-export-json.md](import-export-json.md): MVP JSON backup envelope and import semantics
 - [field-interaction-model.md](field-interaction-model.md): target MVP model for field editing and annotations
+- [field-binding-contract.md](field-binding-contract.md): field-scoped read, patch, and save contract for grid editing
 - [verification.md](verification.md): local test/check/lint/build command guide
 
 ## Maintenance And Reference

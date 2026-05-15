@@ -46,7 +46,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: start `p1-040` with slice 1 to define the shared field-binding and patch contract that will support the documented field interaction model.
+Next recommended target: continue `p1-040` with slice 2 to define the local-first mutation envelope that can carry the documented field binding contract.
 
 ### Link runtime actions to source weapons, spells, and features
 
@@ -212,6 +212,7 @@ Dependency notes:
 Definition of done:
 
 - a user can directly edit individual runtime-relevant fields from the sheet without depending on a card-wide bulk form
+- text selection and copy flows remain reliable for field values users may paste into external search, notes, VTTs, or reference tools
 - field annotations remain accessible from the same surfaces without hidden desktop-only assumptions
 - the resulting interaction model is usable on mouse, keyboard, and touch flows
 - the grid component structure is clearer about display mode vs inline-edit mode vs annotation mode
@@ -233,10 +234,11 @@ Scope:
 - keep the abstraction transport-agnostic and API-ready: model local edits in a way that can later map cleanly to remote create/read/patch/replace/delete flows without putting HTTP or auth concerns into field components
 - support inline sheet editing and annotation work without turning this into a generalized data-layer rewrite
 - use [field-interaction-model.md](field-interaction-model.md) as the UX contract for how value patches and annotation patches are emitted
+- use [field-binding-contract.md](field-binding-contract.md) as the field-scoped read, patch, commit, and save contract
 
 Suggested implementation slices:
 
-1. Define the field-scoped binding contract around read paths, value patch paths, annotation patch paths, commit boundaries, and save semantics.
+1. Complete. Field-scoped binding contract around read paths, value patch paths, annotation patch paths, commit boundaries, and save semantics is documented in [field-binding-contract.md](field-binding-contract.md).
 2. Define a local-first mutation envelope whose semantics can later map cleanly to create/read/patch/replace/delete flows, while remaining transport-agnostic in the current app.
 3. Separate value patch projection from annotation patch projection so field components can consume them independently.
 4. Introduce field-scoped draft/edit/cancel helpers that do not require opening a card-wide dialog.
