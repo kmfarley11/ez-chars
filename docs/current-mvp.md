@@ -59,5 +59,8 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 
 ### Missing
 
-- CI
 - polished empty states
+
+### Deferred
+
+- CI; local verification in [docs/verification.md](verification.md) remains the current source of truth until contributor count, release cadence, or branch-protection needs justify GitHub Actions.

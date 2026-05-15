@@ -43,6 +43,8 @@ No active P0 items.
 
 ## P1
 
+Next recommended target: start `p1-030` with slice 1 to define the target field-level editing and annotation interaction model before technical binding work.
+
 ### Link runtime actions to source weapons, spells, and features
 
 ID:
@@ -71,7 +73,7 @@ Definition of done:
 - an action can optionally point back to the item, spell, or feature it summarizes
 - source links improve navigation or editing without making the runtime action list redundant or fragile
 
-### Add GitHub Actions for `check`, `lint`, and `build`
+### Add GitHub Actions for quality gates
 
 ID:
 
@@ -79,11 +81,19 @@ ID:
 
 Size:
 
-- small; safe to hand directly to AI
+- small; deferred until contributors, release cadence, or branch-protection needs justify CI
 
 Scope:
 
 - add a GitHub Actions workflow for the existing repo quality gates
+- keep local verification in [docs/verification.md](verification.md) as the current source of truth until CI becomes worthwhile
+- do not add CI just to replace the current explicit local verification plus manual `npm run deploy` release workflow
+
+Defer rationale:
+
+- Current development is primarily local and manually verified between the developer and AI agents.
+- Releases are explicit through `npm run deploy`, so there is no automatic release path that CI needs to guard yet.
+- GitHub Actions would catch forgotten local checks, but it can also add noise, queue time, and possible minute/quota consumption before the product and contributor workflow are stable.
 
 Suggested implementation slices:
 
