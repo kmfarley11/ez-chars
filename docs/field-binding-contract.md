@@ -132,6 +132,28 @@ Mutation validation happens after the component emits the envelope.
 
 JSON Patch operations apply sequentially. List operations that use array indexes must re-check the current list before applying. For growing lists, stable item identity should be preferred as soon as the schema provides it, usually by resolving the item to a current path immediately before emitting the patch and adding `test` operations where useful.
 
+## JSON Patch Library Evaluation
+
+Slice 3 of `p1-040` evaluated the current direction enough to reject in-place patching as the default target. Current character data is plain JSON-compatible object and array data, so RFC 6902 patching is still a good fit for the domain model, but character sheets can become large and annotation-heavy. Patch application should not mutate the live character object, and whole-character clone-then-patch should not become the preferred long-term implementation if a practical non-mutating option exists.
+
+Implementation should compare RFC 6902 libraries with non-mutating application as a primary criterion:
+
+- [`fast-json-patch`](https://www.npmjs.com/package/fast-json-patch): broad adoption, TypeScript declarations, validation helpers, and an explicit non-mutating `applyPatch` option. Confirm whether its non-mutating mode is performant enough on representative large character data.
+- [`rfc6902`](https://www.npmjs.com/package/rfc6902): spec-focused, includes RFC 6901 JSON Pointer support, TypeScript declarations, and patch creation/application, but applies patches in place. Treat it as a fallback only if its API advantages outweigh clone/apply costs for the current app.
+- Immutable-focused JSON Patch libraries, such as [`immutable-json-patch`](https://www.npmjs.com/package/immutable-json-patch), may be worth checking if they preserve standard RFC 6902 payloads and have acceptable maintenance, TypeScript, and bundle tradeoffs.
+
+Selection criteria:
+
+- uses standard RFC 6902 JSON Patch documents and RFC 6901 JSON Pointer paths
+- avoids mutating the live character object
+- avoids whole-character cloning when practical
+- provides understandable validation/application errors
+- works cleanly with TypeScript and Svelte/Vite
+- performs acceptably on a representative large character with annotations and nested lists
+- does not require spreading third-party-specific APIs through field components
+
+Do not hand-roll RFC 6902 application or validation behavior unless available libraries fail a concrete project need. Implementation still needs to install/evaluate candidates and prove the selected approach against representative character patches before broader rollout.
+
 ## Envelope Examples
 
 Primitive value replacement:

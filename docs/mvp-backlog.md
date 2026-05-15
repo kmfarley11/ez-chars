@@ -46,7 +46,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: continue `p1-040` with slice 3 to separate value patch projection from annotation patch projection using the documented field binding and mutation contract.
+Next recommended target: continue `p1-040` with slice 4 to evaluate and adopt an RFC 6902 library with non-mutating patch application as a primary criterion.
 
 ### Link runtime actions to source weapons, spells, and features
 
@@ -241,13 +241,12 @@ Suggested implementation slices:
 
 1. Complete. Field-scoped binding contract around read paths, value patch paths, annotation patch paths, commit boundaries, and save semantics is documented in [field-binding-contract.md](field-binding-contract.md).
 2. Complete. Local-first mutation envelope is documented in [field-binding-contract.md](field-binding-contract.md) as an RFC 6902-style JSON Patch document using standard `add`, `remove`, `replace`, `move`, `copy`, and `test` operations directly, with primitive value replacement, annotation replacement, list replacement, insert, item update, item removal, and reorder semantics covered without transport details.
-3. Evaluate `rfc6902` against the current character data shape, JSON Pointer needs, immutable application expectations, validation/error behavior, and TypeScript ergonomics; compare `fast-json-patch` only if the first option has meaningful friction.
-4. Introduce field-scoped draft/edit/cancel helpers that do not require opening a card-wide dialog.
-5. Adopt the selected RFC 6902 library directly, using standard JSON Patch documents and RFC 6901 JSON Pointer strings as the app mutation format. Keep package imports centralized if useful, but avoid creating a custom patch wrapper; only add transitional pointer-conversion helpers if staged migration from existing array paths makes them necessary.
-6. Separate value patch projection from annotation patch projection so field components can consume them independently.
-7. Introduce field-scoped draft/edit/cancel helpers that do not require opening a card-wide dialog.
-8. Prove the abstraction on one current runtime sheet surface before wider rollout, with the page layer applying local changes immediately and an optional persistence/sync layer left as a lower-level concern.
-9. Document how grid components, page layers, and data/store layers divide responsibility, including that field components must not know about HTTP endpoints, auth, or remote transport details.
+3. Complete. Library evaluation direction is documented in [field-binding-contract.md](field-binding-contract.md). Non-mutating patch application is now a primary selection criterion; `fast-json-patch`, `rfc6902`, and viable immutable-focused RFC 6902 libraries should be compared before adoption.
+4. Adopt the selected RFC 6902 library directly, using standard JSON Patch documents and RFC 6901 JSON Pointer strings as the app mutation format. Prioritize non-mutating application, avoid whole-character cloning when practical, keep package imports centralized if useful, and avoid creating a custom patch wrapper. Only add transitional pointer-conversion helpers if staged migration from existing array paths makes them necessary.
+5. Separate value patch projection from annotation patch projection so field components can consume them independently.
+6. Introduce field-scoped draft/edit/cancel helpers that do not require opening a card-wide dialog.
+7. Prove the abstraction on one current runtime sheet surface before wider rollout, with the page layer applying local changes immediately and an optional persistence/sync layer left as a lower-level concern.
+8. Document how grid components, page layers, and data/store layers divide responsibility, including that field components must not know about HTTP endpoints, auth, or remote transport details.
 
 Dependency notes:
 
