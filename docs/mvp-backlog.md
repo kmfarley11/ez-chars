@@ -61,6 +61,7 @@ Scope:
 Testing strategy:
 
 - Prioritize tests that protect stable data contracts before refactors: 5e schema parsing, localStorage envelope load/save, invalid-data fallback, movement-number migration, JSON export envelope parsing, and import merge/replace duplicate-ID behavior.
+- Place Vitest files in nearby `__tests__` folders, matching the existing `src/schema/__tests__/` pattern, unless a future test type has a clear reason to live elsewhere.
 - Keep UI tests user-centric and sparse until the field-binding, route extraction, and layout/refactor direction is clearer.
 - Prefer tests that survive implementation refactors over tests that assert current component structure.
 
@@ -77,7 +78,8 @@ Slice 1 status:
 
 - Chose Vitest for fast Node-environment contract tests around schema, storage, and import/export behavior.
 - Added `npm run test` and `npm run test:watch` scripts; `test` initially used `--passWithNoTests` so tooling could land before the first test files.
-- Configured Vitest in `vite.config.ts` to run non-global tests from `src/**/*.{test,spec}.{ts,js}`.
+- Configured Vitest in `vite.config.ts` to run non-global tests from `src/**/*.{test,spec}.{ts,js}`; contract tests may live in nearby `__tests__` folders.
+- Added `npm run test:coverage` with V8 coverage and terminal/html reports for at-a-glance coverage review of current contract-test surfaces.
 - Browser-level smoke tooling is intentionally deferred until the stable contract tests exist.
 
 Slice 2 status:

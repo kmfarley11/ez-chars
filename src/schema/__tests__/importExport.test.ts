@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { seedChars } from '../fixtures/characters';
+import { seedChars } from '../../fixtures/characters';
 import {
 	CHARACTER_EXPORT_KIND,
 	CHARACTER_EXPORT_VERSION,
 	createCharacterExportEnvelope,
 	safeParseCharacterExportEnvelope
-} from './importExport';
+} from '../importExport';
 
 describe('character import/export envelope', () => {
 	it('creates a parseable versioned backup envelope for character documents', () => {

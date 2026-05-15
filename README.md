@@ -19,7 +19,7 @@ Everything else is long-term vision, not the immediate build target. For roadmap
 - the 5e 2014 schema and reusable grid editing primitives exist
 - the home page lists locally stored or seeded characters
 - the 5e sheet route exists, but only part of the full sheet is surfaced in the UI
-- localStorage persistence exists, but import/export, tests, CI, and a hardened storage adapter are still missing
+- localStorage persistence and JSON import/export exist, but CI, storage tests, and a hardened storage adapter are still missing
 
 ## Docs
 
@@ -48,6 +48,7 @@ Run the main verification commands:
 ```bash
 npm run check
 npm run test
+npm run test:coverage
 npm run lint
 npm run build
 ```

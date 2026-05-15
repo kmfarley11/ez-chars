@@ -131,6 +131,13 @@ export default defineConfig({
 	},
 	plugins: [tailwindcss(), sveltekit(), docsExtPlugin(), removeUndefinedCodeSplitting()],
 	test: {
+		coverage: {
+			exclude: ['**/.svelte-kit/**', 'src/**/*.test.{ts,js}', 'src/**/__tests__/**'],
+			include: ['src/schema/**/*.{ts,js}', 'src/lib/characterStorage.ts'],
+			provider: 'v8',
+			reporter: ['text', 'html'],
+			reportsDirectory: 'coverage'
+		},
 		environment: 'node',
 		globals: false,
 		include: ['src/**/*.{test,spec}.{ts,js}']

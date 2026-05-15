@@ -27,7 +27,7 @@ Do not use `docs/vision/*` as the active backlog unless the task is explicitly a
 - `src/data.ts` currently mixes seed data, store wiring, and localStorage persistence
 - `src/lib/*Grid*` contains the reusable grid display/editing primitives
 - The 5e UI currently exposes only part of the full schema
-- Vitest is wired for contract tests, but schema/storage/import-export coverage and CI are still incomplete
+- Vitest is wired for contract tests, but storage coverage and CI are still incomplete
 
 ## Working Rules
 
@@ -55,7 +55,9 @@ Do not use `docs/vision/*` as the active backlog unless the task is explicitly a
 - `npm run lint`
 - `npm run build`
 
+Place Vitest files in nearby `__tests__` folders, such as `src/schema/__tests__/`, so contract tests stay close to the code they protect without mixing test files into implementation file lists.
 Run the relevant subset for small/doc-only changes, but run all four before considering behavior, schema, storage, import/export, or release-sensitive work complete.
+Use `npm run test:coverage` when adding or reviewing contract tests and you need an at-a-glance coverage report.
 
 ## Useful Context
 

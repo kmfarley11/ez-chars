@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { seedChars } from '../fixtures/characters';
+import { seedChars } from '../../fixtures/characters';
 import {
 	create5e2014Character,
 	parse5e2014CharacterDocument,
 	safeParse5e2014CharacterDocument,
 	SYSTEM_ID_5E2014_val
-} from './system.5e2014';
+} from '../system.5e2014';
 
 describe('5e 2014 character schema', () => {
 	it('creates a valid default 5e character document', () => {
