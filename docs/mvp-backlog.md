@@ -19,7 +19,7 @@ Treat `current-mvp.md` as the boundary document and this file as the execution q
 - If a slice description is unusually close to another slice or otherwise ambiguous, include the exact slice text as an extra clarification, but this should not be required in the normal case
 - If the task is about the 5e sheet's intended layout or information grouping, also point the AI at `docs/ez-chars-5e-rough.excalidraw` as the design reference
 - Do not expand scope into other slices or `docs/vision/*`
-- Ask the AI to run verification commands when appropriate; include `npm run test` for behavior, schema, storage, import/export, or release-sensitive changes
+- Ask the AI to run verification according to `docs/verification.md`
 - Ask the AI to summarize what remains from the parent backlog item
 - Update this file or `docs/current-mvp.md` if the task meaningfully changes backlog or status
 
@@ -31,7 +31,7 @@ Focus only on the backlog item "<exact top-level id>".
 Implement only suggested slice <number>.
 If this task is about the 5e sheet's design or layout, also use docs/ez-chars-5e-rough.excalidraw as the design reference.
 Do not expand scope into other slices or docs/vision.
-Run test/check/lint/build when appropriate.
+Run verification according to docs/verification.md when appropriate.
 Explain briefly how I can manually verify the changes.
 Summarize what remains from the parent backlog item.
 Update the MVP docs if the task meaningfully changes backlog or status. Prune the backlog item when its fully complete.
@@ -39,84 +39,7 @@ Update the MVP docs if the task meaningfully changes backlog or status. Prune th
 
 ## P0
 
-Next recommended target: continue `p0-030` with slice 6 to document how to run the verification commands locally.
-
-### Add automated verification
-
-ID:
-
-- `p0-030`
-
-Size:
-
-- oversized; implement by suggested slice, not as one pass
-
-Scope:
-
-- add contract-focused tests around schema parsing, storage boundaries, and JSON import/export
-- add storage adapter tests around load/save/invalid-data behavior
-- add only a thin end-to-end smoke path for create/edit/reload once the stable contract tests are in place
-- avoid brittle tests around current 5e route internals, exact DOM structure, grid layout, or component composition because planned P1 refactors may intentionally reshape those areas
-
-Testing strategy:
-
-- Prioritize tests that protect stable data contracts before refactors: 5e schema parsing, localStorage envelope load/save, invalid-data fallback, movement-number migration, JSON export envelope parsing, and import merge/replace duplicate-ID behavior.
-- Place Vitest files in nearby `__tests__` folders, matching the existing `src/schema/__tests__/` pattern, unless a future test type has a clear reason to live elsewhere.
-- Keep UI tests user-centric and sparse until the field-binding, route extraction, and layout/refactor direction is clearer.
-- Prefer tests that survive implementation refactors over tests that assert current component structure.
-
-Suggested implementation slices:
-
-1. Choose and wire the test tooling and scripts for the repo, with a bias toward fast unit tests for stable contracts and a later thin browser smoke path.
-2. Add schema and parser tests around the current 5e model and JSON import/export envelope.
-3. Add storage adapter tests around load/save/invalid-data behavior, including migration and fallback behavior.
-4. Add focused import/export behavior tests for valid export parse, invalid payload rejection, replace-all import, and merge-new duplicate-ID handling.
-5. Add one end-to-end or integration smoke path for create/edit/reload after the contract tests exist, keeping it high-level and user-centric.
-6. Document how to run the verification commands locally.
-
-Slice 1 status:
-
-- Chose Vitest for fast Node-environment contract tests around schema, storage, and import/export behavior.
-- Added `npm run test` and `npm run test:watch` scripts; `test` initially used `--passWithNoTests` so tooling could land before the first test files.
-- Configured Vitest in `vite.config.ts` to run non-global tests from `src/**/*.{test,spec}.{ts,js}`; contract tests may live in nearby `__tests__` folders.
-- Added `npm run test:coverage` with V8 coverage and terminal/html reports for at-a-glance coverage review of current contract-test surfaces.
-- Browser-level smoke tooling is intentionally deferred until the stable contract tests exist.
-
-Slice 2 status:
-
-- Added Vitest contract tests for creating, parsing, and rejecting D&D 5e 2014 character documents.
-- Added tests proving seeded 5e fixture characters validate through the current schema parser.
-- Added JSON backup envelope tests for valid exports, raw-array rejection, unsupported version rejection, and invalid contained character rejection.
-- Removed `--passWithNoTests` from `npm run test` now that real test files exist.
-
-Slice 3 status:
-
-- Added storage adapter contract tests for empty storage fallback, versioned save/load, and clear behavior.
-- Added migration coverage for legacy raw character arrays and legacy string movement values, including empty movement fields.
-- Added invalid-data fallback coverage for malformed JSON, unsupported storage envelope versions, and stored characters that fail schema validation.
-
-Slice 4 status:
-
-- Extracted import application into a pure `applyCharacterImport` helper so replace-all and merge-new behavior can be tested without brittle route internals.
-- Added import/export contract tests for replace-all imports and merge-new imports that skip duplicate character IDs, including duplicates already present locally and duplicates within the import payload.
-
-Slice 5 status:
-
-- Added a thin local-first workflow smoke test that creates a 5e character, edits it through the character store, persists it to localStorage, reloads the data module, and verifies the edit survives.
-- Kept the smoke path integration-level rather than browser-layout-level so it protects the create/edit/reload user outcome without depending on current 5e route DOM structure.
-
-AI-agent verification expectations:
-
-- Future implementation prompts should ask agents to run `npm run test` alongside `npm run check`, `npm run lint`, and `npm run build` when the task touches behavior, schema, storage, import/export, or release-sensitive paths.
-- Once tests exist for a contract, agents should update those tests in the same change that alters the contract.
-- Doc-only and narrow style-only changes may run a smaller relevant subset, but agents should state what they skipped and why.
-
-Definition of done:
-
-- automated tests cover schema parsing, JSON import/export contracts, and storage boundary behavior
-- at least one automated smoke path exercises core user flow without depending on exact 5e page layout internals
-- the test command or commands are documented and runnable in the repo
-- verification meaningfully reduces the risk of storage or sheet-regression bugs
+No active P0 items.
 
 ## P1
 
@@ -233,7 +156,7 @@ Suggested implementation slices:
 2. Prototype a narrow `GridContainerAuto` measurement change only for the specific dense surfaces that profiling identifies, and keep visual parity as a requirement.
 3. Evaluate whether targeted lazy mounting, section-level deferral, or reduced always-rendered dense content would improve scroll smoothness without hiding expected MVP sheet data.
 4. If profiling points at route/module update cost instead of paint, coordinate with `p1-045` rather than duplicating projection or patch extraction work here.
-5. Re-run desktop and phone-sized manual scroll checks plus `npm run check`, `npm run lint`, and `npm run build`.
+5. Re-run desktop and phone-sized manual scroll checks plus the relevant local verification from `docs/verification.md`.
 
 Definition of done:
 
@@ -355,7 +278,7 @@ Definition of done:
 - virtual path handling has a clearer feature-local home
 - extracted helpers are easier to test and reuse
 - existing sheet editing behavior remains unchanged
-- `npm run check`, `npm run lint`, and `npm run build` pass
+- relevant local verification from `docs/verification.md` passes
 
 ### Refactor the repo structure so stores, fixtures, schema, and 5e feature code are less entangled
 
@@ -419,3 +342,4 @@ This content is a work in progress to dump thoughts before execution or further 
 - completed the focused `p0-040` scroll-performance pass: reduced hidden dialog DOM, simplified hover/paint costs, removed broad `GridContainerAuto` mutation observation, and moved residual jank follow-up to `p1-025`
 - completed `p0-020`: JSON backup/restore supports a versioned export envelope, file download, import file selection, import validation, replace-all import, and merge-new import that skips duplicate character IDs
 - completed home action button polish: shared button chrome now aligns Create, Import, Export, and import apply actions consistently
+- completed `p0-030`: local automated verification now includes Vitest tooling, schema/import-export/storage contract tests, a create/edit/reload smoke path, V8 coverage reporting, shared browser test scaffolding, and `docs/verification.md`

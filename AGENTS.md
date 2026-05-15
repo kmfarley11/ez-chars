@@ -46,20 +46,15 @@ Do not use `docs/vision/*` as the active backlog unless the task is explicitly a
 - `src/data.ts`: temporary character store, seed data, and localStorage baseline
 - `docs/current-mvp.md`: current MVP definition
 - `docs/mvp-backlog.md`: prioritized implementation backlog
+- `docs/verification.md`: local verification command guide
 - `docs/vision/`: long-term human-facing vision docs
 - `docs/ext/`: third-party reference docs/assets
 
 ## Quality Gates
 
-- `npm run test`
-- `npm run check`
-- `npm run lint`
-- `npm run build`
-
 Place Vitest files in nearby `__tests__` folders, such as `src/schema/__tests__/`, so contract tests stay close to the code they protect without mixing test files into implementation file lists.
 Use existing shared test scaffolding from `src/test-utils/` for browser-like globals or memory-backed storage; do not duplicate ad hoc `MemoryStorage` or `window` setup inside individual tests.
-Run the relevant subset for small/doc-only changes, but run all four before considering behavior, schema, storage, import/export, or release-sensitive work complete.
-Use `npm run test:coverage` when adding or reviewing contract tests and you need an at-a-glance coverage report.
+Use `docs/verification.md` as the canonical local command guide, including when to run the full gate set, smaller subsets, and coverage reporting.
 
 ## Useful Context
 

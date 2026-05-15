@@ -36,7 +36,7 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 - data survives reloads without corruption or silent shape drift
 - exported JSON can be imported back into the app
 - the main sheet is usable on phone-sized screens
-- `npm run test`, `npm run check`, `npm run lint`, and `npm run build` pass
+- local verification passes according to `docs/verification.md`
 
 ## Current Status
 
@@ -50,12 +50,12 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 - theme system
 - major 5e sheet surface for the MVP: overview, quick reference, abilities/proficiencies/features/traits, action-economy runtime summaries, spells, inventory, and background/roleplay/notes, with runtime and organizational regions visually separated
 - JSON import/export with a versioned backup envelope, file download, file validation, replace behavior, and merge-new behavior that skips duplicate character IDs
+- local automated verification with Vitest contract tests, coverage reporting, schema/import-export/storage coverage, and a thin create/edit/reload smoke path
 
 ### Partial
 
 - 5e sheet route still does not expose every optional schema field or deeper 5e detail
 - annotation/reference UI exists for surfaced fields
-- automated verification has Vitest tooling, coverage reporting, schema/import-export/storage contract tests, and a thin create/edit/reload smoke path
 
 ### Missing
 

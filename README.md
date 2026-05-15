@@ -43,15 +43,7 @@ Run the dev server:
 npm run dev
 ```
 
-Run the main verification commands:
-
-```bash
-npm run check
-npm run test
-npm run test:coverage
-npm run lint
-npm run build
-```
+Run local verification as described in `docs/verification.md`.
 
 Preview the production build locally:
 

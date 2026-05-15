@@ -10,6 +10,7 @@ Use these docs for near-term implementation work:
 - `current-mvp.md`: active MVP scope and success criteria
 - `mvp-backlog.md`: prioritized near-term engineering backlog
 - `import-export-json.md`: MVP JSON backup envelope and import semantics
+- `verification.md`: local test/check/lint/build command guide
 
 ## Maintenance And Reference
 
