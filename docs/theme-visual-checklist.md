@@ -33,7 +33,8 @@ Run this quick check before deploy when touching theme or UI colors.
 - Runtime/state inline edit buttons are keyboard focusable and visibly focused.
 - Activating an inline edit button moves focus into the input and selects the current value.
 - Enter saves single-line inline edits; Escape cancels and returns focus to the originating edit button.
-- Notes/annotation buttons are keyboard focusable, open in read mode first, and return focus to the originating button when closed.
-- Touch users can open edit and note controls without hover-only gestures.
+- Inline Notes buttons are keyboard focusable, open in read mode first, and return focus to the originating button when closed.
+- Card actions are available through a compact, always-visible menu with `Edit` and `Notes` items.
+- Touch users can open edit, notes, and card fallback controls without hover-only gestures.
 - Reference/profile field text, spell names, feature names, item names, and note text remain selectable and copyable without entering edit mode.
-- Card-wide edit remains labeled as a fallback for card fields, while runtime/state primitives use their direct edit controls.
+- Card-wide `Edit` remains available as a fallback for card fields, while runtime/state primitives use their direct edit controls.

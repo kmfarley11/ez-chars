@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
 	import { twMerge } from 'tailwind-merge';
-
-	type ButtonShadingVariant = 'dark' | 'light';
-	type ButtonSize = 'sm' | 'md' | 'icon';
+	import type { ButtonShadingVariant, ButtonSize } from '$lib/buttonTypes';
 
 	interface Props {
 		children?: Snippet;
@@ -11,6 +9,7 @@
 		onclick?: () => void;
 		shadingVariant?: ButtonShadingVariant;
 		size?: ButtonSize;
+		iconOnly?: boolean;
 		classes?: string;
 		ariaLabel?: string;
 		ariaExpanded?: boolean;
@@ -26,6 +25,7 @@
 		onclick = undefined,
 		shadingVariant = 'light',
 		size = 'md',
+		iconOnly = false,
 		classes = undefined,
 		ariaLabel = undefined,
 		ariaExpanded = undefined,
@@ -37,11 +37,17 @@
 
 	const colors = $derived(shadingVariant === 'dark' ? 'theme-btn-dark' : 'theme-btn-light');
 	const sizeClasses = $derived(
-		size === 'icon'
-			? 'h-8 w-8 p-0'
+		iconOnly
+			? size === 'sm'
+				? 'h-7 w-7 p-0 text-sm'
+				: size === 'lg'
+					? 'h-11 w-11 p-0 text-lg'
+					: 'h-9 w-9 p-0 text-base'
 			: size === 'sm'
 				? 'min-h-9 px-3 py-1.5 text-sm'
-				: 'min-h-11 px-4 py-2 text-base'
+				: size === 'lg'
+					? 'min-h-12 px-5 py-3 text-lg'
+					: 'min-h-11 px-4 py-2 text-base'
 	);
 </script>
 

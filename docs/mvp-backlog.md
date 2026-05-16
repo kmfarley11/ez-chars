@@ -19,6 +19,7 @@ Treat [current-mvp.md](current-mvp.md) as the boundary document and this file as
 - If a slice description is unusually close to another slice or otherwise ambiguous, include the exact slice text as an extra clarification, but this should not be required in the normal case
 - If the task is about the 5e sheet's intended layout or information grouping, also point the AI at [docs/ez-chars-5e-rough.excalidraw](ez-chars-5e-rough.excalidraw) as the design reference
 - Do not expand scope into other slices or [docs/vision/](vision/)
+- Before adding bespoke UI controls or new component patterns, inspect [src/lib/](../src/lib/) for existing primitives and prefer reusing or extending them; call out deliberate exceptions
 - Ask the AI to run verification according to [docs/verification.md](verification.md)
 - Ask the AI to summarize what remains from the parent backlog item
 - Update this file or [docs/current-mvp.md](current-mvp.md) if the task meaningfully changes backlog or status
@@ -33,6 +34,7 @@ Implement only suggested slice <number>.
 If this task is about the 5e sheet's design or layout, also use docs/ez-chars-5e-rough.excalidraw as the design reference.
 If this task is about p1-030 or p1-040, also use docs/field-interaction-model.md as the interaction and binding UX reference.
 If this task is about p1-040 implementation, also use docs/field-binding-contract.md as the RFC 6902 binding and mutation contract.
+Before adding bespoke UI controls or new component patterns, inspect src/lib for reusable primitives and prefer existing components; call out any deliberate exception.
 Do not expand scope into other slices or docs/vision.
 Run verification according to docs/verification.md when appropriate.
 Explain briefly how I can manually verify the changes.
@@ -203,7 +205,7 @@ Suggested implementation slices:
 2. Complete. Applied the shared field-binding/patch abstractions to individual runtime/state primitive fields with persistent edit affordances: current HP, temp HP, hit dice remaining, death save success/failure counters, and existing spell slot used counters can be edited without opening a card-wide bulk form.
 3. Complete. Added field-level annotation badges/dialogs for annotated `GridContent` fields and persistent annotation actions for inline runtime editors, reusing the existing annotation display/editor data and preserving card-level help and bulk annotation editing.
 4. Complete. Decided that the card-wide bulk edit dialog stays as an MVP fallback for compound fields, list rows, multi-field reference/profile surfaces, and mixed cards, but should no longer be the primary editor for runtime/state primitives once direct field controls exist.
-5. Complete. Ran the keyboard, touch, focus-management, text-selection, and copy/paste review pass; inline edits now focus/select their input and return focus on save/cancel, note dialogs return focus to their trigger, and [theme-visual-checklist.md](theme-visual-checklist.md) documents the field interaction checks.
+5. Complete. Ran the keyboard, touch, focus-management, text-selection, and copy/paste review pass; inline edits now focus/select their input and return focus on save/cancel, note dialogs return focus to their trigger, card fallback actions now use an always-visible `Edit`/`Notes` menu instead of hover-only buttons, and [theme-visual-checklist.md](theme-visual-checklist.md) documents the field interaction checks.
 6. Move annotation add/edit flows out of the card-wide bulk edit dialog and into the field/card note dialogs where equivalent annotation paths are available. Target behavior: note/help dialogs are the primary annotation review/edit surface, while bulk edit focuses on value and structure fallback editing. Keep bulk annotation editing only as a temporary fallback until note dialogs cover equivalent annotation paths.
 7. Final evaluation pass: verify all slices and definition-of-done bullets, decide whether any remaining `InlineFieldDraft` beside `GridContent` pairing is justified as a short-term fallback or should move to `p1-045`, update docs/checklists accordingly, and prune `p1-030` only if fully complete.
 

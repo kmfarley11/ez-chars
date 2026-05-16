@@ -34,6 +34,7 @@ Do not use [docs/vision/](docs/vision/) as the active backlog unless the task is
 
 - Prefer completing the current 5e 2014 MVP before expanding systems
 - Keep current MVP docs up to date when scope or backlog changes
+- Before adding bespoke UI controls or new component patterns, scan [src/lib/](src/lib/) for existing primitives and reuse or extend them where practical; if a local primitive is not reused, call out why
 - If a task touches storage or schema I/O, validate or migrate persisted data rather than raw-casting parsed JSON
 - If a task changes tested behavior or a stable data boundary, add or update the relevant Vitest contract tests in the same change
 - If a task affects current goals, update [docs/current-mvp.md](docs/current-mvp.md) or [docs/mvp-backlog.md](docs/mvp-backlog.md) in the same change

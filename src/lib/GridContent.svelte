@@ -5,6 +5,8 @@
 	import GridContentAnnotationsDisplay from '$lib/GridContentAnnotationsDisplay.svelte';
 	import GridContentAnnotationsEditor from '$lib/GridContentAnnotationsEditor.svelte';
 	import GridContainerAuto from '$lib/GridContainerAuto.svelte';
+	import MenuButton from '$lib/MenuButton.svelte';
+	import MenuItemButton from '$lib/MenuItemButton.svelte';
 	import {
 		type HelpAnnotationGroup,
 		collectHelpAnnotationGroups,
@@ -60,7 +62,6 @@
 	let draftData = $state<GridContentData>({});
 	let shouldRenderEditDialog = $state(false);
 	let shouldRenderHelpDialog = $state(false);
-	let isPointerActionsVisible = $state(false);
 
 	const normalizedData = $derived<GridContentData>(normalizeData(data));
 
@@ -137,15 +138,6 @@
 		draftData = removeGridArrayItemAtPath(draftData, [fieldKey], itemIdx);
 	};
 
-	const revealPointerActions = (event: PointerEvent) => {
-		if (event.pointerType !== 'mouse') return;
-		isPointerActionsVisible = true;
-	};
-
-	const hidePointerActions = () => {
-		isPointerActionsVisible = false;
-	};
-
 	const isNumberInput = (field: GridContentField) =>
 		field.inputKind === 'number' || typeof field.value === 'number';
 
@@ -170,57 +162,21 @@
 	);
 </script>
 
-<div
-	class="grid-content-shell relative min-h-8"
-	class:pointer-actions-visible={isPointerActionsVisible}
-	role="presentation"
-	onpointermove={revealPointerActions}
-	onpointerleave={hidePointerActions}
-	onwheel={hidePointerActions}
->
-	<div
-		class="grid-content-actions pointer-events-none absolute top-1.5 right-1.5 z-10 flex -translate-y-2 translate-x-2 items-start gap-1.5 opacity-0"
-	>
-		<button
-			type="button"
-			class="theme-btn-light btn inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border p-0 leading-none"
-			aria-label="Help"
-			title="Help"
-			onclick={onHelpOpen}
+<div class="grid-content-shell relative min-h-8" role="presentation">
+	<div class="absolute top-0 right-0">
+		<MenuButton
+			iconVariant="ellipsis"
+			buttonSize="sm"
+			buttonIconOnly
+			buttonClasses="rounded-md"
+			ariaLabel="Card actions"
+			title="Card actions"
 		>
-			<span
-				class="inline-block h-4 w-4 text-center text-sm leading-4 font-semibold"
-				aria-hidden="true"
-			>
-				?
-			</span>
-		</button>
-		<button
-			type="button"
-			class="theme-btn-light btn inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border p-0 leading-none"
-			aria-label="Edit card fields"
-			title="Edit card fields"
-			onclick={onOpen}
-		>
-			<!-- Card-wide editing remains the fallback for compound and mixed surfaces. -->
-			<svg
-				viewBox="0 0 24 24"
-				xmlns="http://www.w3.org/2000/svg"
-				fill="none"
-				class="h-4 w-4 stroke-current"
-				aria-hidden="true"
-			>
-				<path d="M12 20h9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-				<path
-					d="m16.5 3.5 4 4L7 21H3v-4L16.5 3.5Z"
-					stroke-width="1.5"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-				></path>
-			</svg>
-		</button>
+			<MenuItemButton onclick={onOpen}>Edit</MenuItemButton>
+			<MenuItemButton onclick={onHelpOpen}>Notes</MenuItemButton>
+		</MenuButton>
 	</div>
-	<div>
+	<div class="pr-9">
 		<GridContainerAuto maxCols={displayMaxCols} classes="gap-2">
 			{#each Object.entries(normalizedData) as [fieldKey, field] (fieldKey)}
 				{@const labeledParts = getLabeledDisplayParts(field)}
@@ -242,16 +198,20 @@
 									<span class="font-semibold">{field.fieldName}</span>
 								</span>
 							{:else if labeledParts}
-								<span class="font-semibold">{field.fieldName}:</span>
-								{#each labeledParts as part, idx (`${fieldKey}-${idx}`)}
-									{#if idx > 0}
-										<span aria-hidden="true" class="mx-1">/</span>
-									{/if}
-									{part.value}
-									{#if part.label}
-										<span class="theme-text-muted text-xs italic">&nbsp;({part.label})</span>
-									{/if}
-								{/each}
+								<span class="inline-flex flex-nowrap items-baseline gap-1 whitespace-nowrap">
+									<span class="font-semibold">{field.fieldName}:</span>
+									{#each labeledParts as part, idx (`${fieldKey}-${idx}`)}
+										{#if idx > 0}
+											<span aria-hidden="true">/</span>
+										{/if}
+										<span>
+											{part.value}
+											{#if part.label}
+												<span class="theme-text-muted text-xs italic">&nbsp;{part.label}</span>
+											{/if}
+										</span>
+									{/each}
+								</span>
 							{:else if displayArrayMode === 'stack' && isGridFieldArray(field.value)}
 								<span class="font-semibold">{field.fieldName}:</span>
 								<span class="mt-1 block">
@@ -296,7 +256,7 @@
 {#if shouldRenderEditDialog}
 	<dialog
 		bind:this={dialogEl}
-		class="theme-dialog theme-dialog-backdrop m-auto w-[min(92vw,32rem)] rounded-md border p-0"
+		class="theme-dialog theme-dialog-backdrop z-50 m-auto w-[min(92vw,32rem)] rounded-md border p-0"
 		oncancel={onCancel}
 		onclick={onBackdropClick}
 	>
@@ -552,16 +512,14 @@
 {#if shouldRenderHelpDialog}
 	<dialog
 		bind:this={helpDialogEl}
-		class="theme-dialog theme-dialog-backdrop m-auto w-[min(92vw,32rem)] rounded-md border p-0"
+		class="theme-dialog theme-dialog-backdrop z-50 m-auto w-[min(92vw,32rem)] rounded-md border p-0"
 		oncancel={onHelpCancel}
 		onclick={onHelpBackdropClick}
 	>
 		<div class="flex flex-col gap-3 p-4">
-			<h3 class="text-lg leading-none font-semibold">Help</h3>
+			<h3 class="text-lg leading-none font-semibold">Notes</h3>
 			{#if helpAnnotationGroups.length === 0}
-				<p class="theme-text-muted text-sm">
-					No field annotations available. Add some via the edit menu!
-				</p>
+				<p class="theme-text-muted text-sm">No field notes available.</p>
 			{:else}
 				<div class="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
 					{#each helpAnnotationGroups as group (group.key)}
@@ -589,17 +547,3 @@
 		</div>
 	</dialog>
 {/if}
-
-<style>
-	.grid-content-shell:focus-within .grid-content-actions {
-		pointer-events: auto;
-		opacity: 1;
-	}
-
-	@media (hover: hover) and (pointer: fine) {
-		.grid-content-shell.pointer-actions-visible .grid-content-actions {
-			pointer-events: auto;
-			opacity: 1;
-		}
-	}
-</style>

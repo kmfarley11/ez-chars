@@ -1,15 +1,18 @@
 <script lang="ts">
 	import BaseButton from './BaseButton.svelte';
-
-	type IconVariant = 'chevron' | 'hamburger' | 'kebab';
-	type ButtonShadingVariant = 'dark' | 'light';
+	import type { ButtonIconVariant, ButtonShadingVariant, ButtonSize } from '$lib/buttonTypes';
 
 	interface Props {
 		text?: string;
-		iconVariant?: IconVariant;
+		iconVariant?: ButtonIconVariant;
 		isOpen: boolean;
 		handleClick: () => void;
 		shadingVariant?: ButtonShadingVariant;
+		size?: ButtonSize;
+		iconOnly?: boolean;
+		classes?: string;
+		ariaLabel?: string;
+		title?: string;
 	}
 
 	let {
@@ -17,21 +20,37 @@
 		iconVariant = 'hamburger',
 		isOpen,
 		handleClick,
-		shadingVariant = 'light'
+		shadingVariant = 'light',
+		size = 'md',
+		iconOnly = false,
+		classes = undefined,
+		ariaLabel = undefined,
+		title = undefined
 	}: Props = $props();
+
+	const iconClasses = $derived(size === 'sm' ? 'h-4 w-4' : size === 'lg' ? 'h-6 w-6' : 'h-5 w-5');
 </script>
 
-<BaseButton onclick={handleClick} {shadingVariant} ariaExpanded={isOpen}>
+<BaseButton
+	onclick={handleClick}
+	{shadingVariant}
+	ariaExpanded={isOpen}
+	{size}
+	{iconOnly}
+	{classes}
+	{ariaLabel}
+	{title}
+>
 	{#if text !== undefined}
 		<span>{text}</span>
 	{/if}
-	<span class="inline-flex h-6 w-6 items-center justify-center" aria-hidden="true">
+	<span class="inline-flex items-center justify-center {iconClasses}" aria-hidden="true">
 		{#if isOpen}
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				fill="none"
 				viewBox="0 0 24 24"
-				class="h-6 w-6 stroke-current"
+				class="{iconClasses} stroke-current"
 			>
 				<title>Close</title>
 				{#if iconVariant === 'chevron'}
@@ -64,7 +83,7 @@
 				xmlns="http://www.w3.org/2000/svg"
 				fill="none"
 				viewBox="0 0 24 24"
-				class="h-6 w-6 stroke-current"
+				class="{iconClasses} stroke-current"
 			>
 				<title>Open</title>
 				{#if iconVariant === 'chevron'}
@@ -81,10 +100,14 @@
 						stroke-width="2"
 						d="M4 6h16M4 12h16M4 18h16"
 					/>
-				{:else}
+				{:else if iconVariant === 'kebab'}
 					<circle cx="12" cy="6" r="1.5" fill="currentColor" stroke="none"></circle>
 					<circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
 					<circle cx="12" cy="18" r="1.5" fill="currentColor" stroke="none"></circle>
+				{:else}
+					<circle cx="6" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
+					<circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
+					<circle cx="18" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
 				{/if}
 			</svg>
 		{/if}

@@ -83,7 +83,7 @@
 		title={`${annotationCount > 0 ? 'View' : 'Add'} annotations for ${fieldLabel}`}
 		onclick={openDialog}
 	>
-		<span>{annotationCount > 0 ? 'Notes' : 'Note'}</span>
+		<span>Notes</span>
 		{#if annotationCount > 0}
 			<span
 				class="inline-flex min-h-4 min-w-4 items-center justify-center rounded-full border px-1 text-[0.65rem] leading-none"
