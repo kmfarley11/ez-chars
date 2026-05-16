@@ -23,6 +23,7 @@
 		type SpellRef
 	} from '../../../schema';
 	import { applyGridPatches } from '$lib/characterGridHelpers';
+	import { resolveGridFieldDescriptors, type GridFieldDescriptor } from '$lib/gridContentHelpers';
 	import { immutableJSONPatch, type JSONPatchDocument } from 'immutable-json-patch';
 	import type {
 		GridAnnotationEditorConfig,
@@ -671,25 +672,56 @@
 		appearance: withFieldAnnotations(char.identity.appearance ?? '', ['identity', 'appearance'])
 	});
 
-	const quickRefPrimaryData = $derived<GridContentData>({
-		maxHp: withFieldAnnotations(
-			char.systemData.combat?.hitPoints?.max ?? 0,
-			['systemData', 'combat', 'hitPoints', 'max'],
-			{
-				fieldName: 'Max HP'
+	const quickRefPrimaryDescriptors = $derived<Array<GridFieldDescriptor>>([
+		{
+			key: 'currentHp',
+			fieldName: 'Current HP',
+			path: ['systemData', 'combat', 'hitPoints', 'current'],
+			inputKind: 'number',
+			interaction: {
+				editAffordance: 'persistent',
+				annotationAffordance: 'persistent'
 			}
-		),
-		initiative: withFieldAnnotations(char.systemData.combat?.initiative ?? 0, [
-			'systemData',
-			'combat',
-			'initiative'
-		]),
-		armorClass: withFieldAnnotations(char.systemData.combat?.armorClass ?? 0, [
-			'systemData',
-			'combat',
-			'armorClass'
-		])
-	});
+		},
+		{
+			key: 'tempHp',
+			fieldName: 'Temp HP',
+			path: ['systemData', 'combat', 'hitPoints', 'temp'],
+			inputKind: 'number',
+			defaultValue: 0,
+			valuePatchOperation: char.systemData.combat.hitPoints.temp === undefined ? 'add' : 'replace',
+			interaction: {
+				editAffordance: 'persistent',
+				annotationAffordance: 'persistent'
+			}
+		},
+		{
+			key: 'maxHp',
+			fieldName: 'Max HP',
+			path: ['systemData', 'combat', 'hitPoints', 'max'],
+			inputKind: 'number',
+			defaultValue: 0
+		},
+		{
+			key: 'initiative',
+			fieldName: 'Initiative',
+			path: ['systemData', 'combat', 'initiative'],
+			inputKind: 'number',
+			defaultValue: 0
+		},
+		{
+			key: 'armorClass',
+			fieldName: 'Armor Class',
+			path: ['systemData', 'combat', 'armorClass'],
+			inputKind: 'number',
+			defaultValue: 0
+		}
+	]);
+	const quickRefPrimaryData = $derived<GridContentData>(
+		resolveGridFieldDescriptors(char, quickRefPrimaryDescriptors, {
+			annotationPathForValuePath: toSystemDataAnnotationPath
+		})
+	);
 	const quickRefMovementData = $derived<GridContentData>({
 		speed: withFieldAnnotations(
 			char.systemData.combat?.speed ?? char.systemData.race?.speed ?? '',
@@ -2001,53 +2033,8 @@
 					classes="gap-3"
 				>
 					<GridContainer border={true} pad={true} classes="rounded-md">
-						<div class="mb-2 grid gap-2 border-b pb-2">
-							<InlineFieldDraft
-								label="Current HP"
-								value={char.systemData.combat.hitPoints.current}
-								path="/systemData/combat/hitPoints/current"
-								inputKind="number"
-								editAffordance="persistent"
-								annotationAffordance="persistent"
-								annotations={annotationsForBindPath([
-									'systemData',
-									'combat',
-									'hitPoints',
-									'current'
-								])}
-								{annotationEditorConfig}
-								ariaLabel="Current hit points"
-								onSavePatch={handleFieldPatchSave}
-								onSaveAnnotations={(nextAnnotations) => {
-									handleFieldAnnotationsSave(
-										['systemData', 'combat', 'hitPoints', 'current'],
-										nextAnnotations
-									);
-								}}
-							/>
-							<InlineFieldDraft
-								label="Temp HP"
-								value={char.systemData.combat.hitPoints.temp ?? 0}
-								path="/systemData/combat/hitPoints/temp"
-								inputKind="number"
-								editAffordance="persistent"
-								annotationAffordance="persistent"
-								annotations={annotationsForBindPath(['systemData', 'combat', 'hitPoints', 'temp'])}
-								{annotationEditorConfig}
-								patchOperation={char.systemData.combat.hitPoints.temp === undefined
-									? 'add'
-									: 'replace'}
-								ariaLabel="Temporary hit points"
-								onSavePatch={handleFieldPatchSave}
-								onSaveAnnotations={(nextAnnotations) => {
-									handleFieldAnnotationsSave(
-										['systemData', 'combat', 'hitPoints', 'temp'],
-										nextAnnotations
-									);
-								}}
-							/>
-						</div>
 						<GridContent
+							handleFieldSavePatch={handleFieldPatchSave}
 							handleEditSavePatches={handleGridPatchesSave}
 							{annotationEditorConfig}
 							displayMaxCols={2}

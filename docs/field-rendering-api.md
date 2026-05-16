@@ -215,6 +215,13 @@ Slice 2 implementation note:
 - `resolveGridFieldDescriptor` and `resolveGridFieldDescriptors` provide the first descriptor/resolver shape for deriving values, annotation data, patch paths, capabilities, and affordances from source data.
 - Slice 3 should prove this by migrating one quick-reference card without changing the surrounding sheet layout.
 
+Slice 3 implementation note:
+
+- The first Quick Reference card is the current proof surface.
+- Its route code now declares current HP, temp HP, max HP, initiative, and armor class through field descriptors and resolves them into one `GridContentData` payload.
+- `GridContent` now renders persistent direct primitive fields in a top card section before the remaining grid content, which preserves the existing Quick Reference card shape while removing adjacent route-local `InlineFieldDraft` wiring for that card.
+- Later slices should reuse this pattern for the other runtime cards before broader route extraction.
+
 ## Guardrails
 
 - Preserve the `p1-030` behavior: runtime/state fields stay fast to edit, reference/profile fields stay readable and selectable, and annotations stay explicit through Notes.

@@ -56,7 +56,7 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 ### Partial
 
 - 5e sheet route still does not expose every optional schema field or deeper 5e detail
-- the target field interaction model, field binding/mutation contract, and field rendering consolidation direction are documented in [docs/field-interaction-model.md](field-interaction-model.md), [docs/field-binding-contract.md](field-binding-contract.md), and [docs/field-rendering-api.md](field-rendering-api.md); the shared primitive renderer and first field descriptor/resolver helpers exist, but the 5e route still needs runtime fields migrated into that shared field/card API before route-level projection and patch glue extraction can leave the sheet ready for broader feature work
+- the target field interaction model, field binding/mutation contract, and field rendering consolidation direction are documented in [docs/field-interaction-model.md](field-interaction-model.md), [docs/field-binding-contract.md](field-binding-contract.md), and [docs/field-rendering-api.md](field-rendering-api.md); the shared primitive renderer, descriptor/resolver helpers, and first quick-reference proof card now exist, but the 5e route still needs the remaining runtime fields migrated into that shared field/card API before route-level projection and patch glue extraction can leave the sheet ready for broader feature work
 
 ### Missing
 
