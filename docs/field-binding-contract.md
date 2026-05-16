@@ -106,13 +106,14 @@ The app should use the standard operation members:
 
 Do not invent parallel operation names such as `field.replace` or `list.updateItem` for the mutation API. If local tracing, source component names, timestamps, or commit reasons are useful, keep them in sidecar metadata outside the JSON Patch document; they must not be required to apply the patch.
 
-For primitive field edits, emit `replace` at the field's JSON Pointer path. For annotation edits, emit `replace` at the annotation array's JSON Pointer path. Existing code can adapt simple `replace` operations to `GridContentPatch` during migration.
+For primitive field edits, emit `replace` at the field's JSON Pointer path. Optional primitive fields that may not exist yet can emit `add` at the field's JSON Pointer path when the parent object already exists; this keeps creation of values such as temp HP within standard JSON Patch semantics. For annotation edits, emit `replace` at the annotation array's JSON Pointer path. Existing code can adapt simple `replace` operations to `GridContentPatch` during migration.
 
 ## Mutation Operations
 
 The MVP mutation envelope should support these local operations without requiring a remote API:
 
 - Field value update: use `replace`.
+- Optional primitive field creation: use `add` against the missing field path when the parent object exists.
 - Annotation array update: use `replace` against the annotation array path.
 - Full list replacement: use `replace` against the list path.
 - List insertion: use `add` against an array index path or the `/-` append path.

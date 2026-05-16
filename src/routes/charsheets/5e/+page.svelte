@@ -672,28 +672,13 @@
 	});
 
 	const quickRefPrimaryData = $derived<GridContentData>({
-		hp: {
-			value: {
-				current: withFieldAnnotations(char.systemData.combat?.hitPoints?.current ?? 0, [
-					'systemData',
-					'combat',
-					'hitPoints',
-					'current'
-				]),
-				max: withFieldAnnotations(char.systemData.combat?.hitPoints?.max ?? 0, [
-					'systemData',
-					'combat',
-					'hitPoints',
-					'max'
-				])
+		maxHp: withFieldAnnotations(
+			char.systemData.combat?.hitPoints?.max ?? 0,
+			['systemData', 'combat', 'hitPoints', 'max'],
+			{
+				fieldName: 'Max HP'
 			}
-		},
-		tempHp: withFieldAnnotations(char.systemData.combat?.hitPoints?.temp ?? 0, [
-			'systemData',
-			'combat',
-			'hitPoints',
-			'temp'
-		]),
+		),
 		initiative: withFieldAnnotations(char.systemData.combat?.initiative ?? 0, [
 			'systemData',
 			'combat',
@@ -757,25 +742,6 @@
 					'hitDice',
 					'total'
 				])
-			}
-		},
-		deathSaves: {
-			fieldName: 'Death Saves',
-			value: {
-				successes: withFieldAnnotations(
-					char.systemData.combat?.deathSaves?.successes ?? 0,
-					['systemData', 'combat', 'deathSaves', 'successes'],
-					{
-						label: 'ok'
-					}
-				),
-				failures: withFieldAnnotations(
-					char.systemData.combat?.deathSaves?.failures ?? 0,
-					['systemData', 'combat', 'deathSaves', 'failures'],
-					{
-						label: 'rip'
-					}
-				)
 			}
 		}
 	});
@@ -1158,7 +1124,12 @@
 	});
 
 	const spellSlotRuntimeCards = $derived<
-		Array<{ key: string; label: string; data: GridContentData }>
+		Array<{
+			key: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'cantrips';
+			label: string;
+			data: GridContentData;
+			slot?: { used: number; max: number };
+		}>
 	>(
 		(() => {
 			const currentSpells = char.systemData.spellcasting?.spells ?? [];
@@ -1224,32 +1195,37 @@
 						spells: createSpellListField(0)
 					}
 				},
-				...spellSlotLevelMetadata.map(({ key, label }) => ({
-					key,
-					label,
-					data: {
-						slots: {
-							fieldName: label,
-							value: {
-								used: withFieldAnnotations(
-									char.systemData.spellcasting?.slots?.[key]?.used ?? 0,
-									['systemData', 'spellcasting', 'slots', key, 'used'],
-									{
-										fieldName: 'Used'
-									}
-								),
-								max: withFieldAnnotations(
-									char.systemData.spellcasting?.slots?.[key]?.max ?? 0,
-									['systemData', 'spellcasting', 'slots', key, 'max'],
-									{
-										fieldName: 'Max'
-									}
-								)
-							}
-						},
-						spells: createSpellListField(Number(key) as SpellListLevel)
-					}
-				}))
+				...spellSlotLevelMetadata.map(({ key, label }) => {
+					const slot = char.systemData.spellcasting?.slots?.[key];
+
+					return {
+						key,
+						label,
+						slot,
+						data: {
+							slots: {
+								fieldName: label,
+								value: {
+									used: withFieldAnnotations(slot?.used ?? 0, [
+										'systemData',
+										'spellcasting',
+										'slots',
+										key,
+										'used'
+									]),
+									max: withFieldAnnotations(slot?.max ?? 0, [
+										'systemData',
+										'spellcasting',
+										'slots',
+										key,
+										'max'
+									])
+								}
+							},
+							spells: createSpellListField(Number(key) as SpellListLevel)
+						}
+					};
+				})
 			];
 		})()
 	);
@@ -1273,7 +1249,21 @@
 	): CharacterDocument5e2014 => {
 		if (patch.length === 0) return entry;
 
-		return parse5e2014CharacterDocument(immutableJSONPatch(entry, patch));
+		const patchBase = patch.some((operation) =>
+			operation.path.startsWith('/systemData/combat/deathSaves/')
+		)
+			? parse5e2014CharacterDocument(
+					immutableJSONPatch(entry, [
+						{
+							op: 'add',
+							path: '/systemData/combat/deathSaves',
+							value: entry.systemData.combat.deathSaves ?? { successes: 0, failures: 0 }
+						}
+					])
+				)
+			: entry;
+
+		return parse5e2014CharacterDocument(immutableJSONPatch(patchBase, patch));
 	};
 
 	const handleFieldPatchSave = (patch: JSONPatchDocument) => {
@@ -1998,24 +1988,57 @@
 					classes="gap-3"
 				>
 					<GridContainer border={true} pad={true} classes="rounded-md">
+						<div class="mb-2 grid gap-2 border-b pb-2">
+							<InlineFieldDraft
+								label="Current HP"
+								value={char.systemData.combat.hitPoints.current}
+								path="/systemData/combat/hitPoints/current"
+								inputKind="number"
+								editAffordance="persistent"
+								ariaLabel="Current hit points"
+								onSavePatch={handleFieldPatchSave}
+							/>
+							<InlineFieldDraft
+								label="Temp HP"
+								value={char.systemData.combat.hitPoints.temp ?? 0}
+								path="/systemData/combat/hitPoints/temp"
+								inputKind="number"
+								editAffordance="persistent"
+								patchOperation={char.systemData.combat.hitPoints.temp === undefined
+									? 'add'
+									: 'replace'}
+								ariaLabel="Temporary hit points"
+								onSavePatch={handleFieldPatchSave}
+							/>
+						</div>
 						<GridContent
 							handleEditSavePatches={handleGridPatchesSave}
 							{annotationEditorConfig}
 							displayMaxCols={2}
 							data={quickRefPrimaryData}
 						/>
-						<div class="mt-2 border-t pt-2">
+					</GridContainer>
+					<GridContainer border={true} pad={true} classes="rounded-md">
+						<div class="mb-2 grid gap-2 border-b pb-2">
 							<InlineFieldDraft
-								label="Current HP"
-								value={char.systemData.combat.hitPoints.current}
-								path="/systemData/combat/hitPoints/current"
+								label="Death Saves OK"
+								value={char.systemData.combat.deathSaves?.successes ?? 0}
+								path="/systemData/combat/deathSaves/successes"
 								inputKind="number"
-								ariaLabel="Current hit points"
+								editAffordance="persistent"
+								ariaLabel="Death save successes"
+								onSavePatch={handleFieldPatchSave}
+							/>
+							<InlineFieldDraft
+								label="Death Saves RIP"
+								value={char.systemData.combat.deathSaves?.failures ?? 0}
+								path="/systemData/combat/deathSaves/failures"
+								inputKind="number"
+								editAffordance="persistent"
+								ariaLabel="Death save failures"
 								onSavePatch={handleFieldPatchSave}
 							/>
 						</div>
-					</GridContainer>
-					<GridContainer border={true} pad={true} classes="rounded-md">
 						<GridContent
 							handleEditSavePatches={handleGridPatchesSave}
 							{annotationEditorConfig}
@@ -2023,6 +2046,22 @@
 						/>
 					</GridContainer>
 					<GridContainer border={true} pad={true} classes="rounded-md">
+						{#if char.systemData.combat.hitDice}
+							<div class="mb-2 border-b pb-2">
+								<InlineFieldDraft
+									label="Hit Dice Remaining"
+									value={char.systemData.combat.hitDice.remaining ?? ''}
+									path="/systemData/combat/hitDice/remaining"
+									inputKind="text"
+									editAffordance="persistent"
+									patchOperation={char.systemData.combat.hitDice.remaining === undefined
+										? 'add'
+										: 'replace'}
+									ariaLabel="Hit dice remaining"
+									onSavePatch={handleFieldPatchSave}
+								/>
+							</div>
+						{/if}
 						<GridContent
 							handleEditSavePatches={handleGridPatchesSave}
 							{annotationEditorConfig}
@@ -2136,6 +2175,19 @@
 					<GridContainer flow="row" count={1} countMd={3} countLg={5} classes="gap-3">
 						{#each spellSlotRuntimeCards as slotCard (slotCard.key)}
 							<GridContainer border={true} pad={true} classes="rounded-md">
+								{#if slotCard.slot}
+									<div class="mb-2 border-b pb-2">
+										<InlineFieldDraft
+											label={`${slotCard.label} Used`}
+											value={slotCard.slot.used}
+											path={`/systemData/spellcasting/slots/${slotCard.key}/used`}
+											inputKind="number"
+											editAffordance="persistent"
+											ariaLabel={`${slotCard.label} spell slots used`}
+											onSavePatch={handleFieldPatchSave}
+										/>
+									</div>
+								{/if}
 								<GridContent
 									handleEditSavePatches={handleGridPatchesSave}
 									{annotationEditorConfig}

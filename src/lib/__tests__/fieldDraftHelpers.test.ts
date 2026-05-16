@@ -44,6 +44,27 @@ describe('field draft helpers', () => {
 		expect(character.systemData.abilities.strength.score).toBe(12);
 	});
 
+	it('can prepare an add patch for optional primitive values', () => {
+		const character = createRepresentativePatchCharacter();
+		const draft = FieldDraft.begin({
+			kind: 'value',
+			path: '/systemData/abilities/dexterity/bonus',
+			value: 0,
+			operation: 'add'
+		}).update(4);
+
+		const patch = draft.prepareAsPatch();
+		const updated = immutableJSONPatch<
+			RepresentativePatchCharacter & {
+				systemData: { abilities: { dexterity: { bonus?: number } } };
+			}
+		>(character, patch);
+
+		expect(patch).toEqual([{ op: 'add', path: '/systemData/abilities/dexterity/bonus', value: 4 }]);
+		expect(updated.systemData.abilities.dexterity.bonus).toBe(4);
+		expect(character.systemData.abilities.dexterity).not.toHaveProperty('bonus');
+	});
+
 	it('prepares no operations for unchanged drafts', () => {
 		const draft = FieldDraft.begin({
 			kind: 'value',

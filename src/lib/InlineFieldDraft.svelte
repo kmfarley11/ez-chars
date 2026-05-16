@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { FieldDraft } from '$lib/fieldDraftHelpers';
+	import { FieldDraft, type FieldDraftOperation } from '$lib/fieldDraftHelpers';
 	import type { JSONPatchDocument, JSONPointer } from 'immutable-json-patch';
 
 	type InlineFieldDraftValue = string | number;
+	type EditAffordance = 'persistent' | 'hover' | 'menu';
 
 	interface Props {
 		label: string;
@@ -11,6 +12,8 @@
 		inputKind?: 'text' | 'number';
 		suffix?: string;
 		ariaLabel?: string;
+		editAffordance?: EditAffordance;
+		patchOperation?: FieldDraftOperation;
 		// eslint-disable-next-line no-unused-vars
 		onSavePatch: (_patch: JSONPatchDocument) => void;
 	}
@@ -22,6 +25,8 @@
 		inputKind = typeof value === 'number' ? 'number' : 'text',
 		suffix = '',
 		ariaLabel = undefined,
+		editAffordance = 'persistent',
+		patchOperation = 'replace',
 		onSavePatch
 	}: Props = $props();
 
@@ -32,7 +37,7 @@
 	const displayValue = $derived(value === '' ? '___' : String(value));
 
 	const beginEdit = () => {
-		draft = FieldDraft.begin({ kind: 'value', path, value });
+		draft = FieldDraft.begin({ kind: 'value', path, value, operation: patchOperation });
 		draftValue = String(value);
 		error = undefined;
 	};
@@ -88,7 +93,10 @@
 	};
 </script>
 
-<div class="inline-field-draft flex flex-wrap items-center gap-x-2 gap-y-1">
+<div
+	class="inline-field-draft flex flex-wrap items-center gap-x-2 gap-y-1"
+	class:hover-affordance={editAffordance === 'hover'}
+>
 	{#if draft}
 		<label class="inline-flex min-w-0 items-center gap-2">
 			<span class="font-semibold">{label}:</span>
@@ -128,11 +136,11 @@
 		</span>
 		<button
 			type="button"
-			class="theme-btn-light btn rounded-md border px-2 py-1 text-xs"
+			class="theme-btn-light btn edit-trigger rounded-md border px-2 py-1 text-xs"
 			aria-label={`Edit ${ariaLabel ?? label}`}
 			onclick={beginEdit}
 		>
-			Edit
+			{editAffordance === 'menu' ? 'Actions' : 'Edit'}
 		</button>
 	{/if}
 
@@ -140,3 +148,20 @@
 		<p class="theme-text-muted basis-full text-xs" role="alert">{error}</p>
 	{/if}
 </div>
+
+<style>
+	.hover-affordance .edit-trigger {
+		opacity: 0;
+	}
+
+	.hover-affordance:hover .edit-trigger,
+	.hover-affordance:focus-within .edit-trigger {
+		opacity: 1;
+	}
+
+	@media (hover: none) {
+		.hover-affordance .edit-trigger {
+			opacity: 1;
+		}
+	}
+</style>

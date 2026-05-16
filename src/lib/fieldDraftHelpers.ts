@@ -5,11 +5,13 @@ import type { JSONPatchDocument, JSONPointer } from 'immutable-json-patch';
 // Svelte usage safer because plain TypeScript objects update most predictably
 // when callers reassign component state, e.g. `draft = draft.update(value)`.
 export type FieldDraftKind = 'value' | 'annotation';
+export type FieldDraftOperation = 'replace' | 'add';
 
 export type FieldDraftInput<T = unknown> = {
 	kind: FieldDraftKind;
 	path: JSONPointer;
 	value: T;
+	operation?: FieldDraftOperation;
 };
 
 const cloneDraftValue = <T>(value: T): T => structuredClone(value);
@@ -22,17 +24,24 @@ export class FieldDraft<T = unknown> {
 		readonly kind: FieldDraftKind,
 		readonly path: JSONPointer,
 		readonly initialValue: T,
-		readonly value: T
+		readonly value: T,
+		readonly operation: FieldDraftOperation
 	) {}
 
-	static begin<T>({ kind, path, value }: FieldDraftInput<T>): FieldDraft<T> {
-		return new FieldDraft(kind, path, cloneDraftValue(value), cloneDraftValue(value));
+	static begin<T>({ kind, path, value, operation = 'replace' }: FieldDraftInput<T>): FieldDraft<T> {
+		return new FieldDraft(kind, path, cloneDraftValue(value), cloneDraftValue(value), operation);
 	}
 
 	// Return a new draft so callers can reassign state explicitly and older UI
 	// references cannot observe hidden in-place draft mutation.
 	update(value: T): FieldDraft<T> {
-		return new FieldDraft(this.kind, this.path, this.initialValue, cloneDraftValue(value));
+		return new FieldDraft(
+			this.kind,
+			this.path,
+			this.initialValue,
+			cloneDraftValue(value),
+			this.operation
+		);
 	}
 
 	cancel(): undefined {
@@ -44,11 +53,15 @@ export class FieldDraft<T = unknown> {
 	}
 
 	prepareAsPatch(): JSONPatchDocument {
-		return this.isDirty()
-			? [
-					{ op: 'test', path: this.path, value: this.initialValue },
-					{ op: 'replace', path: this.path, value: this.value }
-				]
-			: [];
+		if (!this.isDirty()) return [];
+
+		if (this.operation === 'add') {
+			return [{ op: 'add', path: this.path, value: this.value }];
+		}
+
+		return [
+			{ op: 'test', path: this.path, value: this.initialValue },
+			{ op: 'replace', path: this.path, value: this.value }
+		];
 	}
 }
