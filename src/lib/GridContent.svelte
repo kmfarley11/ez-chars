@@ -5,6 +5,7 @@
 	import GridContentAnnotationsDisplay from '$lib/GridContentAnnotationsDisplay.svelte';
 	import GridContentAnnotationsEditor from '$lib/GridContentAnnotationsEditor.svelte';
 	import GridContainerAuto from '$lib/GridContainerAuto.svelte';
+	import GridPrimitiveField from '$lib/GridPrimitiveField.svelte';
 	import MenuButton from '$lib/MenuButton.svelte';
 	import MenuItemButton from '$lib/MenuItemButton.svelte';
 	import {
@@ -14,6 +15,7 @@
 		collectValuePatchesFromData,
 		formatFieldValue,
 		getLabeledDisplayParts,
+		isDirectEditablePrimitiveField,
 		normalizeData
 	} from '$lib/gridContentHelpers';
 	import {
@@ -30,6 +32,7 @@
 		GridContentField,
 		GridContentPatch
 	} from '$lib/gridContentTypes';
+	import type { JSONPatchDocument } from 'immutable-json-patch';
 
 	interface Props {
 		data: GridContentData;
@@ -42,6 +45,8 @@
 		handleEditSave?: (_payload: GridContentData) => void;
 		// eslint-disable-next-line no-unused-vars
 		handleEditSavePatches?: (_patches: Array<GridContentPatch>) => void;
+		// eslint-disable-next-line no-unused-vars
+		handleFieldSavePatch?: (_patch: JSONPatchDocument) => void;
 		handleEditCancel?: () => void;
 	}
 
@@ -53,6 +58,7 @@
 		annotationEditorConfig = undefined,
 		handleEditSave,
 		handleEditSavePatches,
+		handleFieldSavePatch,
 		handleEditCancel = undefined
 	}: Props = $props();
 
@@ -164,6 +170,27 @@
 		handleEditSavePatches?.([{ path: field.annotationBindPath, value: nextAnnotations }]);
 	};
 
+	const savePrimitiveFieldPatch = (
+		patch: JSONPatchDocument,
+		compatibilityPatches: Array<GridContentPatch>
+	) => {
+		if (handleFieldSavePatch) {
+			handleFieldSavePatch(patch);
+			return;
+		}
+		if (compatibilityPatches.length > 0) {
+			handleEditSavePatches?.(compatibilityPatches);
+		}
+	};
+
+	const savePrimitiveFieldAnnotations = (
+		nextAnnotations: Array<GridContentAnnotation>,
+		annotationPath: GridContentField['annotationBindPath']
+	) => {
+		if (!annotationPath) return;
+		handleEditSavePatches?.([{ path: annotationPath, value: nextAnnotations }]);
+	};
+
 	const beginHelpAnnotationEdit = (group: HelpAnnotationGroup) => {
 		if (!group.annotationBindPath) return;
 		editingHelpAnnotationKey = group.key;
@@ -212,7 +239,15 @@
 				>
 					<div class={displayAlign === 'center' ? 'min-w-0 text-center' : 'min-w-0'}>
 						<span data-grid-auto-item class={displayItemClass}>
-							{#if typeof field.value === 'boolean'}
+							{#if isDirectEditablePrimitiveField(field)}
+								<GridPrimitiveField
+									{fieldKey}
+									{field}
+									{annotationEditorConfig}
+									onSavePatch={savePrimitiveFieldPatch}
+									onSaveAnnotations={savePrimitiveFieldAnnotations}
+								/>
+							{:else if typeof field.value === 'boolean'}
 								<span class="inline-flex items-center gap-2 align-middle">
 									<input
 										class="theme-input theme-checkbox-readonly h-4 w-4 cursor-not-allowed rounded border"

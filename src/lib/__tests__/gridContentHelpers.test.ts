@@ -3,7 +3,11 @@ import {
 	collectAnnotationPatchesFromData,
 	collectHelpAnnotationGroups,
 	collectPatchesFromData,
-	collectValuePatchesFromData
+	collectValuePatchesFromData,
+	readGridAnnotationsAtPath,
+	resolveGridFieldDescriptor,
+	resolveGridFieldDescriptors,
+	toGridJsonPointer
 } from '../gridContentHelpers';
 import type { GridContentData } from '../gridContentTypes';
 
@@ -64,6 +68,193 @@ const createPatchProjectionData = (): GridContentData => ({
 		annotationBindPath: ['systemData', 'annotations', 'emptyAnnotatedField', '_annotations'],
 		value: 'No notes yet'
 	}
+});
+
+describe('grid field descriptor resolution', () => {
+	const characterLikeSource = {
+		systemData: {
+			combat: {
+				hitPoints: {
+					current: 12,
+					temp: 3
+				}
+			},
+			annotations: {
+				combat: {
+					hitPoints: {
+						current: {
+							_annotations: {
+								sourceNote: {
+									origin: 'source',
+									kind: 'reference',
+									text: 'Class table reference'
+								}
+							}
+						},
+						temp: {
+							_annotations: [
+								{
+									id: 'temp-note',
+									origin: 'user',
+									kind: 'note',
+									text: 'From armor feature.'
+								}
+							]
+						}
+					}
+				}
+			}
+		}
+	};
+
+	const annotationPathForValuePath = (path: Array<string | number>) => [
+		'systemData',
+		'annotations',
+		...path.slice(1),
+		'_annotations'
+	];
+
+	it('converts grid paths to escaped JSON Pointers for RFC 6902 field drafts', () => {
+		expect(toGridJsonPointer(['systemData', 'a/b', 'tilde~key', 0])).toBe(
+			'/systemData/a~1b/tilde~0key/0'
+		);
+	});
+
+	it('reads annotation arrays and record-shaped annotation entries', () => {
+		expect(
+			readGridAnnotationsAtPath(characterLikeSource, [
+				'systemData',
+				'annotations',
+				'combat',
+				'hitPoints',
+				'current',
+				'_annotations'
+			])
+		).toEqual([
+			{
+				id: 'sourceNote',
+				origin: 'source',
+				kind: 'reference',
+				text: 'Class table reference'
+			}
+		]);
+
+		expect(
+			readGridAnnotationsAtPath(characterLikeSource, [
+				'systemData',
+				'annotations',
+				'combat',
+				'hitPoints',
+				'temp',
+				'_annotations'
+			])
+		).toEqual([
+			{
+				id: 'temp-note',
+				origin: 'user',
+				kind: 'note',
+				text: 'From armor feature.'
+			}
+		]);
+	});
+
+	it('resolves a descriptor into grid field data with binding, capabilities, annotations, and affordances', () => {
+		expect(
+			resolveGridFieldDescriptor(
+				characterLikeSource,
+				{
+					key: 'currentHp',
+					fieldName: 'Current HP',
+					path: ['systemData', 'combat', 'hitPoints', 'current'],
+					inputKind: 'number',
+					interaction: {
+						editAffordance: 'persistent',
+						annotationAffordance: 'persistent'
+					}
+				},
+				{ annotationPathForValuePath }
+			)
+		).toEqual({
+			fieldName: 'Current HP',
+			label: undefined,
+			hidden: undefined,
+			options: undefined,
+			inputKind: 'number',
+			editOnly: undefined,
+			multiline: undefined,
+			bindPath: ['systemData', 'combat', 'hitPoints', 'current'],
+			annotationBindPath: [
+				'systemData',
+				'annotations',
+				'combat',
+				'hitPoints',
+				'current',
+				'_annotations'
+			],
+			annotations: [
+				{
+					id: 'sourceNote',
+					origin: 'source',
+					kind: 'reference',
+					text: 'Class table reference'
+				}
+			],
+			binding: {
+				readPath: ['systemData', 'combat', 'hitPoints', 'current'],
+				valuePatchPath: ['systemData', 'combat', 'hitPoints', 'current'],
+				annotationReadPath: [
+					'systemData',
+					'annotations',
+					'combat',
+					'hitPoints',
+					'current',
+					'_annotations'
+				],
+				annotationPatchPath: [
+					'systemData',
+					'annotations',
+					'combat',
+					'hitPoints',
+					'current',
+					'_annotations'
+				],
+				valuePatchOperation: undefined
+			},
+			capabilities: {
+				canEditValue: true,
+				canEditAnnotations: true
+			},
+			interaction: {
+				editAffordance: 'persistent',
+				annotationAffordance: 'persistent'
+			},
+			value: 12
+		});
+	});
+
+	it('resolves multiple descriptors into GridContentData keyed by descriptor key', () => {
+		expect(
+			Object.keys(
+				resolveGridFieldDescriptors(
+					characterLikeSource,
+					[
+						{
+							key: 'currentHp',
+							fieldName: 'Current HP',
+							path: ['systemData', 'combat', 'hitPoints', 'current']
+						},
+						{
+							key: 'tempHp',
+							fieldName: 'Temp HP',
+							path: ['systemData', 'combat', 'hitPoints', 'temp'],
+							valuePatchOperation: 'add'
+						}
+					],
+					{ annotationPathForValuePath }
+				)
+			)
+		).toEqual(['currentHp', 'tempHp']);
+	});
 });
 
 describe('grid content patch projection', () => {

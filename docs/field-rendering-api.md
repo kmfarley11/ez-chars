@@ -210,6 +210,14 @@ Use the following staged migration:
 
 Slice 2 should introduce the minimal shared renderer/API and binding-resolver shape needed for steps 1 and 2. Slice 3 should migrate exactly one quick-reference card to prove the shape before broader rollout.
 
+Slice 2 implementation note:
+
+- `GridPrimitiveField` is the shared primitive field renderer for direct value edits and field annotations.
+- `InlineFieldDraft` now uses `GridPrimitiveField` as a compatibility wrapper instead of owning a separate rendering/editing implementation.
+- `GridContent` can route fields with explicit binding/capability/interaction metadata to `GridPrimitiveField`, while existing card rendering remains unchanged for fields that do not opt in.
+- `resolveGridFieldDescriptor` and `resolveGridFieldDescriptors` provide the first descriptor/resolver shape for deriving values, annotation data, patch paths, capabilities, and affordances from source data.
+- Slice 3 should prove this by migrating one quick-reference card without changing the surrounding sheet layout.
+
 ## Guardrails
 
 - Preserve the `p1-030` behavior: runtime/state fields stay fast to edit, reference/profile fields stay readable and selectable, and annotations stay explicit through Notes.

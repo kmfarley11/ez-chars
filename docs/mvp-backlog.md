@@ -48,6 +48,7 @@ Run verification according to docs/verification.md when appropriate.
 Explain briefly how I can manually verify the changes.
 Summarize what remains from the parent backlog item.
 Update the MVP docs if the task meaningfully changes backlog or status. Prune the backlog item only when all slices and definition-of-done bullets are complete.
+Suggest a one-liner commit message if you were to git commit the changes implemented.
 ```
 
 ## P0
@@ -56,7 +57,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: continue `p1-035` with slice 2 to introduce the minimal shared primitive field renderer or `GridContent` field variant, plus the descriptor/resolver shape needed to reduce route-level field plumbing without adding avoidable DOM/render cost.
+Next recommended target: continue `p1-035` with slice 3 to migrate one quick-reference card from adjacent `InlineFieldDraft` + `GridContent` composition to the consolidated API.
 
 ### Link runtime actions to source weapons, spells, and features
 
@@ -224,7 +225,7 @@ Execution guidance:
 Suggested implementation slices:
 
 1. Complete. Inventoried the current `GridContent` and `InlineFieldDraft` usage in the 5e route and defined the shared field/card API direction in [field-rendering-api.md](field-rendering-api.md). The route has many `GridContent` call sites and a small set of runtime/state `InlineFieldDraft` call sites; later slices should consolidate those runtime fields into the grid field/card API without changing behavior.
-2. Using [field-rendering-api.md](field-rendering-api.md), introduce a shared field-rendering primitive or `GridContent` field variant that can render primitive runtime/state fields with persistent edit controls using the existing `FieldDraft` and JSON Patch contract. Include the minimal descriptor/resolver shape needed to derive field values, annotation data, patch paths, and affordance metadata without repeating that glue at every route call site.
+2. Complete. Added a shared primitive field renderer used by `InlineFieldDraft` and available to `GridContent` fields with explicit interaction/binding metadata. Added the minimal descriptor/resolver helpers for deriving field values, annotation data, patch paths, capabilities, and affordance metadata from source data without per-field route glue.
 3. Using the migration shape in [field-rendering-api.md](field-rendering-api.md), migrate one quick-reference card from adjacent `InlineFieldDraft` + `GridContent` composition to the consolidated API, preserving visual layout and behavior. The migrated card should prove the route can mostly declare field/card intent instead of separately wiring value editors and annotation handlers.
 4. Using the inventory in [field-rendering-api.md](field-rendering-api.md), migrate remaining runtime primitive surfaces: current/temp HP, death saves, hit dice remaining, and spell slot used counters.
 5. Review card/list fallback editing after migration and ensure card-wide Edit remains focused on value/structure fallback while Notes owns annotations.

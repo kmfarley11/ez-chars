@@ -1,6 +1,7 @@
 import { displayOrPlaceholder } from '$lib/displayHelpers';
 import { capitalizeFirstLetter } from '$lib/stringFormatters';
 import { isGridFieldArray, isGridNestedFields } from '$lib/gridFieldGuards';
+import { annotationSchema } from '../schema/zod/core';
 import type {
 	GridContentAnnotation,
 	GridContentAnnotationPatch,
@@ -10,8 +11,12 @@ import type {
 	GridContentNestedFields,
 	GridContentPatch,
 	GridContentPathSegment,
-	GridContentValuePatch
+	GridContentValuePatch,
+	GridFieldCapabilities,
+	GridFieldInteraction,
+	GridFieldPatchOperation
 } from '$lib/gridContentTypes';
+import type { JSONPointer } from 'immutable-json-patch';
 
 // Read-side helpers used by GridContent rendering and patch projection.
 // Mutation/write helpers live in `characterGridHelpers.ts`.
@@ -24,6 +29,31 @@ export type HelpAnnotationGroup = {
 };
 
 type DisplayPart = { value: string; label?: string };
+type PrimitiveGridFieldValue = string | number | boolean;
+
+export type GridFieldDescriptor = {
+	key: string;
+	fieldName?: string;
+	label?: string;
+	path?: GridContentBindPath;
+	readPath?: GridContentBindPath;
+	valuePatchPath?: GridContentBindPath;
+	annotationReadPath?: GridContentBindPath;
+	annotationPatchPath?: GridContentBindPath;
+	valuePatchOperation?: GridFieldPatchOperation;
+	defaultValue?: PrimitiveGridFieldValue;
+	inputKind?: 'text' | 'number';
+	multiline?: boolean;
+	options?: string[];
+	hidden?: boolean;
+	editOnly?: boolean;
+	interaction?: GridFieldInteraction;
+	capabilities?: GridFieldCapabilities;
+};
+
+export type GridFieldDescriptorResolverOptions = {
+	annotationPathForValuePath?: (_path: GridContentBindPath) => GridContentBindPath | undefined;
+};
 
 export type LeafInput = {
 	path: Array<GridContentPathSegment>;
@@ -31,6 +61,139 @@ export type LeafInput = {
 	joinedLabel?: string;
 	bindPath?: GridContentBindPath;
 };
+
+// ------------------------------------------------------------
+// Field Binding Descriptor Helpers
+// ------------------------------------------------------------
+export const getValueAtGridPath = (source: unknown, path: GridContentBindPath): unknown => {
+	let cursor: unknown = source;
+	for (const segment of path) {
+		if (typeof segment === 'number') {
+			if (!Array.isArray(cursor)) return undefined;
+			cursor = cursor[segment];
+			continue;
+		}
+
+		if (typeof cursor !== 'object' || cursor === null || Array.isArray(cursor)) return undefined;
+		cursor = (cursor as Record<string, unknown>)[segment];
+	}
+	return cursor;
+};
+
+const isPrimitiveGridFieldValue = (value: unknown): value is PrimitiveGridFieldValue =>
+	typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
+
+export const toGridJsonPointer = (path: GridContentBindPath): JSONPointer =>
+	`/${path
+		.map((segment) => String(segment).replace(/~/g, '~0').replace(/\//g, '~1'))
+		.join('/')}` as JSONPointer;
+
+export const readGridAnnotationsAtPath = (
+	source: unknown,
+	path: GridContentBindPath | undefined
+): Array<GridContentAnnotation> => {
+	if (!path) return [];
+	const value = getValueAtGridPath(source, path);
+	if (Array.isArray(value)) {
+		return value.flatMap((entry, idx) => {
+			const parsed = annotationSchema.safeParse(entry);
+			if (!parsed.success) return [];
+			return [
+				{
+					...parsed.data,
+					id:
+						typeof parsed.data.id === 'string' && parsed.data.id.trim().length > 0
+							? parsed.data.id
+							: String(idx)
+				}
+			];
+		});
+	}
+
+	if (typeof value !== 'object' || value === null || Array.isArray(value)) return [];
+	return Object.entries(value).flatMap(([key, entry]) => {
+		const parsed = annotationSchema.safeParse(entry);
+		if (!parsed.success) return [];
+		return [
+			{
+				...parsed.data,
+				id:
+					typeof parsed.data.id === 'string' && parsed.data.id.trim().length > 0
+						? parsed.data.id
+						: key
+			}
+		];
+	});
+};
+
+export const resolveGridFieldDescriptor = (
+	source: unknown,
+	descriptor: GridFieldDescriptor,
+	options: GridFieldDescriptorResolverOptions = {}
+): GridContentField => {
+	const readPath = descriptor.readPath ?? descriptor.path;
+	const valuePatchPath = descriptor.valuePatchPath ?? descriptor.path;
+	const annotationReadPath =
+		descriptor.annotationReadPath ??
+		descriptor.annotationPatchPath ??
+		(valuePatchPath ? options.annotationPathForValuePath?.(valuePatchPath) : undefined);
+	const annotationPatchPath =
+		descriptor.annotationPatchPath ??
+		(valuePatchPath ? options.annotationPathForValuePath?.(valuePatchPath) : undefined);
+	const readValue = readPath ? getValueAtGridPath(source, readPath) : undefined;
+	const value = isPrimitiveGridFieldValue(readValue) ? readValue : (descriptor.defaultValue ?? '');
+	const canEditValue =
+		descriptor.capabilities?.canEditValue ?? (valuePatchPath !== undefined && value !== undefined);
+	const canEditAnnotations =
+		descriptor.capabilities?.canEditAnnotations ?? annotationPatchPath !== undefined;
+
+	return {
+		fieldName: descriptor.fieldName,
+		label: descriptor.label,
+		hidden: descriptor.hidden,
+		options: descriptor.options,
+		inputKind: descriptor.inputKind,
+		editOnly: descriptor.editOnly,
+		multiline: descriptor.multiline,
+		bindPath: valuePatchPath,
+		annotationBindPath: annotationPatchPath,
+		annotations: readGridAnnotationsAtPath(source, annotationReadPath),
+		binding: {
+			readPath,
+			valuePatchPath,
+			annotationReadPath,
+			annotationPatchPath,
+			valuePatchOperation: descriptor.valuePatchOperation
+		},
+		capabilities: {
+			...descriptor.capabilities,
+			canEditValue,
+			canEditAnnotations
+		},
+		interaction: descriptor.interaction,
+		value
+	};
+};
+
+export const resolveGridFieldDescriptors = (
+	source: unknown,
+	descriptors: Array<GridFieldDescriptor>,
+	options: GridFieldDescriptorResolverOptions = {}
+): GridContentData =>
+	Object.fromEntries(
+		descriptors.map((descriptor) => [
+			descriptor.key,
+			resolveGridFieldDescriptor(source, descriptor, options)
+		])
+	);
+
+export const isDirectEditablePrimitiveField = (field: GridContentField): boolean =>
+	!isGridFieldArray(field.value) &&
+	!isGridNestedFields(field.value) &&
+	(typeof field.value === 'string' || typeof field.value === 'number') &&
+	field.capabilities?.canEditValue === true &&
+	field.interaction?.editAffordance !== undefined &&
+	(field.binding?.valuePatchPath ?? field.bindPath) !== undefined;
 
 // ------------------------------------------------------------
 // Field Normalization + Display Helpers

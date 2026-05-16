@@ -6,7 +6,29 @@ export type GridContentBindPath = Array<GridContentPathSegment>;
 export type GridContentReference = Reference;
 
 export type GridContentAnnotation = Annotation;
+export type GridEditAffordance = 'persistent' | 'hover' | 'menu';
 export type GridAnnotationAffordance = 'persistent' | 'badge' | 'hover';
+export type GridFieldPatchOperation = 'replace' | 'add';
+
+export type GridFieldBinding = {
+	readPath?: GridContentBindPath;
+	valuePatchPath?: GridContentBindPath;
+	annotationReadPath?: GridContentBindPath;
+	annotationPatchPath?: GridContentBindPath;
+	valuePatchOperation?: GridFieldPatchOperation;
+};
+
+export type GridFieldCapabilities = {
+	canEditValue?: boolean;
+	canEditAnnotations?: boolean;
+	isDerived?: boolean;
+	copyPriority?: boolean;
+};
+
+export type GridFieldInteraction = {
+	editAffordance?: GridEditAffordance;
+	annotationAffordance?: GridAnnotationAffordance;
+};
 
 export type GridAnnotationReferenceTemplate = {
 	key: string;
@@ -41,6 +63,9 @@ export type GridContentField = {
 	// - `bindPath` overrides where this field's value patch is written.
 	// - `annotationBindPath` overrides where this field's annotation patch is written.
 	bindPath?: GridContentBindPath;
+	binding?: GridFieldBinding;
+	capabilities?: GridFieldCapabilities;
+	interaction?: GridFieldInteraction;
 	editOnly?: boolean;
 	multiline?: boolean;
 	annotationBindPath?: GridContentBindPath;
