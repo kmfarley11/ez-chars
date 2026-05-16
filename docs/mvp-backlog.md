@@ -202,14 +202,16 @@ Suggested implementation slices:
 1. Complete. Target field interaction model is documented in [field-interaction-model.md](field-interaction-model.md): runtime/state fields may use persistent edit affordances, reference/profile fields should keep quieter edit affordances that preserve read/select/copy flows, and annotations open through explicit touch/keyboard-accessible affordances.
 2. Complete. Applied the shared field-binding/patch abstractions to individual runtime/state primitive fields with persistent edit affordances: current HP, temp HP, hit dice remaining, death save success/failure counters, and existing spell slot used counters can be edited without opening a card-wide bulk form.
 3. Complete. Added field-level annotation badges/dialogs for annotated `GridContent` fields and persistent annotation actions for inline runtime editors, reusing the existing annotation display/editor data and preserving card-level help and bulk annotation editing.
-4. Decide whether the existing bulk edit dialog stays as a fallback for multi-field edits, reference/profile fields, or compound surfaces after runtime primitive fields have direct edit controls.
+4. Complete. Decided that the card-wide bulk edit dialog stays as an MVP fallback for compound fields, list rows, multi-field reference/profile surfaces, and mixed cards, but should no longer be the primary editor for runtime/state primitives once direct field controls exist.
 5. Run a keyboard, touch, focus-management, text-selection, and copy/paste pass on the new interaction model and document any new expectations in the UI checklist.
+6. Move annotation add/edit flows out of the card-wide bulk edit dialog and into the field/card note dialogs where equivalent annotation paths are available. Target behavior: note/help dialogs are the primary annotation review/edit surface, while bulk edit focuses on value and structure fallback editing. Keep bulk annotation editing only as a temporary fallback until note dialogs cover equivalent annotation paths.
+7. Final evaluation pass: verify all slices and definition-of-done bullets, decide whether any remaining `InlineFieldDraft` beside `GridContent` pairing is justified as a short-term fallback or should move to `p1-045`, update docs/checklists accordingly, and prune `p1-030` only if fully complete.
 
 Dependency notes:
 
 - Slice 1 is complete; use [field-interaction-model.md](field-interaction-model.md) as the target UX model before abstraction work hardens around the wrong behavior.
 - `p1-040` is complete; use the shared `FieldDraft`, RFC 6902 JSON Patch, and responsibility-split guidance from [field-binding-contract.md](field-binding-contract.md) for slices 2-4.
-- In practice, the expected order is now: `p1-030` slices 2-5 -> optional `p1-045`/`p1-050` cleanup.
+- In practice, the expected order is now: `p1-030` slices 2-7 -> optional `p1-045`/`p1-050` cleanup.
 
 Definition of done:
 

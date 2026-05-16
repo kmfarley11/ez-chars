@@ -92,9 +92,11 @@ The current help and annotation data should remain valid. This model changes the
 
 The existing card-wide edit dialog can remain during the migration.
 
-- It is acceptable as a fallback for compound fields and multi-field surfaces.
-- It should not remain the only way to edit primitive runtime fields once the direct field model lands.
-- Later slices should decide whether card-wide editing remains useful for non-runtime organizational sections.
+- It remains useful as an MVP fallback for compound fields, list rows, multi-field reference/profile surfaces, and mixed cards that still contain fields without direct inline controls.
+- It should not be the primary way to edit runtime/state primitives once direct field controls exist for those fields.
+- It may temporarily duplicate editing for a displayed field when a card still needs bulk edit for nearby non-direct fields. Treat that as a migration fallback, not the target component model.
+- New runtime/state primitive work should prefer the field-level patch path first, then leave card-wide editing only where the surrounding surface still needs it.
+- Later cleanup should either fold field-level display/edit/annotation behavior into the shared grid rendering path or explicitly justify any remaining standalone inline editor beside `GridContent`.
 
 ## Patch Semantics
 

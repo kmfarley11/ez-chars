@@ -198,11 +198,11 @@
 		<button
 			type="button"
 			class="theme-btn-light btn inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border p-0 leading-none"
-			aria-label="Edit"
-			title="Edit"
+			aria-label="Edit card fields"
+			title="Edit card fields"
 			onclick={onOpen}
 		>
-			<!-- TODO - consider edits at individual field level rather than group -->
+			<!-- Card-wide editing remains the fallback for compound and mixed surfaces. -->
 			<svg
 				viewBox="0 0 24 24"
 				xmlns="http://www.w3.org/2000/svg"
