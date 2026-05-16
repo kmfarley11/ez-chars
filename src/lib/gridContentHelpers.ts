@@ -30,6 +30,7 @@ export type HelpAnnotationGroup = {
 
 type DisplayPart = { value: string; label?: string };
 type PrimitiveGridFieldValue = string | number | boolean;
+type PrimitiveInputKind = 'text' | 'number';
 
 export type GridFieldDescriptor = {
 	key: string;
@@ -82,6 +83,99 @@ export const getValueAtGridPath = (source: unknown, path: GridContentBindPath): 
 
 const isPrimitiveGridFieldValue = (value: unknown): value is PrimitiveGridFieldValue =>
 	typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
+
+// These token sets are intentionally rough authoring heuristics. Long term, the
+// better source of truth is schema- or system-layer field metadata rather than
+// inferring semantics from field keys alone inside the generic grid layer.
+const uppercaseFieldTokens = new Set([
+	'ac',
+	'hp',
+	'dc',
+	'id',
+	'xp',
+	'npc',
+	'pc',
+	'str',
+	'dex',
+	'con',
+	'int',
+	'wis',
+	'cha'
+]);
+
+const numericFieldTokens = new Set([
+	'ac',
+	'armor',
+	'bonus',
+	'class',
+	'count',
+	'dc',
+	'dice',
+	'fails',
+	'failures',
+	'gp',
+	'hp',
+	'initiative',
+	'level',
+	'levels',
+	'max',
+	'mod',
+	'pp',
+	'remaining',
+	'saves',
+	'score',
+	'slots',
+	'sp',
+	'speed',
+	'successes',
+	'temp',
+	'total',
+	'uses',
+	'xp'
+]);
+
+const splitFieldWords = (value: string): Array<string> =>
+	value
+		.replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+		.replace(/[_-]+/g, ' ')
+		.trim()
+		.split(/\s+/)
+		.filter((part) => part.length > 0);
+
+const toDisplayFieldName = (value: string): string => {
+	const words = splitFieldWords(value);
+	if (words.length === 0) return capitalizeFirstLetter(value);
+	return words
+		.map((word) => {
+			const lowered = word.toLowerCase();
+			if (uppercaseFieldTokens.has(lowered)) return lowered.toUpperCase();
+			return capitalizeFirstLetter(lowered);
+		})
+		.join(' ');
+};
+
+const inferPrimitiveInputKind = (
+	key: string,
+	fieldName: string | undefined,
+	readValue: unknown,
+	defaultValue: PrimitiveGridFieldValue | undefined
+): PrimitiveInputKind => {
+	if (typeof readValue === 'number' || typeof defaultValue === 'number') return 'number';
+	if (typeof readValue === 'string' || typeof defaultValue === 'string') return 'text';
+
+	const firstWord = splitFieldWords(fieldName ?? key)[0]?.toLowerCase();
+	return firstWord && numericFieldTokens.has(firstWord) ? 'number' : 'text';
+};
+
+const inferDefaultPrimitiveValue = (
+	inputKind: PrimitiveInputKind,
+	readValue: unknown,
+	explicitDefaultValue: PrimitiveGridFieldValue | undefined
+): PrimitiveGridFieldValue => {
+	if (typeof explicitDefaultValue !== 'undefined') return explicitDefaultValue;
+	if (typeof readValue === 'boolean') return false;
+	return inputKind === 'number' ? 0 : '';
+};
 
 export const toGridJsonPointer = (path: GridContentBindPath): JSONPointer =>
 	`/${path
@@ -141,18 +235,25 @@ export const resolveGridFieldDescriptor = (
 		descriptor.annotationPatchPath ??
 		(valuePatchPath ? options.annotationPathForValuePath?.(valuePatchPath) : undefined);
 	const readValue = readPath ? getValueAtGridPath(source, readPath) : undefined;
-	const value = isPrimitiveGridFieldValue(readValue) ? readValue : (descriptor.defaultValue ?? '');
+	const resolvedFieldName =
+		displayOrPlaceholder(descriptor.fieldName, '').trim() || toDisplayFieldName(descriptor.key);
+	const resolvedInputKind =
+		descriptor.inputKind ??
+		inferPrimitiveInputKind(descriptor.key, resolvedFieldName, readValue, descriptor.defaultValue);
+	const value = isPrimitiveGridFieldValue(readValue)
+		? readValue
+		: inferDefaultPrimitiveValue(resolvedInputKind, readValue, descriptor.defaultValue);
 	const canEditValue =
 		descriptor.capabilities?.canEditValue ?? (valuePatchPath !== undefined && value !== undefined);
 	const canEditAnnotations =
 		descriptor.capabilities?.canEditAnnotations ?? annotationPatchPath !== undefined;
 
 	return {
-		fieldName: descriptor.fieldName,
+		fieldName: resolvedFieldName,
 		label: descriptor.label,
 		hidden: descriptor.hidden,
 		options: descriptor.options,
-		inputKind: descriptor.inputKind,
+		inputKind: resolvedInputKind,
 		editOnly: descriptor.editOnly,
 		multiline: descriptor.multiline,
 		bindPath: valuePatchPath,
@@ -199,11 +300,8 @@ export const isDirectEditablePrimitiveField = (field: GridContentField): boolean
 // Field Normalization + Display Helpers
 // ------------------------------------------------------------
 const inferFieldName = (fieldKey: string) => {
-	const spaced = fieldKey
-		.replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-		.replace(/[_-]+/g, ' ')
-		.trim();
-	return capitalizeFirstLetter(spaced.length > 0 ? spaced : fieldKey);
+	const displayName = toDisplayFieldName(fieldKey);
+	return displayName.length > 0 ? displayName : capitalizeFirstLetter(fieldKey);
 };
 
 // Re-export shared guards for callers that already consume them from this module.

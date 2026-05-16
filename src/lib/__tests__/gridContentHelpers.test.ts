@@ -232,6 +232,45 @@ describe('grid field descriptor resolution', () => {
 		});
 	});
 
+	it('infers display names, input kinds, and default values for primitive descriptors', () => {
+		expect(
+			resolveGridFieldDescriptor(
+				characterLikeSource,
+				{
+					key: 'tempHp',
+					path: ['systemData', 'combat', 'hitPoints', 'missingTempHp']
+				},
+				{ annotationPathForValuePath }
+			)
+		).toMatchObject({
+			fieldName: 'Temp HP',
+			inputKind: 'number',
+			value: 0
+		});
+
+		expect(
+			resolveGridFieldDescriptor(characterLikeSource, {
+				key: 'armorClass',
+				path: ['systemData', 'combat', 'missingArmorClass']
+			})
+		).toMatchObject({
+			fieldName: 'Armor Class',
+			inputKind: 'number',
+			value: 0
+		});
+
+		expect(
+			resolveGridFieldDescriptor(characterLikeSource, {
+				key: 'featureNotes',
+				path: ['systemData', 'combat', 'missingFeatureNotes']
+			})
+		).toMatchObject({
+			fieldName: 'Feature Notes',
+			inputKind: 'text',
+			value: ''
+		});
+	});
+
 	it('resolves multiple descriptors into GridContentData keyed by descriptor key', () => {
 		expect(
 			Object.keys(

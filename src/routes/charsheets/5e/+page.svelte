@@ -675,9 +675,7 @@
 	const quickRefPrimaryDescriptors = $derived<Array<GridFieldDescriptor>>([
 		{
 			key: 'currentHp',
-			fieldName: 'Current HP',
 			path: ['systemData', 'combat', 'hitPoints', 'current'],
-			inputKind: 'number',
 			interaction: {
 				editAffordance: 'persistent',
 				annotationAffordance: 'persistent'
@@ -685,10 +683,7 @@
 		},
 		{
 			key: 'tempHp',
-			fieldName: 'Temp HP',
 			path: ['systemData', 'combat', 'hitPoints', 'temp'],
-			inputKind: 'number',
-			defaultValue: 0,
 			valuePatchOperation: char.systemData.combat.hitPoints.temp === undefined ? 'add' : 'replace',
 			interaction: {
 				editAffordance: 'persistent',
@@ -697,24 +692,15 @@
 		},
 		{
 			key: 'maxHp',
-			fieldName: 'Max HP',
-			path: ['systemData', 'combat', 'hitPoints', 'max'],
-			inputKind: 'number',
-			defaultValue: 0
+			path: ['systemData', 'combat', 'hitPoints', 'max']
 		},
 		{
 			key: 'initiative',
-			fieldName: 'Initiative',
-			path: ['systemData', 'combat', 'initiative'],
-			inputKind: 'number',
-			defaultValue: 0
+			path: ['systemData', 'combat', 'initiative']
 		},
 		{
 			key: 'armorClass',
-			fieldName: 'Armor Class',
-			path: ['systemData', 'combat', 'armorClass'],
-			inputKind: 'number',
-			defaultValue: 0
+			path: ['systemData', 'combat', 'armorClass']
 		}
 	]);
 	const quickRefPrimaryData = $derived<GridContentData>(
