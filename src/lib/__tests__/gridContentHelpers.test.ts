@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	collectAnnotationPatchesFromData,
+	collectHelpAnnotationGroups,
 	collectPatchesFromData,
 	collectValuePatchesFromData
 } from '../gridContentHelpers';
@@ -57,6 +58,11 @@ const createPatchProjectionData = (): GridContentData => ({
 				}
 			}
 		]
+	},
+	emptyAnnotatedField: {
+		fieldName: 'Empty Annotated Field',
+		annotationBindPath: ['systemData', 'annotations', 'emptyAnnotatedField', '_annotations'],
+		value: 'No notes yet'
 	}
 });
 
@@ -74,6 +80,11 @@ describe('grid content patch projection', () => {
 				kind: 'value',
 				path: ['systemData', 'proficiencies', 'languages'],
 				value: [{ name: 'Draconic', source: 'background' }]
+			},
+			{
+				kind: 'value',
+				path: ['emptyAnnotatedField'],
+				value: 'No notes yet'
 			}
 		]);
 
@@ -109,6 +120,11 @@ describe('grid content patch projection', () => {
 						text: 'Granted by background.'
 					}
 				]
+			},
+			{
+				kind: 'annotation',
+				path: ['systemData', 'annotations', 'emptyAnnotatedField', '_annotations'],
+				value: []
 			}
 		]);
 	});
@@ -124,6 +140,10 @@ describe('grid content patch projection', () => {
 			{
 				path: ['systemData', 'proficiencies', 'languages'],
 				value: [{ name: 'Draconic', source: 'background' }]
+			},
+			{
+				path: ['emptyAnnotatedField'],
+				value: 'No notes yet'
 			},
 			{
 				path: ['systemData', 'annotations', 'abilities', 'strength', 'score', '_annotations'],
@@ -154,6 +174,58 @@ describe('grid content patch projection', () => {
 						text: 'Granted by background.'
 					}
 				]
+			},
+			{
+				path: ['systemData', 'annotations', 'emptyAnnotatedField', '_annotations'],
+				value: []
+			}
+		]);
+	});
+
+	it('can include editable annotation targets without existing annotations for note dialogs', () => {
+		const data = createPatchProjectionData();
+
+		expect(collectHelpAnnotationGroups(data).map((group) => group.title)).toEqual([
+			'Strength',
+			'Proficiencies / Source'
+		]);
+
+		expect(
+			collectHelpAnnotationGroups(data, { includeEditableEmpty: true }).map((group) => ({
+				title: group.title,
+				annotationCount: group.annotations.length,
+				annotationBindPath: group.annotationBindPath
+			}))
+		).toEqual([
+			{
+				title: 'Strength',
+				annotationCount: 1,
+				annotationBindPath: [
+					'systemData',
+					'annotations',
+					'abilities',
+					'strength',
+					'score',
+					'_annotations'
+				]
+			},
+			{
+				title: 'Proficiencies / Source',
+				annotationCount: 1,
+				annotationBindPath: [
+					'systemData',
+					'annotations',
+					'proficiencies',
+					'languages',
+					'0',
+					'source',
+					'_annotations'
+				]
+			},
+			{
+				title: 'Empty Annotated Field',
+				annotationCount: 0,
+				annotationBindPath: ['systemData', 'annotations', 'emptyAnnotatedField', '_annotations']
 			}
 		]);
 	});

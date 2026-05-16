@@ -50,7 +50,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: continue `p1-030` with slice 2 to roll the proven field-binding abstraction into direct primitive runtime-field editing.
+Next recommended target: continue `p1-030` with slice 7 to run the final field interaction evaluation and decide whether the item is ready to prune.
 
 ### Link runtime actions to source weapons, spells, and features
 
@@ -206,7 +206,7 @@ Suggested implementation slices:
 3. Complete. Added field-level annotation badges/dialogs for annotated `GridContent` fields and persistent annotation actions for inline runtime editors, reusing the existing annotation display/editor data and preserving card-level help and bulk annotation editing.
 4. Complete. Decided that the card-wide bulk edit dialog stays as an MVP fallback for compound fields, list rows, multi-field reference/profile surfaces, and mixed cards, but should no longer be the primary editor for runtime/state primitives once direct field controls exist.
 5. Complete. Ran the keyboard, touch, focus-management, text-selection, and copy/paste review pass; inline edits now focus/select their input and return focus on save/cancel, note dialogs return focus to their trigger, card fallback actions now use an always-visible `Edit`/`Notes` menu instead of hover-only buttons, and [theme-visual-checklist.md](theme-visual-checklist.md) documents the field interaction checks.
-6. Move annotation add/edit flows out of the card-wide bulk edit dialog and into the field/card note dialogs where equivalent annotation paths are available. Target behavior: note/help dialogs are the primary annotation review/edit surface, while bulk edit focuses on value and structure fallback editing. Keep bulk annotation editing only as a temporary fallback until note dialogs cover equivalent annotation paths.
+6. Complete. Moved annotation add/edit flows for fields with `annotationBindPath` into the card Notes dialog, including empty editable note targets. Card-wide bulk edit now emits value/structure patches and no longer renders annotation editors for equivalent paths, while field-level note dialogs continue to handle inline annotation edits.
 7. Final evaluation pass: verify all slices and definition-of-done bullets, decide whether any remaining `InlineFieldDraft` beside `GridContent` pairing is justified as a short-term fallback or should move to `p1-045`, update docs/checklists accordingly, and prune `p1-030` only if fully complete.
 
 Dependency notes:

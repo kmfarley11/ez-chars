@@ -11,7 +11,7 @@
 		type HelpAnnotationGroup,
 		collectHelpAnnotationGroups,
 		collectLeafInputs,
-		collectPatchesFromData,
+		collectValuePatchesFromData,
 		formatFieldValue,
 		getLabeledDisplayParts,
 		normalizeData
@@ -19,7 +19,6 @@
 	import {
 		appendGridArrayItemAtPath,
 		removeGridArrayItemAtPath,
-		updateGridAnnotationsAtPath,
 		updateGridDataAtPath
 	} from '$lib/characterGridHelpers';
 	import { displayOrPlaceholder } from '$lib/displayHelpers';
@@ -62,11 +61,15 @@
 	let draftData = $state<GridContentData>({});
 	let shouldRenderEditDialog = $state(false);
 	let shouldRenderHelpDialog = $state(false);
+	let editingHelpAnnotationKey = $state<string | undefined>(undefined);
+	let draftHelpAnnotations = $state<Array<GridContentAnnotation>>([]);
 
 	const normalizedData = $derived<GridContentData>(normalizeData(data));
 
 	const helpAnnotationGroups = $derived<Array<HelpAnnotationGroup>>(
-		collectHelpAnnotationGroups(normalizedData)
+		collectHelpAnnotationGroups(normalizedData, {
+			includeEditableEmpty: handleEditSavePatches !== undefined
+		})
 	);
 
 	const closeDialog = () => {
@@ -79,6 +82,8 @@
 		helpDialogEl?.close();
 		if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
 		shouldRenderHelpDialog = false;
+		editingHelpAnnotationKey = undefined;
+		draftHelpAnnotations = [];
 	};
 
 	const onCancel = () => {
@@ -98,6 +103,8 @@
 	};
 
 	const onHelpOpen = async () => {
+		editingHelpAnnotationKey = undefined;
+		draftHelpAnnotations = [];
 		shouldRenderHelpDialog = true;
 		await tick();
 		helpDialogEl?.showModal();
@@ -119,7 +126,9 @@
 		event.preventDefault();
 		// Preferred path: emit bind-path patches; fallback preserves legacy payload-based integration.
 		if (handleEditSavePatches) {
-			handleEditSavePatches(collectPatchesFromData(draftData));
+			handleEditSavePatches(
+				collectValuePatchesFromData(draftData).map(({ path, value }) => ({ path, value }))
+			);
 		} else {
 			handleEditSave?.(draftData);
 		}
@@ -153,6 +162,23 @@
 	) => {
 		if (!field.annotationBindPath) return;
 		handleEditSavePatches?.([{ path: field.annotationBindPath, value: nextAnnotations }]);
+	};
+
+	const beginHelpAnnotationEdit = (group: HelpAnnotationGroup) => {
+		if (!group.annotationBindPath) return;
+		editingHelpAnnotationKey = group.key;
+		draftHelpAnnotations = structuredClone(group.annotations);
+	};
+
+	const cancelHelpAnnotationEdit = () => {
+		editingHelpAnnotationKey = undefined;
+		draftHelpAnnotations = [];
+	};
+
+	const saveHelpAnnotations = (group: HelpAnnotationGroup) => {
+		if (!group.annotationBindPath) return;
+		handleEditSavePatches?.([{ path: group.annotationBindPath, value: draftHelpAnnotations }]);
+		cancelHelpAnnotationEdit();
 	};
 
 	const displayItemClass = $derived(
@@ -379,22 +405,6 @@
 													/>
 												{/if}
 											</label>
-
-											{#if leaf.field.annotationBindPath}
-												<GridContentAnnotationsEditor
-													annotations={leaf.field.annotations ?? []}
-													referenceTemplates={annotationEditorConfig?.referenceTemplates}
-													defaultKind={annotationEditorConfig?.defaultKind}
-													defaultOrigin={annotationEditorConfig?.defaultOrigin}
-													onChange={(nextAnnotations) => {
-														draftData = updateGridAnnotationsAtPath(
-															draftData,
-															leaf.path,
-															nextAnnotations
-														);
-													}}
-												/>
-											{/if}
 										</div>
 									{/each}
 								</div>
@@ -473,22 +483,6 @@
 											/>
 										{/if}
 									</label>
-
-									{#if leaf.field.annotationBindPath}
-										<GridContentAnnotationsEditor
-											annotations={leaf.field.annotations ?? []}
-											referenceTemplates={annotationEditorConfig?.referenceTemplates}
-											defaultKind={annotationEditorConfig?.defaultKind}
-											defaultOrigin={annotationEditorConfig?.defaultOrigin}
-											onChange={(nextAnnotations) => {
-												draftData = updateGridAnnotationsAtPath(
-													draftData,
-													leaf.path,
-													nextAnnotations
-												);
-											}}
-										/>
-									{/if}
 								</div>
 							{/each}
 						</div>
@@ -524,13 +518,52 @@
 				<div class="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
 					{#each helpAnnotationGroups as group (group.key)}
 						<div class="space-y-1 rounded-md border px-2 py-2">
-							<p class="text-sm font-semibold">
-								{group.title}
-								{#if group.joinedLabel}
-									<span class="theme-text-muted text-xs italic"> ({group.joinedLabel}) </span>
+							<div class="flex items-start justify-between gap-2">
+								<p class="text-sm font-semibold">
+									{group.title}
+									{#if group.joinedLabel}
+										<span class="theme-text-muted text-xs italic"> ({group.joinedLabel}) </span>
+									{/if}
+								</p>
+								{#if group.annotationBindPath && handleEditSavePatches && editingHelpAnnotationKey !== group.key}
+									<button
+										type="button"
+										class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
+										onclick={() => beginHelpAnnotationEdit(group)}
+									>
+										{group.annotations.length > 0 ? 'Edit' : 'Add'}
+									</button>
 								{/if}
-							</p>
-							<GridContentAnnotationsDisplay annotations={group.annotations} />
+							</div>
+							{#if editingHelpAnnotationKey === group.key}
+								<GridContentAnnotationsEditor
+									annotations={draftHelpAnnotations}
+									referenceTemplates={annotationEditorConfig?.referenceTemplates}
+									defaultKind={annotationEditorConfig?.defaultKind}
+									defaultOrigin={annotationEditorConfig?.defaultOrigin}
+									onChange={(nextAnnotations) => {
+										draftHelpAnnotations = nextAnnotations;
+									}}
+								/>
+								<div class="mt-2 flex justify-end gap-2">
+									<button
+										type="button"
+										class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
+										onclick={cancelHelpAnnotationEdit}
+									>
+										Cancel
+									</button>
+									<button
+										type="button"
+										class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs font-semibold"
+										onclick={() => saveHelpAnnotations(group)}
+									>
+										Save
+									</button>
+								</div>
+							{:else}
+								<GridContentAnnotationsDisplay annotations={group.annotations} />
+							{/if}
 						</div>
 					{/each}
 				</div>

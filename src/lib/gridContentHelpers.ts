@@ -20,6 +20,7 @@ export type HelpAnnotationGroup = {
 	title: string;
 	joinedLabel?: string;
 	annotations: Array<GridContentAnnotation>;
+	annotationBindPath?: GridContentBindPath;
 };
 
 type DisplayPart = { value: string; label?: string };
@@ -199,11 +200,17 @@ export const collectLeafInputs = (
 	);
 };
 
-export const collectHelpAnnotationGroups = (source: GridContentData): Array<HelpAnnotationGroup> =>
+export const collectHelpAnnotationGroups = (
+	source: GridContentData,
+	options: { includeEditableEmpty?: boolean } = {}
+): Array<HelpAnnotationGroup> =>
 	Object.entries(source).flatMap(([fieldKey, field]) =>
 		collectLeafInputs(field, [fieldKey]).flatMap((leaf, idx) => {
+			if (!shouldRenderField(leaf.field)) return [];
 			const fieldAnnotations = leaf.field.annotations ?? [];
-			if (fieldAnnotations.length === 0) return [];
+			const shouldIncludeEmptyEditable =
+				options.includeEditableEmpty === true && leaf.field.annotationBindPath !== undefined;
+			if (fieldAnnotations.length === 0 && !shouldIncludeEmptyEditable) return [];
 			const rootFieldName = displayOrPlaceholder(field.fieldName, inferFieldName(fieldKey)).trim();
 			const leafFieldName = displayOrPlaceholder(leaf.field.fieldName, rootFieldName).trim();
 			const title =
@@ -213,7 +220,8 @@ export const collectHelpAnnotationGroups = (source: GridContentData): Array<Help
 					key: `${fieldKey}-${idx}-${leaf.path.join('.')}`,
 					title,
 					joinedLabel: leaf.joinedLabel,
-					annotations: fieldAnnotations
+					annotations: fieldAnnotations,
+					annotationBindPath: leaf.field.annotationBindPath
 				}
 			];
 		})
