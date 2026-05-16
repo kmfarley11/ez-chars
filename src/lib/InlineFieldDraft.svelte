@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { FieldDraft, type FieldDraftOperation } from '$lib/fieldDraftHelpers';
 	import FieldAnnotationControl from '$lib/FieldAnnotationControl.svelte';
 	import type { JSONPatchDocument, JSONPointer } from 'immutable-json-patch';
@@ -48,19 +49,30 @@
 	let draft = $state<FieldDraft<InlineFieldDraftValue> | undefined>(undefined);
 	let draftValue = $state('');
 	let error = $state<string | undefined>(undefined);
+	let inputEl = $state<HTMLInputElement>();
+	let editButtonEl = $state<HTMLButtonElement>();
 
 	const displayValue = $derived(value === '' ? '___' : String(value));
 
-	const beginEdit = () => {
+	const focusEditButton = async () => {
+		await tick();
+		editButtonEl?.focus();
+	};
+
+	const beginEdit = async () => {
 		draft = FieldDraft.begin({ kind: 'value', path, value, operation: patchOperation });
 		draftValue = String(value);
 		error = undefined;
+		await tick();
+		inputEl?.focus();
+		inputEl?.select();
 	};
 
-	const cancelEdit = () => {
+	const cancelEdit = async () => {
 		draft = draft?.cancel();
 		draftValue = '';
 		error = undefined;
+		await focusEditButton();
 	};
 
 	const readDraftValue = (): InlineFieldDraftValue => {
@@ -74,7 +86,7 @@
 		return parsedValue;
 	};
 
-	const saveEdit = () => {
+	const saveEdit = async () => {
 		if (!draft) return;
 
 		try {
@@ -83,7 +95,7 @@
 			if (patch.length > 0) {
 				onSavePatch(patch);
 			}
-			cancelEdit();
+			await cancelEdit();
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Could not save this field.';
 		}
@@ -116,6 +128,7 @@
 		<label class="inline-flex min-w-0 items-center gap-2">
 			<span class="font-semibold">{label}:</span>
 			<input
+				bind:this={inputEl}
 				class="theme-input w-20 rounded-md border px-2 py-1 text-sm"
 				type={inputKind}
 				value={draftValue}
@@ -128,6 +141,7 @@
 			{/if}
 		</label>
 		<button
+			bind:this={editButtonEl}
 			type="button"
 			class="theme-btn-light btn rounded-md border px-2 py-1 text-xs font-semibold"
 			onclick={saveEdit}

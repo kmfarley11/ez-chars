@@ -26,6 +26,7 @@
 	}: Props = $props();
 
 	let dialogEl = $state<HTMLDialogElement>();
+	let triggerEl = $state<HTMLButtonElement>();
 	let shouldRenderDialog = $state(false);
 	let isEditing = $state(false);
 	let draftAnnotations = $state<Array<GridContentAnnotation>>([]);
@@ -38,6 +39,7 @@
 		dialogEl?.close();
 		if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
 		shouldRenderDialog = false;
+		triggerEl?.focus();
 	};
 
 	const openDialog = async () => {
@@ -48,8 +50,9 @@
 		dialogEl?.showModal();
 	};
 
-	const onCancel = () => {
+	const onCancel = (event?: Event) => {
 		if (isEditing) {
+			event?.preventDefault();
 			draftAnnotations = structuredClone(annotations);
 			isEditing = false;
 			return;
@@ -72,6 +75,7 @@
 
 {#if shouldRenderControl}
 	<button
+		bind:this={triggerEl}
 		type="button"
 		class="theme-btn-light btn annotation-trigger inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
 		class:hover-affordance={annotationAffordance === 'hover' && annotationCount === 0}

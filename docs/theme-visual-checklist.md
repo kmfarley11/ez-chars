@@ -27,3 +27,13 @@ Run this quick check before deploy when touching theme or UI colors.
 - Verify navbar at desktop width.
 - Verify navbar around small/tablet breakpoint.
 - Verify mobile menu opens, actions are fully clickable, and active theme label appears.
+
+## 5) Field interaction checks
+
+- Runtime/state inline edit buttons are keyboard focusable and visibly focused.
+- Activating an inline edit button moves focus into the input and selects the current value.
+- Enter saves single-line inline edits; Escape cancels and returns focus to the originating edit button.
+- Notes/annotation buttons are keyboard focusable, open in read mode first, and return focus to the originating button when closed.
+- Touch users can open edit and note controls without hover-only gestures.
+- Reference/profile field text, spell names, feature names, item names, and note text remain selectable and copyable without entering edit mode.
+- Card-wide edit remains labeled as a fallback for card fields, while runtime/state primitives use their direct edit controls.
