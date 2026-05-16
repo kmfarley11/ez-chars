@@ -227,13 +227,18 @@ Slice 6 of `p1-040` added the field-scoped `FieldDraft` helper in [fieldDraftHel
 
 The helper is framework-agnostic, immutable-by-convention, and does not open or depend on the card-wide edit dialog. It gives later field components a readable draft-to-patch primitive while leaving actual application, validation, persistence, and state commits with the owning route or store.
 
+Slice 7 of `p1-040` proved the contract on one live runtime sheet field:
+
+- [InlineFieldDraft.svelte](../src/lib/InlineFieldDraft.svelte) owns local begin/update/cancel interaction for a single primitive value and emits only a standard JSON Patch document.
+- The 5e page applies that document with `immutable-json-patch`, then validates the resulting character with the 5e schema before committing it through the existing local-first store path.
+- The field component does not know about LocalStorage, import/export, HTTP, auth, or future sync mechanics; those remain page/store responsibilities.
+
 ## Non-Goals For These Contract Slices
 
-- Do not implement inline editors.
 - Do not introduce a remote sync layer or HTTP-aware mutation model.
 - Do not replace all page-level patch normalization.
 - Do not remove the card-wide edit dialog.
-- Do not choose the first proof surface yet, unless a later slice asks for it.
+- Do not roll the proof surface out to every field until the remaining interaction slices are ready.
 
 ## Review Checklist For Implementers
 

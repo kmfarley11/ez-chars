@@ -247,7 +247,7 @@ Suggested implementation slices:
 4. Complete. Adopted `immutable-json-patch` directly and added [jsonPatch.test.ts](../src/lib/__tests__/jsonPatch.test.ts), backed by [jsonPatchFixtures.ts](../src/test-utils/jsonPatchFixtures.ts), to prove standard JSON Patch payloads, non-mutating application, structural sharing for untouched branches, guarded list operations, and failed-test behavior.
 5. Complete. Split grid patch projection into `collectValuePatchesFromData` and `collectAnnotationPatchesFromData`, with `collectPatchesFromData` retained as the legacy combined bridge for the current card-wide save path.
 6. Complete. Added the `FieldDraft` helper in [fieldDraftHelpers.ts](../src/lib/fieldDraftHelpers.ts) for field-scoped begin/update/cancel and draft-to-patch behavior that prepares guarded standard JSON Patch documents without depending on the card-wide edit dialog.
-7. Prove the abstraction on one current runtime sheet surface before wider rollout, with the page layer applying local changes immediately and an optional persistence/sync layer left as a lower-level concern.
+7. Complete. Added a narrow runtime proof on the 5e quick-reference Current HP field using `FieldDraft` plus `immutable-json-patch`: the field component prepares guarded standard JSON Patch operations, while the page layer applies and validates the local character update.
 8. Document how grid components, page layers, and data/store layers divide responsibility, including that field components must not know about HTTP endpoints, auth, or remote transport details.
 
 Dependency notes:

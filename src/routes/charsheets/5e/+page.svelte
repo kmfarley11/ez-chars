@@ -2,6 +2,7 @@
 	import { resolve } from '$app/paths';
 	import GridContent from '$lib/GridContent.svelte';
 	import GridContainer from '$lib/GridContainer.svelte';
+	import InlineFieldDraft from '$lib/InlineFieldDraft.svelte';
 	import '../../../app.css';
 	import { charsArray, emptyChar } from '../../../data.js';
 	import { createId } from '../../../schema/helpers';
@@ -16,11 +17,13 @@
 		type FeatureRef,
 		type Item,
 		type NoteBlock,
+		parse5e2014CharacterDocument,
 		type RuntimeAction,
 		type SpellLevel,
 		type SpellRef
 	} from '../../../schema';
 	import { applyGridPatches } from '$lib/characterGridHelpers';
+	import { immutableJSONPatch, type JSONPatchDocument } from 'immutable-json-patch';
 	import type {
 		GridAnnotationEditorConfig,
 		GridContentAnnotation,
@@ -1264,6 +1267,19 @@
 		);
 	};
 
+	const applyCharacterJsonPatch = (
+		entry: CharacterDocument5e2014,
+		patch: JSONPatchDocument
+	): CharacterDocument5e2014 => {
+		if (patch.length === 0) return entry;
+
+		return parse5e2014CharacterDocument(immutableJSONPatch(entry, patch));
+	};
+
+	const handleFieldPatchSave = (patch: JSONPatchDocument) => {
+		updateCurrent5eCharacter((entry) => applyCharacterJsonPatch(entry, patch));
+	};
+
 	const isSystemDataAnnotationPath = (path: GridContentBindPath): boolean =>
 		path.length >= 3 &&
 		path[0] === 'systemData' &&
@@ -1988,6 +2004,16 @@
 							displayMaxCols={2}
 							data={quickRefPrimaryData}
 						/>
+						<div class="mt-2 border-t pt-2">
+							<InlineFieldDraft
+								label="Current HP"
+								value={char.systemData.combat.hitPoints.current}
+								path="/systemData/combat/hitPoints/current"
+								inputKind="number"
+								ariaLabel="Current hit points"
+								onSavePatch={handleFieldPatchSave}
+							/>
+						</div>
 					</GridContainer>
 					<GridContainer border={true} pad={true} classes="rounded-md">
 						<GridContent
