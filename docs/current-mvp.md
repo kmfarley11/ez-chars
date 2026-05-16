@@ -49,13 +49,14 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 - basic character management: create, open, and delete from the home view, plus clear invalid-id handling on the 5e route
 - theme system
 - major 5e sheet surface for the MVP: overview, quick reference, abilities/proficiencies/features/traits, action-economy runtime summaries, spells, inventory, and background/roleplay/notes, with runtime and organizational regions visually separated
+- field-level editing and annotation UX for surfaced runtime/state fields: high-frequency runtime values have persistent direct edit controls, reference/profile cards keep quieter menu-driven fallback editing, and Notes dialogs support annotation review/add/edit flows
 - JSON import/export with a versioned backup envelope, file download, file validation, replace behavior, and merge-new behavior that skips duplicate character IDs
 - local automated verification with Vitest contract tests, coverage reporting, schema/import-export/storage coverage, and a thin create/edit/reload smoke path
 
 ### Partial
 
 - 5e sheet route still does not expose every optional schema field or deeper 5e detail
-- annotation/reference UI exists for surfaced fields, and the target direct field-editing interaction model plus field binding/mutation contract are documented in [docs/field-interaction-model.md](field-interaction-model.md) and [docs/field-binding-contract.md](field-binding-contract.md)
+- the target field interaction model and field binding/mutation contract are documented in [docs/field-interaction-model.md](field-interaction-model.md) and [docs/field-binding-contract.md](field-binding-contract.md); `GridContent` and `InlineFieldDraft` still need a more cohesive shared field/card API before route-level projection and patch glue extraction can leave the sheet ready for broader feature work
 
 ### Missing
 

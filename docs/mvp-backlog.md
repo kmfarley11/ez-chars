@@ -16,10 +16,13 @@ Treat [current-mvp.md](current-mvp.md) as the boundary document and this file as
 - Use the exact backlog item id from the `ID:` line in the prompt; keep the human-readable title in this file for context
 - For `small` items, hand the top-level item directly to the AI
 - For `medium`, `medium-to-large`, or `oversized` items, tell the AI to implement only one numbered suggested slice
+- Use the parent item scope, execution guidance, dependency notes, and definition of done as design constraints for the requested slice, but do not implement neighboring slices unless explicitly asked
 - If a slice description is unusually close to another slice or otherwise ambiguous, include the exact slice text as an extra clarification, but this should not be required in the normal case
 - If the task is about the 5e sheet's intended layout or information grouping, also point the AI at [docs/ez-chars-5e-rough.excalidraw](ez-chars-5e-rough.excalidraw) as the design reference
 - Do not expand scope into other slices or [docs/vision/](vision/)
 - Before adding bespoke UI controls or new component patterns, inspect [src/lib/](../src/lib/) for existing primitives and prefer reusing or extending them; call out deliberate exceptions
+- For refactor or shared-interface work, inventory existing call sites first, describe the intended common interface or migration shape before broad edits, and preserve user-visible behavior unless the slice explicitly changes it
+- If the task is about `p1-035`, also use [docs/field-interaction-model.md](field-interaction-model.md) and [docs/field-binding-contract.md](field-binding-contract.md) as the interaction and mutation-contract references
 - Ask the AI to run verification according to [docs/verification.md](verification.md)
 - Ask the AI to summarize what remains from the parent backlog item
 - Update this file or [docs/current-mvp.md](current-mvp.md) if the task meaningfully changes backlog or status
@@ -31,10 +34,11 @@ Prompt pattern:
 Use AGENTS.md, docs/current-mvp.md, and docs/mvp-backlog.md as the source of truth.
 Focus only on the backlog item "<exact top-level id>".
 Implement only suggested slice <number>.
+Use the parent item scope, execution guidance, dependency notes, and definition of done as design constraints, but implement only the requested numbered slice.
 If this task is about the 5e sheet's design or layout, also use docs/ez-chars-5e-rough.excalidraw as the design reference.
-If this task is about p1-030 or p1-040, also use docs/field-interaction-model.md as the interaction and binding UX reference.
-If this task is about p1-040 implementation, also use docs/field-binding-contract.md as the RFC 6902 binding and mutation contract.
 Before adding bespoke UI controls or new component patterns, inspect src/lib for reusable primitives and prefer existing components; call out any deliberate exception.
+For refactor or shared-interface work, inventory existing call sites first, describe the intended common interface or migration shape before broad edits, and preserve user-visible behavior unless the slice explicitly changes it.
+If this task is about p1-035, also use docs/field-interaction-model.md and docs/field-binding-contract.md as the interaction and mutation-contract references.
 Do not expand scope into other slices or docs/vision.
 Run verification according to docs/verification.md when appropriate.
 Explain briefly how I can manually verify the changes.
@@ -42,15 +46,13 @@ Summarize what remains from the parent backlog item.
 Update the MVP docs if the task meaningfully changes backlog or status. Prune the backlog item only when all slices and definition-of-done bullets are complete.
 ```
 
-When `p1-030` and `p1-040` are both complete, remove the extra `docs/field-interaction-model.md` and `docs/field-binding-contract.md` prompt clauses if the guidance has been absorbed into stable component docs, implementation comments, or the UI checklist.
-
 ## P0
 
 No active P0 items.
 
 ## P1
 
-Next recommended target: continue `p1-030` with slice 7 to run the final field interaction evaluation and decide whether the item is ready to prune.
+Next recommended target: start `p1-035` with slice 1 to consolidate the field rendering/editing interface before extracting broader 5e route projection logic.
 
 ### Link runtime actions to source weapons, spells, and features
 
@@ -182,48 +184,50 @@ Definition of done:
 - visual layout remains at least as good as the measured layout restored after the reverted CSS auto-fit attempt
 - any broader refactor discovered during the pass is linked to `p1-045` or `p1-050` instead of folded into this item
 
-### Refine field-level editing and annotation UX
+### Consolidate field rendering, editing, annotation, and binding APIs
 
 ID:
 
-- `p1-030`
+- `p1-035`
 
 Size:
 
-- medium-to-large; scope to one interaction slice before implementation
+- medium-to-large; implement before broad 5e route extraction
 
 Scope:
 
-- reduce the mismatch between runtime sheet editing needs and the current bulk edit-dialog workflow
-- move toward direct field interaction for editing while preserving access to field annotations
-- define the target interaction model before heavy implementation work; later implementation slices should lean on the shared field-binding/patch abstraction item instead of page-specific glue or transport-specific code
-- avoid locking the UX to desktop-only gestures; any annotation access pattern must still work for touch and keyboard users
+- reduce the component/API split between `GridContent` and `InlineFieldDraft`
+- move toward one cohesive field rendering/editing interface with explicit variants for runtime/state fields versus quieter reference/profile fields
+- make character-data-to-form-data binding feel consistent for primitive values, annotations, and card/list fallback editing
+- simplify [src/routes/charsheets/5e/+page.svelte](../src/routes/charsheets/5e/+page.svelte) by reducing bespoke adjacent `InlineFieldDraft` + `GridContent` composition
+- preserve the completed `p1-030` interaction behavior: runtime fields keep persistent direct edit affordances, reference/profile content remains readable/selectable/copyable, and Notes dialogs remain the primary annotation review/add/edit surface
+- use [field-interaction-model.md](field-interaction-model.md) and [field-binding-contract.md](field-binding-contract.md) as the reference contract for affordance variants, annotation behavior, patch boundaries, and responsibility split
+- avoid broad 5e projection extraction here; that remains `p1-045`
+
+Execution guidance:
+
+- Start with a call-site and API inventory before changing components.
+- Prefer evolving existing `GridContent`, `InlineFieldDraft`, `FieldDraft`, and annotation components over creating a parallel field system.
+- Define the shared field/card API shape in code or docs before migrating many surfaces.
+- Keep the first migration narrow enough to prove the interface without changing sheet layout or behavior.
 
 Suggested implementation slices:
 
-1. Complete. Target field interaction model is documented in [field-interaction-model.md](field-interaction-model.md): runtime/state fields may use persistent edit affordances, reference/profile fields should keep quieter edit affordances that preserve read/select/copy flows, and annotations open through explicit touch/keyboard-accessible affordances.
-2. Complete. Applied the shared field-binding/patch abstractions to individual runtime/state primitive fields with persistent edit affordances: current HP, temp HP, hit dice remaining, death save success/failure counters, and existing spell slot used counters can be edited without opening a card-wide bulk form.
-3. Complete. Added field-level annotation badges/dialogs for annotated `GridContent` fields and persistent annotation actions for inline runtime editors, reusing the existing annotation display/editor data and preserving card-level help and bulk annotation editing.
-4. Complete. Decided that the card-wide bulk edit dialog stays as an MVP fallback for compound fields, list rows, multi-field reference/profile surfaces, and mixed cards, but should no longer be the primary editor for runtime/state primitives once direct field controls exist.
-5. Complete. Ran the keyboard, touch, focus-management, text-selection, and copy/paste review pass; inline edits now focus/select their input and return focus on save/cancel, note dialogs return focus to their trigger, card fallback actions now use an always-visible `Edit`/`Notes` menu instead of hover-only buttons, and [theme-visual-checklist.md](theme-visual-checklist.md) documents the field interaction checks.
-6. Complete. Moved annotation add/edit flows for fields with `annotationBindPath` into the card Notes dialog, including empty editable note targets. Card-wide bulk edit now emits value/structure patches and no longer renders annotation editors for equivalent paths, while field-level note dialogs continue to handle inline annotation edits.
-7. Final evaluation pass: verify all slices and definition-of-done bullets, decide whether any remaining `InlineFieldDraft` beside `GridContent` pairing is justified as a short-term fallback or should move to `p1-045`, update docs/checklists accordingly, and prune `p1-030` only if fully complete.
-
-Dependency notes:
-
-- Slice 1 is complete; use [field-interaction-model.md](field-interaction-model.md) as the target UX model before abstraction work hardens around the wrong behavior.
-- `p1-040` is complete; use the shared `FieldDraft`, RFC 6902 JSON Patch, and responsibility-split guidance from [field-binding-contract.md](field-binding-contract.md) for slices 2-4.
-- In practice, the expected order is now: `p1-030` slices 2-7 -> optional `p1-045`/`p1-050` cleanup.
+1. Inventory the current `GridContent` and `InlineFieldDraft` usage in the 5e route. Define the shared field/card API shape needed to express value display, direct primitive editing, annotation affordances, and card fallback menus without duplicating binding glue.
+2. Introduce a shared field-rendering primitive or `GridContent` field variant that can render primitive runtime/state fields with persistent edit controls using the existing `FieldDraft` and JSON Patch contract.
+3. Migrate one quick-reference card from adjacent `InlineFieldDraft` + `GridContent` composition to the consolidated API, preserving visual layout and behavior.
+4. Migrate remaining runtime primitive surfaces: current/temp HP, death saves, hit dice remaining, and spell slot used counters.
+5. Review card/list fallback editing after migration and ensure card-wide Edit remains focused on value/structure fallback while Notes owns annotations.
+6. Update docs/checklists and prune this item only when the route no longer needs ad hoc adjacent field editor composition for the migrated runtime/state fields.
 
 Definition of done:
 
-- a user can directly edit individual runtime/state fields from the sheet without depending on a card-wide bulk form
-- text selection and copy flows remain reliable for field values users may paste into external search, notes, VTTs, or reference tools
-- persistent edit affordances are reserved for fields that change frequently during play; reference/profile fields keep quieter `editAffordance` modes
-- field annotations remain visible and accessible from the same surfaces without hidden desktop-only assumptions, using explicit `annotationAffordance` modes
-- the resulting interaction model is usable on mouse, keyboard, and touch flows
-- the grid component structure is clearer about display mode vs inline-edit mode vs annotation mode
-- the temporary route-level pairing of standalone `InlineFieldDraft` blocks beside `GridContent` has been resolved into a coherent shared component pattern, or any remaining pairing is explicitly justified as a short-term fallback
+- common sheet fields can be described through one cohesive rendering/editing/binding interface instead of choosing between unrelated `GridContent` and `InlineFieldDraft` paths
+- runtime/state primitive fields can use persistent direct edit controls from the same field/card API used by quieter reference/profile surfaces
+- annotation review/add/edit remains available through explicit Notes affordances without returning annotation editing to the card-wide Edit dialog
+- [src/routes/charsheets/5e/+page.svelte](../src/routes/charsheets/5e/+page.svelte) is simpler: it no longer has bespoke adjacent `InlineFieldDraft` blocks beside `GridContent` for the migrated runtime fields
+- visual layout, mobile usability, text selection/copy flows, and existing save behavior are preserved
+- relevant local verification from [docs/verification.md](verification.md) passes
 
 ### Extract 5e sheet projection and patch logic from the route
 
@@ -233,7 +237,7 @@ ID:
 
 Size:
 
-- medium-to-large; implement after the performance pass and after the initial field-binding direction is clear
+- medium-to-large; implement after the performance pass and after the field rendering/editing API is consolidated enough to avoid extracting the wrong route shape
 
 Scope:
 
@@ -244,6 +248,7 @@ Scope:
 - do not define the inline-edit interaction model or shared field-binding contract; that belongs to `p1-030` and `p1-040`
 - do not reorganize unrelated stores, fixtures, or schema folders; that belongs to `p1-050`
 - preserve current behavior unless a slice explicitly supports an active feature item
+- build on the consolidated field/card API from `p1-035` instead of preserving route-local adjacent field editor composition
 
 Suggested implementation slices:
 
@@ -326,3 +331,4 @@ This content is a work in progress to dump thoughts before execution or further 
 - completed home action button polish: shared button chrome now aligns Create, Import, Export, and import apply actions consistently
 - completed `p0-030`: local automated verification now includes Vitest tooling, schema/import-export/storage contract tests, a create/edit/reload smoke path, V8 coverage reporting, shared browser test scaffolding, and [docs/verification.md](verification.md)
 - completed `p1-040`: field-level binding now uses an RFC 6902 JSON Patch contract, `immutable-json-patch` verification, split value/annotation patch projection, `FieldDraft`, a Current HP runtime proof surface, and documented field/page/store responsibility boundaries
+- completed the behavioral `p1-030` field interaction pass: runtime/state primitives have persistent direct edit controls, field annotations are accessible through explicit Notes affordances, card-wide Edit remains a value/structure fallback, and card Notes dialogs now handle annotation review/add/edit flows. Follow-up `p1-035` will consolidate the remaining `InlineFieldDraft` versus `GridContent` component/API split before broader route extraction.
