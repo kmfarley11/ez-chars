@@ -1,6 +1,12 @@
 <script lang="ts">
 	import { FieldDraft, type FieldDraftOperation } from '$lib/fieldDraftHelpers';
+	import FieldAnnotationControl from '$lib/FieldAnnotationControl.svelte';
 	import type { JSONPatchDocument, JSONPointer } from 'immutable-json-patch';
+	import type {
+		GridAnnotationAffordance,
+		GridAnnotationEditorConfig,
+		GridContentAnnotation
+	} from '$lib/gridContentTypes';
 
 	type InlineFieldDraftValue = string | number;
 	type EditAffordance = 'persistent' | 'hover' | 'menu';
@@ -13,9 +19,14 @@
 		suffix?: string;
 		ariaLabel?: string;
 		editAffordance?: EditAffordance;
+		annotationAffordance?: GridAnnotationAffordance;
+		annotations?: Array<GridContentAnnotation>;
+		annotationEditorConfig?: GridAnnotationEditorConfig;
 		patchOperation?: FieldDraftOperation;
 		// eslint-disable-next-line no-unused-vars
 		onSavePatch: (_patch: JSONPatchDocument) => void;
+		// eslint-disable-next-line no-unused-vars
+		onSaveAnnotations?: (_annotations: Array<GridContentAnnotation>) => void;
 	}
 
 	let {
@@ -26,8 +37,12 @@
 		suffix = '',
 		ariaLabel = undefined,
 		editAffordance = 'persistent',
+		annotationAffordance = 'persistent',
+		annotations = [],
+		annotationEditorConfig = undefined,
 		patchOperation = 'replace',
-		onSavePatch
+		onSavePatch,
+		onSaveAnnotations = undefined
 	}: Props = $props();
 
 	let draft = $state<FieldDraft<InlineFieldDraftValue> | undefined>(undefined);
@@ -142,6 +157,13 @@
 		>
 			{editAffordance === 'menu' ? 'Actions' : 'Edit'}
 		</button>
+		<FieldAnnotationControl
+			fieldLabel={ariaLabel ?? label}
+			{annotations}
+			{annotationAffordance}
+			{annotationEditorConfig}
+			{onSaveAnnotations}
+		/>
 	{/if}
 
 	{#if error}

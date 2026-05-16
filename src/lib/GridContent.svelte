@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import GridContainer from '$lib/GridContainer.svelte';
+	import FieldAnnotationControl from '$lib/FieldAnnotationControl.svelte';
 	import GridContentAnnotationsDisplay from '$lib/GridContentAnnotationsDisplay.svelte';
 	import GridContentAnnotationsEditor from '$lib/GridContentAnnotationsEditor.svelte';
 	import GridContainerAuto from '$lib/GridContainerAuto.svelte';
@@ -23,6 +24,7 @@
 	import { isGridFieldArray } from '$lib/gridFieldGuards';
 	import type {
 		GridAnnotationEditorConfig,
+		GridContentAnnotation,
 		GridContentData,
 		GridContentField,
 		GridContentPatch
@@ -153,6 +155,14 @@
 		return Number.isFinite(parsed) ? parsed : 0;
 	};
 
+	const saveFieldAnnotations = (
+		field: GridContentField,
+		nextAnnotations: Array<GridContentAnnotation>
+	) => {
+		if (!field.annotationBindPath) return;
+		handleEditSavePatches?.([{ path: field.annotationBindPath, value: nextAnnotations }]);
+	};
+
 	const displayItemClass = $derived(
 		displayAlign === 'center'
 			? 'inline-flex items-center justify-center text-center'
@@ -214,6 +224,7 @@
 		<GridContainerAuto maxCols={displayMaxCols} classes="gap-2">
 			{#each Object.entries(normalizedData) as [fieldKey, field] (fieldKey)}
 				{@const labeledParts = getLabeledDisplayParts(field)}
+				{@const fieldLabel = field.fieldName ?? fieldKey}
 				<GridContainer
 					classes={displayAlign === 'center' ? 'flex min-w-0 justify-center' : 'min-w-0'}
 				>
@@ -260,6 +271,19 @@
 							{/if}
 							{#if field.label}
 								<span class="theme-text-muted text-xs italic"> ({field.label}) </span>
+							{/if}
+							{#if field.annotationBindPath}
+								<span class="ml-1 inline-flex align-middle">
+									<FieldAnnotationControl
+										{fieldLabel}
+										annotations={field.annotations ?? []}
+										annotationAffordance="badge"
+										{annotationEditorConfig}
+										onSaveAnnotations={(nextAnnotations) => {
+											saveFieldAnnotations(field, nextAnnotations);
+										}}
+									/>
+								</span>
 							{/if}
 						</span>
 					</div>

@@ -1886,6 +1886,19 @@
 	const handleGridPatchesSave = (patches: Array<GridContentPatch>) => {
 		updateCurrent5eCharacter((entry) => applyGridPatches(entry, normalizeGridPatches(patches)));
 	};
+
+	const annotationsForBindPath = (bindPath: GridContentBindPath): Array<GridContentAnnotation> =>
+		annotationsAtPath(toSystemDataAnnotationPath(bindPath));
+
+	const handleFieldAnnotationsSave = (
+		bindPath: GridContentBindPath,
+		nextAnnotations: Array<GridContentAnnotation>
+	) => {
+		const annotationBindPath = toSystemDataAnnotationPath(bindPath);
+		if (!annotationBindPath) return;
+
+		handleGridPatchesSave([{ path: annotationBindPath, value: nextAnnotations }]);
+	};
 </script>
 
 {#if showMissingOrInvalidIdState}
@@ -1995,8 +2008,22 @@
 								path="/systemData/combat/hitPoints/current"
 								inputKind="number"
 								editAffordance="persistent"
+								annotationAffordance="persistent"
+								annotations={annotationsForBindPath([
+									'systemData',
+									'combat',
+									'hitPoints',
+									'current'
+								])}
+								{annotationEditorConfig}
 								ariaLabel="Current hit points"
 								onSavePatch={handleFieldPatchSave}
+								onSaveAnnotations={(nextAnnotations) => {
+									handleFieldAnnotationsSave(
+										['systemData', 'combat', 'hitPoints', 'current'],
+										nextAnnotations
+									);
+								}}
 							/>
 							<InlineFieldDraft
 								label="Temp HP"
@@ -2004,11 +2031,20 @@
 								path="/systemData/combat/hitPoints/temp"
 								inputKind="number"
 								editAffordance="persistent"
+								annotationAffordance="persistent"
+								annotations={annotationsForBindPath(['systemData', 'combat', 'hitPoints', 'temp'])}
+								{annotationEditorConfig}
 								patchOperation={char.systemData.combat.hitPoints.temp === undefined
 									? 'add'
 									: 'replace'}
 								ariaLabel="Temporary hit points"
 								onSavePatch={handleFieldPatchSave}
+								onSaveAnnotations={(nextAnnotations) => {
+									handleFieldAnnotationsSave(
+										['systemData', 'combat', 'hitPoints', 'temp'],
+										nextAnnotations
+									);
+								}}
 							/>
 						</div>
 						<GridContent
@@ -2026,8 +2062,22 @@
 								path="/systemData/combat/deathSaves/successes"
 								inputKind="number"
 								editAffordance="persistent"
+								annotationAffordance="persistent"
+								annotations={annotationsForBindPath([
+									'systemData',
+									'combat',
+									'deathSaves',
+									'successes'
+								])}
+								{annotationEditorConfig}
 								ariaLabel="Death save successes"
 								onSavePatch={handleFieldPatchSave}
+								onSaveAnnotations={(nextAnnotations) => {
+									handleFieldAnnotationsSave(
+										['systemData', 'combat', 'deathSaves', 'successes'],
+										nextAnnotations
+									);
+								}}
 							/>
 							<InlineFieldDraft
 								label="Death Saves RIP"
@@ -2035,8 +2085,22 @@
 								path="/systemData/combat/deathSaves/failures"
 								inputKind="number"
 								editAffordance="persistent"
+								annotationAffordance="persistent"
+								annotations={annotationsForBindPath([
+									'systemData',
+									'combat',
+									'deathSaves',
+									'failures'
+								])}
+								{annotationEditorConfig}
 								ariaLabel="Death save failures"
 								onSavePatch={handleFieldPatchSave}
+								onSaveAnnotations={(nextAnnotations) => {
+									handleFieldAnnotationsSave(
+										['systemData', 'combat', 'deathSaves', 'failures'],
+										nextAnnotations
+									);
+								}}
 							/>
 						</div>
 						<GridContent
@@ -2054,11 +2118,25 @@
 									path="/systemData/combat/hitDice/remaining"
 									inputKind="text"
 									editAffordance="persistent"
+									annotationAffordance="persistent"
+									annotations={annotationsForBindPath([
+										'systemData',
+										'combat',
+										'hitDice',
+										'remaining'
+									])}
+									{annotationEditorConfig}
 									patchOperation={char.systemData.combat.hitDice.remaining === undefined
 										? 'add'
 										: 'replace'}
 									ariaLabel="Hit dice remaining"
 									onSavePatch={handleFieldPatchSave}
+									onSaveAnnotations={(nextAnnotations) => {
+										handleFieldAnnotationsSave(
+											['systemData', 'combat', 'hitDice', 'remaining'],
+											nextAnnotations
+										);
+									}}
 								/>
 							</div>
 						{/if}
@@ -2183,8 +2261,23 @@
 											path={`/systemData/spellcasting/slots/${slotCard.key}/used`}
 											inputKind="number"
 											editAffordance="persistent"
+											annotationAffordance="persistent"
+											annotations={annotationsForBindPath([
+												'systemData',
+												'spellcasting',
+												'slots',
+												slotCard.key,
+												'used'
+											])}
+											{annotationEditorConfig}
 											ariaLabel={`${slotCard.label} spell slots used`}
 											onSavePatch={handleFieldPatchSave}
+											onSaveAnnotations={(nextAnnotations) => {
+												handleFieldAnnotationsSave(
+													['systemData', 'spellcasting', 'slots', slotCard.key, 'used'],
+													nextAnnotations
+												);
+											}}
 										/>
 									</div>
 								{/if}

@@ -6,6 +6,7 @@ export type GridContentBindPath = Array<GridContentPathSegment>;
 export type GridContentReference = Reference;
 
 export type GridContentAnnotation = Annotation;
+export type GridAnnotationAffordance = 'persistent' | 'badge' | 'hover';
 
 export type GridAnnotationReferenceTemplate = {
 	key: string;
