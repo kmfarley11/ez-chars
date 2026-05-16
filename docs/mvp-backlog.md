@@ -6,12 +6,14 @@ Use this file with:
 
 - [../AGENTS.md](../AGENTS.md)
 - [current-mvp.md](current-mvp.md)
+- [ai-usage.md](ai-usage.md)
 
 Treat [current-mvp.md](current-mvp.md) as the boundary document and this file as the execution queue.
 
 ## How To Use This Backlog With AI
 
 - Pair this file with [AGENTS.md](../AGENTS.md) and [docs/current-mvp.md](current-mvp.md)
+- Use [ai-usage.md](ai-usage.md) to choose a model, reasoning level, and prompt size before starting; default to the smallest model/reasoning level that can safely handle the requested slice
 - Work on one top-level backlog item at a time
 - Use the exact backlog item id from the `ID:` line in the prompt; keep the human-readable title in this file for context
 - For `small` items, hand the top-level item directly to the AI
@@ -22,7 +24,8 @@ Treat [current-mvp.md](current-mvp.md) as the boundary document and this file as
 - Do not expand scope into other slices or [docs/vision/](vision/)
 - Before adding bespoke UI controls or new component patterns, inspect [src/lib/](../src/lib/) for existing primitives and prefer reusing or extending them; call out deliberate exceptions
 - For refactor or shared-interface work, inventory existing call sites first, describe the intended common interface or migration shape before broad edits, and preserve user-visible behavior unless the slice explicitly changes it
-- If the task is about `p1-035`, also use [docs/field-interaction-model.md](field-interaction-model.md) and [docs/field-binding-contract.md](field-binding-contract.md) as the interaction and mutation-contract references
+- If the task is about `p1-035`, also use [docs/field-interaction-model.md](field-interaction-model.md), [docs/field-binding-contract.md](field-binding-contract.md), and [docs/field-rendering-api.md](field-rendering-api.md) as the interaction, mutation-contract, and field/card API references
+- If a slice is exploratory or documentation-driven, ensure later suggested slices, execution guidance, or dependency notes explicitly incorporate the findings before marking the slice complete
 - Ask the AI to run verification according to [docs/verification.md](verification.md)
 - Ask the AI to summarize what remains from the parent backlog item
 - Update this file or [docs/current-mvp.md](current-mvp.md) if the task meaningfully changes backlog or status
@@ -38,8 +41,9 @@ Use the parent item scope, execution guidance, dependency notes, and definition 
 If this task is about the 5e sheet's design or layout, also use docs/ez-chars-5e-rough.excalidraw as the design reference.
 Before adding bespoke UI controls or new component patterns, inspect src/lib for reusable primitives and prefer existing components; call out any deliberate exception.
 For refactor or shared-interface work, inventory existing call sites first, describe the intended common interface or migration shape before broad edits, and preserve user-visible behavior unless the slice explicitly changes it.
-If this task is about p1-035, also use docs/field-interaction-model.md and docs/field-binding-contract.md as the interaction and mutation-contract references.
-Do not expand scope into other slices or docs/vision.
+If this task is about p1-035, also use docs/field-interaction-model.md, docs/field-binding-contract.md, and docs/field-rendering-api.md as the interaction, mutation-contract, and field/card API references.
+If this task is exploratory or documentation-driven, ensure later suggested slices, execution guidance, or dependency notes explicitly incorporate the findings before marking the slice complete.
+Do not expand scope to implement other slices or `docs/vision`.
 Run verification according to docs/verification.md when appropriate.
 Explain briefly how I can manually verify the changes.
 Summarize what remains from the parent backlog item.
@@ -52,7 +56,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: start `p1-035` with slice 1 to consolidate the field rendering/editing interface before extracting broader 5e route projection logic.
+Next recommended target: continue `p1-035` with slice 2 to introduce the minimal shared primitive field renderer or `GridContent` field variant, plus the descriptor/resolver shape needed to reduce route-level field plumbing without adding avoidable DOM/render cost.
 
 ### Link runtime actions to source weapons, spells, and features
 
@@ -159,7 +163,8 @@ Scope:
 - follow up on the remaining fast-scroll jank in the expanded 5e sheet after the focused P0 performance pass
 - prioritize the dense Abilities & Proficiencies and Spells regions where manual scrolling still shows the most visible stutter
 - preserve the measured layout quality that looked better than the attempted CSS auto-fit replacement
-- keep this separate from the field-editing UX work in `p1-030`, the field-binding abstraction in `p1-040`, and the route projection extraction in `p1-045`
+- keep this separate from the field-editing UX work in `p1-030`, the field/card API consolidation in `p1-035`, the field-binding abstraction in `p1-040`, and the route projection extraction in `p1-045`
+- prefer tackling this after `p1-035` lands, unless `p1-035` itself causes a visible performance regression; that keeps profiling focused on the field/card renderer shape the app intends to keep
 
 Migrated findings from `p0-040`:
 
@@ -171,7 +176,7 @@ Migrated findings from `p0-040`:
 
 Suggested implementation slices:
 
-1. Re-profile in a headed browser with visual paint/debug tooling and scripted scroll traces, focused on dense Abilities & Proficiencies and Spells surfaces.
+1. Re-profile in a headed browser with visual paint/debug tooling and scripted scroll traces, focused on dense Abilities & Proficiencies and Spells surfaces. If `p1-035` has landed, use the consolidated field/card renderer as the baseline.
 2. Prototype a narrow `GridContainerAuto` measurement change only for the specific dense surfaces that profiling identifies, and keep visual parity as a requirement.
 3. Evaluate whether targeted lazy mounting, section-level deferral, or reduced always-rendered dense content would improve scroll smoothness without hiding expected MVP sheet data.
 4. If profiling points at route/module update cost instead of paint, coordinate with `p1-045` rather than duplicating projection or patch extraction work here.
@@ -200,32 +205,39 @@ Scope:
 - move toward one cohesive field rendering/editing interface with explicit variants for runtime/state fields versus quieter reference/profile fields
 - make character-data-to-form-data binding feel consistent for primitive values, annotations, and card/list fallback editing
 - simplify [src/routes/charsheets/5e/+page.svelte](../src/routes/charsheets/5e/+page.svelte) by reducing bespoke adjacent `InlineFieldDraft` + `GridContent` composition
+- make sheet page authoring less boilerplate-heavy by moving repeated value lookup, annotation lookup, patch-path derivation, and affordance wiring into shared field/card helpers where practical
 - preserve the completed `p1-030` interaction behavior: runtime fields keep persistent direct edit affordances, reference/profile content remains readable/selectable/copyable, and Notes dialogs remain the primary annotation review/add/edit surface
-- use [field-interaction-model.md](field-interaction-model.md) and [field-binding-contract.md](field-binding-contract.md) as the reference contract for affordance variants, annotation behavior, patch boundaries, and responsibility split
+- respect Svelte and DOM performance needs while consolidating; the sheet has many fields and potential dialogs, so the cleanup must avoid increasing always-mounted dialog/control DOM or introducing visible scroll/render jank
+- use [field-interaction-model.md](field-interaction-model.md), [field-binding-contract.md](field-binding-contract.md), and [field-rendering-api.md](field-rendering-api.md) as the reference contracts for affordance variants, annotation behavior, patch boundaries, responsibility split, and the target field/card API
 - avoid broad 5e projection extraction here; that remains `p1-045`
 
 Execution guidance:
 
 - Start with a call-site and API inventory before changing components.
+- For slices after slice 1, treat [field-rendering-api.md](field-rendering-api.md) as the concrete findings and migration-direction document.
 - Prefer evolving existing `GridContent`, `InlineFieldDraft`, `FieldDraft`, and annotation components over creating a parallel field system.
 - Define the shared field/card API shape in code or docs before migrating many surfaces.
+- Treat page-authoring simplicity as part of the API design: migrated cards should be described through field/card descriptors plus affordances, not through per-field annotation/save glue in the route.
+- Preserve the performance lessons from `p1-025`/`p0-040`: prefer lazy dialog mounting, avoid per-field hidden dialog trees, avoid scroll-induced hover churn, and keep reactive work proportional to the rendered field/card data.
 - Keep the first migration narrow enough to prove the interface without changing sheet layout or behavior.
 
 Suggested implementation slices:
 
-1. Inventory the current `GridContent` and `InlineFieldDraft` usage in the 5e route. Define the shared field/card API shape needed to express value display, direct primitive editing, annotation affordances, and card fallback menus without duplicating binding glue.
-2. Introduce a shared field-rendering primitive or `GridContent` field variant that can render primitive runtime/state fields with persistent edit controls using the existing `FieldDraft` and JSON Patch contract.
-3. Migrate one quick-reference card from adjacent `InlineFieldDraft` + `GridContent` composition to the consolidated API, preserving visual layout and behavior.
-4. Migrate remaining runtime primitive surfaces: current/temp HP, death saves, hit dice remaining, and spell slot used counters.
+1. Complete. Inventoried the current `GridContent` and `InlineFieldDraft` usage in the 5e route and defined the shared field/card API direction in [field-rendering-api.md](field-rendering-api.md). The route has many `GridContent` call sites and a small set of runtime/state `InlineFieldDraft` call sites; later slices should consolidate those runtime fields into the grid field/card API without changing behavior.
+2. Using [field-rendering-api.md](field-rendering-api.md), introduce a shared field-rendering primitive or `GridContent` field variant that can render primitive runtime/state fields with persistent edit controls using the existing `FieldDraft` and JSON Patch contract. Include the minimal descriptor/resolver shape needed to derive field values, annotation data, patch paths, and affordance metadata without repeating that glue at every route call site.
+3. Using the migration shape in [field-rendering-api.md](field-rendering-api.md), migrate one quick-reference card from adjacent `InlineFieldDraft` + `GridContent` composition to the consolidated API, preserving visual layout and behavior. The migrated card should prove the route can mostly declare field/card intent instead of separately wiring value editors and annotation handlers.
+4. Using the inventory in [field-rendering-api.md](field-rendering-api.md), migrate remaining runtime primitive surfaces: current/temp HP, death saves, hit dice remaining, and spell slot used counters.
 5. Review card/list fallback editing after migration and ensure card-wide Edit remains focused on value/structure fallback while Notes owns annotations.
 6. Update docs/checklists and prune this item only when the route no longer needs ad hoc adjacent field editor composition for the migrated runtime/state fields.
 
 Definition of done:
 
 - common sheet fields can be described through one cohesive rendering/editing/binding interface instead of choosing between unrelated `GridContent` and `InlineFieldDraft` paths
+- migrated cards can be authored through field/card descriptors, paths, and affordances without separate per-field annotation lookup/save plumbing in the route
 - runtime/state primitive fields can use persistent direct edit controls from the same field/card API used by quieter reference/profile surfaces
 - annotation review/add/edit remains available through explicit Notes affordances without returning annotation editing to the card-wide Edit dialog
 - [src/routes/charsheets/5e/+page.svelte](../src/routes/charsheets/5e/+page.svelte) is simpler: it no longer has bespoke adjacent `InlineFieldDraft` blocks beside `GridContent` for the migrated runtime fields
+- the consolidated renderer does not add a large amount of always-mounted field/dialog DOM, and manual scrolling does not visibly regress in the dense 5e sheet regions
 - visual layout, mobile usability, text selection/copy flows, and existing save behavior are preserved
 - relevant local verification from [docs/verification.md](verification.md) passes
 

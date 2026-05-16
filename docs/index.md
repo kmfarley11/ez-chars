@@ -9,9 +9,11 @@ Use these docs for near-term implementation work:
 - [../AGENTS.md](../AGENTS.md): shortest current-state guide for coding agents
 - [current-mvp.md](current-mvp.md): active MVP scope and success criteria
 - [mvp-backlog.md](mvp-backlog.md): prioritized near-term engineering backlog
+- [ai-usage.md](ai-usage.md): model, reasoning, and prompt-shape guidance for economical AI use
 - [import-export-json.md](import-export-json.md): MVP JSON backup envelope and import semantics
 - [field-interaction-model.md](field-interaction-model.md): target MVP model for field editing and annotations
 - [field-binding-contract.md](field-binding-contract.md): field-scoped read, mutation, patch, and save contract for grid editing
+- [field-rendering-api.md](field-rendering-api.md): current direction for consolidating grid rendering, primitive editing, annotations, and binding APIs
 - [verification.md](verification.md): local test/check/lint/build command guide
 
 ## Maintenance And Reference
