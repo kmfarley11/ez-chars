@@ -47,7 +47,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: continue `p1-040` with slice 5 to separate value patch projection from annotation patch projection using standard JSON Patch payloads.
+Next recommended target: continue `p1-040` with slice 7 to prove the abstraction on one current runtime sheet surface before wider rollout.
 
 ### Link runtime actions to source weapons, spells, and features
 
@@ -245,8 +245,8 @@ Suggested implementation slices:
 2. Complete. Local-first mutation envelope is documented in [field-binding-contract.md](field-binding-contract.md) as an RFC 6902-style JSON Patch document using standard `add`, `remove`, `replace`, `move`, `copy`, and `test` operations directly, with primitive value replacement, annotation replacement, list replacement, insert, item update, item removal, and reorder semantics covered without transport details.
 3. Complete. Library evaluation direction is documented in [field-binding-contract.md](field-binding-contract.md). Non-mutating patch application is now a primary selection criterion; `immutable-json-patch` was identified as the first proof candidate, `fast-json-patch` remains the mature fallback, and `rfc6902` is lower priority because it patches in place.
 4. Complete. Adopted `immutable-json-patch` directly and added [jsonPatch.test.ts](../src/lib/__tests__/jsonPatch.test.ts), backed by [jsonPatchFixtures.ts](../src/test-utils/jsonPatchFixtures.ts), to prove standard JSON Patch payloads, non-mutating application, structural sharing for untouched branches, guarded list operations, and failed-test behavior.
-5. Separate value patch projection from annotation patch projection so field components can consume them independently.
-6. Introduce field-scoped draft/edit/cancel helpers that do not require opening a card-wide dialog.
+5. Complete. Split grid patch projection into `collectValuePatchesFromData` and `collectAnnotationPatchesFromData`, with `collectPatchesFromData` retained as the legacy combined bridge for the current card-wide save path.
+6. Complete. Added the `FieldDraft` helper in [fieldDraftHelpers.ts](../src/lib/fieldDraftHelpers.ts) for field-scoped begin/update/cancel and draft-to-patch behavior that prepares guarded standard JSON Patch documents without depending on the card-wide edit dialog.
 7. Prove the abstraction on one current runtime sheet surface before wider rollout, with the page layer applying local changes immediately and an optional persistence/sync layer left as a lower-level concern.
 8. Document how grid components, page layers, and data/store layers divide responsibility, including that field components must not know about HTTP endpoints, auth, or remote transport details.
 

@@ -209,6 +209,24 @@ The existing grid data already contains useful pieces:
 
 Later implementation can evolve these into a field-scoped binding object and JSON Patch payload without renaming everything at once. During migration, adapters may create the new contract from existing `GridContentField` data and convert simple `replace` operations back to `GridContentPatch`.
 
+Slice 5 of `p1-040` split current grid patch projection into separate value and annotation collectors:
+
+- `collectValuePatchesFromData` emits only value patches.
+- `collectAnnotationPatchesFromData` emits only annotation patches.
+- `collectPatchesFromData` remains as the legacy combined compatibility bridge for the current card-wide save path.
+
+This lets later field components consume value and annotation patch intent independently without changing current sheet save behavior yet.
+
+Slice 6 of `p1-040` added the field-scoped `FieldDraft` helper in [fieldDraftHelpers.ts](../src/lib/fieldDraftHelpers.ts):
+
+- `FieldDraft.begin` starts a value or annotation draft from one JSON Pointer path and current value.
+- `draft.update` returns a new draft with an updated value.
+- `draft.cancel` discards the draft without emitting operations.
+- `draft.isDirty` reports whether the draft differs from its initial value.
+- `draft.prepareAsPatch` prepares a guarded RFC 6902 JSON Patch document with `test` then `replace`, or an empty patch for unchanged drafts.
+
+The helper is framework-agnostic, immutable-by-convention, and does not open or depend on the card-wide edit dialog. It gives later field components a readable draft-to-patch primitive while leaving actual application, validation, persistence, and state commits with the owning route or store.
+
 ## Non-Goals For These Contract Slices
 
 - Do not implement inline editors.

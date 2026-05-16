@@ -53,3 +53,15 @@ export type GridContentPatch = {
 	path: GridContentBindPath;
 	value: unknown;
 };
+
+export type GridContentValuePatch = GridContentPatch & {
+	kind: 'value';
+};
+
+export type GridContentAnnotationPatch = {
+	kind: 'annotation';
+	path: GridContentBindPath;
+	value: Array<GridContentAnnotation>;
+};
+
+export type GridContentProjectedPatch = GridContentValuePatch | GridContentAnnotationPatch;

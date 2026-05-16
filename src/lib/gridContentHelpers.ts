@@ -3,12 +3,14 @@ import { capitalizeFirstLetter } from '$lib/stringFormatters';
 import { isGridFieldArray, isGridNestedFields } from '$lib/gridFieldGuards';
 import type {
 	GridContentAnnotation,
+	GridContentAnnotationPatch,
 	GridContentBindPath,
 	GridContentData,
 	GridContentField,
 	GridContentNestedFields,
 	GridContentPatch,
-	GridContentPathSegment
+	GridContentPathSegment,
+	GridContentValuePatch
 } from '$lib/gridContentTypes';
 
 // Read-side helpers used by GridContent rendering and patch projection.
@@ -220,42 +222,56 @@ export const collectHelpAnnotationGroups = (source: GridContentData): Array<Help
 // ------------------------------------------------------------
 // Patch Projection
 // ------------------------------------------------------------
-// Convert current draft into atomic write operations for model-level patch handlers.
-export const collectPatchesFromData = (source: GridContentData): Array<GridContentPatch> =>
+// Convert current draft into value write operations for model-level patch handlers.
+export const collectValuePatchesFromData = (
+	source: GridContentData
+): Array<GridContentValuePatch> =>
 	Object.entries(source).flatMap(([fieldKey, field]) =>
 		isFieldArray(field.value) && field.bindPath
 			? [
 					{
+						kind: 'value' as const,
 						path: field.bindPath,
 						value: toRawGridFieldValue(field)
-					},
-					// TODO(mvp): newly added top-level array items only gain stable annotation bind paths
-					// after their first save, because those annotation paths are derived from stored array indices.
-					...collectLeafInputs(field, [fieldKey], undefined, undefined, fieldKey).flatMap((leaf) =>
-						leaf.field.annotationBindPath
-							? [
-									{
-										path: leaf.field.annotationBindPath,
-										value: leaf.field.annotations ?? []
-									}
-								]
-							: []
-					)
+					}
 				]
 			: collectLeafInputs(field, [fieldKey], undefined, undefined, fieldKey).flatMap((leaf) => {
 					if (isFieldArray(leaf.field.value) || isNestedFields(leaf.field.value)) return [];
-					const patches: Array<GridContentPatch> = [
+					return [
 						{
+							kind: 'value' as const,
 							path: leaf.bindPath ?? leaf.path,
 							value: leaf.field.value
 						}
 					];
-					if (leaf.field.annotationBindPath) {
-						patches.push({
+				})
+	);
+
+// Convert current draft into annotation write operations for model-level patch handlers.
+export const collectAnnotationPatchesFromData = (
+	source: GridContentData
+): Array<GridContentAnnotationPatch> =>
+	Object.entries(source).flatMap(([fieldKey, field]) =>
+		// TODO(mvp): newly added top-level array items only gain stable annotation bind paths
+		// after their first save, because those annotation paths are derived from stored array indices.
+		collectLeafInputs(field, [fieldKey], undefined, undefined, fieldKey).flatMap((leaf) =>
+			leaf.field.annotationBindPath
+				? [
+						{
+							kind: 'annotation' as const,
 							path: leaf.field.annotationBindPath,
 							value: leaf.field.annotations ?? []
-						});
-					}
-					return patches;
-				})
+						}
+					]
+				: []
+		)
+	);
+
+// Compatibility bridge for the existing card-wide edit dialog save path.
+export const collectPatchesFromData = (source: GridContentData): Array<GridContentPatch> =>
+	[...collectValuePatchesFromData(source), ...collectAnnotationPatchesFromData(source)].map(
+		({ path, value }) => ({
+			path,
+			value
+		})
 	);
