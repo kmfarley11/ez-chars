@@ -16,6 +16,40 @@ This document defines the target MVP interaction model for field-level editing a
 - Compound fields: lists, rows, grouped objects, long notes, spell groups, inventory groups, and action lists. These may continue to use focused row editors or the existing bulk editor until a narrower editor exists.
 - Derived or display-only fields: calculated, roll-up, or source-only values. These should not enter edit mode unless a real bind path exists.
 
+## Edit Affordance Strategy
+
+The sheet should not make every field look equally editable all the time. Most table use is read, select, copy, paste, and annotation review; editing is frequent only for runtime state.
+
+- Runtime/state fields should use a persistent or near-persistent edit affordance. Examples include current HP, temp HP, spell slots used, death saves, resource counters, conditions, and prepared/equipped toggles.
+- Reference/profile fields should preserve text selection and copying as the quiet default. Editing remains available, but should use a subtler affordance such as focus/hover/touch actions, an explicit local menu, or a section edit state.
+- Annotation visibility should be considered separately from value editing. A field with annotations, notes, or source references may show a persistent indicator or count even when value editing stays quiet.
+- Empty annotation controls must remain discoverable through keyboard and touch flows; they should not rely on hover alone.
+
+Use this initial classification when choosing affordance defaults:
+
+- Runtime/state fields: current HP, temp HP, spell slots used, death saves, resource counters, conditions, prepared toggles, and equipped toggles. Default toward `editAffordance: 'persistent'` or a near-persistent equivalent because these values change during play.
+- Reference/profile fields: ancestry, class, proficiencies, spells known, feature text, background, roleplay notes, inventory descriptions, and other relatively stable character facts. Default toward quieter edit affordances such as `hover` or `menu`, while prioritizing reading, text selection, copying, and annotation review.
+- Ambiguous fields should choose the quieter reference/profile behavior until play usage shows they are frequently changed at the table.
+
+Shared field components should expose affordance options directly instead of hiding behavior behind a domain label like `runtime`. Domain-specific wrappers may choose defaults, but the shared component API should stay explicit:
+
+```ts
+type EditAffordance = 'persistent' | 'hover' | 'menu';
+type AnnotationAffordance = 'persistent' | 'badge' | 'hover';
+
+interface FieldInteractionAffordances {
+	editAffordance?: EditAffordance;
+	annotationAffordance?: AnnotationAffordance;
+}
+```
+
+- `editAffordance: 'persistent'` keeps an edit control visibly available for runtime/state fields.
+- `editAffordance: 'hover'` reveals edit controls on hover/focus and must still provide a touch path.
+- `editAffordance: 'menu'` routes less-common value edits through an explicit local action menu.
+- `annotationAffordance: 'persistent'` keeps an annotation action visibly available.
+- `annotationAffordance: 'badge'` shows annotation presence/count persistently and opens details from that indicator.
+- `annotationAffordance: 'hover'` may reveal empty annotation actions on hover/focus, but cannot be the only path on keyboard or touch.
+
 ## Primary Field Action
 
 For editable primitive fields, the primary click or tap should edit the field value.
@@ -38,6 +72,7 @@ Users should still be able to select and copy displayed field values for externa
 - If primary click-to-edit conflicts with reliable selection, prefer a slightly more deliberate edit trigger, such as click-to-focus followed by Enter, an edit affordance, or edit-on-second-click for long text values.
 - Short numeric and boolean fields can favor faster edit behavior because copy/search needs are lower.
 - Long text, spell names, feature names, item names, and notes should favor easy selection and copying because external lookup is a common table flow.
+- Persistent edit controls are appropriate for runtime/state fields, but should not become the default for long reference fields where visible controls would add noise and compete with reading or copying.
 
 The intended precedence is: preserve explicit text selection and copy gestures first, then provide direct editing with the least extra friction that still works consistently across mouse, keyboard, and touch.
 
@@ -78,6 +113,9 @@ This keeps direct editing aligned with the future shared binding and patch abstr
 - Annotation controls should not cause layout shift while scrolling.
 - Focus states should be visible and consistent with the app theme.
 - Runtime field editing should preserve the sheet's dense at-table readability.
+- Runtime edit controls may be visibly present by default because those fields change during play.
+- Reference-field edit controls should be quieter by default so the sheet remains useful as a readable, selectable, copyable reference surface.
+- Annotation presence should be easier to notice than edit capability. Reviewing existing annotations and sources is a first-class sheet behavior, not an advanced edit-only flow.
 - Direct field editing is the MVP behavior even though the rough sheet reference mentions clickable rolls; dice rolling remains out of MVP scope.
 
 ## Manual Review Checklist

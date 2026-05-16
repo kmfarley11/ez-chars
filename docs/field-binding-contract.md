@@ -80,6 +80,19 @@ Value saves and annotation saves are distinct operations even when they are init
 
 This keeps the contract transport-agnostic and lets the mutation envelope below carry local edits without exposing transport details to field components.
 
+## Responsibility Split
+
+Field, page, and data/store layers have separate responsibilities:
+
+- Field components own display, local draft state, edit affordance behavior, keyboard/touch/mouse interactions, and emission of standard JSON Patch documents.
+- Field components may choose whether the edit affordance is persistent, hover/focus-driven, or menu-driven, but that choice should be explicit and should follow [field-interaction-model.md](field-interaction-model.md).
+- Field components may display annotation indicators or open annotation UI, but value edits and annotation edits still emit distinguishable patch documents.
+- Page or feature layers own domain placement, selected character lookup, local validation errors, and applying patches to the currently edited character.
+- Data/store layers own persistence, migration, storage validation, and eventual transport integration.
+- No field component should import LocalStorage helpers, call HTTP endpoints, know about auth, or assume a future sync strategy.
+
+This split allows runtime fields to expose persistent edit controls while reference fields keep quieter edit controls without changing the underlying patch contract.
+
 ## Local-First Mutation Envelope
 
 A field or compound editor should emit a local-first mutation payload rather than calling storage directly. The payload should be an RFC 6902 JSON Patch document: an array of operation objects using the standardized operation shape exactly.

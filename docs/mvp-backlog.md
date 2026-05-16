@@ -47,7 +47,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: continue `p1-040` with slice 7 to prove the abstraction on one current runtime sheet surface before wider rollout.
+Next recommended target: continue `p1-030` with slice 2 to roll the proven field-binding abstraction into direct primitive runtime-field editing.
 
 ### Link runtime actions to source weapons, spells, and features
 
@@ -198,73 +198,26 @@ Scope:
 
 Suggested implementation slices:
 
-1. Complete. Target field interaction model is documented in [field-interaction-model.md](field-interaction-model.md): primary click/tap edits a primitive field, while annotations open through a secondary explicit affordance that also works on mobile, keyboard, and mouse.
-2. Apply the shared field-binding/patch abstractions to let individual primitive fields enter edit mode without opening a bulk form for the whole card.
-3. Add field-level annotation access and viewing behavior without regressing current annotation data or help content.
-4. Decide whether the existing bulk edit dialog stays as a fallback for multi-field edits or is reduced to non-runtime surfaces only.
-5. Run a keyboard, touch, and focus-management pass on the new interaction model and document any new expectations in the UI checklist.
+1. Complete. Target field interaction model is documented in [field-interaction-model.md](field-interaction-model.md): runtime/state fields may use persistent edit affordances, reference/profile fields should keep quieter edit affordances that preserve read/select/copy flows, and annotations open through explicit touch/keyboard-accessible affordances.
+2. Apply the shared field-binding/patch abstractions to let individual primitive fields enter edit mode without opening a bulk form for the whole card. Start with runtime/state fields that benefit from `editAffordance: 'persistent'` before broadening to quieter reference-field affordances such as `hover` or `menu`; use the runtime/state vs reference/profile field examples in [field-interaction-model.md](field-interaction-model.md) as initial classification guidance.
+3. Add field-level annotation access and viewing behavior without regressing current annotation data or help content. Annotation presence should be more visible than edit capability, especially for fields with source references or user notes; use the documented `annotationAffordance` modes as the implementation target.
+4. Decide whether the existing bulk edit dialog stays as a fallback for multi-field edits, reference/profile fields, or compound surfaces after runtime primitive fields have direct edit controls.
+5. Run a keyboard, touch, focus-management, text-selection, and copy/paste pass on the new interaction model and document any new expectations in the UI checklist.
 
 Dependency notes:
 
 - Slice 1 is complete; use [field-interaction-model.md](field-interaction-model.md) as the target UX model before abstraction work hardens around the wrong behavior.
-- Most of the remaining implementation for this item should depend on `p1-040`, especially slices 2-4.
-- In practice, the expected order is now: `p1-040` slices -> `p1-030` slices 2-5 -> optional `p1-045`/`p1-050` cleanup.
+- `p1-040` is complete; use the shared `FieldDraft`, RFC 6902 JSON Patch, and responsibility-split guidance from [field-binding-contract.md](field-binding-contract.md) for slices 2-4.
+- In practice, the expected order is now: `p1-030` slices 2-5 -> optional `p1-045`/`p1-050` cleanup.
 
 Definition of done:
 
-- a user can directly edit individual runtime-relevant fields from the sheet without depending on a card-wide bulk form
+- a user can directly edit individual runtime/state fields from the sheet without depending on a card-wide bulk form
 - text selection and copy flows remain reliable for field values users may paste into external search, notes, VTTs, or reference tools
-- field annotations remain accessible from the same surfaces without hidden desktop-only assumptions
+- persistent edit affordances are reserved for fields that change frequently during play; reference/profile fields keep quieter `editAffordance` modes
+- field annotations remain visible and accessible from the same surfaces without hidden desktop-only assumptions, using explicit `annotationAffordance` modes
 - the resulting interaction model is usable on mouse, keyboard, and touch flows
 - the grid component structure is clearer about display mode vs inline-edit mode vs annotation mode
-
-### Stabilize field-level binding and patch flows
-
-ID:
-
-- `p1-040`
-
-Size:
-
-- medium-to-large; implement by slice before broad rollout
-
-Scope:
-
-- extract a shared field-scoped binding model from the current page- and card-wide grid edit flow
-- make per-field reads, drafts, value saves, and annotation saves explicit without requiring page-specific bulk-form glue
-- keep the abstraction transport-agnostic and API-ready: model local edits in a way that can later map cleanly to remote create/read/patch/replace/delete flows without putting HTTP or auth concerns into field components
-- support inline sheet editing and annotation work without turning this into a generalized data-layer rewrite
-- use [field-interaction-model.md](field-interaction-model.md) as the UX contract for how value patches and annotation patches are emitted
-- use [field-binding-contract.md](field-binding-contract.md) as the field-scoped read, mutation, patch, commit, and save contract
-- use `immutable-json-patch` for RFC 6902 JSON Patch apply behavior rather than hand-rolling the patch engine; keep `fast-json-patch` as the mature fallback if implementation reveals API, validation, maintenance, or bundle friction
-- reuse [jsonPatchFixtures.ts](../src/test-utils/jsonPatchFixtures.ts) for representative nested JSON Patch fixture data in later patch/binding tests
-
-Suggested implementation slices:
-
-1. Complete. Field-scoped binding contract around read paths, value patch paths, annotation patch paths, commit boundaries, and save semantics is documented in [field-binding-contract.md](field-binding-contract.md).
-2. Complete. Local-first mutation envelope is documented in [field-binding-contract.md](field-binding-contract.md) as an RFC 6902-style JSON Patch document using standard `add`, `remove`, `replace`, `move`, `copy`, and `test` operations directly, with primitive value replacement, annotation replacement, list replacement, insert, item update, item removal, and reorder semantics covered without transport details.
-3. Complete. Library evaluation direction is documented in [field-binding-contract.md](field-binding-contract.md). Non-mutating patch application is now a primary selection criterion; `immutable-json-patch` was identified as the first proof candidate, `fast-json-patch` remains the mature fallback, and `rfc6902` is lower priority because it patches in place.
-4. Complete. Adopted `immutable-json-patch` directly and added [jsonPatch.test.ts](../src/lib/__tests__/jsonPatch.test.ts), backed by [jsonPatchFixtures.ts](../src/test-utils/jsonPatchFixtures.ts), to prove standard JSON Patch payloads, non-mutating application, structural sharing for untouched branches, guarded list operations, and failed-test behavior.
-5. Complete. Split grid patch projection into `collectValuePatchesFromData` and `collectAnnotationPatchesFromData`, with `collectPatchesFromData` retained as the legacy combined bridge for the current card-wide save path.
-6. Complete. Added the `FieldDraft` helper in [fieldDraftHelpers.ts](../src/lib/fieldDraftHelpers.ts) for field-scoped begin/update/cancel and draft-to-patch behavior that prepares guarded standard JSON Patch documents without depending on the card-wide edit dialog.
-7. Complete. Added a narrow runtime proof on the 5e quick-reference Current HP field using `FieldDraft` plus `immutable-json-patch`: the field component prepares guarded standard JSON Patch operations, while the page layer applies and validates the local character update.
-8. Document how grid components, page layers, and data/store layers divide responsibility, including that field components must not know about HTTP endpoints, auth, or remote transport details.
-
-Dependency notes:
-
-- This item should usually begin only after slice 1 of `p1-030` establishes the intended interaction model.
-- Once that interaction model is chosen, this item becomes the main technical prerequisite for most of the remaining inline-edit UX work.
-- This item is an enabler for field-level editing and annotation UX, not a standalone data-layer redesign.
-- This item should make future backend support easier, but current implementations should stay client-driven and local-first unless a backlog item explicitly introduces remote behavior.
-- Prefer direct RFC 6902/6901 data shapes over compatibility shims. Centralize the selected library import if useful, but do not create a custom patch API over the standard. Existing array-based bind paths should migrate toward JSON Pointer strings; any conversion helper should be treated as transitional staging, not the target contract.
-
-Definition of done:
-
-- a field component can read and write a single bound path without page-specific save glue
-- value edits and annotation edits use consistent patch semantics
-- the abstraction is transport-agnostic and API-ready enough that a future remote adapter could consume the same mutation semantics without rewriting field components
-- inline edit flows no longer depend on a card-wide bulk form
-- the abstraction is proven on at least one current sheet surface and is clear enough to reuse
 
 ### Extract 5e sheet projection and patch logic from the route
 
@@ -366,3 +319,4 @@ This content is a work in progress to dump thoughts before execution or further 
 - completed `p0-020`: JSON backup/restore supports a versioned export envelope, file download, import file selection, import validation, replace-all import, and merge-new import that skips duplicate character IDs
 - completed home action button polish: shared button chrome now aligns Create, Import, Export, and import apply actions consistently
 - completed `p0-030`: local automated verification now includes Vitest tooling, schema/import-export/storage contract tests, a create/edit/reload smoke path, V8 coverage reporting, shared browser test scaffolding, and [docs/verification.md](verification.md)
+- completed `p1-040`: field-level binding now uses an RFC 6902 JSON Patch contract, `immutable-json-patch` verification, split value/annotation patch projection, `FieldDraft`, a Current HP runtime proof surface, and documented field/page/store responsibility boundaries
