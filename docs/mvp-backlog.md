@@ -22,6 +22,7 @@ Treat [current-mvp.md](current-mvp.md) as the boundary document and this file as
 - Ask the AI to run verification according to [docs/verification.md](verification.md)
 - Ask the AI to summarize what remains from the parent backlog item
 - Update this file or [docs/current-mvp.md](current-mvp.md) if the task meaningfully changes backlog or status
+- Before pruning a completed backlog item, confirm every definition-of-done bullet is satisfied, not only the numbered slice text
 
 Prompt pattern:
 
@@ -36,7 +37,7 @@ Do not expand scope into other slices or docs/vision.
 Run verification according to docs/verification.md when appropriate.
 Explain briefly how I can manually verify the changes.
 Summarize what remains from the parent backlog item.
-Update the MVP docs if the task meaningfully changes backlog or status. Prune the backlog item when its fully complete.
+Update the MVP docs if the task meaningfully changes backlog or status. Prune the backlog item only when all slices and definition-of-done bullets are complete.
 ```
 
 When `p1-030` and `p1-040` are both complete, remove the extra `docs/field-interaction-model.md` and `docs/field-binding-contract.md` prompt clauses if the guidance has been absorbed into stable component docs, implementation comments, or the UI checklist.
@@ -218,6 +219,7 @@ Definition of done:
 - field annotations remain visible and accessible from the same surfaces without hidden desktop-only assumptions, using explicit `annotationAffordance` modes
 - the resulting interaction model is usable on mouse, keyboard, and touch flows
 - the grid component structure is clearer about display mode vs inline-edit mode vs annotation mode
+- the temporary route-level pairing of standalone `InlineFieldDraft` blocks beside `GridContent` has been resolved into a coherent shared component pattern, or any remaining pairing is explicitly justified as a short-term fallback
 
 ### Extract 5e sheet projection and patch logic from the route
 
