@@ -1,17 +1,17 @@
 import type { JSONPatchDocument, JSONPointer } from 'immutable-json-patch';
+import type { GridFieldPatchOperation } from '$lib/gridContentTypes';
 
 // FieldDraft is immutable by convention: methods return a new draft instead of
 // mutating `this`. That is not a hard architectural requirement, but it makes
 // Svelte usage safer because plain TypeScript objects update most predictably
 // when callers reassign component state, e.g. `draft = draft.update(value)`.
 export type FieldDraftKind = 'value' | 'annotation';
-export type FieldDraftOperation = 'replace' | 'add';
 
 export type FieldDraftInput<T = unknown> = {
 	kind: FieldDraftKind;
 	path: JSONPointer;
 	value: T;
-	operation?: FieldDraftOperation;
+	operation?: GridFieldPatchOperation;
 };
 
 const cloneDraftValue = <T>(value: T): T => structuredClone(value);
@@ -25,7 +25,7 @@ export class FieldDraft<T = unknown> {
 		readonly path: JSONPointer,
 		readonly initialValue: T,
 		readonly value: T,
-		readonly operation: FieldDraftOperation
+		readonly operation: GridFieldPatchOperation
 	) {}
 
 	static begin<T>({ kind, path, value, operation = 'replace' }: FieldDraftInput<T>): FieldDraft<T> {

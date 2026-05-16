@@ -1,13 +1,13 @@
 <script lang="ts">
 	import GridPrimitiveField from '$lib/GridPrimitiveField.svelte';
-	import type { FieldDraftOperation } from '$lib/fieldDraftHelpers';
 	import type { JSONPatchDocument, JSONPointer } from 'immutable-json-patch';
 	import type {
 		GridAnnotationAffordance,
 		GridAnnotationEditorConfig,
 		GridContentAnnotation,
 		GridContentField,
-		GridEditAffordance
+		GridEditAffordance,
+		GridFieldPatchOperation
 	} from '$lib/gridContentTypes';
 
 	type InlineFieldDraftValue = string | number;
@@ -23,7 +23,7 @@
 		annotationAffordance?: GridAnnotationAffordance;
 		annotations?: Array<GridContentAnnotation>;
 		annotationEditorConfig?: GridAnnotationEditorConfig;
-		patchOperation?: FieldDraftOperation;
+		patchOperation?: GridFieldPatchOperation;
 		// eslint-disable-next-line no-unused-vars
 		onSavePatch: (_patch: JSONPatchDocument) => void;
 		// eslint-disable-next-line no-unused-vars

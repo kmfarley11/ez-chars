@@ -131,18 +131,15 @@ Deeper scroll diagnosis remains in `p1-025`, but `p1-035` must not regress the D
 
 ## Target Data Shape
 
-The next slices should evolve `GridContentField` toward a shape like this. Exact names may change during implementation, but the responsibilities should stay intact.
+The grid field type now centralizes these names in [gridContentTypes.ts](../src/lib/gridContentTypes.ts). Later slices should reuse those exported types instead of redefining local affordance or patch-operation unions.
 
 ```ts
-type GridEditAffordance = 'persistent' | 'hover' | 'menu';
-type GridAnnotationAffordance = 'persistent' | 'badge' | 'hover';
-
 type GridFieldBinding = {
 	readPath?: GridContentBindPath;
 	valuePatchPath?: GridContentBindPath;
 	annotationReadPath?: GridContentBindPath;
 	annotationPatchPath?: GridContentBindPath;
-	valuePatchOperation?: 'replace' | 'add';
+	valuePatchOperation?: GridFieldPatchOperation;
 };
 
 type GridFieldCapabilities = {

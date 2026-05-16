@@ -31,15 +31,12 @@ Use this initial classification when choosing affordance defaults:
 - Reference/profile fields: ancestry, class, proficiencies, spells known, feature text, background, roleplay notes, inventory descriptions, and other relatively stable character facts. Default toward quieter edit affordances such as `hover` or `menu`, while prioritizing reading, text selection, copying, and annotation review.
 - Ambiguous fields should choose the quieter reference/profile behavior until play usage shows they are frequently changed at the table.
 
-Shared field components should expose affordance options directly instead of hiding behavior behind a domain label like `runtime`. Domain-specific wrappers may choose defaults, but the shared component API should stay explicit:
+Shared field components should expose affordance options directly instead of hiding behavior behind a domain label like `runtime`. Domain-specific wrappers may choose defaults, but the shared component API should stay explicit and reuse the grid affordance types exported from [gridContentTypes.ts](../src/lib/gridContentTypes.ts):
 
 ```ts
-type EditAffordance = 'persistent' | 'hover' | 'menu';
-type AnnotationAffordance = 'persistent' | 'badge' | 'hover';
-
-interface FieldInteractionAffordances {
-	editAffordance?: EditAffordance;
-	annotationAffordance?: AnnotationAffordance;
+interface GridFieldInteraction {
+	editAffordance?: GridEditAffordance;
+	annotationAffordance?: GridAnnotationAffordance;
 }
 ```
 
