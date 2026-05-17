@@ -2,7 +2,6 @@
 	import { resolve } from '$app/paths';
 	import GridContent from '$lib/GridContent.svelte';
 	import GridContainer from '$lib/GridContainer.svelte';
-	import InlineFieldDraft from '$lib/InlineFieldDraft.svelte';
 	import '../../../app.css';
 	import { charsArray, emptyChar } from '../../../data.js';
 	import { createId } from '../../../schema/helpers';
@@ -709,6 +708,34 @@
 		})
 	);
 	const quickRefMovementData = $derived<GridContentData>({
+		...resolveGridFieldDescriptors(
+			char,
+			[
+				{
+					key: 'deathSavesOk',
+					fieldName: 'Death Saves OK',
+					path: ['systemData', 'combat', 'deathSaves', 'successes'],
+					defaultValue: 0,
+					interaction: {
+						editAffordance: 'persistent',
+						annotationAffordance: 'persistent'
+					}
+				},
+				{
+					key: 'deathSavesRip',
+					fieldName: 'Death Saves RIP',
+					path: ['systemData', 'combat', 'deathSaves', 'failures'],
+					defaultValue: 0,
+					interaction: {
+						editAffordance: 'persistent',
+						annotationAffordance: 'persistent'
+					}
+				}
+			],
+			{
+				annotationPathForValuePath: toSystemDataAnnotationPath
+			}
+		),
 		speed: withFieldAnnotations(
 			char.systemData.combat?.speed ?? char.systemData.race?.speed ?? '',
 			['systemData', 'combat', 'speed'],
@@ -745,6 +772,27 @@
 		)
 	});
 	const quickRefSecondaryData = $derived<GridContentData>({
+		...resolveGridFieldDescriptors(
+			char,
+			char.systemData.combat.hitDice
+				? [
+						{
+							key: 'hitDiceRemaining',
+							fieldName: 'Hit Dice Remaining',
+							path: ['systemData', 'combat', 'hitDice', 'remaining'],
+							valuePatchOperation:
+								char.systemData.combat.hitDice.remaining === undefined ? 'add' : 'replace',
+							interaction: {
+								editAffordance: 'persistent',
+								annotationAffordance: 'persistent'
+							}
+						}
+					]
+				: [],
+			{
+				annotationPathForValuePath: toSystemDataAnnotationPath
+			}
+		),
 		hitDice: {
 			fieldName: 'Hit Dice',
 			value: {
@@ -1221,6 +1269,27 @@
 						label,
 						slot,
 						data: {
+							...resolveGridFieldDescriptors(
+								char,
+								slot
+									? [
+											{
+												key: `slot${key}Used`,
+												fieldName: `${label} Used`,
+												path: ['systemData', 'spellcasting', 'slots', key, 'used'],
+												defaultValue: 0,
+												valuePatchOperation: slot.used === undefined ? 'add' : 'replace',
+												interaction: {
+													editAffordance: 'persistent',
+													annotationAffordance: 'persistent'
+												}
+											}
+										]
+									: [],
+								{
+									annotationPathForValuePath: toSystemDataAnnotationPath
+								}
+							),
 							slots: {
 								fieldName: label,
 								value: {
@@ -1904,19 +1973,6 @@
 	const handleGridPatchesSave = (patches: Array<GridContentPatch>) => {
 		updateCurrent5eCharacter((entry) => applyGridPatches(entry, normalizeGridPatches(patches)));
 	};
-
-	const annotationsForBindPath = (bindPath: GridContentBindPath): Array<GridContentAnnotation> =>
-		annotationsAtPath(toSystemDataAnnotationPath(bindPath));
-
-	const handleFieldAnnotationsSave = (
-		bindPath: GridContentBindPath,
-		nextAnnotations: Array<GridContentAnnotation>
-	) => {
-		const annotationBindPath = toSystemDataAnnotationPath(bindPath);
-		if (!annotationBindPath) return;
-
-		handleGridPatchesSave([{ path: annotationBindPath, value: nextAnnotations }]);
-	};
 </script>
 
 {#if showMissingOrInvalidIdState}
@@ -2028,92 +2084,16 @@
 						/>
 					</GridContainer>
 					<GridContainer border={true} pad={true} classes="rounded-md">
-						<div class="mb-2 grid gap-2 border-b pb-2">
-							<InlineFieldDraft
-								label="Death Saves OK"
-								value={char.systemData.combat.deathSaves?.successes ?? 0}
-								path="/systemData/combat/deathSaves/successes"
-								inputKind="number"
-								editAffordance="persistent"
-								annotationAffordance="persistent"
-								annotations={annotationsForBindPath([
-									'systemData',
-									'combat',
-									'deathSaves',
-									'successes'
-								])}
-								{annotationEditorConfig}
-								ariaLabel="Death save successes"
-								onSavePatch={handleFieldPatchSave}
-								onSaveAnnotations={(nextAnnotations) => {
-									handleFieldAnnotationsSave(
-										['systemData', 'combat', 'deathSaves', 'successes'],
-										nextAnnotations
-									);
-								}}
-							/>
-							<InlineFieldDraft
-								label="Death Saves RIP"
-								value={char.systemData.combat.deathSaves?.failures ?? 0}
-								path="/systemData/combat/deathSaves/failures"
-								inputKind="number"
-								editAffordance="persistent"
-								annotationAffordance="persistent"
-								annotations={annotationsForBindPath([
-									'systemData',
-									'combat',
-									'deathSaves',
-									'failures'
-								])}
-								{annotationEditorConfig}
-								ariaLabel="Death save failures"
-								onSavePatch={handleFieldPatchSave}
-								onSaveAnnotations={(nextAnnotations) => {
-									handleFieldAnnotationsSave(
-										['systemData', 'combat', 'deathSaves', 'failures'],
-										nextAnnotations
-									);
-								}}
-							/>
-						</div>
 						<GridContent
+							handleFieldSavePatch={handleFieldPatchSave}
 							handleEditSavePatches={handleGridPatchesSave}
 							{annotationEditorConfig}
 							data={quickRefMovementData}
 						/>
 					</GridContainer>
 					<GridContainer border={true} pad={true} classes="rounded-md">
-						{#if char.systemData.combat.hitDice}
-							<div class="mb-2 border-b pb-2">
-								<InlineFieldDraft
-									label="Hit Dice Remaining"
-									value={char.systemData.combat.hitDice.remaining ?? ''}
-									path="/systemData/combat/hitDice/remaining"
-									inputKind="text"
-									editAffordance="persistent"
-									annotationAffordance="persistent"
-									annotations={annotationsForBindPath([
-										'systemData',
-										'combat',
-										'hitDice',
-										'remaining'
-									])}
-									{annotationEditorConfig}
-									patchOperation={char.systemData.combat.hitDice.remaining === undefined
-										? 'add'
-										: 'replace'}
-									ariaLabel="Hit dice remaining"
-									onSavePatch={handleFieldPatchSave}
-									onSaveAnnotations={(nextAnnotations) => {
-										handleFieldAnnotationsSave(
-											['systemData', 'combat', 'hitDice', 'remaining'],
-											nextAnnotations
-										);
-									}}
-								/>
-							</div>
-						{/if}
 						<GridContent
+							handleFieldSavePatch={handleFieldPatchSave}
 							handleEditSavePatches={handleGridPatchesSave}
 							{annotationEditorConfig}
 							displayMaxCols={1}
@@ -2226,35 +2206,8 @@
 					<GridContainer flow="row" count={1} countMd={3} countLg={5} classes="gap-3">
 						{#each spellSlotRuntimeCards as slotCard (slotCard.key)}
 							<GridContainer border={true} pad={true} classes="rounded-md">
-								{#if slotCard.slot}
-									<div class="mb-2 border-b pb-2">
-										<InlineFieldDraft
-											label={`${slotCard.label} Used`}
-											value={slotCard.slot.used}
-											path={`/systemData/spellcasting/slots/${slotCard.key}/used`}
-											inputKind="number"
-											editAffordance="persistent"
-											annotationAffordance="persistent"
-											annotations={annotationsForBindPath([
-												'systemData',
-												'spellcasting',
-												'slots',
-												slotCard.key,
-												'used'
-											])}
-											{annotationEditorConfig}
-											ariaLabel={`${slotCard.label} spell slots used`}
-											onSavePatch={handleFieldPatchSave}
-											onSaveAnnotations={(nextAnnotations) => {
-												handleFieldAnnotationsSave(
-													['systemData', 'spellcasting', 'slots', slotCard.key, 'used'],
-													nextAnnotations
-												);
-											}}
-										/>
-									</div>
-								{/if}
 								<GridContent
+									handleFieldSavePatch={handleFieldPatchSave}
 									handleEditSavePatches={handleGridPatchesSave}
 									{annotationEditorConfig}
 									displayArrayMode="stack"

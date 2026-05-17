@@ -222,6 +222,13 @@ Slice 3 implementation note:
 - `GridContent` now renders persistent direct primitive fields in a top card section before the remaining grid content, which preserves the existing Quick Reference card shape while removing adjacent route-local `InlineFieldDraft` wiring for that card.
 - Later slices should reuse this pattern for the other runtime cards before broader route extraction.
 
+Slice 4 implementation note:
+
+- The remaining runtime primitive surfaces now follow the same pattern.
+- The second and third Quick Reference cards resolve persistent direct fields through descriptors instead of adjacent route-local inline editors.
+- Spell slot used counters now live inside each slot card's `GridContentData` payload, so the slot cards no longer need separate top-level `InlineFieldDraft` wiring in the route.
+- The route no longer needs standalone `InlineFieldDraft` usage for the current migrated runtime/state surfaces; the next review should focus on fallback Edit and Notes behavior rather than additional primitive migration.
+
 ## Guardrails
 
 - Preserve the `p1-030` behavior: runtime/state fields stay fast to edit, reference/profile fields stay readable and selectable, and annotations stay explicit through Notes.
