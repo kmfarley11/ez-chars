@@ -149,6 +149,78 @@ Definition of done:
 - obvious focus, keyboard, or labeling issues in the main MVP flow are corrected
 - the review is reflected in the theme or UI checklist where useful
 
+### Add Svelte 5 agent tooling and audit the current app
+
+ID:
+
+- `p1-022`
+
+Size:
+
+- medium; documentation and narrow cleanup first
+
+Scope:
+
+- identify the preferred Svelte 5 MCP/plugin/skill workflow for agents working in this repo
+- update [../AGENTS.md](../AGENTS.md), [ai-usage.md](ai-usage.md), or another agent-facing guide with when and how to use that Svelte 5 tooling
+- scan the current app for Svelte 5 syntax, reactivity, lifecycle, component-boundary, and performance issues
+- fix narrow, low-risk findings that improve the app as it exists today without changing feature scope
+- capture larger or uncertain findings as follow-up backlog work instead of folding them into the audit
+- do not add a new dependency or external tool requirement without asking first
+
+Suggested implementation slices:
+
+1. Identify the Svelte 5 tooling or MCP/plugin setup agents should use for this repo, and document the expected workflow.
+2. Run an app-wide Svelte 5 review focused on correctness, reactivity shape, lifecycle usage, and obvious render/performance pitfalls.
+3. Apply targeted fixes for low-risk findings, keeping behavior and layout stable.
+4. Record any larger findings as follow-up backlog items or dependency notes on the relevant existing tickets.
+5. Run the relevant local verification from [docs/verification.md](verification.md).
+
+Definition of done:
+
+- agent-facing docs explain the Svelte 5 tooling workflow for future implementation tasks
+- the current app has been reviewed with that tooling or the documented best available equivalent
+- low-risk Svelte 5 correctness or performance findings are fixed and verified
+- larger, risky, or ambiguous findings are explicitly captured for later work
+- no dependency or external tooling requirement is added without prior approval
+
+### Prefer platform-native HTML and CSS primitives where practical
+
+ID:
+
+- `p1-024`
+
+Size:
+
+- medium-to-large; inventory first, then implement only clear wins
+
+Scope:
+
+- establish guidance for agents to prefer browser/platform primitives over bespoke JavaScript, Tailwind-heavy, or package-based implementations where practical
+- consider native and modern platform features such as `<dialog>`, popover and anchor positioning where browser support is acceptable, `:has()`, scroll-snap, scroll timelines, CSS-driven interaction states, and native form controls
+- inventory current app surfaces that may benefit from platform-native simplification: menus, dialogs, grid measurement/layout, select/list behavior, scroll interactions, hover/focus behavior, and dense sheet sections
+- evaluate candidates for accessibility, mobile behavior, browser support, maintainability, and measured performance impact before changing implementation
+- coordinate with `p1-020` for accessibility/mobile findings and `p1-025` for measured dense-sheet scroll performance
+- do not add a new dependency without asking first; external references such as Graffiti UI can inform evaluation but should not become dependencies by default
+
+Suggested implementation slices:
+
+1. Add agent-facing guidance for when to reach for native HTML/CSS primitives before custom components, JavaScript state, or new packages.
+2. Inventory current custom UI/CSS patterns and identify candidates for platform-native simplification.
+3. Evaluate the highest-value candidates against accessibility, mobile behavior, browser support, and maintainability.
+4. Implement one narrow replacement or simplification only where the tradeoff is clearly favorable and behavior can be preserved.
+5. Record deferred candidates on the relevant backlog item instead of broadening this effort.
+6. Run the relevant local verification from [docs/verification.md](verification.md), plus manual checks for any touched mobile or interaction surface.
+
+Definition of done:
+
+- agent-facing docs include project guidance to prefer platform-native primitives where they fit
+- current custom UI/CSS patterns have been inventoried for native simplification candidates
+- at least one clear, low-risk improvement is implemented or all candidates are explicitly deferred with reasons
+- accessibility, mobile behavior, and browser support are considered before implementation
+- any performance claim is backed by verification or linked to `p1-025` for measurement
+- no new dependency is added without prior approval
+
 ### Follow up on residual 5e sheet scroll performance
 
 ID:
@@ -166,6 +238,7 @@ Scope:
 - preserve the measured layout quality that looked better than the attempted CSS auto-fit replacement
 - keep this separate from the field-editing UX work in `p1-030`, the field/card API consolidation in `p1-035`, the field-binding abstraction in `p1-040`, and the route projection extraction in `p1-045`
 - prefer tackling this after `p1-035` lands, unless `p1-035` itself causes a visible performance regression; that keeps profiling focused on the field/card renderer shape the app intends to keep
+- use findings from `p1-022` and `p1-024` if they are available, but keep this ticket focused on measured dense-sheet scroll performance rather than broad Svelte or platform cleanup
 
 Migrated findings from `p0-040`:
 
