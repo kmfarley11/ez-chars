@@ -57,7 +57,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: continue `p1-035` with slice 5 to review card/list fallback editing and confirm the remaining Edit vs. Notes boundaries after the runtime primitive migration.
+Next recommended target: continue `p1-035` with slice 6 to update docs/checklists and confirm the consolidated field/card API is ready to close before broader route extraction work in `p1-045`.
 
 ### Link runtime actions to source weapons, spells, and features
 
@@ -228,7 +228,7 @@ Suggested implementation slices:
 2. Complete. Added a shared primitive field renderer used by `InlineFieldDraft` and available to `GridContent` fields with explicit interaction/binding metadata. Added the minimal descriptor/resolver helpers for deriving field values, annotation data, patch paths, capabilities, and affordance metadata from source data without per-field route glue.
 3. Complete. Migrated the first Quick Reference card to the consolidated API. That card now declares current HP, temp HP, max HP, initiative, and armor class through field descriptors plus one `GridContent` surface, with persistent primitive runtime editors rendered in the card's top section and the remaining summary fields preserved below.
 4. Complete. Migrated the remaining runtime primitive surfaces to the consolidated API: death saves, hit dice remaining, and spell slot used counters now render through descriptor-driven `GridContent` cards with persistent primitive editors instead of adjacent route-local `InlineFieldDraft` instances.
-5. Review card/list fallback editing after migration and ensure card-wide Edit remains focused on value/structure fallback while Notes owns annotations.
+5. Complete. Reviewed card/list fallback editing after migration. Card-wide Edit remains comprehensive across the fields described by the card, direct primitive affordances act as prioritized shortcuts for frequent edits, and Notes remains the annotation review/add/edit surface.
 6. Update docs/checklists and prune this item only when the route no longer needs ad hoc adjacent field editor composition for the migrated runtime/state fields.
 
 Definition of done:

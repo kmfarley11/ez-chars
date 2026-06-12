@@ -78,6 +78,10 @@
 		})
 	);
 	const displayEntries = $derived(Object.entries(normalizedData));
+	const canOpenEditDialog = $derived(
+		displayEntries.length > 0 &&
+			(handleEditSavePatches !== undefined || handleEditSave !== undefined)
+	);
 	const leadFieldEntries = $derived(
 		displayEntries.filter(
 			([, field]) =>
@@ -118,6 +122,7 @@
 	};
 
 	const onOpen = async () => {
+		if (!canOpenEditDialog) return;
 		draftData = structuredClone(normalizedData);
 		shouldRenderEditDialog = true;
 		await tick();
@@ -241,7 +246,9 @@
 			ariaLabel="Card actions"
 			title="Card actions"
 		>
-			<MenuItemButton onclick={onOpen}>Edit</MenuItemButton>
+			{#if canOpenEditDialog}
+				<MenuItemButton onclick={onOpen}>Edit</MenuItemButton>
+			{/if}
 			<MenuItemButton onclick={onHelpOpen}>Notes</MenuItemButton>
 		</MenuButton>
 	</div>

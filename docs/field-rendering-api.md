@@ -229,6 +229,12 @@ Slice 4 implementation note:
 - Spell slot used counters now live inside each slot card's `GridContentData` payload, so the slot cards no longer need separate top-level `InlineFieldDraft` wiring in the route.
 - The route no longer needs standalone `InlineFieldDraft` usage for the current migrated runtime/state surfaces; the next review should focus on fallback Edit and Notes behavior rather than additional primitive migration.
 
+Slice 5 implementation note:
+
+- Card descriptors should define every field that belongs in the card, and card-wide Edit should remain comprehensive across those fields.
+- Direct primitive affordances are prioritized shortcuts for frequent runtime/state edits; they do not remove those fields from the bulk Edit flow.
+- Notes remains the explicit annotation review/add/edit surface, separate from value editing.
+
 ## Guardrails
 
 - Preserve the `p1-030` behavior: runtime/state fields stay fast to edit, reference/profile fields stay readable and selectable, and annotations stay explicit through Notes.
