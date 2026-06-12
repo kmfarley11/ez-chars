@@ -38,4 +38,5 @@ Run this quick check before deploy when touching theme or UI colors.
 - Card `Notes` dialogs show existing field notes first and expose `Add` or `Edit` actions for fields with editable annotation paths.
 - Touch users can open edit, notes, and card fallback controls without hover-only gestures.
 - Reference/profile field text, spell names, feature names, item names, and note text remain selectable and copyable without entering edit mode.
+- Runtime/state primitive fields render inside their cards rather than as separate adjacent controls, while preserving the same keyboard and touch edit behavior.
 - Card-wide `Edit` remains available as a value/structure fallback for card fields, while annotation add/edit flows live in note dialogs where equivalent annotation paths exist.

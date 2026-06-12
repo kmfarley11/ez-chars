@@ -235,6 +235,12 @@ Slice 5 implementation note:
 - Direct primitive affordances are prioritized shortcuts for frequent runtime/state edits; they do not remove those fields from the bulk Edit flow.
 - Notes remains the explicit annotation review/add/edit surface, separate from value editing.
 
+Slice 6 closure note:
+
+- `p1-035` is complete for the current migrated runtime/state field surfaces: the 5e route no longer renders standalone `InlineFieldDraft` blocks beside `GridContent`, and the compatibility `InlineFieldDraft` component now delegates to the shared primitive renderer.
+- The remaining route-local projection builders, virtual path merge helpers, and patch normalization logic are intentionally deferred to `p1-045` rather than expanded inside the field/card API consolidation.
+- Future field/card work should preserve the completed split: descriptor-driven `GridContent` data owns card composition, direct primitive affordances are shortcuts for frequent runtime edits, card-wide Edit remains the comprehensive value/structure fallback, and Notes remains the annotation surface.
+
 ## Guardrails
 
 - Preserve the `p1-030` behavior: runtime/state fields stay fast to edit, reference/profile fields stay readable and selectable, and annotations stay explicit through Notes.
