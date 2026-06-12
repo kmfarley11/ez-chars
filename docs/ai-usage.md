@@ -31,6 +31,37 @@ Higher reasoning is not a replacement for smaller scope. Prefer one narrow slice
 
 The full backlog prompt in [mvp-backlog.md](mvp-backlog.md) remains the safest default for implementation slices. For cheaper work, trim the prompt only when the task is narrow and the relevant context is obvious.
 
+## Svelte 5 Tooling For Agents
+
+For Svelte component, route, reactivity, lifecycle, accessibility, or performance work, prefer the official Svelte AI tooling before relying on model memory. Svelte 5 differs enough from older Svelte patterns that agents should verify current syntax and recommendations against first-party docs.
+
+Preferred workflow:
+
+- Use this repo's dev-only `@sveltejs/mcp` install when the current agent client exposes MCP tools. The package provides the `svelte-mcp` stdio server and is also available through `npm run mcp:svelte`.
+- In Codex CLI, a repo-local stdio MCP configuration is:
+
+```toml
+[mcp_servers.svelte]
+command = "./node_modules/.bin/svelte-mcp"
+```
+
+- If the client launches MCP servers outside the repo root, use the absolute path to this repo's `node_modules/.bin/svelte-mcp` instead.
+- If using the remote MCP option in Codex CLI, Svelte documents:
+
+```toml
+experimental_use_rmcp_client = true
+
+[mcp_servers.svelte]
+url = "https://mcp.svelte.dev/mcp"
+```
+
+- When the Svelte MCP is available, start Svelte-related tasks by discovering relevant docs with its section-listing tool, fetch the relevant Svelte/SvelteKit docs, and run its autofixer on Svelte code before handing work back.
+- Quote or escape section paths that contain `$` when calling the MCP through a shell, for example `npm run mcp:svelte -- get-documentation 'svelte/$state,svelte/$derived,svelte/$effect'`.
+- If the MCP is not available, use the official generated docs for LLMs instead: [svelte.dev/llms.txt](https://svelte.dev/llms.txt), [Svelte docs for LLMs](https://svelte.dev/docs/svelte/llms.txt), and [SvelteKit docs for LLMs](https://svelte.dev/docs/kit/llms.txt).
+- Always pair Svelte-tool findings with this repo's local gates. Use `npm run check` for Svelte diagnostics and `npm run lint` for formatting/ESLint; run the broader gates from [verification.md](verification.md) when behavior, build output, tests, or release-sensitive paths changed.
+
+Keep Svelte MCP as a dev-only tool. Do not move it into app runtime dependencies, and do not add additional Svelte tooling packages without prior approval.
+
 ### Tiny Docs Or Commit Message
 
 Use for copy edits, commit messages, and status summaries.

@@ -55,7 +55,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: tackle `p1-022`, then `p1-024`, then `p1-045`.
+Next recommended target: continue `p1-022` with slice 2, then tackle `p1-024`, then `p1-045`.
 
 ### Link runtime actions to source weapons, spells, and features
 
@@ -168,7 +168,7 @@ Scope:
 
 Suggested implementation slices:
 
-1. Identify the Svelte 5 tooling or MCP/plugin setup agents should use for this repo, and document the expected workflow.
+1. Complete. Added the official Svelte MCP as a dev-only dependency and identified it plus generated `llms.txt` docs as the preferred Svelte 5 agent workflow. Documented the Codex CLI local/remote MCP setup, MCP usage flow, fallback docs, and local verification expectations in [ai-usage.md](ai-usage.md), with a short rule in [../AGENTS.md](../AGENTS.md).
 2. Run an app-wide Svelte 5 review focused on correctness, reactivity shape, lifecycle usage, and obvious render/performance pitfalls.
 3. Apply targeted fixes for low-risk findings, keeping behavior and layout stable.
 4. Record any larger findings as follow-up backlog items or dependency notes on the relevant existing tickets.
