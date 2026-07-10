@@ -68,13 +68,13 @@ We evaluate how OpenSpec aligns with, complements, or duplicates existing patter
 
 ## 4. Evaluation of OpenSpec
 
-### Pros
+### 4.1 Pros
 1. **Durable Knowledge Preservation:** Moving specification out of chat history and into `openspec/specs/` guarantees the agent has context on historical architecture decisions.
 2. **Explicit Planning Checkpoint:** Enforces that a human approves the technical design (`design.md`) and task checklist (`tasks.md`) before any code is generated.
 3. **Delta-Spec Driven:** Focusing on spec differences makes it highly compatible with existing codebase structures ("brownfield" projects).
 4. **Natural Agent Division:** Cleanly separates Antigravity's role (building the proposal, design, and specs) from Codex's role (executing `tasks.md`).
 
-### Cons & Gaps (With Mitigations)
+### 4.2 Cons & Gaps (With Mitigations)
 1. **Tooling Dependency:** Requires installing the `@fission-ai/openspec` npm package.
    * *Status:* User approved adding this as a dev dependency. We can install `@fission-ai/openspec` locally and execute it via `npx` or local npm scripts.
 2. **Slash Command Friction:** Slash commands like `/opsx:propose` depend on IDE-level support (e.g. Cursor or Claude Code).
@@ -84,12 +84,12 @@ We evaluate how OpenSpec aligns with, complements, or duplicates existing patter
 
 ---
 
-## 5. Alternative Exploration: Lightweight Markdown ADRs + Backlog Slices (Current Improved)
+## 5. Design Alternatives Exploration
 
+### 5.1 Lightweight Markdown ADRs + Backlog Slices (Current Improved)
 This alternative refines our existing raw markdown backlog (`docs/mvp-backlog.md`) and guidelines (`AGENTS.md`), adding a formal but lightweight Architecture Decision Record (ADR) system in `docs/decisions/` (or `docs/specs/`) for complex architectural changes.
 
-### 5.1 Mapping to `ez-chars` Mechanisms
-
+#### 5.1.1 Mapping to `ez-chars` Mechanisms
 | `ez-chars` Mechanism | ADRs + Backlog Slices Fit & Workflow |
 | :--- | :--- |
 | **Durable Docs** | **Natural integration.** Architectural decisions are captured as markdown files under `docs/decisions/YYYY-MM-DD-title.md` or `docs/specs/feature-spec.md`. They remain permanent, searchable, versioned documents in the codebase. |
@@ -99,32 +99,48 @@ This alternative refines our existing raw markdown backlog (`docs/mvp-backlog.md
 | **Verification Gates** | **Fully integrated.** The backlog slice's definition of done explicitly lists verification steps. The agent runs `npm run test` / `check` / `lint` / `build` as standard. |
 | **Svelte Tooling & Local-First Style** | **Zero-dependency.** Fits the lightweight, local-first ethos of the project. No CLI tools or IDE integrations required. |
 
-### 5.2 Compare and Contrast: OpenSpec vs. ADRs + Backlog Slices
+---
 
-| Feature / Dimension | OpenSpec (with Mitigations) | ADRs + Backlog Slices (Current Improved) |
-| :--- | :--- | :--- |
-| **Tooling Dependency** | Requires `@fission-ai/openspec` (dev dependency). | None (pure markdown and git). |
-| **Workspace Overhead** | Introduces `openspec/specs/` and ephemeral `openspec/changes/<change_id>/` folders. | Keeps all documentation inside the standard `docs/` tree. |
-| **Spec-to-Code Traceability** | Strong. Uses delta-spec merging (`archive`) to build an audit trail and update the main spec. | Moderate. Relies on manual document updates and Git commit logs for history. |
-| **Process Friction** | Higher. Enforces proposal/design/task folder creation and spec format validation. | Lower. Flexible, ad-hoc, easy to write and update. |
-| **Vibecoding / Fast-Track** | Requires explicit rules to bypass formal change folder creation. | Native. Agent can immediately vibecode small changes and update docs at the end. |
-| **Agent Coordination** | Automated task runner interface via `tasks.md` and `/opsx:apply`. | Manual checklist alignment via the backlog slice's definition of done. |
+### 5.2 Strict RFC/PRD Workflow
+This alternative adapts a formal, document-first planning approach. Product features start as Product Requirements Documents (PRDs) under `docs/prds/` defining the "Why" and "What." Technical designs are proposed as Request for Comments (RFCs) under `docs/rfcs/` defining the "How."
+
+#### 5.2.1 Mapping to `ez-chars` Mechanisms
+| `ez-chars` Mechanism | Strict RFC/PRD Fit & Workflow |
+| :--- | :--- |
+| **Durable Docs** | **Extremely high durability.** Features are fully specified in standalone PRD and RFC markdown documents (e.g. `docs/rfcs/001-field-binding.md`). These form a permanent and chronological archive of the project's evolution. |
+| **Backlog Slices** | **Referential fit.** Backlog items are created *after* an RFC is approved. The backlog slice references the RFC for all implementation details and maps its "Implementation Plan" to backlog tasks. |
+| **Agent Boundary** | **Explicit handoff.** **Antigravity** writes the PRD and RFC. Once the human approves the RFC, **Codex** is handed the backlog slice to implement it. |
+| **Skillsets** | **Fully compatible.** Project-local Codex skills can be used during implementation. |
+| **Verification Gates** | **Structured.** The RFC's "Verification and Testing Plan" details specific checks. The agent runs standard tests/checks/lints to satisfy these. |
+| **Svelte Tooling & Local-First Style** | **Zero-dependency.** Pure markdown and git. No special CLI or IDE integrations. |
+
+---
+
+### 5.3 Side-by-Side Comparison Matrix
+
+| Feature / Dimension | OpenSpec (with Mitigations) | ADRs + Backlog Slices (Current Improved) | Strict RFC/PRD Workflow |
+| :--- | :--- | :--- | :--- |
+| **Tooling Dependency** | Requires `@fission-ai/openspec` (dev dependency). | None (pure markdown and git). | None (pure markdown and git). |
+| **Workspace Overhead** | Introduces `openspec/` with active and archived change folders. | None. Keeps docs in `docs/` or backlog. | High. Adds structured `docs/prds/` and `docs/rfcs/` directories. |
+| **Spec-to-Code Traceability** | Strong. Merges delta specs into main specs via CLI `archive` step. | Moderate. Relies on manual document updates and Git history. | Very Strong. Clear, numbered RFCs map directly to commit boundaries. |
+| **Process Friction** | Higher. Enforces proposal/design/task folder creation and spec validation. | Lower. Highly flexible, easy to write and update. | High. Requires writing separate PRD/RFC documents before coding. |
+| **Vibecoding / Fast-Track** | Requires explicit rules to bypass formal change folder creation. | Native. Agent can immediately vibecode and update docs. | Poor. Discourages fast/ad-hoc changes; requires formal RFC cycles. |
+| **Agent Coordination** | Automated task runner interface via `tasks.md` and `/opsx:apply`. | Manual checklist alignment via backlog slice. | Explicit handoff: spec (RFC) is finalized before code (backlog) starts. |
 
 ---
 
 ## 6. Next Steps & Alternatives (Human Checkpoint)
 
-We have now analyzed two viable options:
+We have now analyzed three options:
 1. **OpenSpec (Mitigated/Dev Dependency):** A spec-first framework using active changes folders and delta spec merges.
 2. **Lightweight Markdown ADRs + Backlog Slices:** A zero-dependency markdown-based workflow using a single backlog queue and decision documents.
+3. **Strict RFC/PRD Workflow:** A formal document-first approach separating product requirements and technical design into numbered archives.
 
-Before making a final choice, we can explore further alternatives or proceed to select a winner and run a trial:
+Before making a final choice, we can explore the last remaining alternative or select a winner and run a trial:
 
-*Remaining Alternatives for Comparison (if requested):*
-- **Strict RFC/PRD Workflow:** A formal document-first approach where changes are proposed as RFCs under `docs/`, with tasks kept in the backlog.
+*Remaining Alternative for Comparison (if requested):*
 - **Spec-Driven Tests / BDD:** Evaluating defining features as executable test suites (Gherkin/Vitest) rather than text documents.
 
 ---
 
-*Please review the comparison of OpenSpec and the ADR + Backlog Slices alternative. Once reviewed, choose which option to proceed with or if we should explore another alternative.*
-
+*Please review the updated comparison matrix. Choose which option to proceed with or if we should explore the remaining BDD alternative.*
