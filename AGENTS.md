@@ -32,6 +32,7 @@ Do not use [docs/vision/](docs/vision/) as the active backlog unless the task is
 
 ## Working Rules
 
+- **Agent Role Boundary:** We split duties between agents: **Antigravity** (Architectural Ideation, Backlog Refinement, & Specification writing) and **Codex** (Code Implementation & Test Execution). If you are asked to perform a task outside your designated role (e.g., asking Antigravity to write extensive implementation code, or Codex to design a new API boundary), stop, flag this to the user, and ask if they want to proceed or delegate to the other agent.
 - Prefer completing the current 5e 2014 MVP before expanding systems
 - Keep current MVP docs up to date when scope or backlog changes
 - Before adding bespoke UI controls or new component patterns, scan [src/lib/](src/lib/) for existing primitives and reuse or extend them where practical; if a local primitive is not reused, call out why

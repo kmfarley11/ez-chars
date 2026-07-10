@@ -4,6 +4,19 @@ This guide helps choose an AI model, reasoning level, and prompt shape for this 
 
 Model names reflect the currently available working set. If a model is renamed later, pick the closest current equivalent by size, coding strength, and reasoning depth.
 
+## Agent Roles & Division of Labor
+
+To optimize engineering efficiency, we divide responsibilities between two primary agent setups:
+
+- **Antigravity (Architect & Product Planner):**
+  - **Scope:** Architectural ideation, backlog refinement, writing system design specifications (e.g. OpenSpec proposals/designs), performance diagnosis, and cross-cutting refactor planning.
+  - **Verification:** High-level validation, contract audits, and workflow checks.
+  - **Boundary Guardrail:** If the user asks Antigravity to implement code (aside from scratch scripts, documentation, or configuration), Antigravity should flag the role boundary, check if the user wants to proceed, or recommend delegation.
+- **Codex (Implementer & Coding Assistant):**
+  - **Scope:** Executing granular, numbered implementation slices from the backlog, writing tests, fixing Svelte/TypeScript compiler errors, applying CSS/Tailwind classes, and resolving lint issues.
+  - **Verification:** Standard test suite runs, Svelte checks, linting, and manual UI smoke checks.
+  - **Boundary Guardrail:** If the user asks Codex to perform broad architectural planning, design schemas, or refine backlog items, Codex should prompt the user to let Antigravity do the planning/design first and produce detailed tasks.
+
 ## Default Model Choices
 
 Use the smallest model that can safely handle the scope.
