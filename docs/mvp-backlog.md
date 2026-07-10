@@ -55,7 +55,96 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: continue `p1-022` with slice 2, then tackle `p1-024`, then `p1-045`.
+Next recommended target: start `p1-000`, then use its findings to refine and continue `p1-002`; after that, continue `p1-022` with slice 2, then tackle `p1-024`, then `p1-045`.
+
+### Investigate OpenSpec and spec-driven workflow alternatives
+
+ID:
+
+- `p1-000`
+
+Size:
+
+- small-to-medium; timeboxed, exploratory, and documentation-driven
+
+Scope:
+
+- investigate [OpenSpec](https://openspec.dev/) from Fission-AI as a lightweight in-repository specification workflow for product, architecture, and agent-assisted implementation work
+- review OpenSpec's concrete repo model and lifecycle: `openspec/specs/` as the current behavior source of truth, `openspec/changes/<change>/` with `proposal.md`, `design.md`, `tasks.md`, and delta `specs/`, plus propose/apply/sync/archive flow
+- review OpenSpec's Codex-relevant usage model: terminal `openspec ...` commands for setup/validation and chat slash commands such as `/opsx:explore`, `/opsx:propose`, `/opsx:apply`, `/opsx:sync`, and `/opsx:archive`
+- compare OpenSpec against a small number of plausible alternatives only where they clarify the decision
+- include a human-in-the-loop checkpoint after the initial OpenSpec analysis to suggest, recommend, and choose which alternatives are worth deeper exploration
+- keep each design alternative investigation timeboxed to no more than 60 minutes before summarizing findings, gaps, and whether deeper follow-up is justified
+- evaluate fit against this repo's actual workflow: [current-mvp.md](current-mvp.md), this backlog, [../AGENTS.md](../AGENTS.md), skillsets, verification docs, Svelte tooling, and local-first implementation style
+- materialize the investigation as a living decision article that is updated during exploration, not reconstructed from chat history at the end
+- disclose each explored design alternative, evaluation criteria, pros and cons, recommendation, and consequences for `p1-002`
+- optionally validate a promising workflow with a no-code trial run against a real backlog item or slice, such as planning `p1-022` slice 2, `p1-024` slice 1, or `p1-045` slice 1, to expose practical friction before adopting the workflow
+- explicitly identify how the findings should refine `p1-002` before any backlog/workflow overhaul begins
+- do not install new tooling, create a full OpenSpec migration, restructure the backlog, or add skill files during this investigation unless the user explicitly expands scope
+
+Suggested implementation slices:
+
+1. Read OpenSpec's official site and docs enough to summarize the intended workflow, artifacts, CLI/tooling expectations, slash-command model, lifecycle, and fit for this project.
+2. Start the decision article and document OpenSpec exploration findings against current ez-chars mechanisms: durable docs, backlog slices, `AGENTS.md`, skillsets, verification gates, and how `proposal.md`/`design.md`/`tasks.md` plus archive/sync could preserve learned behavior.
+3. Work with the human in the loop to first review decision article contents, then to identify plausible alternatives, recommend which ones are worth exploring next, and choose one focused comparison target.
+4. Explore the chosen alternative under the 60-minute cap, map it onto the same ez-chars workflow questions used for OpenSpec, compare and contrast it against already explored options, then update the decision article after human-in-the-loop review of the findings.
+5. Repeat slices 3 and 4 for additional alternatives until the human asks to conclude, or until further alternatives no longer appear likely to change the recommendation.
+6. If one or two workflows look viable, run a no-code trial against one real backlog item or slice: produce the planning artifacts the candidate workflow would require, compare them to the current backlog prompt workflow, review the friction with the human, and document the result in the decision article.
+7. Refine and concise the decision article: normalize evaluation criteria, tighten pros and cons, call out rejected options, state the recommendation, and list known risks, follow-ups, and consequences for `p1-002`.
+8. Update `p1-002` scope, slices, and definition of done according to the final decision article so the follow-on workflow overhaul starts from the chosen direction instead of the initial assumption.
+9. Capture any unresolved research questions as future backlog notes instead of extending the investigation indefinitely.
+
+Definition of done:
+
+- OpenSpec has been evaluated from the correct official source, [openspec.dev](https://openspec.dev/), against this repo's actual workflow rather than adopted by assumption
+- the recommendation addresses OpenSpec's repo artifacts, slash-command flow, CLI validation/setup, archive behavior, and brownfield adoption story
+- the decision article begins during OpenSpec analysis and is revised as alternatives are explored
+- alternative exploration includes a human-in-the-loop checkpoint before spending deeper investigation time
+- each compared alternative has been evaluated under the same timeboxed approach, mapped against the same repo workflow questions where appropriate, and documented after human review of the findings
+- any trial run remains planning/artifact-only unless the user explicitly asks to implement the selected backlog slice
+- at least one viable workflow has either been trialed against a real backlog item/slice or explicitly deferred with rationale in the decision article
+- there is a decision article documenting whether and how to use OpenSpec or another specification workflow in ez-chars, including alternatives explored, pros and cons, recommendation, and follow-up consequences
+- `p1-002` has been refined to reflect the recommendation, including any changed assumptions about backlog shape, AGENTS.md, skills, or tooling
+- existing high-priority implementation context remains visible, especially the path through `p1-022`, `p1-024`, and `p1-045`
+- no new dependency, external tool requirement, full backlog migration, or skill installation is added without explicit approval
+
+### Refine backlog and agent workflow after spec-workflow decision
+
+ID:
+
+- `p1-002`
+
+Size:
+
+- medium; documentation and workflow restructuring, refined by `p1-000` findings before implementation
+
+Scope:
+
+- apply the chosen specification/backlog workflow from `p1-000` to the repo's day-to-day planning and agent collaboration docs
+- decide how the chosen workflow should relate to [current-mvp.md](current-mvp.md), this backlog, [../AGENTS.md](../AGENTS.md), skillsets, and verification docs
+- refine the backlog shape now that the project is past the rudimentary MVP coding phase and can treat the backlog as a broader product/architecture/workflow backlog
+- preserve the existing active implementation context, especially `p1-022`, `p1-024`, and `p1-045`, while moving workflow/specification refinement ahead of them
+- standardize agent usage expectations without duplicating full docs into [../AGENTS.md](../AGENTS.md)
+- identify which repeated repo workflows deserve Codex skills, and keep skill design concise, procedural, and progressively disclosed
+- do not install new tooling, create a full backlog/spec migration, or add skill files until `p1-000` has produced an agreed convention and this item has been refined accordingly
+
+Suggested implementation slices:
+
+1. Refine this item after `p1-000` completes so its scope, slices, and definition of done match the selected specification/backlog workflow.
+2. Propose an ez-chars workflow: which work begins as a spec/change proposal, which work remains backlog-only, how acceptance criteria are captured, and when specs become implementation tasks.
+3. Refine backlog organization into clearer lanes, such as product work, architecture/refactor work, workflow/tooling work, and research/proposal work, while preserving current item IDs and active priority context.
+4. Draft the minimal updates needed for [../AGENTS.md](../AGENTS.md), [ai-usage.md](ai-usage.md), and related docs so future agents know how to use the backlog, chosen spec workflow, Svelte tooling, and verification gates together.
+5. Identify candidate repo-specific Codex skills, such as backlog-slice execution, spec/change work, Svelte UI work, and release/verification checks; define trigger conditions and contents before creating any skill.
+6. After the convention is agreed, implement the initial docs/backlog restructuring and, only if still clearly useful, add the first minimal spec structure or skill scaffold.
+
+Definition of done:
+
+- this item has been explicitly refined using `p1-000` findings before broader docs or workflow restructuring begins
+- the backlog has a clearer structure for post-MVP product, architecture, workflow, and research work
+- [../AGENTS.md](../AGENTS.md) remains a short entry point and points to deeper workflow docs instead of absorbing them
+- candidate skills are identified with clear trigger conditions, and any created skills follow the concise/progressive-disclosure guidance
+- existing high-priority implementation context remains visible, especially the path through `p1-022`, `p1-024`, and `p1-045`
+- no new dependency, external tool requirement, full backlog/spec migration, or skill installation is added without explicit approval
 
 ### Link runtime actions to source weapons, spells, and features
 
