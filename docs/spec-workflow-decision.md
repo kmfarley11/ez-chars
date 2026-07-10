@@ -76,9 +76,9 @@ We evaluate how OpenSpec aligns with, complements, or duplicates existing patter
 
 ### Cons & Gaps (With Mitigations)
 1. **Tooling Dependency:** Requires installing the `@fission-ai/openspec` npm package.
-   * *Mitigation:* The core workflow files (`proposal.md`, `design.md`, `tasks.md`) are standard markdown. We can follow OpenSpec's file structure and lifecycle completely manually without installing the NPM CLI, keeping the repository dependency-free if desired.
-2. **Slash Command Friction:** Slash commands like `/opsx:propose` depend on IDE-level support (e.g. Cursor or Claude Code). In standard client terminals, they must be simulated.
-   * *Mitigation:* We can document the mapping of these slash commands directly in [../AGENTS.md](../AGENTS.md) or as a project-local Codex skill. When a human says "propose change X," the agent follows the documented procedure to create the `proposal.md`, `design.md`, and `tasks.md` files.
+   * *Status:* User approved adding this as a dev dependency. We can install `@fission-ai/openspec` locally and execute it via `npx` or local npm scripts.
+2. **Slash Command Friction:** Slash commands like `/opsx:propose` depend on IDE-level support (e.g. Cursor or Claude Code).
+   * *Mitigation:* The agent can execute the equivalent terminal CLI commands directly (e.g., running `npx @fission-ai/openspec <cmd>` via the `run_command` tool) or map these actions to explicit instructions in [../AGENTS.md](../AGENTS.md) and project-local Codex skills. This bridges the gap for clients that don't natively support `/opsx:` chat shortcuts.
 3. **Formatting Overhead & Process Weight:** OpenSpec expects specs to be structured in precise requirements/scenarios for validation, and creating a dedicated change folder for every small slice can feel heavy for a small MVP.
    * *Mitigation (Vibecoding / Fast-Track Mode):* We can introduce a "Fast-Track" or "Vibecode" rule in [../AGENTS.md](../AGENTS.md). For small, low-risk, styling, or documentation-only slices, the agent can directly implement the changes without a formal proposal folder, provided they update a summary log or backlog status at the end of the turn. These ad-hoc changes can then be periodically triaged into the main specs.
 
