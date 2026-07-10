@@ -114,33 +114,80 @@ This alternative adapts a formal, document-first planning approach. Product feat
 | **Verification Gates** | **Structured.** The RFC's "Verification and Testing Plan" details specific checks. The agent runs standard tests/checks/lints to satisfy these. |
 | **Svelte Tooling & Local-First Style** | **Zero-dependency.** Pure markdown and git. No special CLI or IDE integrations. |
 
+### 5.3 Spec-Driven Tests / BDD (Behavior Driven Development)
+
+This alternative uses executable test suites (Gherkin/Cucumber feature files, or Vitest/Playwright tests with BDD-style `describe`/`it`/`given`/`when`/`then` syntax) as the primary specification. The code and tests themselves serve as the living documentation.
+
+#### 5.3.1 Mapping to `ez-chars` Mechanisms
+
+| `ez-chars` Mechanism | Spec-Driven Tests / BDD Fit & Workflow |
+| :--- | :--- |
+| **Durable Docs** | **Code-level durability.** The specification lives in test files (e.g. `src/schema/__tests__/character.spec.ts`). It cannot drift from actual behavior without failing, but it is less readable for non-technical stakeholders compared to markdown. |
+| **Backlog Slices** | **Direct test alignment.** Backlog slices are implemented by first writing failing spec tests, then writing code to pass them. |
+| **Agent Boundary** | **Test-first boundary.** **Antigravity** drafts the test suite structure and mock data models. **Codex** writes the actual code and test implementation, verifying success when tests turn green. |
+| **Skillsets** | **Excellent fit.** Pairs naturally with Codex skills for test execution, mock setups, and Svelte component rendering assertions. |
+| **Verification Gates** | **Deeply unified.** Running `npm run test` executes both the test suite and the behavioral specification. |
+| **Svelte Tooling & Local-First Style** | **Dependency-heavy.** Often requires additional test runners, mounting libraries, or Gherkin parsers (e.g. Cucumber plugins) to write readable features. |
+
+### 5.4 GitHub Spec Kit
+
+GitHub Spec Kit (`spec-kit`) is an open-source toolkit and framework designed for Spec-Driven Development (SDD) with AI agents. It uses a python-based CLI tool (`specify`) to enforce structured phase gates: Constitution -> Specify -> Plan -> Tasks -> Implement.
+
+#### 5.4.1 Mapping to `ez-chars` Mechanisms
+
+| `ez-chars` Mechanism | GitHub Spec Kit Fit & Workflow |
+| :--- | :--- |
+| **Durable Docs** | **Extremely high.** Stores memory and specs under a `.specify/` folder. It uses `constitution.md` to enforce immutable codebase principles and rules that the agent must always follow. |
+| **Backlog Slices** | **Direct task integration.** It generates task lists (`/speckit.tasks`) which can map onto backlog items or execution scripts. |
+| **Agent Boundary** | **Highly rigid phases.** The CLI guides the agent through structured gates. Antigravity handles Constitution, Specification, and Planning. Codex handles Tasks and Implementation. |
+| **Skillsets** | **Native integration.** Automatically sets up agent-specific directories and custom tools/skills (e.g. `.claude/skills/`) to integrate with the agent's context. |
+| **Verification Gates** | **Compatible.** Integrates standard verification steps into the task checklist. |
+| **Svelte Tooling & Local-First Style** | **Heavyweight.** Requires Python and the `uv`/`uvx` package manager to run the CLI. Adds complex `.specify/` structures and agent configurations to the workspace. |
+
+### 5.5 Example Mapping + Selective Gherkin (Hybrid BDD)
+
+This hybrid alternative combines **Example Mapping** (a structured conversation framework to discover Rules, Examples, Questions, and Stories) with **selective Gherkin syntax specs** (Given-When-Then format written in markdown files). Crucially, Gherkin syntax is only executed as automated tests for complex core logic (e.g. state patches, HP math, schema parsing); standard UI and styling behaviors remain documented as simple text scenarios without test-automation overhead.
+
+#### 5.5.1 Mapping to `ez-chars` Mechanisms
+
+| `ez-chars` Mechanism | Example Mapping + Selective Gherkin Fit & Workflow |
+| :--- | :--- |
+| **Durable Docs** | **Very high.** Example maps and Gherkin scenarios are stored as clean, human-readable markdown files (e.g. `docs/specs/hp-binding.spec.md`). These are readable for both humans and agents. |
+| **Backlog Slices** | **Direct alignment.** Each rule and example from the map directly forms the suggested slices or the slice's definition of done. |
+| **Agent Boundary** | **Highly cooperative.** **Antigravity** runs the Example Mapping process (structuring Rules, Examples, and Questions). Once resolved, **Codex** translates complex examples into Vitest suites and implements the code. |
+| **Skillsets** | **Fully compatible.** Pairs with Codex skills for test wiring and schema validation. |
+| **Verification Gates** | **Optimized.** Complex rules are verified automatically by running Vitest on the selective tests. UI and simple state are verified manually or via standard smoke tests, keeping the test runner fast. |
+| **Svelte Tooling & Local-First Style** | **Lightweight.** No heavy BDD/Gherkin parser package is required; the Gherkin syntax in markdown serves as readable documentation, and selective tests are written using standard Vitest assertions (e.g. `test('Given... When... Then...')`). |
+
 ---
 
-### 5.3 Side-by-Side Comparison Matrix
+### 5.6 Side-by-Side Comparison Matrix
 
-| Feature / Dimension | OpenSpec (with Mitigations) | ADRs + Backlog Slices (Current Improved) | Strict RFC/PRD Workflow |
-| :--- | :--- | :--- | :--- |
-| **Tooling Dependency** | Requires `@fission-ai/openspec` (dev dependency). | None (pure markdown and git). | None (pure markdown and git). |
-| **Workspace Overhead** | Introduces `openspec/` with active and archived change folders. | None. Keeps docs in `docs/` or backlog. | High. Adds structured `docs/prds/` and `docs/rfcs/` directories. |
-| **Spec-to-Code Traceability** | Strong. Merges delta specs into main specs via CLI `archive` step. | Moderate. Relies on manual document updates and Git history. | Very Strong. Clear, numbered RFCs map directly to commit boundaries. |
-| **Process Friction** | Higher. Enforces proposal/design/task folder creation and spec validation. | Lower. Highly flexible, easy to write and update. | High. Requires writing separate PRD/RFC documents before coding. |
-| **Vibecoding / Fast-Track** | Requires explicit rules to bypass formal change folder creation. | Native. Agent can immediately vibecode and update docs. | Poor. Discourages fast/ad-hoc changes; requires formal RFC cycles. |
-| **Agent Coordination** | Automated task runner interface via `tasks.md` and `/opsx:apply`. | Manual checklist alignment via backlog slice. | Explicit handoff: spec (RFC) is finalized before code (backlog) starts. |
+| Feature / Dimension | OpenSpec (with Mitigations) | ADRs + Backlog Slices (Current Improved) | Strict RFC/PRD Workflow | Spec-Driven Tests / BDD | GitHub Spec Kit | Example Mapping + Selective Gherkin |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Tooling Dependency** | Requires `@fission-ai/openspec` (dev dependency). | None (pure markdown and git). | None (pure markdown and git). | May require additional BDD parsers/test libraries. | Requires Python, `uv`/`uvx`, and `specify-cli`. | None (Gherkin specs in markdown, Vitest for selective tests). |
+| **Workspace Overhead** | Introduces `openspec/` with active and archived changes. | None. Keeps docs in `docs/` or backlog. | High. Adds structured `docs/prds/` and `docs/rfcs/`. | Low. Keeps specs inside `__tests__/` folders. | High. Adds `.specify/` configuration and agent skill files. | Low. Keeps spec maps in `docs/specs/` or `__tests__/`. |
+| **Spec-to-Code Traceability** | Strong. Merges delta specs into main specs via CLI `archive` step. | Moderate. Relies on manual document updates and Git history. | Very Strong. Numbered RFCs map directly to commit boundaries. | Absolute. Executable tests and code are directly coupled. | Very Strong. Enforces strict mapping of specs to tasks. | Strong. Rules and Gherkin examples map directly to unit tests and slices. |
+| **Process Friction** | Higher. Enforces proposal/design/task folder creation. | Lower. Highly flexible, easy to write and update. | High. Requires writing separate PRD/RFC documents. | High. Writing BDD specs for UI can be verbose. | Very High. Strict multi-stage phase gates. | Moderate. Requires structuring requirements into rules and examples. |
+| **Vibecoding / Fast-Track** | Requires explicit rules to bypass proposal folders. | Native. Agent can immediately vibecode and update docs. | Poor. Requires formal RFC cycles before coding. | Mixed. Can prototype code, but requires retrofitting test suites. | Extremely Poor. Enforces rigid step-by-step gates. | Native. Fast-track edits are permitted, adding rules/examples only for complex logic. |
+| **Agent Coordination** | Automated task runner interface via `tasks.md` and `/opsx:apply`. | Manual checklist alignment via backlog slice. | Explicit handoff: spec (RFC) is finalized before code starts. | Green-light feedback: Codex writes implementation until tests pass. | Highly automated. Integrates custom skills/commands directly. | Highly structured. Spec maps provide clear, testable boundaries for Codex. |
 
 ---
 
-## 6. Next Steps & Alternatives (Human Checkpoint)
+## 6. Next Steps & Decision Checkpoint
 
-We have now analyzed three options:
+We have now analyzed all six candidate workflows:
 1. **OpenSpec (Mitigated/Dev Dependency):** A spec-first framework using active changes folders and delta spec merges.
 2. **Lightweight Markdown ADRs + Backlog Slices:** A zero-dependency markdown-based workflow using a single backlog queue and decision documents.
 3. **Strict RFC/PRD Workflow:** A formal document-first approach separating product requirements and technical design into numbered archives.
+4. **Spec-Driven Tests / BDD:** Coupling specifications directly to executable test suites (Gherkin/Vitest).
+5. **GitHub Spec Kit:** A python-based framework enforcing rigid phase gates (Constitution, Specs, Plans) and agent-specific skill integrations.
+6. **Example Mapping + Selective Gherkin (Hybrid BDD):** Combining collaborative Example Mapping and markdown Gherkin scenarios with automated testing restricted only to complex core logic.
 
-Before making a final choice, we can explore the last remaining alternative or select a winner and run a trial:
-
-*Remaining Alternative for Comparison (if requested):*
-- **Spec-Driven Tests / BDD:** Evaluating defining features as executable test suites (Gherkin/Vitest) rather than text documents.
+We are ready to select a winner and begin implementation:
+* Choose a winning workflow to proceed with.
+* Refine backlog item `p1-002` according to the chosen direction.
 
 ---
 
-*Please review the updated comparison matrix. Choose which option to proceed with or if we should explore the remaining BDD alternative.*
+*Please review the completed comparison matrix and select the winning spec/backlog workflow to proceed.*
