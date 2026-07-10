@@ -84,15 +84,47 @@ We evaluate how OpenSpec aligns with, complements, or duplicates existing patter
 
 ---
 
-## 5. Next Steps & Alternatives (Human Checkpoint)
+## 5. Alternative Exploration: Lightweight Markdown ADRs + Backlog Slices (Current Improved)
 
-Before proceeding with OpenSpec, we must compare it with other spec/backlog approaches to ensure we select the best-fitting workflow for `ez-chars`. 
+This alternative refines our existing raw markdown backlog (`docs/mvp-backlog.md`) and guidelines (`AGENTS.md`), adding a formal but lightweight Architecture Decision Record (ADR) system in `docs/decisions/` (or `docs/specs/`) for complex architectural changes.
 
-*Proposed Alternatives for Comparison:*
-1. **Lightweight Markdown ADRs + Backlog Slices (Current Improved):** Refine our current `docs/mvp-backlog.md` and `AGENTS.md` guidelines. Use simple markdown ADRs (Architecture Decision Records) in `docs/decisions/` for complex features without adding a separate CLI tool or slash commands.
-2. **Strict RFC/PRD Workflow:** A document-first approach where changes are proposed as RFC (Request for Comments) documents, but tasks are handled directly in the backlog or issue queue rather than delta folders.
-3. **Spec-Driven Tests (BDD/Cucumber):** Utilizing Svelte/JS test suites (e.g. Vitest + Playwright) directly as the executable specifications, rather than separating specifications into markdown files.
+### 5.1 Mapping to `ez-chars` Mechanisms
+
+| `ez-chars` Mechanism | ADRs + Backlog Slices Fit & Workflow |
+| :--- | :--- |
+| **Durable Docs** | **Natural integration.** Architectural decisions are captured as markdown files under `docs/decisions/YYYY-MM-DD-title.md` or `docs/specs/feature-spec.md`. They remain permanent, searchable, versioned documents in the codebase. |
+| **Backlog Slices** | **Direct fit.** We continue to use a single queue (`docs/mvp-backlog.md`) with distinct, atomic suggested slices. Active task tracking remains in the backlog, checking off slices as they are completed. |
+| **Agent Boundary** | **Clean boundary.** **Antigravity** drafts the ADR/Spec and refines the backlog slice. **Codex** references the ADR/Spec to implement the code and test coverage. The definition-of-done in the backlog slice serves as Codex's task checklist. |
+| **Skillsets** | **Fully compatible.** Project-local Codex skills can be defined to execute common tasks (e.g. running Svelte typechecks, Vitest tests, or storage validations). |
+| **Verification Gates** | **Fully integrated.** The backlog slice's definition of done explicitly lists verification steps. The agent runs `npm run test` / `check` / `lint` / `build` as standard. |
+| **Svelte Tooling & Local-First Style** | **Zero-dependency.** Fits the lightweight, local-first ethos of the project. No CLI tools or IDE integrations required. |
+
+### 5.2 Compare and Contrast: OpenSpec vs. ADRs + Backlog Slices
+
+| Feature / Dimension | OpenSpec (with Mitigations) | ADRs + Backlog Slices (Current Improved) |
+| :--- | :--- | :--- |
+| **Tooling Dependency** | Requires `@fission-ai/openspec` (dev dependency). | None (pure markdown and git). |
+| **Workspace Overhead** | Introduces `openspec/specs/` and ephemeral `openspec/changes/<change_id>/` folders. | Keeps all documentation inside the standard `docs/` tree. |
+| **Spec-to-Code Traceability** | Strong. Uses delta-spec merging (`archive`) to build an audit trail and update the main spec. | Moderate. Relies on manual document updates and Git commit logs for history. |
+| **Process Friction** | Higher. Enforces proposal/design/task folder creation and spec format validation. | Lower. Flexible, ad-hoc, easy to write and update. |
+| **Vibecoding / Fast-Track** | Requires explicit rules to bypass formal change folder creation. | Native. Agent can immediately vibecode small changes and update docs at the end. |
+| **Agent Coordination** | Automated task runner interface via `tasks.md` and `/opsx:apply`. | Manual checklist alignment via the backlog slice's definition of done. |
 
 ---
 
-*Please review the findings above. Once reviewed, we will proceed to select alternative workflows for deeper exploration.*
+## 6. Next Steps & Alternatives (Human Checkpoint)
+
+We have now analyzed two viable options:
+1. **OpenSpec (Mitigated/Dev Dependency):** A spec-first framework using active changes folders and delta spec merges.
+2. **Lightweight Markdown ADRs + Backlog Slices:** A zero-dependency markdown-based workflow using a single backlog queue and decision documents.
+
+Before making a final choice, we can explore further alternatives or proceed to select a winner and run a trial:
+
+*Remaining Alternatives for Comparison (if requested):*
+- **Strict RFC/PRD Workflow:** A formal document-first approach where changes are proposed as RFCs under `docs/`, with tasks kept in the backlog.
+- **Spec-Driven Tests / BDD:** Evaluating defining features as executable test suites (Gherkin/Vitest) rather than text documents.
+
+---
+
+*Please review the comparison of OpenSpec and the ADR + Backlog Slices alternative. Once reviewed, choose which option to proceed with or if we should explore another alternative.*
+
