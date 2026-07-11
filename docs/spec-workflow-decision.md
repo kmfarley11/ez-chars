@@ -1,4 +1,4 @@
-# Decision Article: Spec-Driven Workflow and Backlog Alternatives
+# Decision Article: Specification & Agent Workflow Strategy
 
 **Status:** Draft / Evaluating  
 **Author:** Antigravity (Architectural Agent)  
@@ -8,9 +8,9 @@
 
 ## 1. Executive Summary
 
-This decision article evaluates specification-driven development (SDD) workflows for the `ez-chars` repository. Specifically, we investigate **OpenSpec** (by Fission-AI) as a lightweight in-repository specification framework. We analyze how its repo model, CLI/slash command workflows, and spec lifecycle fit with our current local-first MVP backlog, agent-boundary model (`AGENTS.md`), and validation gates.
+This decision article evaluates repository workflow strategies, specification lifecycle options, and agent orchestration patterns for the `ez-chars` repository. Specifically, we investigate **OpenSpec** (by Fission-AI) as a lightweight in-repository framework for product, architecture, and agent-assisted implementation work. We analyze how its repo model, CLI workflows, and spec lifecycle fit with our current local-first MVP backlog, agent-boundary model (`AGENTS.md`), and validation gates.
 
-We compare OpenSpec to our current raw markdown slice workflow and outline a human-in-the-loop checkpoint to decide which other alternatives are worth comparing before refining `p1-002`.
+We compare OpenSpec against five design alternatives (Lightweight ADRs, Strict RFC/PRDs, executable BDD, GitHub Spec Kit, and Example Mapping hybrids) and recommend a hybrid workflow that balances structural rigor with developer agility.
 
 ---
 
@@ -32,7 +32,8 @@ openspec/
         ├── proposal.md      # The "Why" and "What" of the change
         ├── design.md        # The "How" (technical approach, file modifications)
         ├── tasks.md         # Checklist of implementation tasks
-        └── specs/           # "Delta specs" defining spec changes for this proposal
+        ├── specs/           # "Delta specs" defining spec changes for this proposal
+        └── implementation-notes.md # (Optional) Codex notes on assumptions/anomalies
 ```
 
 ### 2.2 Core Workflow & Lifecycle
@@ -62,8 +63,8 @@ We evaluate how OpenSpec aligns with, complements, or duplicates existing patter
 
 | `ez-chars` Mechanism                            | OpenSpec Mapping & Fit                                                                                                                                                                                                                                                    |
 | :---------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Durable Docs** (`docs/field-*.md`, etc.)      | **High overlap.** OpenSpec's `specs/` folder would replace or absorb our durable docs, shifting them to a unified directory structure with strict formatting guidelines (e.g. `### Requirement:`, `#### Scenario:`).                                                      |
-| **Backlog Slices** (`docs/mvp-backlog.md`)      | **Workflow shift.** Instead of a single backlog file with suggested slices, each backlog item (or slice) becomes an active directory in `changes/<change_id>/`.                                                                                                           |
+| **Durable Docs** (`docs/field-*.md`, etc.)      | **High overlap.** OpenSpec's `specs/` folder would absorb our current behavioral specifications, shifting them to a unified directory structure with strict formatting guidelines. Architectural decisions and design rationales continue to reside in lightweight ADRs.  |
+| **Backlog Slices** (`docs/mvp-backlog.md`)      | **Workflow shift.** When a non-trivial backlog item enters active refinement, it becomes an OpenSpec change workspace (`changes/<change_id>/`). Small, local, and reversible items may remain direct backlog tasks.                                                       |
 | **Agent Boundary** (`AGENTS.md`)                | **Excellent alignment.** `AGENTS.md` divides work between **Antigravity** (Architecture/Specs) and **Codex** (Code/Tests). OpenSpec's split between Propose (Architectural Ideation/Design) and Apply (Implementation/Execution) directly mirrors this division of labor. |
 | **Skillsets** (Codex Skills)                    | **Complementary.** OpenSpec tasks can be combined with specific Codex skills (e.g. Svelte 5 UI work, storage migration) to standardise code implementation.                                                                                                               |
 | **Verification Gates** (`docs/verification.md`) | **Orthogonal.** OpenSpec CLI validates the markdown syntax and structure of specs/scenarios, but does not run Svelte diagnostics or Vitest. Local verification gates must still run in `tasks.md` or a `/opsx:verify` check.                                              |
@@ -75,7 +76,7 @@ We evaluate how OpenSpec aligns with, complements, or duplicates existing patter
 
 ### 4.1 Pros
 
-1. **Durable Knowledge Preservation:** Moving specification out of chat history and into `openspec/specs/` guarantees the agent has context on historical architecture decisions.
+1. **Durable Knowledge Preservation:** Moving current behavioral requirements out of chat history and into `openspec/specs/` gives agents a durable, discoverable description of expected system behavior. Significant architectural rationale and rejected alternatives should remain in dedicated decision records or design documents.
 2. **Explicit Planning Checkpoint:** Enforces that a human approves the technical design (`design.md`) and task checklist (`tasks.md`) before any code is generated.
 3. **Delta-Spec Driven:** Focusing on spec differences makes it highly compatible with existing codebase structures ("brownfield" projects).
 4. **Natural Agent Division:** Cleanly separates Antigravity's role (building the proposal, design, and specs) from Codex's role (executing `tasks.md`).
@@ -87,7 +88,7 @@ We evaluate how OpenSpec aligns with, complements, or duplicates existing patter
 2. **Slash Command Friction:** Slash commands like `/opsx:propose` depend on IDE-level support (e.g. Cursor or Claude Code).
    - _Mitigation:_ The agent can execute the equivalent terminal CLI commands directly (e.g., running `npx @fission-ai/openspec <cmd>` via the `run_command` tool) or map these actions to explicit instructions in [../AGENTS.md](../AGENTS.md) and project-local Codex skills. This bridges the gap for clients that don't natively support `/opsx:` chat shortcuts.
 3. **Formatting Overhead & Process Weight:** OpenSpec expects specs to be structured in precise requirements/scenarios for validation, and creating a dedicated change folder for every small slice can feel heavy for a small MVP.
-   - _Mitigation (Vibecoding / Fast-Track Mode):_ We can introduce a "Fast-Track" or "Vibecode" rule in [../AGENTS.md](../AGENTS.md). For small, low-risk, styling, or documentation-only slices, the agent can directly implement the changes without a formal proposal folder, provided they update a summary log or backlog status at the end of the turn. These ad-hoc changes can then be periodically triaged into the main specs.
+   - _Mitigation (Vibecoding / Fast-Track Mode):_ We can introduce a "Fast-Track" or "Vibecode" rule in [../AGENTS.md](../AGENTS.md). For small, low-risk, styling, or documentation-only slices, the agent can directly implement the changes without a formal proposal folder. A fast-track change that does not alter durable behavior requires no spec update. A change that alters meaningful durable behavior must either update an existing spec directly or be run as a small formal change. OpenSpec also supports archiving while skipping spec updates for infrastructure, tooling, or documentation-only changes.
 
 ---
 
@@ -161,27 +162,18 @@ This hybrid alternative combines **Example Mapping** (a structured conversation 
 
 #### 5.5.1 Mapping to `ez-chars` Mechanisms
 
-| `ez-chars` Mechanism                   | Example Mapping + Selective Gherkin Fit & Workflow                                                                                                                                                                                             |
-| :------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Durable Docs**                       | **Very high.** Example maps and Gherkin scenarios are stored as clean, human-readable markdown files (e.g. `docs/specs/hp-binding.spec.md`). These are readable for both humans and agents.                                                    |
-| **Backlog Slices**                     | **Direct alignment.** Each rule and example from the map directly forms the suggested slices or the slice's definition of done.                                                                                                                |
-| **Agent Boundary**                     | **Highly cooperative.** **Antigravity** runs the Example Mapping process (structuring Rules, Examples, and Questions). Once resolved, **Codex** translates complex examples into Vitest suites and implements the code.                        |
-| **Skillsets**                          | **Fully compatible.** Pairs with Codex skills for test wiring and schema validation.                                                                                                                                                           |
-| **Verification Gates**                 | **Optimized.** Complex rules are verified automatically by running Vitest on the selective tests. UI and simple state are verified manually or via standard smoke tests, keeping the test runner fast.                                         |
-| **Svelte Tooling & Local-First Style** | **Lightweight.** No heavy BDD/Gherkin parser package is required; the Gherkin syntax in markdown serves as readable documentation, and selective tests are written using standard Vitest assertions (e.g. `test('Given... When... Then...')`). |
-
----
+This hybrid alternative combines **Example Mapping** (a structured conversation framework to discover Rules, Examples, Questions, and Stories) with **selective Gherkin syntax specs** (Given-When-Then format written in markdown files).
 
 ### 5.6 Side-by-Side Comparison Matrix
 
-| Feature / Dimension           | OpenSpec (with Mitigations)                                        | ADRs + Backlog Slices (Current Improved)                     | Strict RFC/PRD Workflow                                       | Spec-Driven Tests / BDD                                             | GitHub Spec Kit                                               | Example Mapping + Selective Gherkin                                                   |
-| :---------------------------- | :----------------------------------------------------------------- | :----------------------------------------------------------- | :------------------------------------------------------------ | :------------------------------------------------------------------ | :------------------------------------------------------------ | :------------------------------------------------------------------------------------ |
-| **Tooling Dependency**        | Requires `@fission-ai/openspec` (dev dependency).                  | None (pure markdown and git).                                | None (pure markdown and git).                                 | May require additional BDD parsers/test libraries.                  | Requires Python, `uv`/`uvx`, and `specify-cli`.               | None (Gherkin specs in markdown, Vitest for selective tests).                         |
-| **Workspace Overhead**        | Introduces `openspec/` with active and archived changes.           | None. Keeps docs in `docs/` or backlog.                      | High. Adds structured `docs/prds/` and `docs/rfcs/`.          | Low. Keeps specs inside `__tests__/` folders.                       | High. Adds `.specify/` configuration and agent skill files.   | Low. Keeps spec maps in `docs/specs/` or `__tests__/`.                                |
-| **Spec-to-Code Traceability** | Strong. Merges delta specs into main specs via CLI `archive` step. | Moderate. Relies on manual document updates and Git history. | Very Strong. Numbered RFCs map directly to commit boundaries. | Absolute. Executable tests and code are directly coupled.           | Very Strong. Enforces strict mapping of specs to tasks.       | Strong. Rules and Gherkin examples map directly to unit tests and slices.             |
-| **Process Friction**          | Higher. Enforces proposal/design/task folder creation.             | Lower. Highly flexible, easy to write and update.            | High. Requires writing separate PRD/RFC documents.            | High. Writing BDD specs for UI can be verbose.                      | Very High. Strict multi-stage phase gates.                    | Moderate. Requires structuring requirements into rules and examples.                  |
-| **Vibecoding / Fast-Track**   | Requires explicit rules to bypass proposal folders.                | Native. Agent can immediately vibecode and update docs.      | Poor. Requires formal RFC cycles before coding.               | Mixed. Can prototype code, but requires retrofitting test suites.   | Extremely Poor. Enforces rigid step-by-step gates.            | Native. Fast-track edits are permitted, adding rules/examples only for complex logic. |
-| **Agent Coordination**        | Automated task runner interface via `tasks.md` and `/opsx:apply`.  | Manual checklist alignment via backlog slice.                | Explicit handoff: spec (RFC) is finalized before code starts. | Green-light feedback: Codex writes implementation until tests pass. | Highly automated. Integrates custom skills/commands directly. | Highly structured. Spec maps provide clear, testable boundaries for Codex.            |
+| Feature / Dimension           | OpenSpec (with Mitigations)                                        | ADRs + Backlog Slices (Current Improved)                     | Strict RFC/PRD Workflow                                                          | Spec-Driven Tests / BDD                                                                                                                  | GitHub Spec Kit                                                           | Example Mapping + Selective Gherkin                                                   | Hybrid (Mitigated OpenSpec + Example Mapping)                                                                      |
+| :---------------------------- | :----------------------------------------------------------------- | :----------------------------------------------------------- | :------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------ | :------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------- |
+| **Tooling Dependency**        | Requires `@fission-ai/openspec` (dev dependency).                  | None (pure markdown and git).                                | None (pure markdown and git).                                                    | May require additional BDD parsers/test libraries.                                                                                       | Requires Python, `uv`/`uvx`, and `specify-cli`.                           | None (Gherkin specs in markdown, Vitest for selective tests).                         | Requires `@fission-ai/openspec` (dev dependency).                                                                  |
+| **Workspace Overhead**        | Introduces `openspec/` with active and archived changes.           | None. Keeps docs in `docs/` or backlog.                      | High. Adds structured `docs/prds/` and `docs/rfcs/`.                             | Low. Keeps specs inside `__tests__/` folders.                                                                                            | High. Adds `.specify/` configuration and agent skill files.               | Low. Keeps spec maps in `docs/specs/` or `__tests__/`.                                | Moderate. Active changes under `openspec/changes/` are archived; specs grow prospectively under `openspec/specs/`. |
+| **Spec-to-Code Traceability** | Strong. Merges delta specs into main specs via CLI `archive` step. | Moderate. Relies on manual document updates and Git history. | Very Strong. Numbered RFCs map directly to commit boundaries.                    | Strong for behavior represented by executable scenarios; incomplete for untested requirements, rationale, and architectural constraints. | Very Strong. Enforces strict mapping of specs to tasks.                   | Strong. Rules and Gherkin examples map directly to unit tests and slices.             | Strong. Delta specs merge into `specs/` via archive; rules and examples map to commit boundaries.                  |
+| **Process Friction**          | Higher. Enforces proposal/design/task folder creation.             | Lower. Highly flexible, easy to write and update.            | High. Requires writing separate PRD/RFC documents.                               | High. Writing BDD specs for UI can be verbose.                                                                                           | Very High. Strict multi-stage phase gates.                                | Moderate. Requires structuring requirements into rules and examples.                  | Moderate. Restricts formal workspaces only to non-trivial changes, utilizing organic Example Maps.                 |
+| **Vibecoding / Fast-Track**   | Requires explicit rules to bypass proposal folders.                | Agent can immediately vibecode and update docs.              | Weak fit for frequent fast-track work. Requires formal RFC cycles before coding. | Mixed. Can prototype code, but requires retrofitting test suites.                                                                        | Weak fit for frequent fast-track work. Enforces rigid step-by-step gates. | Native. Fast-track edits are permitted, adding rules/examples only for complex logic. | Strong. Explicit Change-Classification thresholds permit fast-track bypass for low-risk changes.                   |
+| **Agent Coordination**        | Automated task runner interface via `tasks.md` and `/opsx:apply`.  | Manual checklist alignment via backlog slice.                | Explicit handoff: spec (RFC) is finalized before code starts.                    | Green-light feedback: Codex writes implementation until tests pass.                                                                      | Highly automated. Integrates custom skills/commands directly.             | Highly structured. Spec maps provide clear, testable boundaries for Codex.            | Excellent. Clear handoff gates (Antigravity planning vs Codex applying) and human validation checkpoints.          |
 
 ---
 
@@ -189,22 +181,106 @@ This hybrid alternative combines **Example Mapping** (a structured conversation 
 
 To address the "loosey-goosey" feel of a single raw backlog file while keeping the process organic and free of excessive overhead, we recommend adopting a **Mitigated OpenSpec + Example Mapping (Hybrid)** workflow.
 
-### 6.1 Core Concepts of the Recommended Workflow
+One of the principal motivations for this workflow is improving **context locality**. Active implementation artifacts (proposals, designs, task checklists, specs, and notes) should exist close together so implementation agents spend less effort reconstructing intent from distributed documentation.
 
-1. **High-Level Roadmap:** Keep [docs/mvp-backlog.md](mvp-backlog.md) as the simple, prioritized backlog queue for humans and agents to scan.
-2. **Isolated Task Execution (No "Loosey-Goosey" Backlogs):** When starting a non-trivial backlog item (e.g. `p1-002`, `p1-022`), the agent creates an OpenSpec change folder: `openspec/changes/<change_id>/`. This isolates active execution tasks (`tasks.md`) from the main backlog, preventing clutter and intermediate checkbox noise.
+### 6.1 Why OpenSpec?
+
+OpenSpec is being adopted not because its directory structure is unique, but because it provides an existing, maintained implementation of the desired workflow including lifecycle commands, validation, and synchronization. Should these capabilities fail to provide meaningful value during the pilot, the workflow itself remains portable to a pure Markdown implementation. The workflow owns the tool, not the reverse.
+
+### 6.2 Core Concepts of the Recommended Workflow
+
+1. **High-Level Roadmap:** Keep [docs/mvp-backlog.md](docs/mvp-backlog.md) as the simple, prioritized backlog queue for humans and agents to scan.
+2. **Isolated Task Execution (Context Locality):** When starting a non-trivial backlog item (e.g. `p1-002`, `p1-022`), the agent creates an OpenSpec change folder: `openspec/changes/<change_id>/`. This isolates active execution tasks (`tasks.md`) from the main backlog, preventing clutter and intermediate checkbox noise.
 3. **Structured & Organic Specifications:** Within the change folder, the agent defines the feature's behavior in `proposal.md` and `design.md` using **Example Mapping** (organizing rules, examples, and open questions) and **selective Gherkin scenarios** (Given-When-Then format) for complex behavior.
-4. **Durable Knowledge Base:** When a change is completed, the agent runs `npx openspec archive` (or simulates it). This automatically merges the Gherkin scenarios into a permanent, searchable spec catalog under `openspec/specs/` and archives the change history, preserving learned behavior.
-5. **Vibecoding Fast-Track:** For minor styling tweaks, typo corrections, or simple text modifications, agents are explicitly allowed to bypass the OpenSpec folders and edit code directly, provided they log the change in a brief summary or update the backlog status at the end of the turn.
+4. **Intermediate Implementation Notes:** During development, Codex can optionally write to `changes/<change_id>/implementation-notes.md` to capture discovered anomalies, library quirks, or minor design updates. These notes provide valuable context during code review and disappear after archive.
+5. **Durable Knowledge Base:** The approved behavioral rules and scenarios must be represented in the change's delta specs. Archiving then merges those delta specs into the durable specification catalog under `openspec/specs/` and moves the completed change into the archive.
+6. **Vibecoding Fast-Track:** For minor styling tweaks, typo corrections, or simple text modifications, agents are explicitly allowed to bypass the OpenSpec folders and edit code directly. A fast-track change that does not alter durable behavior requires no spec update. A change that alters meaningful durable behavior must either update an existing spec directly or be run as a small formal change. OpenSpec also supports archiving while skipping spec updates for infrastructure, tooling, or documentation-only changes.
+
+---
+
+### 6.3 Change-Classification Thresholds & ADR Triggers
+
+To prevent subjective workflow decisions, we establish a classification threshold for incoming work:
+
+| Change Type                                                                                                | Workflow                                                            |
+| :--------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------ |
+| Typo, styling adjustment, isolated refactor with no behavioral change                                      | **Fast-track** (bypass changes folder; direct edit; no spec update) |
+| Small behavior change with obvious scope and one or two files                                              | **Refined backlog slice** or compact OpenSpec change                |
+| New user behavior, schema change, persistence change, cross-component work, or unresolved design questions | **Full OpenSpec change** (Propose -> Approve -> Apply -> Archive)   |
+| Durable architectural choice or meaningful tradeoff                                                        | **OpenSpec change plus ADR** (Architecture Decision Record)         |
+
+#### 6.3.1 ADR Triggers
+
+While OpenSpec specs define _what_ the system does, ADRs (Architecture Decision Records) record _why_ it was shaped that way. If an implementation results in any of the following, the agent must create a lightweight ADR under `docs/decisions/`:
+
+- A permanent architecture change (e.g., changing Svelte store architecture).
+- A design trade-off selection (e.g., choosing `immutable-json-patch` over custom diffing).
+- A public API boundary decision.
+- A storage/schema evolution or migration strategy.
+- A new package or dependency adoption.
+
+---
+
+### 6.4 Agent Integration & Handoff Workflow
+
+To ensure clear architectural boundaries and acceptance gates, the collaborative workflow is structured as follows:
+
+```mermaid
+graph TD
+    A[Antigravity Proposes] -->|creates changes/ folder with proposal.md, design.md, tasks.md, delta specs| B(Human Approves)
+    B -->|unlocks task checklist| C[Codex Applies & Verifies]
+    C -->|implements tasks, runs tests, writes implementation-notes.md, reports deviations| D(Human Reviews Implementation)
+    D -->|reconciliation loop| E[Antigravity Reconciles Specs]
+    E -->|updates specs to match final code| F(Human Approves Archive)
+    F -->|executes npx openspec archive| G[Archive / Sync Runs]
+```
+
+1. **Antigravity Proposes:** Runs the Explore/Propose cycle, creates Example Maps (identifying Rules, Examples, and Questions), drafts the technical design, and designs the `tasks.md` checklist.
+2. **Human Approves:** Reviews and approves the proposal and task checklist.
+3. **Codex Applies & Verifies:** Implements the tasks, runs local verification gates, writes selective tests, logs discoveries in `implementation-notes.md`, and reports any deviations.
+4. **Human Reviews:** Reviews the code, tests, and implementation notes.
+5. **Antigravity Reconciles:** Reconciles the approved design, implementation outcomes, and durable specifications, incorporating approved implementation discoveries where appropriate.
+6. **Human Approves Archive:** Reviews and validates the final spec.
+7. **Archive Runs:** Executes the archive command to merge delta specs into `openspec/specs/` and move the change workspace (including the ephemeral implementation notes) to the archive.
+
+---
+
+### 6.5 Workflow Principles
+
+This workflow intentionally favors the following principles over strict adherence to any particular tool or framework:
+
+- **Context locality over centralized planning.** Active implementation artifacts should remain colocated so agents spend less effort reconstructing intent.
+- **Durable knowledge over chat history.** Architectural decisions, specifications, and rationale belong in version-controlled artifacts.
+- **Human approval before durable architectural change.** Agents may propose and implement changes, but humans approve architectural direction and canonical specifications.
+- **Small, independently verifiable implementation slices.** Features should be refined into bounded tasks that can be implemented, reviewed, and validated independently.
+- **Portable workflows over tool lock-in.** The repository workflow should remain executable using ordinary Markdown and Git, regardless of whether OpenSpec or another orchestration framework is used.
+- **Automation where it reduces cognitive load.** Tooling should remove repetitive work, not introduce additional ceremony.
+- **Fast paths for low-risk work.** Trivial, local, and reversible changes should remain inexpensive while preserving rigor for behaviorally significant work.
+- **Continuous refinement through real usage.** Workflow improvements should be driven by lessons learned during implementation rather than theoretical completeness.
+
+These principles intentionally outlive any specific tooling choice and should guide future evolution of the repository workflow.
+
+---
+
+### 6.6 Pilot Validation Framework
+
+Rather than performing a repository-wide overhaul upfront, this workflow is adopted as a **limited pilot** using backlog item `p1-002` to validate:
+
+- **Antigravity Effectiveness:** Whether Antigravity produces materially better, less hand-held task descriptions.
+- **Codex Autonomy:** Whether Codex navigates the localized change workspace more reliably than the monolithic backlog file.
+- **Document Drift:** Whether sync/archive actually reduces stale documentation instead of creating duplicate specs.
+- **Overhead Weight:** Whether the formal path remains light enough that we do not reflexively bypass it.
+
+_Note: Existing durable documents (such as architecture design files) will not be migrated upfront; the durable specs folder will grow prospectively. Existing docs remain where they are until a change naturally touches them._
 
 ---
 
 ## 7. Evaluation and Rejections
 
-- **Rejected: Strict RFC/PRD Workflow.** Too heavyweight. For a single-developer, local-first web app, writing full PRDs and RFCs for every detail generates massive document overhead and slows down iteration.
-- **Rejected: Full Spec-Driven Tests / Executable BDD.** Writing automated BDD tests (Cucumber/Gherkin integration tests) for every UI component or Svelte visual element introduces massive boilerplate, test runner latency, and fragile selector maintenance.
-- **Rejected: Raw Markdown Backlog Slices (Current unimproved).** Leaving the backlog as a single, growing file makes active tasks hard to isolate, leads to spec drift, and requires frequent manual cleaning and agent handholding to nitpick task lists.
-- **Rejected: GitHub Spec Kit.** The Python dependency (`uv`/`uvx`) and highly rigid phase gates add unnecessary environment friction and overhead compared to a lightweight Node dev-dependency like `@fission-ai/openspec`.
+- **Rejected: Strict RFC/PRD Workflow.** This presents disproportionate overhead for this project. For a single-developer, local-first web app, writing full PRDs and RFCs for every detail slows down iteration.
+- **Rejected: Full Spec-Driven Tests / Executable BDD.** This would introduce substantial boilerplate when applied broadly. Writing automated integration tests for every UI component or Svelte visual element results in high maintenance cost.
+- **Rejected: Raw Markdown Backlog Slices (Current unimproved).** Leaving the backlog as a single, monolithic file carrying multiple responsibilities makes active tasks hard to isolate and leads to spec drift.
+- **Rejected: GitHub Spec Kit.** This CLI tool has a weak fit for frequent fast-track work and introduces Python environment dependency (`uv`/`uvx`) with rigid phase gates that add friction.
 
 ---
 
@@ -213,10 +289,23 @@ To address the "loosey-goosey" feel of a single raw backlog file while keeping t
 Adopting this workflow means that in the follow-on task **`p1-002`**, we will perform the following restructuring:
 
 1. **Dev-Dependency Installation:** Add `@fission-ai/openspec` to `devDependencies` in `package.json`.
-2. **Backlog Refining:** Reorganize [docs/mvp-backlog.md](mvp-backlog.md) to reference specs and OpenSpec change IDs.
-3. **Agent Integration (`AGENTS.md`):** Update the agent guide to instruct **Antigravity** (to run the Explore/Propose cycle, create Example Maps, and design tasks) and **Codex** (to run the Apply/Archive cycle, execute `tasks.md`, and write selective tests).
-4. **Fast-Track Rules:** Explicitly document the boundaries of the "Vibecoding Fast-Track" in the guidelines.
+2. **Backlog Refining:** Reorganize [docs/mvp-backlog.md](docs/mvp-backlog.md) to reference specs and OpenSpec change IDs.
+3. **Agent Integration (`AGENTS.md`):** Update the agent guide to define the structured proposal/implementation boundaries:
+   - **Antigravity:** Explore/Propose phase, Example Maps, task checklist design, spec reconciliation.
+   - **Codex:** Apply phase (implementing tasks, running verification, writing selective tests, reporting deviations).
+   - **Human acceptance:** Approving workspace designs, reviews of implementation, and approving archive execution.
+4. **Fast-Track Rules:** Explicitly document the change-classification thresholds and rules of the "Vibecoding Fast-Track" in the guidelines.
 
 ---
 
 _Please review the finalized recommendation. We are ready to proceed with refining backlog item `p1-002` to implement this chosen specs/backlog workflow once this decision is approved._
+
+---
+
+## 9. Future Documentation Evolution
+
+This decision establishes the architectural direction of the repository workflow but intentionally does not prescribe its detailed operating procedures.
+
+As the pilot progresses, additional documentation may be introduced to capture stable operational practices, such as feature-development workflows, agent operating procedures, prompt libraries, or onboarding guidance.
+
+These documents should implement the principles established by this decision rather than redefine them.
