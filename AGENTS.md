@@ -66,3 +66,110 @@ Use [docs/verification.md](docs/verification.md) as the canonical local command 
 - [README.md](README.md) is the human-oriented repo overview
 - [docs/index.md](docs/index.md) is the docs map
 - [docs/theme-visual-checklist.md](docs/theme-visual-checklist.md) is the current UI/theme smoke checklist
+
+---
+
+# Moving Forwards
+
+DISCLAIMER: the below content is new and will _become_ the truth but isn't just yet. Previously this repository used loose markdown file orchestration to document current vs. desired state, knowledge, and effort backlog. However, the intent is to adopt openspec to standardize/normalize the backlog refinement and execution process.
+
+## OpenSpec
+
+This repository uses OpenSpec for committed behavioral and non-trivial engineering changes.
+
+Current preferred division of responsibility:
+
+- `agy`: exploration, artifact refinement, and holistic review.
+- `codex`: implementation, focused testing, and implementation fixes.
+
+These are workflow preferences rather than OpenSpec requirements.
+
+When using OpenSpec, prefer surfacing material ambiguity over silently expanding product scope or architectural direction.
+
+- Use exploration to investigate existing behavior, ambiguity, or possible changes.
+- Use an OpenSpec change workspace when behavior or a meaningful technical direction is being committed.
+- Treat generated Proposal, Specification, Design, and Tasks as drafts requiring human review.
+- Review artifacts in dependency order and reconcile downstream artifacts after material upstream changes.
+- Use approved Tasks as the implementation source once a change is active.
+- Before archive, reconcile implementation fallout into the appropriate durable artifact.
+- Keep `docs/mvp-backlog.md` as the priority queue, not as the detailed execution plan for active changes.
+- Do not migrate or invent repository-wide specifications merely for completeness.
+
+### Terminology Boundary
+
+- **Proposals & Specs**: Must remain strictly behavior- and domain-focused. They define the external contract of the system (e.g., user interactions, visible UI flows, public API inputs/outputs). Avoid internal implementation details such as specific programming languages, libraries (e.g., Express, React, Tailwind), file/directory structures, databases, or deployment tools. Avoid prescribing architectural boundaries (e.g., "frontend fetching from backend") inside specs—frame requirements from the unified system's perspective (e.g., "The application SHALL display...").
+- **Design & Tasks**: House technical design decisions and implementation task steps (e.g., specific architecture choice, coding paths, styling libraries, testing setups, database schemas).
+
+### Workflow & Communication Style
+
+- **Default to Writing Files**: When updates to planning artifacts or code are needed, write the file updates directly to disk by default so they can be reviewed via git between prompts. Do not halt to ask for confirmation or permission first unless there is a specific question about product requirements or architectural clarity that you need resolved.
+- **Clean Git State Preference**: By default, do prefer writing file updates if the git state is already clean (no unstaged changes).
+
+### Implementation Fallout
+
+After implementation, review material decisions, omissions, deviations, and verification discoveries before archive.
+
+When exactly one active OpenSpec change clearly applies, use it. When multiple active changes could apply, identify the likely candidates and ask the user to select one rather than silently attaching fallout to the wrong change. When no active change applies, treat the work as repository stewardship or exploratory development unless it changes committed product behavior.
+
+- Reconcile technical and workflow fallout into Design, Tasks, and maintainer documentation.
+- Update Proposal or Specifications only when product scope, capability boundaries, or observable behavior changed.
+- Treat ordinary implementation discretion as implementation detail; do not over-specify it retroactively.
+- Do not archive while known material fallout remains undocumented or unresolved.
+- Run `openspec validate` after modifying OpenSpec artifacts.
+- Re-run affected verification after repository or implementation changes.
+
+Preferred responsibilities:
+
+- `codex`: report implementation fallout, apply approved technical reconciliation, update code and focused documentation, and run focused verification.
+- `agy`: classify material fallout, review cross-artifact consistency, surface scope or architectural drift, and perform holistic pre-archive review.
+- Human: approve changes to product scope, observable behavior, or architectural direction.
+
+## Repository Reconciliation
+
+Before verifying and archiving an OpenSpec change, reconcile durable repository knowledge discovered during implementation.
+
+Classify each discovery by responsibility:
+
+- OpenSpec (`openspec/`)
+  - product scope and capabilities
+  - observable requirements and scenarios
+  - technical design decisions
+  - implementation tasks and verification expectations
+
+- `README.md`
+  - repository purpose and navigation
+  - prerequisites and installation
+  - development commands
+  - verification and operational usage
+
+- `AGENTS.md`
+  - human/agent responsibilities
+  - review and reconciliation workflow
+  - coding and maintenance conventions
+  - agent-facing repository guidance
+
+Avoid duplicating the same guidance across artifacts. Prefer linking or summarizing when another artifact is authoritative.
+
+## Exploratory Development
+
+Exploratory prototypes and spikes are encouraged when they reduce uncertainty before product commitment.
+
+Perform exploratory product work on a disposable or clearly identified branch/worktree. Unless the user explicitly approves otherwise, do not merge exploratory product behavior directly into the primary branch.
+
+Treat prototype code as evidence and research, not as committed repository behavior or as a substitute for an OpenSpec change.
+
+When exploratory behavior is approved for long-term maintenance:
+
+1. Capture the learned intent and observable behavior through OpenSpec Explore and/or Proposal.
+2. Review and approve the resulting Proposal, Specifications, Design, and Tasks.
+3. Reconcile the prototype implementation with the approved artifacts.
+4. Reconcile durable repository documentation.
+5. Verify the resulting behavior before merge and archive.
+
+A prototype may be reused when it conforms to the approved artifacts, but existing prototype code does not receive automatic approval.
+
+Preferred responsibilities:
+
+- `codex`: build focused prototypes, report assumptions and discoveries, and later reconcile approved prototype code into the implementation.
+- `agy`: help frame the exploration, distinguish discoveries from commitments, and review the resulting OpenSpec artifacts.
+- Human: decide whether the prototype should be discarded, explored further, or promoted into committed product behavior.
