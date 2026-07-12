@@ -71,29 +71,38 @@ Use [docs/verification.md](docs/verification.md) as the canonical local command 
 
 # Moving Forwards
 
-DISCLAIMER: the below content is new and will _become_ the truth but isn't just yet. Previously this repository used loose markdown file orchestration to document current vs. desired state, knowledge, and effort backlog. However, the intent is to adopt openspec to standardize/normalize the backlog refinement and execution process.
+DISCLAIMER: the below content is new and will _become_ the truth but isn't just yet. Previously this repository used loose markdown file orchestration to document current vs. desired state, knowledge, and effort backlog. However, the intent is to adopt openspec to standardize/normalize the backlog refinement and execution process. i.e. via [OpenSpec](https://openspec.dev/) and maybe a more standardized [AGENTS.md](https://agents.md/)
+
+Maintainers that use agentic tooling would likely use this process when engineering changes:
+
+```
+explore (openspec) -> propose (openspec) -> revise -> apply (openspec) -> fix -> archive (openspec) -> reconcile
+```
+
+Though exploration efforts may bypass the thorough process to rapidly prototype vs. do general stewardship.
 
 ## OpenSpec
 
 This repository uses OpenSpec for committed behavioral and non-trivial engineering changes.
 
-Current preferred division of responsibility:
+Repository-specific expectations:
 
-- `agy`: exploration, artifact refinement, and holistic review.
-- `codex`: implementation, focused testing, and implementation fixes.
+- Treat existing code and tests as evidence during brownfield discovery.
+- Do not attempt repository-wide specification migration merely for completeness.
+- Use `docs/mvp-backlog.md` as the priority queue rather than the execution plan.
+- Keep Proposal/Specification behavior-focused.
+- Keep Design/Tasks technical.
 
-These are workflow preferences rather than OpenSpec requirements.
+### Preferred Agent Responsibilities
 
-When using OpenSpec, prefer surfacing material ambiguity over silently expanding product scope or architectural direction.
+The repository prefers:
 
-- Use exploration to investigate existing behavior, ambiguity, or possible changes.
-- Use an OpenSpec change workspace when behavior or a meaningful technical direction is being committed.
-- Treat generated Proposal, Specification, Design, and Tasks as drafts requiring human review.
-- Review artifacts in dependency order and reconcile downstream artifacts after material upstream changes.
-- Use approved Tasks as the implementation source once a change is active.
-- Before archive, reconcile implementation fallout into the appropriate durable artifact.
-- Keep `docs/mvp-backlog.md` as the priority queue, not as the detailed execution plan for active changes.
-- Do not migrate or invent repository-wide specifications merely for completeness.
+- Antigravity: exploration, repository analysis, OpenSpec artifact generation, artifact refinement, holistic review.
+- Codex: implementation, focused testing, implementation fixes, repository reconciliation.
+
+These are preferences rather than hard boundaries.
+
+When work naturally spans both areas, complete the adjacent work if it is small and directly supports the user's request. Surface significant architectural or scope decisions rather than stopping solely because work crosses a preferred responsibility.
 
 ### Terminology Boundary
 
@@ -126,35 +135,15 @@ Preferred responsibilities:
 
 ## Repository Reconciliation
 
-Before verifying and archiving an OpenSpec change, reconcile durable repository knowledge discovered during implementation.
+Before archive, reconcile durable repository knowledge discovered during implementation.
 
-Classify each discovery by responsibility:
-
-- OpenSpec (`openspec/`)
-  - product scope and capabilities
-  - observable requirements and scenarios
-  - technical design decisions
-  - implementation tasks and verification expectations
-
-- `README.md`
-  - repository purpose and navigation
-  - prerequisites and installation
-  - development commands
-  - verification and operational usage
-
-- `AGENTS.md`
-  - human/agent responsibilities
-  - review and reconciliation workflow
-  - coding and maintenance conventions
-  - agent-facing repository guidance
-
-Avoid duplicating the same guidance across artifacts. Prefer linking or summarizing when another artifact is authoritative.
+Prefer updating the artifact that naturally owns the knowledge rather than duplicating guidance across multiple documents.
 
 ## Exploratory Development
 
 Exploratory prototypes and spikes are encouraged when they reduce uncertainty before product commitment.
 
-Perform exploratory product work on a disposable or clearly identified branch/worktree. Unless the user explicitly approves otherwise, do not merge exploratory product behavior directly into the primary branch.
+Prefer performing exploratory product work on a disposable or clearly identified branch/worktree.
 
 Treat prototype code as evidence and research, not as committed repository behavior or as a substitute for an OpenSpec change.
 
