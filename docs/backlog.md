@@ -173,6 +173,27 @@ Definition of done:
 - larger, risky, or ambiguous findings are explicitly captured for later work
 - no dependency or external tooling requirement is added without prior approval
 
+Refinement outputs:
+
+- **Purpose:** We want to prevent silent reactivity bugs, performance bottlenecks, and lifecycle timing quirks that can occur when components mix legacy patterns with Svelte 5 runes. By auditing the codebase, we ensure our state mutations and components are fully compliant with Svelte 5 best practices, making the sheet highly responsive and crash-free on table-use mobile screens.
+- **Included behavior:**
+  - An app-wide audit of all `.svelte` components under `src/lib/` and `src/routes/` against the Svelte 5 compliance checklist.
+  - Transitioning any residual Svelte 4 legacy constructs (like standard `onMount`, `$:` reactive statements, `export let` variables, or custom slot layouts) to Svelte 5 runes (`$props()`, `$state()`, `$derived()`, snippets/renders, and Svelte 5 lifecycle functions).
+  - Fixing compiler warnings, event-delegation quirks, or unnecessary `$effect` runes (which can cause cascading renders and lag during sheet interactions).
+  - Verifying all existing Vitest test files (`npm run test`) and checks (`npm run check`) continue to pass after any adjustments.
+- **Excluded behavior:**
+  - Re-architecting the global store architecture (e.g. migrating `$charsArray` or `characterStorage` from Svelte writable stores to Svelte 5 state classes). This is a broad refactor that belongs to item `p1-050`.
+  - Redesigning or rewriting major sheet layouts or UI styles (e.g., adding drawers, sticky regions, or tab interfaces).
+  - Performance optimizations related to grid layouts or auto-fit sizing (which are scoped under `p1-025`).
+- **Ambiguities:**
+  - _Store Subscriptions:_ Are we keeping standard Svelte store subscription paradigms (`$charsArray`) in components, or translating them into local runes in the UI layer? (Keep Svelte store subscriptions as they are currently stable and highly integrated with our Zod-backed data model).
+  - _Audit Scope:_ Do we fix Svelte 5 findings directly, or record them? (Fix narrow, low-risk syntax or event handler bugs directly; capture larger refactorings, such as dividing the page component, as sub-tasks in `p1-045` or `p1-050`).
+- **Success:**
+  - `npm run build` completes successfully with zero Svelte compiler warnings or deprecation notices.
+  - `npm run check` reports zero diagnostic errors and warnings across all Svelte components.
+  - All Vitest integration, unit, and workflow smoke tests pass without regressions.
+  - Manual verification confirms character value editing, notes annotations, and theme switching react instantly without visual glitches or input lag.
+
 ### Prefer platform-native HTML and CSS primitives where practical
 
 ID:

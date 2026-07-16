@@ -41,6 +41,12 @@ Do not use [docs/vision/](docs/vision/) as the active backlog unless the task is
 - If a task changes tested behavior or a stable data boundary, add or update the relevant Vitest contract tests in the same change
 - If a task affects current goals, update [docs/active-goals.md](docs/active-goals.md) or [docs/backlog.md](docs/backlog.md) in the same change
 
+## Git Constraints
+
+- **CRITICAL:** Do NOT automatically stage (git add) any files, unless explicitly asked to.
+- Modifying files requires changing them on the disk only.
+- Leave staging and committing entirely to human control.
+
 ## Repo Map
 
 - [src/routes/](src/routes/): app routes and page composition
@@ -143,7 +149,7 @@ These are preferences rather than hard boundaries. When work naturally spans bot
 
 ## Workflow & Communication Style
 
-- **Default to Writing Files**: When updates to planning artifacts or code are needed, write the file updates directly to disk by default so they can be reviewed via git tooling between prompts. DO NOT stage (`git add`) changes yourself unless explicitly asked to.
+- **Default to Writing Files**: When updates to planning artifacts or code are needed, write the file updates directly to disk by default so they can be reviewed via git tooling between prompts. DO NOT stage (`git add`) changes yourself unless explicitly asked to (see [the git constraints section](#git-constraints)).
 - **Prefer asking forgiveness over permission**: Do not halt to ask for confirmation or permission first unless there is a specific question about product requirements or architectural clarity that you need resolved.
 - **Answer questions directly**: If the prompt is directly a question though, directly answer the question and ask the user if they'd like to proceed based on the answer.
 
