@@ -1,8 +1,8 @@
 # Decision Article: Specification & Agent Workflow Strategy
 
-**Status:** Draft / Evaluating  
+**Status:** Approved  
 **Author:** Antigravity (Architectural Agent)  
-**Date:** 2026-07-10
+**Date:** 2026-07-12
 
 ---
 
@@ -64,7 +64,7 @@ We evaluate how OpenSpec aligns with, complements, or duplicates existing patter
 | `ez-chars` Mechanism                            | OpenSpec Mapping & Fit                                                                                                                                                                                                                                                    |
 | :---------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Durable Docs** (`docs/field-*.md`, etc.)      | **High overlap.** OpenSpec's `specs/` folder would absorb our current behavioral specifications, shifting them to a unified directory structure with strict formatting guidelines. Architectural decisions and design rationales continue to reside in lightweight ADRs.  |
-| **Backlog Slices** (`docs/mvp-backlog.md`)      | **Workflow shift.** When a non-trivial backlog item enters active refinement, it becomes an OpenSpec change workspace (`changes/<change_id>/`). Small, local, and reversible items may remain direct backlog tasks.                                                       |
+| **Backlog Slices** (`docs/backlog.md`)          | **Workflow shift.** When a non-trivial backlog item enters active refinement, it becomes an OpenSpec change workspace (`changes/<change_id>/`). Small, local, and reversible items may remain direct backlog tasks.                                                       |
 | **Agent Boundary** (`AGENTS.md`)                | **Excellent alignment.** `AGENTS.md` divides work between **Antigravity** (Architecture/Specs) and **Codex** (Code/Tests). OpenSpec's split between Propose (Architectural Ideation/Design) and Apply (Implementation/Execution) directly mirrors this division of labor. |
 | **Skillsets** (Codex Skills)                    | **Complementary.** OpenSpec tasks can be combined with specific Codex skills (e.g. Svelte 5 UI work, storage migration) to standardise code implementation.                                                                                                               |
 | **Verification Gates** (`docs/verification.md`) | **Orthogonal.** OpenSpec CLI validates the markdown syntax and structure of specs/scenarios, but does not run Svelte diagnostics or Vitest. Local verification gates must still run in `tasks.md` or a `/opsx:verify` check.                                              |
@@ -96,14 +96,14 @@ We evaluate how OpenSpec aligns with, complements, or duplicates existing patter
 
 ### 5.1 Lightweight Markdown ADRs + Backlog Slices (Current Improved)
 
-This alternative refines our existing raw markdown backlog (`docs/mvp-backlog.md`) and guidelines (`AGENTS.md`), adding a formal but lightweight Architecture Decision Record (ADR) system in `docs/decisions/` (or `docs/specs/`) for complex architectural changes.
+This alternative refines our existing raw markdown backlog (`docs/backlog.md`) and guidelines (`AGENTS.md`), adding a formal but lightweight Architecture Decision Record (ADR) system in `docs/decisions/` (or `docs/specs/`) for complex architectural changes.
 
 #### 5.1.1 Mapping to `ez-chars` Mechanisms
 
 | `ez-chars` Mechanism                   | ADRs + Backlog Slices Fit & Workflow                                                                                                                                                                                                            |
 | :------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Durable Docs**                       | **Natural integration.** Architectural decisions are captured as markdown files under `docs/decisions/YYYY-MM-DD-title.md` or `docs/specs/feature-spec.md`. They remain permanent, searchable, versioned documents in the codebase.             |
-| **Backlog Slices**                     | **Direct fit.** We continue to use a single queue (`docs/mvp-backlog.md`) with distinct, atomic suggested slices. Active task tracking remains in the backlog, checking off slices as they are completed.                                       |
+| **Backlog Slices**                     | **Direct fit.** We continue to use a single queue (`docs/backlog.md`) with distinct, atomic suggested slices. Active task tracking remains in the backlog, checking off slices as they are completed.                                           |
 | **Agent Boundary**                     | **Clean boundary.** **Antigravity** drafts the ADR/Spec and refines the backlog slice. **Codex** references the ADR/Spec to implement the code and test coverage. The definition-of-done in the backlog slice serves as Codex's task checklist. |
 | **Skillsets**                          | **Fully compatible.** Project-local Codex skills can be defined to execute common tasks (e.g. running Svelte typechecks, Vitest tests, or storage validations).                                                                                 |
 | **Verification Gates**                 | **Fully integrated.** The backlog slice's definition of done explicitly lists verification steps. The agent runs `npm run test` / `check` / `lint` / `build` as standard.                                                                       |
@@ -189,7 +189,7 @@ OpenSpec is being adopted not because its directory structure is unique, but bec
 
 ### 6.2 Core Concepts of the Recommended Workflow
 
-1. **High-Level Roadmap:** Keep [docs/mvp-backlog.md](docs/mvp-backlog.md) as the simple, prioritized backlog queue for humans and agents to scan.
+1. **High-Level Roadmap:** Keep [docs/backlog.md](docs/backlog.md) as the simple, prioritized backlog queue for humans and agents to scan.
 2. **Isolated Task Execution (Context Locality):** When starting a non-trivial backlog item (e.g. `p1-002`, `p1-022`), the agent creates an OpenSpec change folder: `openspec/changes/<change_id>/`. This isolates active execution tasks (`tasks.md`) from the main backlog, preventing clutter and intermediate checkbox noise.
 3. **Structured & Organic Specifications:** Within the change folder, the agent defines the feature's behavior in `proposal.md` and `design.md` using **Example Mapping** (organizing rules, examples, and open questions) and **selective Gherkin scenarios** (Given-When-Then format) for complex behavior.
 4. **Intermediate Implementation Notes:** During development, Codex can optionally write to `changes/<change_id>/implementation-notes.md` to capture discovered anomalies, library quirks, or minor design updates. These notes provide valuable context during code review and disappear after archive.
@@ -284,12 +284,12 @@ _Note: Existing durable documents (such as architecture design files) will not b
 
 ---
 
-## 8. Consequences and Follow-Ups for `p1-002`
+## 8. Consequences and Follow-Ups
 
-Adopting this workflow means that in the follow-on task **`p1-002`**, we will perform the following restructuring:
+Adopting this workflow means that we will perform the following restructuring:
 
 1. **Dev-Dependency Installation:** Add `@fission-ai/openspec` to `devDependencies` in `package.json`.
-2. **Backlog Refining:** Reorganize [docs/mvp-backlog.md](docs/mvp-backlog.md) to reference specs and OpenSpec change IDs.
+2. **Backlog Refining:** Reorganize [docs/backlog.md](docs/backlog.md) to reference specs and OpenSpec change IDs.
 3. **Agent Integration (`AGENTS.md`):** Update the agent guide to define the structured proposal/implementation boundaries:
    - **Antigravity:** Explore/Propose phase, Example Maps, task checklist design, spec reconciliation.
    - **Codex:** Apply phase (implementing tasks, running verification, writing selective tests, reporting deviations).
@@ -309,3 +309,38 @@ This decision establishes the architectural direction of the repository workflow
 As the pilot progresses, additional documentation may be introduced to capture stable operational practices, such as feature-development workflows, agent operating procedures, prompt libraries, or onboarding guidance.
 
 These documents should implement the principles established by this decision rather than redefine them.
+
+---
+
+## 10. Outcome
+
+The repository adopted OpenSpec as the preferred workflow for future engineering work.
+
+The original investigation proposed a more comprehensive migration strategy.
+
+Following practical evaluation (Fruit Atlas pilot), the adopted strategy was intentionally simplified:
+
+- active work uses OpenSpec
+- backlog remains prioritization
+- existing documentation is retained until naturally superseded
+- durable OpenSpec specifications grow incrementally alongside future work
+
+This decision supersedes the original migration recommendations while preserving the evaluation rationale contained in this document.
+
+---
+
+## 11. Post-MVP Evolution & Backlog Refinement (Follow-Up Decision 2026-07-16)
+
+As we transitioned past the initial D&D 5e MVP, we refined our document organization and backlog workflow:
+
+1. **Rebranding for Post-MVP:** Since we are now in the post-MVP iteration and refactoring phase, we renamed:
+   - `docs/current-mvp.md` $\rightarrow$ [docs/active-goals.md](../active-goals.md) (to reflect current active product boundaries).
+   - `docs/mvp-backlog.md` $\rightarrow$ [docs/backlog.md](../backlog.md) (simplified to serve as the active prioritizing queue).
+   - We deprecated and removed `docs/ai-usage.md`, merging the Svelte 5 MCP setup instructions directly into [AGENTS.md](../../AGENTS.md) to keep developer-agent instructions consolidated in a single, high-context file.
+2. **Backlog Refinement Template:** We established a standardized, 5-part refinement output to guide updates to backlog items in [docs/backlog.md](../backlog.md) before moving them to `/opsx-propose` workspaces:
+   - **Purpose:** What user problem are we solving?
+   - **Included behavior:** What is the smallest useful capability?
+   - **Excluded behavior:** What tempting features should remain out of scope?
+   - **Ambiguities:** What decisions must be made before implementation?
+   - **Success:** What observable scenarios would convince you it works?
+3. **Ideation Sandbox:** We renamed the informal refactor bucket at the bottom of the backlog to `## Ideation Sandbox (Unsorted Ideas)` to serve as a low-friction space for human and agent brainstorming before items are refined and prioritized.

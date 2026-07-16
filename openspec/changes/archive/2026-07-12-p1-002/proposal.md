@@ -12,9 +12,11 @@ Transition the repository from its legacy Markdown planning/backlog process to O
 ## Capabilities
 
 ### New Capabilities
+
 - `developer-workflow`: The repository's standard developer and agent workflow rules and gates.
 
 ### Modified Capabilities
+
 - None.
 
 ## Impact

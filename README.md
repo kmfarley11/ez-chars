@@ -24,10 +24,39 @@ Everything else is long-term vision, not the immediate build target. For roadmap
 ## Docs
 
 - coding-agent guide: [AGENTS.md](AGENTS.md)
-- current MVP definition: [docs/current-mvp.md](docs/current-mvp.md)
-- prioritized MVP backlog: [docs/mvp-backlog.md](docs/mvp-backlog.md)
+- current active goals: [docs/active-goals.md](docs/active-goals.md)
+- prioritized backlog: [docs/backlog.md](docs/backlog.md)
 - docs index: [docs/index.md](docs/index.md)
 - long-term vision: [docs/vision/index.md](docs/vision/index.md)
+
+## Workflow
+
+The repository prefers a structured engineering workflow for human maintainers using agentic coder tooling. Prototyping, exploration, fallout, and reconciliation complement the OpenSpec active change lifecycle:
+
+```
+(optional) Prototype
+        ↓
+(optional) Explore
+        ↓
+(openspec) Proposal
+        ↓
+Human Review / Approval
+        ↓
+(openspec) Apply Changes
+        ↓
+Implementation Fallout
+        ↓
+Repository Reconciliation
+        ↓
+Verify
+        ↓
+(openspec) Archive
+```
+
+- **Prototype** and **Explore** are optional early-stage engineering activities to prototype ideas or explore the codebase before committing to a change.
+- **Proposal**, **Apply**, and **Archive** form the core OpenSpec execution loop. Run `npx openspec new change <change-id>` to create a change workspace.
+- **Implementation Fallout** and **Repository Reconciliation** are practices to report discoveries, update design documents, and reconcile durable codebase/maintainer knowledge before archiving.
+- For detailed agent guidelines and boundary rules, see [AGENTS.md](AGENTS.md). Particularly the [preferred agent responsibilities section](AGENTS.md#preferred-agent-responsibilities).
 
 ## Development
 

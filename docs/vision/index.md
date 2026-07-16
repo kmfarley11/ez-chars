@@ -7,8 +7,8 @@ These docs are for human planning. They are not the source of truth for immediat
 For current coding work, use:
 
 - [../../AGENTS.md](../../AGENTS.md)
-- [../current-mvp.md](../current-mvp.md)
-- [../mvp-backlog.md](../mvp-backlog.md)
+- [../active-goals.md](../active-goals.md)
+- [../backlog.md](../backlog.md)
 
 ## Long-Term Themes
 

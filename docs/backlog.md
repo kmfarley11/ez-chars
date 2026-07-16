@@ -1,53 +1,28 @@
-# MVP Backlog
+# Prioritized Backlog
 
-This is the prioritized engineering backlog for the active MVP.
+This is the prioritized engineering backlog for ez-chars.
 
 Use this file with:
 
 - [../AGENTS.md](../AGENTS.md)
-- [current-mvp.md](current-mvp.md)
-- [ai-usage.md](ai-usage.md)
+- [active-goals.md](active-goals.md)
 
-Treat [current-mvp.md](current-mvp.md) as the boundary document and this file as the execution queue.
+Treat [active-goals.md](active-goals.md) as the boundary document defining product scope, and this file as the prioritized queue of candidate work.
 
-## How To Use This Backlog With AI
+## Backlog Triage & Refinement Workflow
 
-- Pair this file with [AGENTS.md](../AGENTS.md) and [docs/current-mvp.md](current-mvp.md)
-- Use [ai-usage.md](ai-usage.md) to choose a model, reasoning level, and prompt size before starting; default to the smallest model/reasoning level that can safely handle the requested slice
-- Work on one top-level backlog item at a time
-- Use the exact backlog item id from the `ID:` line in the prompt; keep the human-readable title in this file for context
-- For `small` items, hand the top-level item directly to the AI
-- For `medium`, `medium-to-large`, or `oversized` items, tell the AI to implement only one numbered suggested slice
-- Use the parent item scope, execution guidance, dependency notes, and definition of done as design constraints for the requested slice, but do not implement neighboring slices unless explicitly asked
-- If a slice description is unusually close to another slice or otherwise ambiguous, include the exact slice text as an extra clarification, but this should not be required in the normal case
-- If the task is about the 5e sheet's intended layout or information grouping, also point the AI at [docs/ez-chars-5e-rough.excalidraw](ez-chars-5e-rough.excalidraw) as the design reference
-- Do not expand scope into other slices or [docs/vision/](vision/)
-- Before adding bespoke UI controls or new component patterns, inspect [src/lib/](../src/lib/) for existing primitives and prefer reusing or extending them; call out deliberate exceptions
-- For refactor or shared-interface work, inventory existing call sites first, describe the intended common interface or migration shape before broad edits, and preserve user-visible behavior unless the slice explicitly changes it
-- If a slice is exploratory or documentation-driven, ensure later suggested slices, execution guidance, or dependency notes explicitly incorporate the findings before marking the slice complete
-- Ask the AI to run verification according to [docs/verification.md](verification.md)
-- Ask the AI to summarize what remains from the parent backlog item
-- Update this file or [docs/current-mvp.md](current-mvp.md) if the task meaningfully changes backlog or status
-- Before pruning a completed backlog item, confirm every definition-of-done bullet is satisfied, not only the numbered slice text
+We expect to ideate and triage backlog items through the following workflow:
 
-Prompt pattern:
-
-```text
-Use AGENTS.md, docs/current-mvp.md, and docs/mvp-backlog.md as the source of truth.
-Focus only on the backlog item "<exact top-level id>".
-Implement only suggested slice <number>.
-Use the parent item scope, execution guidance, dependency notes, and definition of done as design constraints, but implement only the requested numbered slice.
-If this task is about the 5e sheet's design or layout, also use docs/ez-chars-5e-rough.excalidraw as the design reference.
-Before adding bespoke UI controls or new component patterns, inspect src/lib for reusable primitives and prefer existing components; call out any deliberate exception.
-For refactor or shared-interface work, inventory existing call sites first, describe the intended common interface or migration shape before broad edits, and preserve user-visible behavior unless the slice explicitly changes it.
-If this task is exploratory or documentation-driven, ensure later suggested slices, execution guidance, or dependency notes explicitly incorporate the findings before marking the slice complete.
-Do not expand scope to implement other slices or `docs/vision`.
-Run verification according to docs/verification.md when appropriate.
-Explain briefly how I can manually verify the changes.
-Summarize what remains from the parent backlog item.
-Update the MVP docs if the task meaningfully changes backlog or status. Prune the backlog item only when all slices and definition-of-done bullets are complete.
-Suggest a one-liner commit message if you were to git commit the changes implemented.
-```
+1. **Ideation Sandbox (Unsorted Ideas)**: Dump rough thoughts, refactor ideas, or feature wishes directly into the `## Ideation Sandbox` at the bottom of this file. This provides a low-friction space for human and agent brainstorming.
+2. **Refinement Sessions with AI**: Before implementing a sandbox item or new request, engage in a refinement session with an AI agent (e.g., in a chat thread or via the `/opsx-explore` thinking workflow / `openspec-explore` skill). The goal is to move from rough ideas to a structured backlog item.
+3. **Structured Refinement Outputs**: Refinement sessions must output the following standardized fields to define new backlog items (transitioning away from the legacy Size, Scope, Slices, and DoD structure):
+   - **Purpose:** What user problem are we solving?
+   - **Included behavior:** What is the smallest useful capability?
+   - **Excluded behavior:** What tempting features should remain out of scope?
+   - **Ambiguities:** What decisions must be made before implementation?
+   - **Success:** What observable scenarios would convince you it works?
+4. **Triaging to the Backlog**: Move the refined item into the prioritized backlog queues (`## P1` or `## P2`), assign it a unique ID (e.g., `p1-060`), and specify its priority context.
+5. **Executing via OpenSpec**: When work begins, run `/opsx-propose` (or trigger the `/opsx:propose` workflow) to generate all planning artifacts (`proposal.md`, `design.md`, `specs/`, and `tasks.md`) within the change workspace. The refined backlog item forms the input template for the proposal.
 
 ## P0
 
@@ -55,7 +30,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: start `p1-002` (incorporating the refined specification workflow findings); after that, continue `p1-022` with slice 2, then tackle `p1-024`, then `p1-045`.
+Next recommended target: continue `p1-022` with slice 2, then tackle `p1-024`, then `p1-045`.
 
 ### Refine backlog and agent workflow after spec-workflow decision
 
@@ -63,39 +38,15 @@ ID:
 
 - `p1-002`
 
-Size:
+Outcome:
 
-- medium; documentation and workflow restructuring, refined by `p1-000` findings before implementation
+- OpenSpec adopted.
+- Future work should begin with OpenSpec exploration and active change workspaces.
+- No repository-wide migration is planned.
 
-Scope:
+Status:
 
-- apply the chosen **Mitigated OpenSpec + Example Mapping (Hybrid)** workflow from `p1-000` to the repo's day-to-day planning and agent collaboration docs
-- install `@fission-ai/openspec` locally as a `devDependency` to enable CLI commands (runnable via `npx`)
-- establish directories for active and archived specifications (`openspec/specs/` and `openspec/changes/`)
-- integrate the OpenSpec lifecycle (Propose, Apply, Archive) and human-acceptance checkpoints with [../AGENTS.md](../AGENTS.md) and [ai-usage.md](ai-usage.md)
-- define templates for `proposal.md` and `design.md` that utilize **Example Mapping** (identifying Rules, Examples, and Questions) and **selective Gherkin scenarios** for complex behavior
-- implement the optional `implementation-notes.md` file in the changes workspace
-- establish the explicit Change-Classification thresholds and ADR Triggers in [../AGENTS.md](../AGENTS.md)
-- reorganize [docs/mvp-backlog.md](mvp-backlog.md) into clearer tracks (Product, Architecture/Refactor, Workflow/Tooling) and reference spec paths and OpenSpec change IDs where active
-- preserve the existing active implementation context, especially `p1-022`, `p1-024`, and `p1-045`
-
-Suggested implementation slices:
-
-1. **Complete.** Refined this item after `p1-000` completed so its scope, slices, and definition of done match the selected specification/backlog workflow.
-2. Install `@fission-ai/openspec` as a local dev-dependency, verify basic command line usage, and initialize the project folder structure.
-3. Propose the detailed ez-chars workflow: draft templates for `proposal.md` and `design.md` integrating Example Mapping and selective Gherkin scenarios.
-4. Update [../AGENTS.md](../AGENTS.md) and [ai-usage.md](ai-usage.md) detailing the Propose/Apply/Archive loops, agent roles (Antigravity planning vs Codex implementing), ADR Triggers, and the Vibecoding Fast-Track rules.
-5. Restructure [docs/mvp-backlog.md](mvp-backlog.md) into clearer lanes while preserving current item IDs, active priority context, and linking items to their specifications/changes folder.
-6. Run a no-code trial planning of `p1-022` slice 2 or `p1-024` slice 1: produce the `proposal.md`, `design.md` (with an Example Map), and `tasks.md` change files using the new workflow, verifying no excessive friction.
-
-Definition of done:
-
-- `@fission-ai/openspec` is installed and initialized in the repository
-- [../AGENTS.md](../AGENTS.md) and [ai-usage.md](ai-usage.md) clearly define the new spec-driven workflow, roles, and the Vibecoding Fast-Track limits
-- the backlog has a clearer structure, separates product/architecture/workflow, and maps active items to OpenSpec change directories
-- a no-code trial plan has been successfully written and reviewed for an active backlog slice
-- relevant local verification from [docs/verification.md](verification.md) passes
-- no new runtime dependencies are added
+- **Complete.** Installed local `@fission-ai/openspec`, updated agent guidelines, repository README, decision records, and backlog instructions.
 
 ### Link runtime actions to source weapons, spells, and features
 
@@ -380,9 +331,9 @@ Definition of done:
 - the resulting structure is easier to navigate for both humans and coding agents
 - behavior remains unchanged except where the refactor explicitly supports an active backlog item
 
-### WIP other refactor/rework bucket
+## Ideation Sandbox (Unsorted Ideas)
 
-This content is a work in progress to dump thoughts before execution or further organization.
+This content is a work in progress to dump rough thoughts, brainstorms, and refactor wishes before prioritizing or organizing them.
 
 - re-organize lib a bit better, consider a ui lib vs. utility lib
   - consider the ui lib organizing by primitives vs. composites vs. patterns

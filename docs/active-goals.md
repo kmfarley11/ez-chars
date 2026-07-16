@@ -1,6 +1,6 @@
-# Current MVP
+# Active Goals
 
-This document defines the only active product scope for near-term implementation. Use this doc with [docs/mvp-backlog.md](mvp-backlog.md) for day-to-day coding decisions.
+This document defines the only active product scope for near-term implementation. Use this doc with [docs/backlog.md](backlog.md) for day-to-day coding decisions.
 
 ## Product Statement
 
