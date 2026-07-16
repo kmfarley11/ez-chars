@@ -86,6 +86,19 @@ Deploy remains manual for now:
 npm run deploy
 ```
 
+## Optional: Svelte MCP setup for coding agents
+
+This repository includes the official `@sveltejs/mcp` server as a development dependency. It is not required to run, build, or deploy the app, but lets supported coding-agent clients consult the current Svelte 5 tooling and documentation while working on Svelte files.
+
+After `npm i`, register the local server with Codex CLI from the repository root:
+
+```bash
+codex mcp add svelte -- "$(pwd)/node_modules/.bin/svelte-mcp"
+codex mcp get svelte
+```
+
+Start a new Codex session after registration; the tools available to an existing session do not change in place. Other coding-agent clients need an equivalent local stdio MCP configuration. If a client cannot expose MCP tools, agents should use the official Svelte documentation and the local verification commands instead; see [AGENTS.md](AGENTS.md#svelte-5-agent-workflow).
+
 ## Licensing
 
 - Source code in this repository is licensed under MIT. See [LICENSE](LICENSE).

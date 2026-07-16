@@ -273,6 +273,10 @@ Definition of done:
 - visual layout remains at least as good as the measured layout restored after the reverted CSS auto-fit attempt
 - any broader refactor discovered during the pass is linked to `p1-045` or `p1-050` instead of folded into this item
 
+Svelte 5 audit finding (2026-07-16):
+
+- `GridContainerAuto` has the only audited `$effect`; it schedules its DOM measurement after paint and has no detected state-write feedback loop. Its `ResizeObserver` plus `scrollWidth` measurement remains a performance-profiling concern, not a Svelte reactivity correctness fix; measure it in a headed-browser pass before changing it.
+
 ### Extract 5e sheet projection and patch logic from the route
 
 ID:
@@ -297,11 +301,12 @@ Scope:
 
 Suggested implementation slices:
 
-1. Extract static 5e sheet metadata and options: ability metadata, skill metadata, spell slot metadata, runtime action options, inventory tags, and roleplay note metadata.
-2. Extract pure projection builders for current sheet surfaces: overview, quick reference, abilities/proficiencies/features/traits, runtime actions, spells, inventory, and organizational notes.
-3. Extract patch normalization helpers for virtual paths: runtime actions, spell levels, proficiency languages, class features, inventory groups/currency, and organizational notes.
-4. Add focused tests around projection and patch helpers once `p0-030` test tooling exists.
-5. Leave [+page.svelte](../src/routes/charsheets/5e/+page.svelte) as mostly layout/orchestration and verify no user-visible behavior changed.
+1. Before or alongside the extraction, propose a compact browser-smoke suite that protects user-facing behavior: open a seeded character from home, edit and reload Current HP, enter/cancel/close Notes editing, and toggle a sheet region and the theme menu. Keep it black-box, using accessible roles/labels and visible behavior rather than component internals, CSS classes, or snapshots.
+2. Extract static 5e sheet metadata and options: ability metadata, skill metadata, spell slot metadata, runtime action options, inventory tags, and roleplay note metadata.
+3. Extract pure projection builders for current sheet surfaces: overview, quick reference, abilities/proficiencies/features/traits, runtime actions, spells, inventory, and organizational notes.
+4. Extract patch normalization helpers for virtual paths: runtime actions, spell levels, proficiency languages, class features, inventory groups/currency, and organizational notes.
+5. Add focused tests around projection and patch helpers once `p0-030` test tooling exists.
+6. Leave [+page.svelte](../src/routes/charsheets/5e/+page.svelte) as mostly layout/orchestration and verify no user-visible behavior changed.
 
 Definition of done:
 
@@ -309,7 +314,13 @@ Definition of done:
 - virtual path handling has a clearer feature-local home
 - extracted helpers are easier to test and reuse
 - existing sheet editing behavior remains unchanged
+- browser-smoke coverage protects the representative edit, annotation, and UI-state workflows during route-level refactoring
 - relevant local verification from [docs/verification.md](verification.md) passes
+
+Svelte 5 audit finding (2026-07-16):
+
+- The Svelte 5 route is compiler-clean, but its current single-file shape still owns static metadata, projection builders, virtual path constants, and patch normalization in addition to layout orchestration. This is an ownership/readability concern for the planned extraction, not a reason to make an unrelated rune migration.
+- Storybook remains deferred and should not be a prerequisite for this browser-smoke coverage: browser flows validate application behavior, while Storybook can later provide isolated component and visual review.
 
 ### Refactor the repo structure so stores, fixtures, schema, and 5e feature code are less entangled
 
@@ -334,6 +345,10 @@ Dependency notes:
 - This item is a cleanup/supporting refactor, not the primary dependency for inline field editing.
 - Prefer landing the first usable field-binding/patch abstraction before using this item to reorganize where those modules live.
 - Prefer landing `p1-045` before moving or reorganizing 5e feature modules more broadly.
+
+Svelte 5 audit finding (2026-07-16):
+
+- `$charsArray` store subscriptions remain compatible with the audited Svelte 5 components and need no rune-class migration for correctness. `src/data.ts` still combines seed data, store wiring, and persistence, so separating those ownership concerns remains the appropriate scope for this item rather than a syntax-cleanup follow-up.
 
 Suggested implementation slices:
 

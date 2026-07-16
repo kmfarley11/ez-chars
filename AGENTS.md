@@ -174,22 +174,7 @@ After implementation, review material decisions, omissions, deviations, and veri
 
 For Svelte component, route, reactivity, lifecycle, accessibility, or performance work, prefer the official Svelte AI tooling before relying on model memory. Svelte 5 differs enough from older Svelte patterns that agents should verify current syntax and recommendations against first-party docs.
 
-- **Svelte MCP Tooling:** Use this repo's dev-only `@sveltejs/mcp` stdio server (also available through `npm run mcp:svelte`) when the client exposes MCP.
-  In Codex CLI, a repo-local stdio MCP configuration is:
-
-  ```toml
-  [mcp_servers.svelte]
-  command = "./node_modules/.bin/svelte-mcp"
-  ```
-
-  If using remote MCP:
-
-  ```toml
-  experimental_use_rmcp_client = true
-
-  [mcp_servers.svelte]
-  url = "https://mcp.svelte.dev/mcp"
-  ```
+- **Svelte MCP Tooling:** Use this repo's dev-only `@sveltejs/mcp` stdio server (also available through `npm run mcp:svelte`) when the client exposes MCP. The human setup steps for Codex CLI and other clients live in [README.md](README.md#optional-svelte-mcp-setup-for-coding-agents); do not assume that a registered server is exposed to the current agent session.
 
 - **Fallback Documentation:** If MCP is unavailable, see if you can start it yourself, otherwise inform the user but read the official first-party docs for LLMs to proceed:
   - Svelte LLM docs: [svelte.dev/llms.txt](https://svelte.dev/llms.txt)
