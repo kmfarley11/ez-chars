@@ -76,6 +76,7 @@ Archive a completed change in the experimental workflow.
    If a matching backlog item exists:
    - Remove the item from the prioritized backlog queue (e.g., `## P1`, `## P2`).
    - Add a brief entry to `## Done Recently` summarizing what was completed.
+   - If the completed change is referenced in any "Next recommended target" lines under backlog headers, update those lines to remove references to the completed task and direct developers/agents to the next priority targets.
    - If the change affects goals in `docs/active-goals.md`, update or resolve those goals accordingly.
 
 6. **Perform the archive**

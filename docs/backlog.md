@@ -30,7 +30,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: continue `p1-022` with slice 2, then tackle `p1-024`, then `p1-045`.
+Next recommended target: tackle `p1-024`, then `p1-025`, then `p1-045`.
 
 ### Refine backlog and agent workflow after spec-workflow decision
 
