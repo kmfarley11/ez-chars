@@ -43,7 +43,7 @@ Do not use [docs/vision/](docs/vision/) as the active backlog unless the task is
 
 ## Git Constraints
 
-- **CRITICAL:** Do NOT automatically stage (git add) any files, unless explicitly asked to.
+- **CRITICAL:** Do NOT automatically stage (git add) any files, unless explicitly asked to, or unless you are specifically navigating the OpenSpec archive workflow.
 - Modifying files requires changing them on the disk only.
 - Leave staging and committing entirely to human control.
 

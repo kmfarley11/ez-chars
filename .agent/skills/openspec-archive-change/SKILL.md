@@ -69,7 +69,16 @@ Archive a completed change in the experimental workflow.
 
    If user chooses sync, use Task tool (subagent_type: "general-purpose", prompt: "Use Skill tool to invoke openspec-sync-specs for change '<name>'. Delta spec analysis: <include the analyzed delta spec summary>"). Proceed to archive regardless of choice.
 
-5. **Perform the archive**
+5. **Reconcile the backlog**
+
+   Check if the change corresponds to a prioritized backlog item in `docs/backlog.md` (e.g., matching the ID prefix like `p1-022` or the change name).
+
+   If a matching backlog item exists:
+   - Remove the item from the prioritized backlog queue (e.g., `## P1`, `## P2`).
+   - Add a brief entry to `## Done Recently` summarizing what was completed.
+   - If the change affects goals in `docs/active-goals.md`, update or resolve those goals accordingly.
+
+6. **Perform the archive**
 
    Create an `archive` directory under `planningHome.changesDir` if it doesn't exist:
 
@@ -87,7 +96,7 @@ Archive a completed change in the experimental workflow.
    mv "<changeRoot>" "<planningHome.changesDir>/archive/YYYY-MM-DD-<name>"
    ```
 
-6. **Display summary**
+7. **Display summary**
 
    Show archive completion summary including:
    - Change name

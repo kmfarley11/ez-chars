@@ -138,62 +138,6 @@ Definition of done:
 - obvious focus, keyboard, or labeling issues in the main MVP flow are corrected
 - the review is reflected in the theme or UI checklist where useful
 
-### Add Svelte 5 agent tooling and audit the current app
-
-ID:
-
-- `p1-022`
-
-Size:
-
-- medium; documentation and narrow cleanup first
-
-Scope:
-
-- identify the preferred Svelte 5 MCP/plugin/skill workflow for agents working in this repo
-- update [../AGENTS.md](../AGENTS.md), [ai-usage.md](ai-usage.md), or another agent-facing guide with when and how to use that Svelte 5 tooling
-- scan the current app for Svelte 5 syntax, reactivity, lifecycle, component-boundary, and performance issues
-- fix narrow, low-risk findings that improve the app as it exists today without changing feature scope
-- capture larger or uncertain findings as follow-up backlog work instead of folding them into the audit
-- do not add a new dependency or external tool requirement without asking first
-
-Suggested implementation slices:
-
-1. Complete. Added the official Svelte MCP as a dev-only dependency and identified it plus generated `llms.txt` docs as the preferred Svelte 5 agent workflow. Documented the Codex CLI local/remote MCP setup, MCP usage flow, fallback docs, and local verification expectations in [ai-usage.md](ai-usage.md), with a short rule in [../AGENTS.md](../AGENTS.md).
-2. Run an app-wide Svelte 5 review focused on correctness, reactivity shape, lifecycle usage, and obvious render/performance pitfalls.
-3. Apply targeted fixes for low-risk findings, keeping behavior and layout stable.
-4. Record any larger findings as follow-up backlog items or dependency notes on the relevant existing tickets.
-5. Run the relevant local verification from [docs/verification.md](verification.md).
-
-Definition of done:
-
-- agent-facing docs explain the Svelte 5 tooling workflow for future implementation tasks
-- the current app has been reviewed with that tooling or the documented best available equivalent
-- low-risk Svelte 5 correctness or performance findings are fixed and verified
-- larger, risky, or ambiguous findings are explicitly captured for later work
-- no dependency or external tooling requirement is added without prior approval
-
-Refinement outputs:
-
-- **Purpose:** We want to prevent silent reactivity bugs, performance bottlenecks, and lifecycle timing quirks that can occur when components mix legacy patterns with Svelte 5 runes. By auditing the codebase, we ensure our state mutations and components are fully compliant with Svelte 5 best practices, making the sheet highly responsive and crash-free on table-use mobile screens.
-- **Included behavior:**
-  - An app-wide audit of all `.svelte` components under `src/lib/` and `src/routes/` against the Svelte 5 compliance checklist.
-  - Transitioning any residual Svelte 4 legacy constructs (like standard `onMount`, `$:` reactive statements, `export let` variables, or custom slot layouts) to Svelte 5 runes (`$props()`, `$state()`, `$derived()`, snippets/renders, and Svelte 5 lifecycle functions).
-  - Fixing compiler warnings, event-delegation quirks, or unnecessary `$effect` runes (which can cause cascading renders and lag during sheet interactions).
-  - Verifying all existing Vitest test files (`npm run test`) and checks (`npm run check`) continue to pass after any adjustments.
-- **Excluded behavior:**
-  - Re-architecting the global store architecture (e.g. migrating `$charsArray` or `characterStorage` from Svelte writable stores to Svelte 5 state classes). This is a broad refactor that belongs to item `p1-050`.
-  - Redesigning or rewriting major sheet layouts or UI styles (e.g., adding drawers, sticky regions, or tab interfaces).
-  - Performance optimizations related to grid layouts or auto-fit sizing (which are scoped under `p1-025`).
-- **Ambiguities:**
-  - _Store Subscriptions:_ Are we keeping standard Svelte store subscription paradigms (`$charsArray`) in components, or translating them into local runes in the UI layer? (Keep Svelte store subscriptions as they are currently stable and highly integrated with our Zod-backed data model).
-  - _Audit Scope:_ Do we fix Svelte 5 findings directly, or record them? (Fix narrow, low-risk syntax or event handler bugs directly; capture larger refactorings, such as dividing the page component, as sub-tasks in `p1-045` or `p1-050`).
-- **Success:**
-  - `npm run build` completes successfully with zero Svelte compiler warnings or deprecation notices.
-  - `npm run check` reports zero diagnostic errors and warnings across all Svelte components.
-  - All Vitest integration, unit, and workflow smoke tests pass without regressions.
-  - Manual verification confirms character value editing, notes annotations, and theme switching react instantly without visual glitches or input lag.
-
 ### Prefer platform-native HTML and CSS primitives where practical
 
 ID:
@@ -393,3 +337,4 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 - completed `p1-040`: field-level binding now uses an RFC 6902 JSON Patch contract, `immutable-json-patch` verification, split value/annotation patch projection, `FieldDraft`, a Current HP runtime proof surface, and documented field/page/store responsibility boundaries
 - completed the behavioral `p1-030` field interaction pass: runtime/state primitives have persistent direct edit controls, field annotations are accessible through explicit Notes affordances, card-wide Edit remains a value/structure fallback, and card Notes dialogs now handle annotation review/add/edit flows
 - completed `p1-035`: surfaced runtime/state primitive fields now render through descriptor-driven `GridContent` cards and the shared primitive renderer, the route no longer composes adjacent standalone `InlineFieldDraft` blocks beside migrated cards, card-wide Edit remains comprehensive for value/structure fallback, and Notes remains the annotation review/add/edit surface
+- completed `p1-022`: added Svelte 5 agent tooling and audited the current app, migrating legacy Svelte 4 structures to Svelte 5 runes (`$props()`, `$state()`, `$derived()`) and native event properties (e.g., `onclick` instead of `on:click`) to ensure compiler-clean build and lint checks
