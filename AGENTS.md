@@ -68,6 +68,12 @@ Use existing shared test scaffolding from [src/test-utils/](src/test-utils/) for
 Use [src/test-utils/jsonPatchFixtures.ts](src/test-utils/jsonPatchFixtures.ts) for representative nested JSON Patch fixture data; it is purpose-built patch scaffolding, not canonical 5e schema seed data.
 Use [docs/verification.md](docs/verification.md) as the canonical local command guide, including when to run the full gate set, smaller subsets, and coverage reporting.
 
+## Browser E2E Boundaries
+
+- Use `npm run test:e2e` for the fast Chromium smoke suite; use `npm run test:e2e:all` or a named Playwright project only when cross-browser coverage is relevant.
+- Keep browser tests in `tests/` black-box: seed fixture data with `page.addInitScript` and assert visible roles, labels, text, downloads, and uploads instead of component internals, CSS classes, or snapshots.
+- Do not replace repeatable browser checks with ad-hoc Node browser-control scripts. Start or reuse the Vite server through Playwright configuration and keep the routine Chromium suite small enough for fast local feedback.
+
 ## Useful Context
 
 - [README.md](README.md) is the human-oriented repo overview

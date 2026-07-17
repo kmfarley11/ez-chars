@@ -30,7 +30,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: tackle `p1-015`, then `p1-045`, then `p1-026` after Playwright E2E is available.
+Next recommended target: tackle `p1-045`, then `p1-026` now that Playwright E2E is available.
 
 ### Refine backlog and agent workflow after spec-workflow decision
 
@@ -149,62 +149,6 @@ Refinement outputs:
   - Merging code with a broken test or type warning triggers a failing status check in GitHub.
   - Clean pushes trigger a green passing check.
 
-### Standardize lightweight browser interaction testing
-
-ID:
-
-- `p1-015`
-
-Size:
-
-- medium; address before major route or feature changes
-
-Scope:
-
-- define a standard, lightweight framework for browser interaction testing using Playwright E2E
-- configure Playwright to run on Chromium by default for maximum execution speed, while allowing multi-browser verification (Chromium, Firefox, WebKit) when needed
-- draft an Architecture Decision Record (ADR) documenting near-term (Playwright E2E smoke tests) vs. mid-term (Storybook playtesting) vs. deferred long-term (Svelte Testing Library component tests) testing strategies
-- limit execution time and prevent agents from generating slow, unbounded NodeJS-based browser automation wrappers
-
-Suggested implementation slices:
-
-1. Draft a lightweight ADR under `docs/decisions/` defining the near-term, mid-term, and deferred long-term testing strategies (E2E vs. Storybook vs. unit testing).
-2. Install and configure Playwright E2E in the repository, default-configured to run Chromium for speed (`npm run test:e2e`), with support for full multi-browser test runs (`npm run test:e2e:all`).
-3. Create a single canonical Playwright smoke test file that runs fast, verifying:
-   - Page navigation, viewport resizing (mobile vs. desktop layout verification), and collapsing/expanding character sheet grid sections.
-   - Core value edits (e.g., Current HP card changes) and adding/editing field annotations (including inserting a D&D Beyond web link and verifying a local SRD reference document link).
-   - Exporting local characters to JSON, downloading the file, and re-importing it to ensure data round-tripping works seamlessly.
-4. Update `docs/verification.md` and `AGENTS.md` to reference the E2E suite, enforce execution limits (e.g. under 5s local runtime), and restrict agents from writing custom Node-based automation wrappers.
-
-Definition of done:
-
-- Playwright E2E is configured with scripts in `package.json` (`npm run test:e2e` for Chromium, `npm run test:e2e:all` for all browsers)
-- the local E2E smoke test runs in less than 5 seconds in Chromium
-- the testing strategy ADR is committed under `docs/decisions/`
-- verification instructions are updated in `docs/verification.md` and agent guidelines are synced in `AGENTS.md`
-- all check, lint, and build stages pass cleanly
-
-Refinement outputs:
-
-- **Purpose:** Prevent coding agents from writing ad-hoc, slow, or unbounded NodeJS browser testing scripts by establishing a fast, lightweight Playwright E2E smoke suite and documenting our long-term testing roadmap in an ADR.
-- **Included behavior:**
-  - Configure Playwright E2E for component/page-level interaction testing.
-  - Set Chromium as the default browser for fast local verification (`npm run test:e2e`).
-  - Provide script triggers to verify against other engines like Firefox and WebKit (`npm run test:e2e:all`).
-  - Configure tests to run against a pre-started dev server (`http://localhost:5173`) to keep test startups sub-second. Agents have authority to spin up background servers or prompt users if offline.
-  - Programmatically seed mock fixtures directly into `localStorage` before page load to speed up sheet interaction tests and bypass manual creation clicks.
-  - Write a template test suite verifying: loading, viewports (mobile vs. desktop), collapsing/expanding grid sections, editing HP values, adding/updating notes annotations (verifying D&D Beyond web links and local SRD references), and exporting & re-importing JSON backups.
-  - Write a testing strategy ADR mapping near-term (Playwright), mid-term (Storybook), and deferred long-term (Svelte Testing Library unit tests).
-- **Excluded behavior:**
-  - Writing extensive unit testing suites for Svelte components before the planned refactoring settles.
-  - Adding visual screenshot snapshot comparisons or heavy Docker dependencies.
-- **Ambiguities:**
-  - _Testing Harness_: Playwright is selected for initial UI testing because Svelte Testing Library lacks layout engines to verify mobile viewport responsive behaviors, CSS anchoring, and native popovers. Svelte Testing Library unit testing is deferred until component structures stabilize.
-  - _Server Lifecycle & Seeding_: Reconciled. Playwright runs against the pre-started developer server, and tests seed `localStorage` directly rather than executing UI character creation flows.
-- **Success:**
-  - `npm run test:e2e` executes and validates the template test in under 5 seconds.
-  - The testing strategy ADR is documented under `docs/decisions/`.
-
 ### Improve accessibility and mobile review of menus, dialogs, and sheet sections
 
 ID:
@@ -264,21 +208,22 @@ Size:
 Scope:
 
 - configure Playwright E2E tests to assert that no `ResizeObserver loop limit exceeded` warnings or console errors are printed during test flows
-- explore tracing scroll performance metrics (CPU layout/paint times) in local headless test runs
-- add standard profiling steps in `docs/verification.md` for manual frame-rate and layout-flash tracking
+- explore tracing scroll performance metrics (CPU layout/paint times) in local headless test runs, specifically validating Firefox rendering pipeline statistics when running on demand
+- add standard profiling steps in `docs/verification.md` for manual Firefox trace captures (`profiler.firefox.com`) and layout-flash tracking
 
 Refinement outputs:
 
-- **Purpose:** Automatically detect scroll-jank and layout-loop regressions during UI updates by introducing performance assertions inside our E2E testing gates.
+- **Purpose:** Automatically detect scroll-jank and layout-loop regressions during UI updates by introducing performance assertions inside our E2E testing gates, and documenting manual Firefox rendering trace procedures.
 - **Included behavior:**
   - Track and assert on browser console warnings/errors related to ResizeObservers and layout performance in Playwright E2E tests.
-  - Document manual profiling steps (Paint Flashing, Layer borders) under `docs/verification.md`.
+  - Track Firefox-specific paint/compositor trace metrics using Playwright performance trace assertions when Firefox projects are triggered.
+  - Document manual profiling steps (Firefox Profiler trace analysis, Paint Flashing, Layer borders) under `docs/verification.md` as the canonical way to diagnose Firefox rendering pipelines.
 - **Excluded behavior:**
   - Integrating heavyweight automated lighthouse gating or cloud device grids.
 - **Ambiguities:** None.
 - **Success:**
   - Automated E2E runs report console errors if layout loops are triggered.
-  - Clear manual verification performance guidelines are available.
+  - Clear manual verification performance guidelines and Firefox Profiler trace steps are available.
 
 ### Replace custom grid auto-measurement with native CSS Container Queries
 
@@ -462,6 +407,7 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 - completed the [src/lib/](../src/lib/) grid cleanup backlog
 - completed `p0-010`: the 5e sheet now exposes the major MVP runtime and organizational sections, including seeded runtime action data, with check/lint/build passing
 - completed the focused `p0-040` scroll-performance pass: reduced hidden dialog DOM, simplified hover/paint costs, removed broad `GridContainerAuto` mutation observation, and moved residual jank follow-up to `p1-025`
+- completed `p1-015`: added a fast Chromium Playwright smoke suite covering seeded character navigation, responsive section collapse, Current HP editing, annotations, and JSON backup/restore; Firefox also passes, with testing strategy and execution boundaries documented
 - completed `p1-025` diagnostic: a headed Firefox recording showed negligible synchronous reflow and scroll-handler time, so the cached-width/ResizeObserver trial was reverted; repeatable performance checks are deferred to `p1-026` after Playwright E2E, while `p1-027` owns the future native grid-model replacement
 - completed `p0-020`: JSON backup/restore supports a versioned export envelope, file download, import file selection, import validation, replace-all import, and merge-new import that skips duplicate character IDs
 - completed home action button polish: shared button chrome now aligns Create, Import, Export, and import apply actions consistently

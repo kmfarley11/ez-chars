@@ -9,6 +9,8 @@ node_modules
 /build
 /dist
 /coverage
+/test-results
+/playwright-report
 
 # OS
 .DS_Store

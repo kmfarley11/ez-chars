@@ -23,6 +23,22 @@ npm run test
 
 Runs the Vitest contract and smoke tests once.
 
+## Browser E2E Commands
+
+```bash
+npm run test:e2e
+```
+
+Runs the canonical Playwright smoke suite in Chromium. The config reuses a dev server already listening on `http://localhost:5173`; otherwise, Playwright starts the local Vite server for the run.
+
+```bash
+npm run test:e2e:all
+npx playwright test --project=firefox
+npx playwright test --project=webkit
+```
+
+Use the all-browser command or an individual project when a change needs cross-browser confirmation. The default local gate is Chromium so routine feedback remains fast.
+
 ```bash
 npm run test:watch
 ```
