@@ -3,7 +3,9 @@
 ## Purpose
 
 Establish the project's automated browser testing standard, guaranteeing fast E2E smoke coverage for user workflows (navigation, edits, viewport layouts, annotations, backups) on Chromium by default, with structured capabilities to verify Firefox and WebKit rendering pipelines.
+
 ## Requirements
+
 ### Requirement: Fast Chromium local smoke testing
 
 The E2E framework MUST run a Chromium-based test pass in under 5 seconds locally, verifying core user workflows against a pre-started dev server.
@@ -35,4 +37,3 @@ The template E2E suite MUST verify page navigation, mobile/desktop viewport adju
 
 - **WHEN** the E2E test runs, it programmatically seeds `localStorage` with mock character data before load, navigates to the character sheet, collapses/expands sections, edits HP, inserts notes annotations, and performs a JSON backup download/upload cycle
 - **THEN** the page MUST render all edits, display annotations badge links, restore the character on import, and run without console errors
-

@@ -1,13 +1,19 @@
 import { expect, test, type Page } from '@playwright/test';
+import { expectNoBrowserErrors, installBrowserErrorGuard } from './browserTestGuards';
 import { e2eCharacter, e2eStoredCharacters } from './fixtures/characters';
 
 const storageKey = 'ez-chars.characters.v1';
 
 test.beforeEach(async ({ page }) => {
+	installBrowserErrorGuard(page);
 	await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), {
 		key: storageKey,
 		value: e2eStoredCharacters
 	});
+});
+
+test.afterEach(({ page }) => {
+	expectNoBrowserErrors(page);
 });
 
 async function openSeededCharacter(page: Page) {

@@ -1,5 +1,6 @@
 {
 	"extends": "./.svelte-kit/tsconfig.json",
+	"files": ["playwright.config.ts"],
 	"compilerOptions": {
 		"allowJs": true,
 		// Required so TS accepts Svelte component imports/types (e.g. .svelte -> .d.svelte.ts).
@@ -11,6 +12,7 @@
 		"skipLibCheck": true,
 		"sourceMap": true,
 		"strict": true,
+		"types": ["node"],
 		"moduleResolution": "bundler"
 	}
 	// Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias

@@ -30,7 +30,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: tackle `p1-045`, then `p1-026` now that Playwright E2E is available.
+Next recommended target: tackle `p1-045`, then `p1-027`.
 
 ### Refine backlog and agent workflow after spec-workflow decision
 
@@ -195,36 +195,6 @@ Refinement outputs:
   - Screen reader navigation reads all action buttons logically.
   - Touch interaction feels fluid and behaves correctly on phone screens.
 
-### Establish continuous UI performance regression checking
-
-ID:
-
-- `p1-026`
-
-Size:
-
-- medium; explore after Playwright E2E lands
-
-Scope:
-
-- configure Playwright E2E tests to assert that no `ResizeObserver loop limit exceeded` warnings or console errors are printed during test flows
-- explore tracing scroll performance metrics (CPU layout/paint times) in local headless test runs, specifically validating Firefox rendering pipeline statistics when running on demand
-- add standard profiling steps in `docs/verification.md` for manual Firefox trace captures (`profiler.firefox.com`) and layout-flash tracking
-
-Refinement outputs:
-
-- **Purpose:** Automatically detect scroll-jank and layout-loop regressions during UI updates by introducing performance assertions inside our E2E testing gates, and documenting manual Firefox rendering trace procedures.
-- **Included behavior:**
-  - Track and assert on browser console warnings/errors related to ResizeObservers and layout performance in Playwright E2E tests.
-  - Track Firefox-specific paint/compositor trace metrics using Playwright performance trace assertions when Firefox projects are triggered.
-  - Document manual profiling steps (Firefox Profiler trace analysis, Paint Flashing, Layer borders) under `docs/verification.md` as the canonical way to diagnose Firefox rendering pipelines.
-- **Excluded behavior:**
-  - Integrating heavyweight automated lighthouse gating or cloud device grids.
-- **Ambiguities:** None.
-- **Success:**
-  - Automated E2E runs report console errors if layout loops are triggered.
-  - Clear manual verification performance guidelines and Firefox Profiler trace steps are available.
-
 ### Replace custom grid auto-measurement with native CSS Container Queries
 
 ID:
@@ -241,6 +211,10 @@ Scope:
 - configure card components as container contexts (`container-type: inline-size`)
 - preserve the visual layout rules for intermediate split-screen widths
 - delete `GridContainerAuto.svelte` and its associated ResizeObservers entirely
+
+Baseline evidence (2026-07-17):
+
+- The new headless Chromium scroll-frame probe met the 55 FPS average threshold while 36.7% of intervals landed just above 16.7 ms. The probe now reports that VSync-budget rate diagnostically and gates on dropped-frame intervals above 33.3 ms, which is the stable missed-frame signal. A diagnostic Firefox run also passed (57.1 FPS, 3.3% dropped frames), so headless automation does not reproduce the subjective Firefox jank; retain headed Firefox Profiler traces for that investigation. Re-run the probe after this structural replacement and compare the full statistics before changing its threshold.
 
 Refinement outputs:
 
@@ -408,6 +382,7 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 - completed `p0-010`: the 5e sheet now exposes the major MVP runtime and organizational sections, including seeded runtime action data, with check/lint/build passing
 - completed the focused `p0-040` scroll-performance pass: reduced hidden dialog DOM, simplified hover/paint costs, removed broad `GridContainerAuto` mutation observation, and moved residual jank follow-up to `p1-025`
 - completed `p1-015`: added a fast Chromium Playwright smoke suite covering seeded character navigation, responsive section collapse, Current HP editing, annotations, and JSON backup/restore; Firefox also passes, with testing strategy and execution boundaries documented
+- completed `p1-026`: routine Playwright flows now fail on browser console errors and ResizeObserver loop warnings; on-demand scroll-frame profiling and a Firefox Profiler/paint-debug workflow establish repeatable performance baselines and escalation guidance
 - completed `p1-025` diagnostic: a headed Firefox recording showed negligible synchronous reflow and scroll-handler time, so the cached-width/ResizeObserver trial was reverted; repeatable performance checks are deferred to `p1-026` after Playwright E2E, while `p1-027` owns the future native grid-model replacement
 - completed `p0-020`: JSON backup/restore supports a versioned export envelope, file download, import file selection, import validation, replace-all import, and merge-new import that skips duplicate character IDs
 - completed home action button polish: shared button chrome now aligns Create, Import, Export, and import apply actions consistently
