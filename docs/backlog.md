@@ -372,6 +372,7 @@ Refinement outputs:
   - Rewriting character loading or persistence stores.
 - **Ambiguities:**
   - _Location_: Should helpers live in the route folder? (Yes, under `src/routes/charsheets/5e/` since they are highly coupled to the page composition details).
+  - _SvelteKit Page Loaders_: Reconciled. Keep reactive Svelte store subscriptions (like `$charsArray`) inside the `+page.svelte` component script. This ensures character updates propagate dynamically. Only extract static metadata constants and pure, non-reactive JSON patch/projection calculation functions.
 - **Success:**
   - Route file size decreases significantly and focuses purely on layout composition.
   - Pure helper modules are fully covered by Vitest tests.
@@ -427,11 +428,14 @@ Refinement outputs:
 - **Purpose:** Clean up imports and package layouts by separating seed data, storage loading, and schema definitions from our runtime state variables. This ensures clean boundaries and speeds up codebase navigation for developers and agents.
 - **Included behavior:**
   - Extract mock/seed data into `src/fixtures/`.
-  - Move localStorage and state persistence helpers into a dedicated `src/lib/storage/` folder.
+  - Move Svelte components into a dedicated visual folder: `src/lib/components/`.
+  - Move localStorage and state persistence helpers into `src/lib/storage/`.
+  - Move pure JS helper utilities (formatters, URL parsers) into `src/lib/utils/`.
   - Review and clean up circular imports and proficiency schema redundancies.
 - **Excluded behavior:**
   - Modifying the core player/character JSON schema layout itself.
-- **Ambiguities:** None.
+- **Ambiguities:**
+  - _Folder Reorganization_: Reconciled. Separate non-visual storage/utilities from UI files by using a clean single-level subdirectory model (`src/lib/components/` for visual atoms, `src/lib/storage/` for loaders, `src/lib/utils/` for helpers, and `src/fixtures/` for mocks), preventing flat-folder clutter.
 - **Success:**
   - Circular dependency checks report zero errors.
   - All existing storage contract tests continue to pass.
