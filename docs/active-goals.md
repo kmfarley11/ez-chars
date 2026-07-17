@@ -19,6 +19,7 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 - JSON import/export for backup and restore
 - mobile- and desktop-usable UI
 - basic accessibility, empty states, and error handling
+- Storybook for isolated visual development and testing of UI components
 
 ## Out Of Scope
 
@@ -26,7 +27,6 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 - accounts or backend storage
 - shared editing or multiplayer
 - PDF import/export
-- Storybook
 - dice rolling engines or heavy rules automation
 - hosting premium or copyrighted rules text
 

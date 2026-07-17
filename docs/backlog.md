@@ -30,7 +30,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: tackle `p1-025`, then `p1-045`.
+Next recommended target: tackle `p1-025`, then `p1-015`, then `p1-045`.
 
 ### Refine backlog and agent workflow after spec-workflow decision
 
@@ -76,6 +76,30 @@ Definition of done:
 - an action can optionally point back to the item, spell, or feature it summarizes
 - source links improve navigation or editing without making the runtime action list redundant or fragile
 
+Refinement outputs:
+
+TODO - revisit this before proposing! Read the designs up to this point and tell the user whether `runtimeAction` includes bonus actions, reactions, etc. or _just_ actions. If _just actions_ then inform the user where runtimeBonusActions or similar may end up as part of this. PROMPT THE USER TO AGREE on whether the findings and result jive with expectations.
+
+- **Purpose:** Allow player actions in the sheet's runtime list to link to inventory items, active spells, or class features. This enables automatic sync/reset choices and links to reference cards, reducing manual copying mistakes and streamlining table play.
+- **Included behavior:**
+  - Add optional `sourceId` and `sourceType` (e.g. `'inventory'`, `'spell'`, `'feature'`) properties to the D&D 5e `runtimeAction` schema.
+  - Display a visual indicator (like a small external-link icon) on linked action rows that navigates to the source record card.
+  - Support one-way bubbling of values: source changes automatically update action values unless overridden.
+  - Support "override" fields on the runtime action row: user edits are stored as overrides that take precedence over the source value, rendering a visual "Customized" reminder indicator.
+  - Support multiple runtime actions pointing to the same source ID (e.g., standard attack, two-handed attack variant, special reaction spell trigger).
+  - Allow users to toggle visibility/hide source-driven actions to avoid layout clutter.
+  - Provide a "suggested actions" list derived from equipped weapons, active spells, or actions-granting features.
+  - Allow users to manually sync/reset text and damage fields from the source item/spell.
+- **Excluded behavior:**
+  - Automating mechanics checking, dice rolls, or calculations based on the source link.
+  - Restricting editing: users must always be able to manually override linked values.
+- **Ambiguities:**
+  - _Data deletion fallback_: If a source weapon is deleted, what happens to the action? (It should turn into a "custom" action instead of deleting the action row).
+- **Success:**
+  - Schema supports action source references.
+  - A user equips a weapon and sees it as a suggested action.
+  - Clicking the link navigates to the item details, and syncing restores standard item stats.
+
 ### Add GitHub Actions for quality gates
 
 ID:
@@ -109,6 +133,78 @@ Definition of done:
 - the workflow is committed in `.github/workflows/`
 - a failing quality gate produces a failing CI run
 
+Refinement outputs:
+
+- **Purpose:** Automatically run tests, formatting checks, and Svelte diagnostics in the cloud on every pull request or push to prevent regressions and keep main branches stable.
+- **Included behavior:**
+  - Create a `.github/workflows/verify.yml` workflow file.
+  - Triggers on pushes and pull requests to the `main` branch.
+  - Uses standard Node setup and cached `node_modules` for speed.
+  - Executes `npm run check`, `npm run lint`, and `npm run test` in sequence.
+- **Excluded behavior:**
+  - Automated deployment steps or CD pipelines.
+  - Multi-node version matrix testing (testing on the project Node version is enough).
+- **Ambiguities:** None.
+- **Success:**
+  - Merging code with a broken test or type warning triggers a failing status check in GitHub.
+  - Clean pushes trigger a green passing check.
+
+### Standardize lightweight browser interaction testing
+
+ID:
+
+- `p1-015`
+
+Size:
+
+- medium; address before major route or feature changes
+
+Scope:
+
+- define a standard, lightweight framework for browser interaction testing using Playwright E2E
+- configure Playwright to run on Chromium by default for maximum execution speed, while allowing multi-browser verification (Chromium, Firefox, WebKit) when needed
+- draft an Architecture Decision Record (ADR) documenting near-term (Playwright E2E smoke tests) vs. mid-term (Storybook playtesting) vs. deferred long-term (Svelte Testing Library component tests) testing strategies
+- limit execution time and prevent agents from generating slow, unbounded NodeJS-based browser automation wrappers
+
+Suggested implementation slices:
+
+1. Draft a lightweight ADR under `docs/decisions/` defining the near-term, mid-term, and deferred long-term testing strategies (E2E vs. Storybook vs. unit testing).
+2. Install and configure Playwright E2E in the repository, default-configured to run Chromium for speed (`npm run test:e2e`), with support for full multi-browser test runs (`npm run test:e2e:all`).
+3. Create a single canonical Playwright smoke test file that runs fast, verifying:
+   - Page navigation, viewport resizing (mobile vs. desktop layout verification), and collapsing/expanding character sheet grid sections.
+   - Core value edits (e.g., Current HP card changes) and adding/editing field annotations (including inserting a D&D Beyond web link and verifying a local SRD reference document link).
+   - Exporting local characters to JSON, downloading the file, and re-importing it to ensure data round-tripping works seamlessly.
+4. Update `docs/verification.md` and `AGENTS.md` to reference the E2E suite, enforce execution limits (e.g. under 5s local runtime), and restrict agents from writing custom Node-based automation wrappers.
+
+Definition of done:
+
+- Playwright E2E is configured with scripts in `package.json` (`npm run test:e2e` for Chromium, `npm run test:e2e:all` for all browsers)
+- the local E2E smoke test runs in less than 5 seconds in Chromium
+- the testing strategy ADR is committed under `docs/decisions/`
+- verification instructions are updated in `docs/verification.md` and agent guidelines are synced in `AGENTS.md`
+- all check, lint, and build stages pass cleanly
+
+Refinement outputs:
+
+- **Purpose:** Prevent coding agents from writing ad-hoc, slow, or unbounded NodeJS browser testing scripts by establishing a fast, lightweight Playwright E2E smoke suite and documenting our long-term testing roadmap in an ADR.
+- **Included behavior:**
+  - Configure Playwright E2E for component/page-level interaction testing.
+  - Set Chromium as the default browser for fast local verification (`npm run test:e2e`).
+  - Provide script triggers to verify against other engines like Firefox and WebKit (`npm run test:e2e:all`).
+  - Configure tests to run against a pre-started dev server (`http://localhost:5173`) to keep test startups sub-second. Agents have authority to spin up background servers or prompt users if offline.
+  - Programmatically seed mock fixtures directly into `localStorage` before page load to speed up sheet interaction tests and bypass manual creation clicks.
+  - Write a template test suite verifying: loading, viewports (mobile vs. desktop), collapsing/expanding grid sections, editing HP values, adding/updating notes annotations (verifying D&D Beyond web links and local SRD references), and exporting & re-importing JSON backups.
+  - Write a testing strategy ADR mapping near-term (Playwright), mid-term (Storybook), and deferred long-term (Svelte Testing Library unit tests).
+- **Excluded behavior:**
+  - Writing extensive unit testing suites for Svelte components before the planned refactoring settles.
+  - Adding visual screenshot snapshot comparisons or heavy Docker dependencies.
+- **Ambiguities:**
+  - _Testing Harness_: Playwright is selected for initial UI testing because Svelte Testing Library lacks layout engines to verify mobile viewport responsive behaviors, CSS anchoring, and native popovers. Svelte Testing Library unit testing is deferred until component structures stabilize.
+  - _Server Lifecycle & Seeding_: Reconciled. Playwright runs against the pre-started developer server, and tests seed `localStorage` directly rather than executing UI character creation flows.
+- **Success:**
+  - `npm run test:e2e` executes and validates the template test in under 5 seconds.
+  - The testing strategy ADR is documented under `docs/decisions/`.
+
 ### Improve accessibility and mobile review of menus, dialogs, and sheet sections
 
 ID:
@@ -138,6 +234,23 @@ Definition of done:
 - obvious focus, keyboard, or labeling issues in the main MVP flow are corrected
 - the review is reflected in the theme or UI checklist where useful
 
+Refinement outputs:
+
+- **Purpose:** Ensure the D&D character sheet is fully accessible and comfortable to use on mobile phones at active game tables.
+- **Included behavior:**
+  - Audit all sheet interactive nodes to ensure touch targets meet the 44x44px minimum standard.
+  - Maintain correct keyboard navigation order across grid layouts.
+  - Verify native `<dialog>` modals correctly trap and release focus.
+  - Add descriptive aria-labels to all icon-only buttons.
+  - Document review guidelines in `docs/theme-visual-checklist.md`.
+- **Excluded behavior:**
+  - Major sheet section restructuring or changing colors/themes.
+- **Ambiguities:** None.
+- **Success:**
+  - Dialog focus trap operates correctly (focus stays inside the modal until dismissed).
+  - Screen reader navigation reads all action buttons logically.
+  - Touch interaction feels fluid and behaves correctly on phone screens.
+
 ### Follow up on residual 5e sheet scroll performance
 
 ID:
@@ -165,6 +278,7 @@ Migrated findings from `p0-040`:
 - A broad CSS auto-fit replacement for `GridContainerAuto` was tried and reverted because it worsened spell/proficiency and long-value movement layouts without a meaningful measured performance win
 - Removing the broad subtree `MutationObserver` from `GridContainerAuto` made the code simpler and helped slightly, but the residual jank remains visible enough to deserve a later targeted pass
 - The `p1-024` scoped MenuButton Popover/Anchor Positioning refactor added no custom measurement or observer work, so it should not affect this investigation
+- **Firefox-specific jank (2026-07-17)**: Scroll jank is currently only really noticeable in Firefox; scrolling on Chrome and Safari remains smooth, suggesting investigations should focus on Firefox-specific layout/compositing pipelines or scroll behavior differences.
 
 Suggested implementation slices:
 
@@ -184,6 +298,22 @@ Definition of done:
 Svelte 5 audit finding (2026-07-16):
 
 - `GridContainerAuto` has the only audited `$effect`; it schedules its DOM measurement after paint and has no detected state-write feedback loop. Its `ResizeObserver` plus `scrollWidth` measurement remains a performance-profiling concern, not a Svelte reactivity correctness fix; measure it in a headed-browser pass before changing it.
+
+Refinement outputs:
+
+- **Purpose:** Resolve residual scroll stutter (especially visible in Firefox) in the dense Ability/Spells lists of the character sheet, enhancing rendering performance on lower-powered devices.
+- **Included behavior:**
+  - Investigate and profile layout/render times specifically on Firefox.
+  - Optimize the layout triggers or schedule timing in `GridContainerAuto.svelte`.
+  - Explore lazy-mounting options or hiding off-screen components inside collapsed cards to decrease active DOM nodes.
+- **Excluded behavior:**
+  - Rewriting general sheet CSS rules or styling tokens.
+  - Reverting from Svelte 5 runes.
+- **Ambiguities:**
+  - _Browser-specific CSS optimization / Firefox hacks_: Do we allow hacky rendering or scrolling directives specifically for Firefox? (Avoid them if possible. They are only acceptable if they are strictly scoped inside a component's `<style>` tag, accompanied by clear, concise comments explaining _why_ they exist, and validated to keep Chrome/Safari visual quality. If the root Firefox bug is slated to be resolved by upcoming engine updates rendering it Overtaken by Events (OBEd), defer any hacky optimization work and keep this ticket at the bottom of the active queue).
+- **Success:**
+  - Visibly smooth scrolling on Firefox desktop and mobile viewports.
+  - Profiling traces confirm decreased layout/paint cycle times.
 
 ### Extract 5e sheet projection and patch logic from the route
 
@@ -230,6 +360,23 @@ Svelte 5 audit finding (2026-07-16):
 - The Svelte 5 route is compiler-clean, but its current single-file shape still owns static metadata, projection builders, virtual path constants, and patch normalization in addition to layout orchestration. This is an ownership/readability concern for the planned extraction, not a reason to make an unrelated rune migration.
 - Storybook remains deferred and should not be a prerequisite for this browser-smoke coverage: browser flows validate application behavior, while Storybook can later provide isolated component and visual review.
 
+Refinement outputs:
+
+- **Purpose:** Clean up the bloated route file [+page.svelte](../src/routes/charsheets/5e/+page.svelte) by separating data projections and JSON patch logic from visual layout orchestration. This makes route edits less error-prone and allows testing raw calculations in isolation.
+- **Included behavior:**
+  - Extract static 5e metadata and dropdown arrays to a local helper file.
+  - Move HP, spell slots, and action patch builders to pure helper functions.
+  - Introduce a browser smoke test suite to guarantee zero layout or behavioral regression during refactoring.
+- **Excluded behavior:**
+  - Restructuring the component structure in `src/lib/`.
+  - Rewriting character loading or persistence stores.
+- **Ambiguities:**
+  - _Location_: Should helpers live in the route folder? (Yes, under `src/routes/charsheets/5e/` since they are highly coupled to the page composition details).
+- **Success:**
+  - Route file size decreases significantly and focuses purely on layout composition.
+  - Pure helper modules are fully covered by Vitest tests.
+  - The browser smoke test suite passes cleanly.
+
 ### Refactor the repo structure so stores, fixtures, schema, and 5e feature code are less entangled
 
 ID:
@@ -275,17 +422,37 @@ Definition of done:
 - the resulting structure is easier to navigate for both humans and coding agents
 - behavior remains unchanged except where the refactor explicitly supports an active backlog item
 
+Refinement outputs:
+
+- **Purpose:** Clean up imports and package layouts by separating seed data, storage loading, and schema definitions from our runtime state variables. This ensures clean boundaries and speeds up codebase navigation for developers and agents.
+- **Included behavior:**
+  - Extract mock/seed data into `src/fixtures/`.
+  - Move localStorage and state persistence helpers into a dedicated `src/lib/storage/` folder.
+  - Review and clean up circular imports and proficiency schema redundancies.
+- **Excluded behavior:**
+  - Modifying the core player/character JSON schema layout itself.
+- **Ambiguities:** None.
+- **Success:**
+  - Circular dependency checks report zero errors.
+  - All existing storage contract tests continue to pass.
+
 ## Ideation Sandbox (Unsorted Ideas)
 
 This content is a work in progress to dump rough thoughts, brainstorms, and refactor wishes before prioritizing or organizing them.
 
-- re-organize lib a bit better, consider a ui lib vs. utility lib
-  - consider the ui lib organizing by primitives vs. composites vs. patterns
-  - consider adding storybook to help playtest the concepts etc.
-- re-org the ux: consider meta & quickref being sticky, then tabulate 3 pillars: adventure, combat, roleplay? combat could have sticky header for summary
-  - note: the thought is to make most of the screen real-estate while avoiding complex UI. so less headers, but more clicking and less scrolling perhaps.
-  - implementing a drawer of sorts wouldn't be a bad idea either
-- evaluate a Svelte-compatible form library such as TanStack Form or Felte after the first field-binding proof surface lands; prefer reuse for draft state, validation display, dirty tracking, and array editor ergonomics if it keeps local source smaller than custom form infrastructure
+- **[Priority 1] re-organize lib a bit better, consider a ui lib vs. utility lib**
+  - _Best Guess_: We want to group items under `src/lib/` logically—separating pure styling/UI primitives (like BaseButton, Heading, Table) from composite layout patterns (like GridContainer) and pure JS helper utilities (like theme, storage).
+  - _Critical Question_: Should this be done purely as directories under `src/lib/` (e.g. `src/lib/ui/` vs `src/lib/utils/`), or do we want to configure new path aliases in `svelte.config.js`/`vite.config.ts` (like `$ui/*`) to enforce boundaries?
+- **[Priority 2] integrate Storybook for isolated visual development and playtesting of Svelte 5 components**
+  - _Best Guess_: Storybook will host isolated stories for visual atoms (e.g. `BaseButton`, `Heading`) and composite cells (`GridPrimitiveField`, `MenuButton`), letting humans and agents test styles, reactivity, states, and accessibility interactively without loading the full 5e page context.
+  - _Critical Question_: What is the simplest Svelte 5 + Vite Storybook setup we can introduce without cluttering the package dependencies, and does it validate successfully inside the restricted container environment?
+- **[Priority 3] evaluate a Svelte-compatible form library such as TanStack Form or Felte after the first field-binding proof surface lands; prefer reuse for draft state, validation display, dirty tracking, and array editor ergonomics if it keeps local source smaller than custom form infrastructure**
+  - _Best Guess_: Evaluate if an external library handles card-wide value validation, dirty checking, and array/nested list mutations more concisely and safely than our custom `FieldDraft` implementation.
+  - _Critical Question_: Will introducing a third-party form helper conflict with our "platform-native first" preference or cause unnecessary bundle size increases, given we only have local-first state storage?
+- **[Priority 4] re-org the ux: consider meta & quickref being sticky, then tabulate 3 pillars: adventure, combat, roleplay? combat could have sticky header for summary**
+  - _Best Guess_: Redesign the character sheet UI. The character name/level (meta) and active reference panel stay pinned (sticky) to the screen, while the rest of the layout is nested in three tabs: Adventure (stats/skills), Combat (actions/spells/inventory), and Roleplay (bio/notes).
+  - _Critical Question_: Does this imply removing the grid scroll layout entirely for mobile/desktop, or do tabs just act as filters on top of the grids? How will users react to tapping between views during fast-paced table encounters?
+  - _Best Guess on drawer_: Implementing a drawer panel would act as a modal-like quick-reference slide-out for details instead of full-screen overlays, maximizing viewport utility.
 
 ## Done Recently
 
