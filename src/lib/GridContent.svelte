@@ -64,6 +64,7 @@
 
 	let dialogEl = $state<HTMLDialogElement>();
 	let helpDialogEl = $state<HTMLDialogElement>();
+	let cardActionsTriggerEl = $state<HTMLButtonElement>();
 	let draftData = $state<GridContentData>({});
 	let shouldRenderEditDialog = $state(false);
 	let shouldRenderHelpDialog = $state(false);
@@ -98,10 +99,11 @@
 		)
 	);
 
-	const closeDialog = () => {
+	const closeDialog = async () => {
 		dialogEl?.close();
-		if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
 		shouldRenderEditDialog = false;
+		await tick();
+		cardActionsTriggerEl?.focus();
 	};
 
 	const closeHelpDialog = () => {
@@ -112,7 +114,8 @@
 		draftHelpAnnotations = [];
 	};
 
-	const onCancel = () => {
+	const onCancel = (event?: Event) => {
+		event?.preventDefault();
 		closeDialog();
 		handleEditCancel?.();
 	};
@@ -245,6 +248,7 @@
 			buttonClasses="rounded-md"
 			ariaLabel="Card actions"
 			title="Card actions"
+			bind:triggerEl={cardActionsTriggerEl}
 		>
 			{#if canOpenEditDialog}
 				<MenuItemButton onclick={onOpen}>Edit</MenuItemButton>

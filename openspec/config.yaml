@@ -2,19 +2,13 @@ schema: spec-driven
 
 # Project context (optional)
 # This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  Tech stack: Svelte 5 (runes, native event attributes), vanilla CSS, SvelteKit, and Vitest.
+  We maintain a local-first architecture with localStorage persistence and schema validation.
+  Our developer workflow uses OpenSpec for change proposal, specification, design, and task tracking.
 
 # Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  tasks:
+    - "Always include a final section group 'Backlog Updates & Reconciliation' (e.g. group ## 4) containing tasks to: 1) Prune the matching backlog ID from docs/backlog.md and move it to 'Done Recently' with a summary, 2) Reconcile the 'Next recommended target' header in docs/backlog.md, and 3) Update active goals in docs/active-goals.md if applicable."
+    - "Always include a brief section '## Executor Recommendation' at the very end of the file capturing the recommended executor reasoning level (low vs. medium vs. high) and model complexity (simple vs. complex) needed to execute the tasks, along with a brief rationale."

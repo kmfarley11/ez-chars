@@ -13,10 +13,16 @@
 		classes?: string;
 		ariaLabel?: string;
 		ariaExpanded?: boolean;
+		ariaControls?: string;
+		ariaHaspopup?: 'menu' | boolean;
+		id?: string;
 		title?: string;
 		disabled?: boolean;
 		role?: string;
 		tabindex?: number;
+		popoverTarget?: string;
+		anchorName?: string;
+		buttonEl?: HTMLButtonElement;
 	}
 
 	let {
@@ -29,10 +35,16 @@
 		classes = undefined,
 		ariaLabel = undefined,
 		ariaExpanded = undefined,
+		ariaControls = undefined,
+		ariaHaspopup = undefined,
+		id = undefined,
 		title = undefined,
 		disabled = false,
 		role = undefined,
-		tabindex = undefined
+		tabindex = undefined,
+		popoverTarget = undefined,
+		anchorName = undefined,
+		buttonEl = $bindable<HTMLButtonElement>()
 	}: Props = $props();
 
 	const colors = $derived(shadingVariant === 'dark' ? 'theme-btn-dark' : 'theme-btn-light');
@@ -52,6 +64,8 @@
 </script>
 
 <button
+	bind:this={buttonEl}
+	{id}
 	{type}
 	class={twMerge(
 		'btn inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border font-semibold leading-none shadow-sm ring-1 ring-black/5 focus:outline-hidden disabled:cursor-not-allowed disabled:opacity-60',
@@ -61,10 +75,14 @@
 	)}
 	aria-label={ariaLabel}
 	aria-expanded={ariaExpanded}
+	aria-controls={ariaControls}
+	aria-haspopup={ariaHaspopup}
 	{title}
 	{disabled}
 	{role}
 	{tabindex}
+	popovertarget={popoverTarget}
+	style:anchor-name={anchorName}
 	{onclick}
 >
 	{@render children?.()}

@@ -16,6 +16,7 @@
 		buttonClasses?: string;
 		ariaLabel?: string;
 		title?: string;
+		triggerEl?: HTMLButtonElement;
 	}
 
 	let {
@@ -28,60 +29,79 @@
 		buttonIconOnly = false,
 		buttonClasses = undefined,
 		ariaLabel = undefined,
-		title = undefined
+		title = undefined,
+		triggerEl = $bindable<HTMLButtonElement>()
 	}: Props = $props();
 	let isMenuOpen = $state(false);
+	const componentId = $props.id();
+	const menuButtonId = `menu-button-${componentId}`;
+	const menuId = `menu-${componentId}`;
+	const anchorName = `--menu-anchor-${componentId}`;
 
-	const handleMenuClick = () => {
-		isMenuOpen = !isMenuOpen;
-	};
-
-	const handleMenuFocusLoss = (event: FocusEvent) => {
-		const { relatedTarget, currentTarget } = event;
-		if (
-			relatedTarget instanceof HTMLElement &&
-			currentTarget instanceof HTMLElement &&
-			currentTarget.contains(relatedTarget)
-		) {
-			return;
-		}
-		isMenuOpen = false;
+	const handlePopoverToggle = (event: ToggleEvent) => {
+		isMenuOpen = (event.currentTarget as HTMLElement).matches(':popover-open');
 	};
 
 	let colors = $derived(shadingVariant === 'dark' ? 'theme-btn-dark' : 'theme-btn-light');
 </script>
 
 <div class="flex {align === 'right' ? 'justify-end' : 'justify-start'} text-left">
+	<OpenCloseToggleButton
+		bind:buttonEl={triggerEl}
+		id={menuButtonId}
+		{text}
+		isOpen={isMenuOpen}
+		{iconVariant}
+		{shadingVariant}
+		size={buttonSize}
+		iconOnly={buttonIconOnly}
+		classes={buttonClasses}
+		{ariaLabel}
+		{title}
+		ariaControls={menuId}
+		ariaHaspopup="menu"
+		popoverTarget={menuId}
+		{anchorName}
+	/>
 	<div
-		class="relative {isMenuOpen ? 'z-30' : 'z-0'}"
-		role="menu"
-		aria-orientation="vertical"
-		aria-labelledby="menu-button"
-		tabindex="-1"
-		onfocusout={handleMenuFocusLoss}
+		id={menuId}
+		popover="auto"
+		class="menu-popover {align === 'right'
+			? 'menu-popover-right'
+			: ''} min-w-36 divide-y rounded-lg p-1 {colors} shadow-sm ring-1"
+		style={`--menu-anchor: ${anchorName}`}
+		ontoggle={handlePopoverToggle}
 	>
-		<OpenCloseToggleButton
-			{text}
-			isOpen={isMenuOpen}
-			{iconVariant}
-			handleClick={handleMenuClick}
-			{shadingVariant}
-			size={buttonSize}
-			iconOnly={buttonIconOnly}
-			classes={buttonClasses}
-			{ariaLabel}
-			{title}
-		/>
-		{#if isMenuOpen}
-			<div
-				class="absolute {align === 'right'
-					? 'right-0'
-					: 'left-0'} z-30 mt-1 min-w-36 divide-y rounded-lg p-1 {colors} shadow-sm ring-1"
-			>
-				<ul class="w-full">
-					{@render children?.()}
-				</ul>
-			</div>
-		{/if}
+		<ul class="w-full" role="menu" aria-orientation="vertical" aria-labelledby={menuButtonId}>
+			{@render children?.()}
+		</ul>
 	</div>
 </div>
+
+<style>
+	.menu-popover {
+		position: fixed;
+		position-anchor: var(--menu-anchor);
+		inset: auto;
+		inset-block-start: anchor(bottom);
+		inset-inline-start: anchor(left);
+		margin: 0.25rem 0 0;
+		border: 0;
+		background: transparent;
+	}
+
+	.menu-popover-right {
+		inset-inline-start: auto;
+		inset-inline-end: anchor(right);
+	}
+
+	@supports not (position-anchor: --menu-anchor) {
+		.menu-popover {
+			inset: auto 1rem 1rem auto;
+		}
+
+		.menu-popover:not(.menu-popover-right) {
+			inset: auto auto 1rem 1rem;
+		}
+	}
+</style>

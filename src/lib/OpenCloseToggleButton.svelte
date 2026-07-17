@@ -6,35 +6,53 @@
 		text?: string;
 		iconVariant?: ButtonIconVariant;
 		isOpen: boolean;
-		handleClick: () => void;
+		handleClick?: () => void;
 		shadingVariant?: ButtonShadingVariant;
 		size?: ButtonSize;
 		iconOnly?: boolean;
 		classes?: string;
 		ariaLabel?: string;
 		title?: string;
+		id?: string;
+		ariaControls?: string;
+		ariaHaspopup?: 'menu' | boolean;
+		popoverTarget?: string;
+		anchorName?: string;
+		buttonEl?: HTMLButtonElement;
 	}
 
 	let {
 		text,
 		iconVariant = 'hamburger',
 		isOpen,
-		handleClick,
+		handleClick = undefined,
 		shadingVariant = 'light',
 		size = 'md',
 		iconOnly = false,
 		classes = undefined,
 		ariaLabel = undefined,
-		title = undefined
+		title = undefined,
+		id = undefined,
+		ariaControls = undefined,
+		ariaHaspopup = undefined,
+		popoverTarget = undefined,
+		anchorName = undefined,
+		buttonEl = $bindable<HTMLButtonElement>()
 	}: Props = $props();
 
 	const iconClasses = $derived(size === 'sm' ? 'h-4 w-4' : size === 'lg' ? 'h-6 w-6' : 'h-5 w-5');
 </script>
 
 <BaseButton
+	bind:buttonEl
+	{id}
 	onclick={handleClick}
 	{shadingVariant}
 	ariaExpanded={isOpen}
+	{ariaControls}
+	{ariaHaspopup}
+	{popoverTarget}
+	{anchorName}
 	{size}
 	{iconOnly}
 	{classes}

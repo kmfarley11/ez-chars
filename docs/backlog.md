@@ -30,7 +30,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: tackle `p1-024`, then `p1-025`, then `p1-045`.
+Next recommended target: tackle `p1-025`, then `p1-045`.
 
 ### Refine backlog and agent workflow after spec-workflow decision
 
@@ -138,43 +138,6 @@ Definition of done:
 - obvious focus, keyboard, or labeling issues in the main MVP flow are corrected
 - the review is reflected in the theme or UI checklist where useful
 
-### Prefer platform-native HTML and CSS primitives where practical
-
-ID:
-
-- `p1-024`
-
-Size:
-
-- medium-to-large; inventory first, then implement only clear wins
-
-Scope:
-
-- establish guidance for agents to prefer browser/platform primitives over bespoke JavaScript, Tailwind-heavy, or package-based implementations where practical
-- consider native and modern platform features such as `<dialog>`, popover and anchor positioning where browser support is acceptable, `:has()`, scroll-snap, scroll timelines, CSS-driven interaction states, and native form controls
-- inventory current app surfaces that may benefit from platform-native simplification: menus, dialogs, grid measurement/layout, select/list behavior, scroll interactions, hover/focus behavior, and dense sheet sections
-- evaluate candidates for accessibility, mobile behavior, browser support, maintainability, and measured performance impact before changing implementation
-- coordinate with `p1-020` for accessibility/mobile findings and `p1-025` for measured dense-sheet scroll performance
-- do not add a new dependency without asking first; external references such as Graffiti UI can inform evaluation but should not become dependencies by default
-
-Suggested implementation slices:
-
-1. Add agent-facing guidance for when to reach for native HTML/CSS primitives before custom components, JavaScript state, or new packages.
-2. Inventory current custom UI/CSS patterns and identify candidates for platform-native simplification.
-3. Evaluate the highest-value candidates against accessibility, mobile behavior, browser support, and maintainability.
-4. Implement one narrow replacement or simplification only where the tradeoff is clearly favorable and behavior can be preserved.
-5. Record deferred candidates on the relevant backlog item instead of broadening this effort.
-6. Run the relevant local verification from [docs/verification.md](verification.md), plus manual checks for any touched mobile or interaction surface.
-
-Definition of done:
-
-- agent-facing docs include project guidance to prefer platform-native primitives where they fit
-- current custom UI/CSS patterns have been inventoried for native simplification candidates
-- at least one clear, low-risk improvement is implemented or all candidates are explicitly deferred with reasons
-- accessibility, mobile behavior, and browser support are considered before implementation
-- any performance claim is backed by verification or linked to `p1-025` for measurement
-- no new dependency is added without prior approval
-
 ### Follow up on residual 5e sheet scroll performance
 
 ID:
@@ -201,6 +164,7 @@ Migrated findings from `p0-040`:
 - Simplifying themed card shadows and removing scroll-induced hover transitions improved the issue directionally, and Help/Edit controls no longer flash during quick scroll
 - A broad CSS auto-fit replacement for `GridContainerAuto` was tried and reverted because it worsened spell/proficiency and long-value movement layouts without a meaningful measured performance win
 - Removing the broad subtree `MutationObserver` from `GridContainerAuto` made the code simpler and helped slightly, but the residual jank remains visible enough to deserve a later targeted pass
+- The `p1-024` scoped MenuButton Popover/Anchor Positioning refactor added no custom measurement or observer work, so it should not affect this investigation
 
 Suggested implementation slices:
 
@@ -338,3 +302,4 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 - completed the behavioral `p1-030` field interaction pass: runtime/state primitives have persistent direct edit controls, field annotations are accessible through explicit Notes affordances, card-wide Edit remains a value/structure fallback, and card Notes dialogs now handle annotation review/add/edit flows
 - completed `p1-035`: surfaced runtime/state primitive fields now render through descriptor-driven `GridContent` cards and the shared primitive renderer, the route no longer composes adjacent standalone `InlineFieldDraft` blocks beside migrated cards, card-wide Edit remains comprehensive for value/structure fallback, and Notes remains the annotation review/add/edit surface
 - completed `p1-022`: added Svelte 5 agent tooling and audited the current app, migrating legacy Svelte 4 structures to Svelte 5 runes (`$props()`, `$state()`, `$derived()`) and native event properties (e.g., `onclick` instead of `on:click`) to ensure compiler-clean build and lint checks
+- completed `p1-024`: drafted a new Architecture Decision Record (ADR) on modern platform primitives, audited custom UI overlays, and refactored `MenuButton.svelte` to use the native HTML Popover API and scoped CSS Anchor Positioning, eliminating custom JS focus/click-away event management
