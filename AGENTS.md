@@ -11,13 +11,9 @@ For active implementation work, treat these files as the current source of truth
 
 Do not use [docs/vision/](docs/vision/) as the active backlog unless the task is explicitly about roadmap, future-system exploration, or long-term planning.
 
-## Current Product Scope
+## Product Scope Source
 
-- Single-system MVP: D&D 5e 2014 only
-- Local-first web app; no backend or accounts
-- Editable, mobile-friendly character sheet
-- JSON import/export is implemented for MVP backup and restore
-- Additional systems, cloud sync, PDF workflows, and Storybook are deferred
+For current product scope, in/out-of-scope decisions, and success criteria, use [docs/active-goals.md](docs/active-goals.md). For prioritized work, use [docs/backlog.md](docs/backlog.md).
 
 ## Current State
 
@@ -69,6 +65,8 @@ Use [src/test-utils/jsonPatchFixtures.ts](src/test-utils/jsonPatchFixtures.ts) f
 Use [docs/verification.md](docs/verification.md) as the canonical local command guide, including when to run the full gate set, smaller subsets, and coverage reporting.
 
 ## Browser E2E Boundaries
+
+The [testing strategy decision](docs/decisions/2026-07-17-testing-strategy.md) defines these durable boundaries; use [docs/verification.md](docs/verification.md) for commands, performance thresholds, and profiling response.
 
 - Use `npm run test:e2e` for the fast Chromium smoke suite; use `npm run test:e2e:all` or a named Playwright project only when cross-browser coverage is relevant.
 - Keep browser tests in `tests/` black-box: seed fixture data with `page.addInitScript` and assert visible roles, labels, text, downloads, and uploads instead of component internals, CSS classes, or snapshots.

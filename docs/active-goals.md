@@ -66,4 +66,4 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 ### Deferred
 
 - CI; local verification in [docs/verification.md](verification.md) remains the current source of truth until contributor count, release cadence, or branch-protection needs justify GitHub Actions.
-- Firefox-specific dense-sheet scroll optimization; the representative profile did not implicate application layout work, so repeatable investigation is deferred to `p1-026` after Playwright E2E and any grid-model replacement to `p1-027`.
+- Firefox-specific dense-sheet scroll optimization; the representative profile did not implicate application layout work. Use the repeatable profiling workflow in [docs/verification.md](verification.md) for regressions; `p1-027` owns the future grid-model replacement.

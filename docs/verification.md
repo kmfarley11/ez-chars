@@ -2,6 +2,14 @@
 
 Use these commands to verify changes before handing work back.
 
+## Related Decisions And Checklists
+
+- [Testing strategy decision](decisions/2026-07-17-testing-strategy.md) defines the Vitest and Playwright testing boundaries.
+- [Theme visual checklist](theme-visual-checklist.md) covers manual UI and theme review before deployment.
+- [Platform-native UI primitives decision](decisions/2026-07-17-prefer-platform-native-ui-primitives.md) records the current measured-grid constraint; [p1-027 in the backlog](backlog.md#replace-custom-grid-auto-measurement-with-native-css-container-queries) owns its future replacement.
+
+This document is the canonical operational guide for verification commands, performance thresholds, and profiling response. Keep decision rationale in the linked records rather than duplicating it here.
+
 ## Main Gates
 
 Run the full set before considering behavior, schema, storage, import/export, or release-sensitive changes complete:

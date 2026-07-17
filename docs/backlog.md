@@ -170,7 +170,7 @@ Suggested implementation slices:
 2. Review and fix dialog accessibility and keyboard behavior.
 3. Review and fix sheet-section readability and interaction on mobile.
 4. Update the UI checklist to reflect any new review expectations.
-5. Re-check mobile sheet interaction after any sheet-performance follow-up lands, but keep performance diagnosis and fixes in `p1-025`.
+5. Re-check mobile sheet interaction after any sheet-performance follow-up lands; use the profiling guidance in [docs/verification.md](verification.md) for performance diagnosis and keep structural grid replacement in `p1-027`.
 
 Definition of done:
 
@@ -250,7 +250,7 @@ Scope:
 - do not reorganize unrelated stores, fixtures, or schema folders; that belongs to `p1-050`
 - preserve current behavior unless a slice explicitly supports an active feature item
 - build on the completed consolidated field/card API instead of preserving route-local adjacent field editor composition
-- coordinate with `p1-025` if profiling points at route/module update cost rather than paint-only scroll cost
+- use the profiling guidance in [docs/verification.md](verification.md) if performance evidence points at route/module update cost rather than paint-only scroll cost
 
 Suggested implementation slices:
 

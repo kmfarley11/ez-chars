@@ -32,13 +32,13 @@ For newer features such as CSS Anchor Positioning, retain a visually usable non-
 
 ## UI Pattern Inventory
 
-| Pattern                   | Current location                                                             | Current approach                                                             | Decision / follow-up                                                                                                                    |
-| ------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Modal overlays            | `DialogButton.svelte`, `FieldAnnotationControl.svelte`, `GridContent.svelte` | Native `<dialog>` with Svelte state for lazy rendering and focus restoration | Retain; `<dialog>` already provides modal focus and Escape behavior.                                                                    |
-| Dropdown menus            | `MenuButton.svelte`                                                          | `$state`, conditional rendering, and `focusout` click-away logic             | Replace with an auto popover and scoped anchor positioning in this change.                                                              |
-| Collapsible sheet regions | `GridContainer.svelte`, 5e sheet route                                       | Svelte state plus conditional mounting                                       | Retain; unmounting dense collapsed content is a deliberate mobile performance behavior that `<details>` would not necessarily preserve. |
-| Auto-sizing grids         | `GridContainerAuto.svelte`                                                   | `ResizeObserver`, DOM measurement, and animation-frame scheduling            | Retain; a prior CSS auto-fit attempt regressed the measured layout. Profile under `p1-025` before changing.                             |
-| Tooltips                  | No dedicated tooltip component                                               | Native `title` attributes and label text where needed                        | Do not introduce a bespoke tooltip system without a specific accessibility and interaction need.                                        |
+| Pattern                   | Current location                                                             | Current approach                                                             | Decision / follow-up                                                                                                                       |
+| ------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Modal overlays            | `DialogButton.svelte`, `FieldAnnotationControl.svelte`, `GridContent.svelte` | Native `<dialog>` with Svelte state for lazy rendering and focus restoration | Retain; `<dialog>` already provides modal focus and Escape behavior.                                                                       |
+| Dropdown menus            | `MenuButton.svelte`                                                          | `$state`, conditional rendering, and `focusout` click-away logic             | Replace with an auto popover and scoped anchor positioning in this change.                                                                 |
+| Collapsible sheet regions | `GridContainer.svelte`, 5e sheet route                                       | Svelte state plus conditional mounting                                       | Retain; unmounting dense collapsed content is a deliberate mobile performance behavior that `<details>` would not necessarily preserve.    |
+| Auto-sizing grids         | `GridContainerAuto.svelte`                                                   | `ResizeObserver`, DOM measurement, and animation-frame scheduling            | Retain; a prior CSS auto-fit attempt regressed the measured layout. Use the profiling workflow before changing; `p1-027` owns replacement. |
+| Tooltips                  | No dedicated tooltip component                                               | Native `title` attributes and label text where needed                        | Do not introduce a bespoke tooltip system without a specific accessibility and interaction need.                                           |
 
 ## Consequences
 
@@ -50,4 +50,4 @@ For newer features such as CSS Anchor Positioning, retain a visually usable non-
 
 ### 2026-07-17 — Initial application
 
-`MenuButton.svelte` is the first selected replacement candidate. `p1-025` retains ownership of scroll and measurement performance work.
+`MenuButton.svelte` is the first selected replacement candidate. The completed `p1-025` diagnostic informed the current approach; `p1-027` owns the future grid-model replacement, with profiling guidance in [docs/verification.md](../verification.md).
