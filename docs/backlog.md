@@ -30,7 +30,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: tackle `p1-025`, then `p1-015`, then `p1-045`.
+Next recommended target: tackle `p1-015`, then `p1-045`, then `p1-026` after Playwright E2E is available.
 
 ### Refine backlog and agent workflow after spec-workflow decision
 
@@ -251,69 +251,65 @@ Refinement outputs:
   - Screen reader navigation reads all action buttons logically.
   - Touch interaction feels fluid and behaves correctly on phone screens.
 
-### Follow up on residual 5e sheet scroll performance
+### Establish continuous UI performance regression checking
 
 ID:
 
-- `p1-025`
+- `p1-026`
 
 Size:
 
-- medium-to-large; diagnose first, then implement narrowly
+- medium; explore after Playwright E2E lands
 
 Scope:
 
-- follow up on the remaining fast-scroll jank in the expanded 5e sheet after the focused P0 performance pass
-- prioritize the dense Abilities & Proficiencies and Spells regions where manual scrolling still shows the most visible stutter
-- preserve the measured layout quality that looked better than the attempted CSS auto-fit replacement
-- keep this separate from the field-editing UX work in `p1-030`, the field/card API consolidation in `p1-035`, the field-binding abstraction in `p1-040`, and the route projection extraction in `p1-045`
-- prefer tackling this after `p1-035` lands, unless `p1-035` itself causes a visible performance regression; that keeps profiling focused on the field/card renderer shape the app intends to keep
-- use findings from `p1-022` and `p1-024` if they are available, but keep this ticket focused on measured dense-sheet scroll performance rather than broad Svelte or platform cleanup
-
-Migrated findings from `p0-040`:
-
-- Headless Chrome traces showed little meaningful layout/style recalculation during scripted fast scroll; the dominant trace shape was raster/draw/compositing work
-- Lazy-rendering edit/help dialogs reduced initial sheet DOM from roughly 1,570 nodes and 75 closed dialogs to roughly 1,125-1,138 nodes and one app-level dialog
-- Simplifying themed card shadows and removing scroll-induced hover transitions improved the issue directionally, and Help/Edit controls no longer flash during quick scroll
-- A broad CSS auto-fit replacement for `GridContainerAuto` was tried and reverted because it worsened spell/proficiency and long-value movement layouts without a meaningful measured performance win
-- Removing the broad subtree `MutationObserver` from `GridContainerAuto` made the code simpler and helped slightly, but the residual jank remains visible enough to deserve a later targeted pass
-- The `p1-024` scoped MenuButton Popover/Anchor Positioning refactor added no custom measurement or observer work, so it should not affect this investigation
-- **Firefox-specific jank (2026-07-17)**: Scroll jank is currently only really noticeable in Firefox; scrolling on Chrome and Safari remains smooth, suggesting investigations should focus on Firefox-specific layout/compositing pipelines or scroll behavior differences.
-
-Suggested implementation slices:
-
-1. Re-profile in a headed browser with visual paint/debug tooling and scripted scroll traces, focused on dense Abilities & Proficiencies and Spells surfaces. If `p1-035` has landed, use the consolidated field/card renderer as the baseline.
-2. Prototype a narrow `GridContainerAuto` measurement change only for the specific dense surfaces that profiling identifies, and keep visual parity as a requirement.
-3. Evaluate whether targeted lazy mounting, section-level deferral, or reduced always-rendered dense content would improve scroll smoothness without hiding expected MVP sheet data.
-4. If profiling points at route/module update cost instead of paint, coordinate with `p1-045` rather than duplicating projection or patch extraction work here.
-5. Re-run desktop and phone-sized manual scroll checks plus the relevant local verification from [docs/verification.md](verification.md).
-
-Definition of done:
-
-- fast scrolling the dense 5e sheet regions is visibly smoother on desktop and phone-sized viewports
-- profiling shows a concrete improvement rather than only a code-shape cleanup
-- visual layout remains at least as good as the measured layout restored after the reverted CSS auto-fit attempt
-- any broader refactor discovered during the pass is linked to `p1-045` or `p1-050` instead of folded into this item
-
-Svelte 5 audit finding (2026-07-16):
-
-- `GridContainerAuto` has the only audited `$effect`; it schedules its DOM measurement after paint and has no detected state-write feedback loop. Its `ResizeObserver` plus `scrollWidth` measurement remains a performance-profiling concern, not a Svelte reactivity correctness fix; measure it in a headed-browser pass before changing it.
+- configure Playwright E2E tests to assert that no `ResizeObserver loop limit exceeded` warnings or console errors are printed during test flows
+- explore tracing scroll performance metrics (CPU layout/paint times) in local headless test runs
+- add standard profiling steps in `docs/verification.md` for manual frame-rate and layout-flash tracking
 
 Refinement outputs:
 
-- **Purpose:** Resolve residual scroll stutter (especially visible in Firefox) in the dense Ability/Spells lists of the character sheet, enhancing rendering performance on lower-powered devices.
+- **Purpose:** Automatically detect scroll-jank and layout-loop regressions during UI updates by introducing performance assertions inside our E2E testing gates.
 - **Included behavior:**
-  - Investigate and profile layout/render times specifically on Firefox.
-  - Optimize the layout triggers or schedule timing in `GridContainerAuto.svelte`.
-  - Explore lazy-mounting options or hiding off-screen components inside collapsed cards to decrease active DOM nodes.
+  - Track and assert on browser console warnings/errors related to ResizeObservers and layout performance in Playwright E2E tests.
+  - Document manual profiling steps (Paint Flashing, Layer borders) under `docs/verification.md`.
 - **Excluded behavior:**
-  - Rewriting general sheet CSS rules or styling tokens.
-  - Reverting from Svelte 5 runes.
-- **Ambiguities:**
-  - _Browser-specific CSS optimization / Firefox hacks_: Do we allow hacky rendering or scrolling directives specifically for Firefox? (Avoid them if possible. They are only acceptable if they are strictly scoped inside a component's `<style>` tag, accompanied by clear, concise comments explaining _why_ they exist, and validated to keep Chrome/Safari visual quality. If the root Firefox bug is slated to be resolved by upcoming engine updates rendering it Overtaken by Events (OBEd), defer any hacky optimization work and keep this ticket at the bottom of the active queue).
+  - Integrating heavyweight automated lighthouse gating or cloud device grids.
+- **Ambiguities:** None.
 - **Success:**
-  - Visibly smooth scrolling on Firefox desktop and mobile viewports.
-  - Profiling traces confirm decreased layout/paint cycle times.
+  - Automated E2E runs report console errors if layout loops are triggered.
+  - Clear manual verification performance guidelines are available.
+
+### Replace custom grid auto-measurement with native CSS Container Queries
+
+ID:
+
+- `p1-027`
+
+Size:
+
+- large; research spike after Svelte route extraction settles
+
+Scope:
+
+- replace javascript-driven `GridContainerAuto.svelte` measurements with native CSS Grid container query selectors (`@container`)
+- configure card components as container contexts (`container-type: inline-size`)
+- preserve the visual layout rules for intermediate split-screen widths
+- delete `GridContainerAuto.svelte` and its associated ResizeObservers entirely
+
+Refinement outputs:
+
+- **Purpose:** Eliminate JS ResizeObserver rendering overhead entirely by utilizing modern native CSS Container Queries to handle layout column adjustments based on card width.
+- **Included behavior:**
+  - Refactor layout elements to declare inline-size container contexts.
+  - Implement CSS `@container` rules on child grid configurations to toggle column layouts natively.
+  - Remove all ResizeObservers and the custom measurement Svelte component.
+- **Excluded behavior:**
+  - Modifying visual design tokens or card margins.
+- **Ambiguities:** None.
+- **Success:**
+  - `GridContainerAuto.svelte` is deleted.
+  - The character sheet resizes fluidly with zero Javascript-driven layout recalculations.
 
 ### Extract 5e sheet projection and patch logic from the route
 
@@ -466,6 +462,7 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 - completed the [src/lib/](../src/lib/) grid cleanup backlog
 - completed `p0-010`: the 5e sheet now exposes the major MVP runtime and organizational sections, including seeded runtime action data, with check/lint/build passing
 - completed the focused `p0-040` scroll-performance pass: reduced hidden dialog DOM, simplified hover/paint costs, removed broad `GridContainerAuto` mutation observation, and moved residual jank follow-up to `p1-025`
+- completed `p1-025` diagnostic: a headed Firefox recording showed negligible synchronous reflow and scroll-handler time, so the cached-width/ResizeObserver trial was reverted; repeatable performance checks are deferred to `p1-026` after Playwright E2E, while `p1-027` owns the future native grid-model replacement
 - completed `p0-020`: JSON backup/restore supports a versioned export envelope, file download, import file selection, import validation, replace-all import, and merge-new import that skips duplicate character IDs
 - completed home action button polish: shared button chrome now aligns Create, Import, Export, and import apply actions consistently
 - completed `p0-030`: local automated verification now includes Vitest tooling, schema/import-export/storage contract tests, a create/edit/reload smoke path, V8 coverage reporting, shared browser test scaffolding, and [docs/verification.md](verification.md)
