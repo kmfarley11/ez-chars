@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { FieldDraft } from '$lib/fieldDraftHelpers';
-	import FieldAnnotationControl from '$lib/FieldAnnotationControl.svelte';
-	import { toGridJsonPointer } from '$lib/gridContentHelpers';
+	import { FieldDraft } from '$utils/fieldDraftHelpers';
+	import FieldAnnotationControl from '$components/FieldAnnotationControl.svelte';
+	import { toGridJsonPointer } from '$utils/gridContentHelpers';
 	import type { JSONPatchDocument, JSONPointer } from 'immutable-json-patch';
 	import type {
 		GridAnnotationEditorConfig,
@@ -11,7 +11,7 @@
 		GridContentField,
 		GridContentPatch,
 		GridFieldPatchOperation
-	} from '$lib/gridContentTypes';
+	} from '$utils/gridContentTypes';
 
 	type PrimitiveFieldValue = string | number;
 

@@ -190,8 +190,7 @@ Otherwise, adjust your behavior based on the specific phrasing:
   - Where applicable (addressing ADR or openspec etc.)...
     - Verify if all proposed objectives and requirements were met.
     - Clarify what the next backlog item is after we finish review/archival.
-  - Evaluate whether the current changelist and the next item reflect the short vs. long term vision as maintained by our backlog docs. 
-
+  - Evaluate whether the current changelist and the next item reflect the short vs. long term vision as maintained by our backlog docs.
 
 ## Implementation Fallout & Reconciliation
 

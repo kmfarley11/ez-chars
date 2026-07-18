@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { charsArray, createNew5eCharacter, deleteCharacterById } from '../data.js';
+	import { charsArray, createNew5eCharacter, deleteCharacterById } from '$storage/store.js';
 
-	import BaseButton from '$lib/BaseButton.svelte';
-	import Table from '$lib/Table.svelte';
-	import MenuItemButton from '$lib/MenuItemButton.svelte';
-	import MenuButton from '$lib/MenuButton.svelte';
+	import BaseButton from '$components/BaseButton.svelte';
+	import Table from '$components/Table.svelte';
+	import MenuItemButton from '$components/MenuItemButton.svelte';
+	import MenuButton from '$components/MenuButton.svelte';
 	import {
 		applyCharacterImport,
 		createCharacterExportEnvelope,
@@ -13,7 +13,7 @@
 		type CharacterExportEnvelope,
 		type CharacterWithSystemData
 	} from '../schema/index.js';
-	import { FULL_2014_SRD_HREF, OFFICIAL_2014_CHAR_SHEET_HREF } from '$lib/urlHelpers.js';
+	import { FULL_2014_SRD_HREF, OFFICIAL_2014_CHAR_SHEET_HREF } from '$utils/urlHelpers.js';
 
 	type ImportValidationState = 'idle' | 'reading' | 'valid' | 'error' | 'applied';
 

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
-	import OpenCloseToggleButton from './OpenCloseToggleButton.svelte';
-	import type { ButtonIconVariant, ButtonShadingVariant, ButtonSize } from '$lib/buttonTypes';
+	import OpenCloseToggleButton from '$components/OpenCloseToggleButton.svelte';
+	import type { ButtonIconVariant, ButtonShadingVariant, ButtonSize } from '$utils/buttonTypes';
 
 	type MenuAlign = 'left' | 'right';
 

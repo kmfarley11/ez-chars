@@ -1,4 +1,4 @@
-import type { GridContentBindPath, GridContentPatch } from '$lib/gridContentTypes';
+import type { GridContentBindPath, GridContentPatch } from '$utils/gridContentTypes';
 import { spellLevelSchema } from '../../../schema';
 import {
 	annotationEditorPayloadSchema,

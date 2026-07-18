@@ -13,7 +13,7 @@ describe('local-first character workflow smoke', () => {
 	});
 
 	it('creates, edits, persists, and reloads a 5e character', async () => {
-		const data = await import('../data');
+		const data = await import('$storage/store.js');
 		const createdCharacter = data.createNew5eCharacter();
 		const editedName = 'Smoke Test Adventurer';
 
@@ -32,7 +32,7 @@ describe('local-first character workflow smoke', () => {
 		);
 
 		vi.resetModules();
-		const reloadedData = await import('../data');
+		const reloadedData = await import('$storage/store.js');
 		const reloadedCharacter = get(reloadedData.charsArray).find(
 			(character) => character.meta.id === createdCharacter.meta.id
 		);

@@ -3,7 +3,7 @@ import { immutableJSONPatch, type JSONPatchDocument } from 'immutable-json-patch
 import {
 	createRepresentativePatchCharacter,
 	type RepresentativePatchCharacter
-} from '../../test-utils/jsonPatchFixtures';
+} from '../../../test-utils/jsonPatchFixtures.js';
 
 describe('RFC 6902 JSON Patch adoption', () => {
 	it('applies standard JSON Patch documents without mutating the source character', () => {

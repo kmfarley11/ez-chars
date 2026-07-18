@@ -2,7 +2,7 @@ import type {
 	GridContentField,
 	GridContentFieldValue,
 	GridContentNestedFields
-} from '$lib/gridContentTypes';
+} from '$utils/gridContentTypes';
 
 // Shared field-shape guards used across grid read/write helpers.
 export const isGridFieldArray = (value: GridContentFieldValue): value is Array<GridContentField> =>

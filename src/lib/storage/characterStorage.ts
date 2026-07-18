@@ -4,7 +4,7 @@ import {
 	safeParseStoredCharacterDocuments,
 	serializeStoredCharacterDocuments,
 	type CharacterWithSystemData
-} from '../schema';
+} from '../../schema/index.js';
 
 const CHARS_STORAGE_KEY = 'ez-chars.characters.v1';
 const CHARS_STORAGE_ENVELOPE_VERSION = 1;

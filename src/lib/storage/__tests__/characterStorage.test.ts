@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { seedChars } from '../../fixtures/characters';
-import type { CharacterWithSystemData } from '../../schema';
-import { parse5e2014CharacterDocument } from '../../schema/system.5e2014';
-import { installMemoryLocalStorage } from '../../test-utils/browser';
+import { seedChars } from '$fixtures/characters.js';
+import type { CharacterWithSystemData } from '../../../schema/index.js';
+import { parse5e2014CharacterDocument } from '../../../schema/system.5e2014.js';
+import { installMemoryLocalStorage } from '../../../test-utils/browser.js';
 import {
 	clearStoredCharacters,
 	loadStoredCharacters,

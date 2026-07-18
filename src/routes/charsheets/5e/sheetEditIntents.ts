@@ -1,5 +1,5 @@
-import { applyGridPatches } from '$lib/characterGridHelpers';
-import type { GridContentBindPath } from '$lib/gridContentTypes';
+import { applyGridPatches } from '$utils/characterGridHelpers';
+import type { GridContentBindPath } from '$utils/gridContentTypes';
 import { z } from 'zod';
 import { createId as createProductionId } from '../../../schema/helpers';
 import {

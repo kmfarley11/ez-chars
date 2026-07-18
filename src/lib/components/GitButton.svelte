@@ -1,5 +1,5 @@
 <script>
-	import NavButton from './NavButton.svelte';
+	import NavButton from '$components/NavButton.svelte';
 
 	let { shadingVariant = 'light', target = '_blank' } = $props();
 	let fill = $derived(shadingVariant === 'dark' ? '#ffffff' : '#000000');

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, tick, type Snippet } from 'svelte';
-	import GridContainer from '$lib/GridContainer.svelte';
+	import GridContainer from '$components/GridContainer.svelte';
 
 	type GridFlow = 'col' | 'row' | 'auto';
 

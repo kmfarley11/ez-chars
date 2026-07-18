@@ -1,4 +1,4 @@
-import type { GridAnnotationEditorConfig, GridContentBindPath } from '$lib/gridContentTypes';
+import type { GridAnnotationEditorConfig, GridContentBindPath } from '$utils/gridContentTypes';
 import {
 	DND_BEYOND_BASIC_RULES_REF_5E_2014,
 	SRD_REF_5E_2014,

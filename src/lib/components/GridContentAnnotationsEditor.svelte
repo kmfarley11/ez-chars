@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { toReferenceHref } from '$lib/characterGridHelpers';
+	import { toReferenceHref } from '$utils/characterGridHelpers';
 	import { tick } from 'svelte';
 	import type {
 		GridAnnotationReferenceTemplate,
 		GridContentAnnotation,
 		GridContentReference
-	} from '$lib/gridContentTypes';
-	import { createId } from '../schema/helpers';
+	} from '$utils/gridContentTypes';
+	import { createId } from '../../schema/helpers';
 
 	// `onChange` receives a full replacement annotation array (immutable update contract).
 	interface Props {

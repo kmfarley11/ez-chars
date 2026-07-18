@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { GridContentPatch } from '$lib/gridContentTypes';
+import type { GridContentPatch } from '$utils/gridContentTypes';
 import {
 	classFeatureListPathPrefix,
 	currencyPathPrefix,

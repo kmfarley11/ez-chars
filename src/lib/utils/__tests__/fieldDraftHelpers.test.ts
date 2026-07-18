@@ -4,7 +4,7 @@ import { FieldDraft } from '../fieldDraftHelpers';
 import {
 	createRepresentativePatchCharacter,
 	type RepresentativePatchCharacter
-} from '../../test-utils/jsonPatchFixtures';
+} from '../../../test-utils/jsonPatchFixtures.js';
 
 describe('field draft helpers', () => {
 	it('starts a value draft without mutating the source value', () => {

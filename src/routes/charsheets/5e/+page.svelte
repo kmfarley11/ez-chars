@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import GridContent from '$lib/GridContent.svelte';
-	import GridContainer from '$lib/GridContainer.svelte';
-	import { applyGridPatches } from '$lib/characterGridHelpers';
-	import type { GridContentPatch } from '$lib/gridContentTypes';
+	import GridContent from '$components/GridContent.svelte';
+	import GridContainer from '$components/GridContainer.svelte';
+	import { applyGridPatches } from '$utils/characterGridHelpers';
+	import type { GridContentPatch } from '$utils/gridContentTypes';
 	import { immutableJSONPatch, type JSONPatchDocument } from 'immutable-json-patch';
 	import '../../../app.css';
-	import { charsArray, emptyChar } from '../../../data.js';
+	import { charsArray, emptyChar } from '$storage/store.js';
 	import { parse5e2014CharacterDocument, type CharacterDocument5e2014 } from '../../../schema';
 	import { decode5eGridPatches } from './sheetEditDecoder';
 	import { reduce5eSheetEditIntents, type SheetEditIssue } from './sheetEditIntents';

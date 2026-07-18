@@ -5,8 +5,8 @@ import type {
 	GridContentPatch,
 	GridContentPathSegment,
 	GridContentReference
-} from '$lib/gridContentTypes';
-import { isGridFieldArray, isGridNestedFields } from '$lib/gridFieldGuards';
+} from '$utils/gridContentTypes';
+import { isGridFieldArray, isGridNestedFields } from '$utils/gridFieldGuards';
 
 // Write-side helpers for GridContent editing and patch application.
 // Read/projection helpers live in `gridContentHelpers.ts`.

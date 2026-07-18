@@ -1,7 +1,7 @@
-import { displayOrPlaceholder } from '$lib/displayHelpers';
-import { capitalizeFirstLetter } from '$lib/stringFormatters';
-import { isGridFieldArray, isGridNestedFields } from '$lib/gridFieldGuards';
-import { annotationSchema } from '../schema/zod/core';
+import { displayOrPlaceholder } from '$utils/displayHelpers';
+import { capitalizeFirstLetter } from '$utils/stringFormatters';
+import { isGridFieldArray, isGridNestedFields } from '$utils/gridFieldGuards';
+import { annotationSchema } from '../../schema/zod/core.js';
 import type {
 	GridContentAnnotation,
 	GridContentAnnotationPatch,
@@ -15,7 +15,7 @@ import type {
 	GridFieldCapabilities,
 	GridFieldInteraction,
 	GridFieldPatchOperation
-} from '$lib/gridContentTypes';
+} from '$utils/gridContentTypes';
 import type { JSONPointer } from 'immutable-json-patch';
 
 // Read-side helpers used by GridContent rendering and patch projection.

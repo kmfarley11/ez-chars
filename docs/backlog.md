@@ -32,15 +32,11 @@ No active P0 items.
 
 Next recommended sequence for remaining P1 items:
 
-**Phase 1: Solidify the Data Foundation**
-
-1. `p1-050`: Refactor the repo structure so stores, fixtures, schema, and 5e feature code are less entangled
-
 **Phase 2: UX Polish & Playtest Prep**
 
-2. `p1-005`: Link runtime actions to source weapons, spells, and features (builds on the completed canonical action model from `p1-060`)
-3. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
-4. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
+1. `p1-005`: Link runtime actions to source weapons, spells, and features (builds on the completed canonical action model from `p1-060`)
+2. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
+3. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
 
 _(Note: `p1-010` for GitHub Actions remains deferred until CI needs justify it)._
 
@@ -242,65 +238,6 @@ Refinement outputs:
   - `GridContainerAuto.svelte` is deleted.
   - The character sheet resizes fluidly with zero Javascript-driven layout recalculations.
 
-### Refactor the repo structure so stores, fixtures, schema, and 5e feature code are less entangled
-
-ID:
-
-- `p1-050`
-
-Size:
-
-- oversized and risky; only tackle in slices or alongside an active feature item
-
-Scope:
-
-- reduce coupling between stores, fixtures, schema modules, and 5e page-specific logic
-- keep this item focused on module ownership and navigability, not as a substitute for the field-binding/patch abstraction work
-- build on the feature-local route projection and patch modules completed in `p1-045`; do not duplicate their responsibilities
-- improve navigability without changing behavior unnecessarily
-- preserve the completed typed sheet-edit dispatch and `dnd5e-2014.v2` hydration/serialization behavior; this item may relocate those modules after their behavior is established but must not redesign their schemas or migration policy
-
-Dependency notes:
-
-- This item is a cleanup/supporting refactor, not the primary dependency for inline field editing.
-- Prefer landing the first usable field-binding/patch abstraction before using this item to reorganize where those modules live.
-- `p1-045` is complete, so any broader reorganization should preserve its tested behavior and feature-local boundaries.
-
-Svelte 5 audit finding (2026-07-16):
-
-- `$charsArray` store subscriptions remain compatible with the audited Svelte 5 components and need no rune-class migration for correctness. `src/data.ts` still combines seed data, store wiring, and persistence, so separating those ownership concerns remains the appropriate scope for this item rather than a syntax-cleanup follow-up.
-
-Suggested implementation slices:
-
-1. Move seed/demo data into an explicit fixtures module.
-2. Move storage logic into its own module.
-3. Integrate the feature-local modules created by `p1-045` into the broader folder structure if their final location needs adjustment.
-4. Reorganize folders only after behavior-critical extractions are complete.
-5. Relocate normalized 5e data and edit-reducer modules only if their established ownership boundary benefits from the broader folder reorganization.
-
-Definition of done:
-
-- runtime stores, fixtures, schema, and feature code have clearer ownership boundaries
-- high-churn feature work no longer depends on a catch-all module for unrelated concerns
-- the resulting structure is easier to navigate for both humans and coding agents
-- behavior remains unchanged except where the refactor explicitly supports an active backlog item
-
-Refinement outputs:
-
-- **Purpose:** Clean up imports and package layouts by separating seed data, storage loading, and schema definitions from our runtime state variables. This ensures clean boundaries and speeds up codebase navigation for developers and agents.
-- **Included behavior:**
-  - Extract mock/seed data into `src/fixtures/`.
-  - Move Svelte components into a dedicated visual folder: `src/lib/components/`.
-  - Move localStorage and state persistence helpers into `src/lib/storage/`.
-  - Move pure JS helper utilities (formatters, URL parsers) into `src/lib/utils/`.
-  - Review and clean up circular imports without changing persisted schema semantics.
-- **Excluded behavior:**
-  - Modifying the core player/character JSON schema layout itself.
-- **Ambiguities:**
-  - _Folder Reorganization_: Reconciled. Separate non-visual storage/utilities from UI files by using a clean single-level subdirectory model (`src/lib/components/` for visual atoms, `src/lib/storage/` for loaders, `src/lib/utils/` for helpers, and `src/fixtures/` for mocks), preventing flat-folder clutter.
-- **Success:**
-  - Circular dependency checks report zero errors.
-  - All existing storage contract tests continue to pass.
 
 ## Ideation Sandbox (Unsorted Ideas)
 
@@ -342,3 +279,4 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 - completed `p1-045`: extracted 5e metadata, grouped sheet projections, and virtual-path compatibility patch translation into tested feature-local modules; the route now focuses on reactive selection, layout, and save dispatch, with Chromium smoke coverage preserving current behavior
 - completed `p1-055`: replaced virtual 5e patch-domain dispatch with a schema-backed decoder and exhaustive typed intent reducer, preserving atomic edits, stable identities, direct primitive RFC 6902 editing, and current browser behavior
 - completed `p1-060`: introduced `dnd5e-2014.v2` character hydration/serialization, migrated supported action aliases, tagged currency, titled roleplay fields, split proficiency provenance, and movement strings into one canonical model, rewired storage/import/export and 5e sheet code, and retained cross-system core flexibility with migration, round-trip, and browser smoke coverage
+- completed `p1-050`: refactored the repo structure, created dedicated directories for $components, $storage, and $utils, configured Vite aliases, extracted data files into $fixtures, and updated imports to improve codebase maintainability

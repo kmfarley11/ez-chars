@@ -1,10 +1,10 @@
 <!-- https://svelte.dev/playground/7b02f45e49744502bf5f03cb61375f9f?version=5.30.2 -->
 <script lang="ts">
 	/* eslint-disable no-unused-vars */
-	import DialogButton from './DialogButton.svelte';
-	import type { CharacterWithSystemData, Dnd5e2014SystemData } from '../schema';
-	import { capitalizeFirstLetter, anyToString } from './stringFormatters';
-	import TableHeader from './TableHeader.svelte';
+	import DialogButton from '$components/DialogButton.svelte';
+	import type { CharacterWithSystemData, Dnd5e2014SystemData } from '../../schema';
+	import { capitalizeFirstLetter, anyToString } from '$utils/stringFormatters';
+	import TableHeader from '$components/TableHeader.svelte';
 
 	interface Props {
 		tableData: CharacterWithSystemData[];

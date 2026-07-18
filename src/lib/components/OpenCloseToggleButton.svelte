@@ -1,6 +1,6 @@
 <script lang="ts">
-	import BaseButton from './BaseButton.svelte';
-	import type { ButtonIconVariant, ButtonShadingVariant, ButtonSize } from '$lib/buttonTypes';
+	import BaseButton from '$components/BaseButton.svelte';
+	import type { ButtonIconVariant, ButtonShadingVariant, ButtonSize } from '$utils/buttonTypes';
 
 	interface Props {
 		text?: string;

@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import AboutButton from '$lib/AboutButton.svelte';
-	import GitButton from '$lib/GitButton.svelte';
-	import HomeButton from '$lib/HomeButton.svelte';
-	import MenuButton from '$lib/MenuButton.svelte';
-	import MenuItemButton from '$lib/MenuItemButton.svelte';
-	import { setTheme, theme, THEME_OPTIONS } from '$lib/theme';
+	import AboutButton from '$components/AboutButton.svelte';
+	import GitButton from '$components/GitButton.svelte';
+	import HomeButton from '$components/HomeButton.svelte';
+	import MenuButton from '$components/MenuButton.svelte';
+	import MenuItemButton from '$components/MenuItemButton.svelte';
+	import { setTheme, theme, THEME_OPTIONS } from '$utils/theme';
 
 	const appVersion = __APP_VERSION__;
 	const gitShortSha = __GIT_SHA__;

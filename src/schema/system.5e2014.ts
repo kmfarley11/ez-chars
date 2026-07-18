@@ -1,6 +1,6 @@
 import type { Reference } from './core';
 import { nowIso, createId } from './helpers';
-import { FULL_2014_SRD_URL } from '$lib/urlHelpers';
+import { FULL_2014_SRD_URL } from '$utils/urlHelpers.js';
 import { z } from 'zod';
 import {
 	hydrate5e2014CharacterDocument,

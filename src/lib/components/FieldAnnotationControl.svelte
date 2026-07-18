@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import GridContentAnnotationsDisplay from '$lib/GridContentAnnotationsDisplay.svelte';
-	import GridContentAnnotationsEditor from '$lib/GridContentAnnotationsEditor.svelte';
+	import GridContentAnnotationsDisplay from '$components/GridContentAnnotationsDisplay.svelte';
+	import GridContentAnnotationsEditor from '$components/GridContentAnnotationsEditor.svelte';
 	import type {
 		GridAnnotationAffordance,
 		GridAnnotationEditorConfig,
 		GridContentAnnotation
-	} from '$lib/gridContentTypes';
+	} from '$utils/gridContentTypes';
 
 	interface Props {
 		fieldLabel: string;

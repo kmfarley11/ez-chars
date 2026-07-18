@@ -1,5 +1,5 @@
 import type { JSONPatchDocument, JSONPointer } from 'immutable-json-patch';
-import type { GridFieldPatchOperation } from '$lib/gridContentTypes';
+import type { GridFieldPatchOperation } from '$utils/gridContentTypes';
 
 // FieldDraft is immutable by convention: methods return a new draft instead of
 // mutating `this`. That is not a hard architectural requirement, but it makes

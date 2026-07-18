@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getValueAtGridPath } from '$lib/gridContentHelpers';
+import { getValueAtGridPath } from '$utils/gridContentHelpers';
 import { reduce5eSheetEditIntents, type SheetEditIntent } from '../sheetEditIntents';
 import { createSheetEditCharacter } from './sheetEditFixtures';
 

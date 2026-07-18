@@ -1,17 +1,17 @@
 import { writable, type Writable } from 'svelte/store';
 import { browser } from '$app/environment';
-import { seedChars } from './fixtures/characters';
+import { seedChars } from '$fixtures/characters.js';
 import {
 	clearStoredCharacters,
 	loadStoredCharacters,
 	saveStoredCharacters,
 	type StoredCharactersLoadIssue
-} from './lib/characterStorage';
+} from './characterStorage.js';
 import {
 	type CharacterWithSystemData,
 	type CharacterDocument5e2014,
 	create5e2014Character
-} from './schema';
+} from '../../schema/index.js';
 
 export const emptyChar: CharacterDocument5e2014 = create5e2014Character();
 

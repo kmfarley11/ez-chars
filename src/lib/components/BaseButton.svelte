@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
 	import { twMerge } from 'tailwind-merge';
-	import type { ButtonShadingVariant, ButtonSize } from '$lib/buttonTypes';
+	import type { ButtonShadingVariant, ButtonSize } from '$utils/buttonTypes';
 
 	interface Props {
 		children?: Snippet;

@@ -1,4 +1,4 @@
-import type { Annotation, Reference } from '../schema/core';
+import type { Annotation, Reference } from '../../schema/core.js';
 
 export type GridContentPathSegment = string | number;
 export type GridContentBindPath = Array<GridContentPathSegment>;

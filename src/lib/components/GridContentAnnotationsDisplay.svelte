@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { toReferenceHref } from '$lib/characterGridHelpers';
-	import { displayOrPlaceholder } from '$lib/displayHelpers';
-	import type { GridContentAnnotation, GridContentReference } from '$lib/gridContentTypes';
+	import { toReferenceHref } from '$utils/characterGridHelpers';
+	import { displayOrPlaceholder } from '$utils/displayHelpers';
+	import type { GridContentAnnotation, GridContentReference } from '$utils/gridContentTypes';
 
 	interface Props {
 		annotations: Array<GridContentAnnotation>;

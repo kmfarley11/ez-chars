@@ -2,8 +2,12 @@ import {
 	readGridAnnotationsAtPath,
 	resolveGridFieldDescriptors,
 	type GridFieldDescriptor
-} from '$lib/gridContentHelpers';
-import type { GridContentBindPath, GridContentData, GridContentField } from '$lib/gridContentTypes';
+} from '$utils/gridContentHelpers';
+import type {
+	GridContentBindPath,
+	GridContentData,
+	GridContentField
+} from '$utils/gridContentTypes';
 import type {
 	AbilityKey,
 	CharacterDocument5e2014,

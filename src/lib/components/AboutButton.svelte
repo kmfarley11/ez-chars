@@ -1,5 +1,5 @@
 <script lang="ts">
-	import DialogButton from './DialogButton.svelte';
+	import DialogButton from '$components/DialogButton.svelte';
 	let { shadingVariant = 'light' } = $props();
 
 	const appVersion = __APP_VERSION__;

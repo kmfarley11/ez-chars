@@ -55,6 +55,7 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 - versioned `dnd5e-2014.v2` character hydration and serialization: supported legacy local/imported data migrates into one canonical 5e model with explicit runtime actions, currency, roleplay, and source-aware language/tool proficiencies, while the shared core schema remains flexible for future systems
 - JSON import/export with a versioned backup envelope, file download, file validation, replace behavior, and merge-new behavior that skips duplicate character IDs
 - local automated verification with Vitest contract tests, coverage reporting, schema/import-export/storage/migration coverage, and current plus migrated-data browser smoke paths
+- refactored repo structure to separate $components, $storage, and $utils from the page-specific routing, significantly improving module ownership and file navigability
 
 ### Partial
 

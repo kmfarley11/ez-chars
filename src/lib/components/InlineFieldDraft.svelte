@@ -1,5 +1,5 @@
 <script lang="ts">
-	import GridPrimitiveField from '$lib/GridPrimitiveField.svelte';
+	import GridPrimitiveField from '$components/GridPrimitiveField.svelte';
 	import type { JSONPatchDocument, JSONPointer } from 'immutable-json-patch';
 	import type {
 		GridAnnotationAffordance,
@@ -8,7 +8,7 @@
 		GridContentField,
 		GridEditAffordance,
 		GridFieldPatchOperation
-	} from '$lib/gridContentTypes';
+	} from '$utils/gridContentTypes';
 
 	type InlineFieldDraftValue = string | number;
 

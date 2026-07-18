@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import GridContainer from '$lib/GridContainer.svelte';
-	import FieldAnnotationControl from '$lib/FieldAnnotationControl.svelte';
-	import GridContentAnnotationsDisplay from '$lib/GridContentAnnotationsDisplay.svelte';
-	import GridContentAnnotationsEditor from '$lib/GridContentAnnotationsEditor.svelte';
-	import GridContainerAuto from '$lib/GridContainerAuto.svelte';
-	import GridPrimitiveField from '$lib/GridPrimitiveField.svelte';
-	import MenuButton from '$lib/MenuButton.svelte';
-	import MenuItemButton from '$lib/MenuItemButton.svelte';
+	import GridContainer from '$components/GridContainer.svelte';
+	import FieldAnnotationControl from '$components/FieldAnnotationControl.svelte';
+	import GridContentAnnotationsDisplay from '$components/GridContentAnnotationsDisplay.svelte';
+	import GridContentAnnotationsEditor from '$components/GridContentAnnotationsEditor.svelte';
+	import GridContainerAuto from '$components/GridContainerAuto.svelte';
+	import GridPrimitiveField from '$components/GridPrimitiveField.svelte';
+	import MenuButton from '$components/MenuButton.svelte';
+	import MenuItemButton from '$components/MenuItemButton.svelte';
 	import {
 		type HelpAnnotationGroup,
 		collectHelpAnnotationGroups,
@@ -17,21 +17,21 @@
 		getLabeledDisplayParts,
 		isDirectEditablePrimitiveField,
 		normalizeData
-	} from '$lib/gridContentHelpers';
+	} from '$utils/gridContentHelpers';
 	import {
 		appendGridArrayItemAtPath,
 		removeGridArrayItemAtPath,
 		updateGridDataAtPath
-	} from '$lib/characterGridHelpers';
-	import { displayOrPlaceholder } from '$lib/displayHelpers';
-	import { isGridFieldArray } from '$lib/gridFieldGuards';
+	} from '$utils/characterGridHelpers';
+	import { displayOrPlaceholder } from '$utils/displayHelpers';
+	import { isGridFieldArray } from '$utils/gridFieldGuards';
 	import type {
 		GridAnnotationEditorConfig,
 		GridContentAnnotation,
 		GridContentData,
 		GridContentField,
 		GridContentPatch
-	} from '$lib/gridContentTypes';
+	} from '$utils/gridContentTypes';
 	import type { JSONPatchDocument } from 'immutable-json-patch';
 
 	interface Props {
