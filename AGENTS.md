@@ -65,6 +65,10 @@ Use existing shared test scaffolding from [src/test-utils/](src/test-utils/) for
 Use [src/test-utils/jsonPatchFixtures.ts](src/test-utils/jsonPatchFixtures.ts) for representative nested JSON Patch fixture data; it is purpose-built patch scaffolding, not canonical 5e schema seed data.
 Use [docs/verification.md](docs/verification.md) as the canonical local command guide, including when to run the full gate set, smaller subsets, and coverage reporting.
 
+### Dependency Change Smoke Gate
+
+When an agent changes `package.json`, `package-lock.json`, or another dependency or build-tool manifest, it MUST run `npm audit`, the full set in [Main Gates](docs/verification.md#main-gates), and the canonical Chromium smoke suite in [Browser E2E Commands](docs/verification.md#browser-e2e-commands). For changes to SvelteKit, Vite, Playwright, browser-facing dependencies, or build tooling, it MUST also run the applicable cross-browser and performance checks described in that same section. If a browser suite cannot run because its binary or host libraries are unavailable, report the exact environmental blocker and run every remaining executable gate; do not classify it as an application regression without test evidence.
+
 ## Browser E2E Boundaries
 
 The [testing strategy decision](docs/decisions/2026-07-17-testing-strategy.md) defines these durable boundaries; use [docs/verification.md](docs/verification.md) for commands, performance thresholds, and profiling response.

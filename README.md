@@ -78,6 +78,22 @@ npm run dev
 
 Run local verification as described in [docs/verification.md](docs/verification.md).
 
+### Browser-test prerequisites
+
+Playwright browser suites require local browser binaries. After `npm i`, install them from the repository root:
+
+```bash
+npx playwright install
+```
+
+On Linux, WebKit may also require system libraries. Install them with your normal sudo access, then rerun the browser suite:
+
+```bash
+npx playwright install-deps
+```
+
+If you only need a missing browser, install it by name, for example `npx playwright install webkit`.
+
 Preview the production build locally:
 
 ```bash
