@@ -29,6 +29,7 @@ For current product scope, in/out-of-scope decisions, and success criteria, use 
 ## Working Rules
 
 - **Agent Role Boundary:** generally, we split duties between agents: **Antigravity** (Architectural Ideation, Backlog Refinement, & Specification writing) and **Codex** (Code Implementation & Test Execution). If you are asked to perform a task outside your designated role (e.g., asking Antigravity to write extensive implementation code, or Codex to design a new API boundary), stop, flag this to the user, and ask if they want to proceed or delegate to the other agent.
+- **Path Portability:** All files committed to the repository (documentation, specifications, designs, proposals, task checklists) MUST use repo-relative paths (e.g., `docs/backlog.md` or relative links like `../../src/lib/`) rather than absolute file paths or machine-specific `file://` URIs. This guarantees documents are portable across developer environments, CI systems, and execution machines.
 - Prefer completing the current 5e 2014 MVP before expanding systems
 - Keep current MVP docs up to date when scope or backlog changes
 - Before adding bespoke UI controls or new component patterns, scan [src/lib/](src/lib/) for existing primitives and reuse or extend them where practical; if a local primitive is not reused, call out why
