@@ -8,8 +8,9 @@
 	import '../../../app.css';
 	import { charsArray, emptyChar } from '../../../data.js';
 	import { parse5e2014CharacterDocument, type CharacterDocument5e2014 } from '../../../schema';
+	import { decode5eGridPatches } from './sheetEditDecoder';
+	import { reduce5eSheetEditIntents, type SheetEditIssue } from './sheetEditIntents';
 	import { project5eSheet } from './sheetProjections';
-	import { normalize5eGridPatches } from './sheetPatches';
 
 	interface Props {
 		data: {
@@ -108,10 +109,26 @@
 		updateCurrent5eCharacter((entry) => applyCharacterJsonPatch(entry, patch));
 	};
 
+	const reportStructuredEditIssues = (issues: ReadonlyArray<SheetEditIssue>) => {
+		console.warn('Could not apply structured 5e sheet edit.', issues);
+	};
+
 	const handleGridPatchesSave = (patches: Array<GridContentPatch>) => {
-		updateCurrent5eCharacter((entry) =>
-			applyGridPatches(entry, normalize5eGridPatches(entry, patches))
-		);
+		const decoded = decode5eGridPatches(patches);
+		if (!decoded.ok) {
+			reportStructuredEditIssues(decoded.issues);
+			return;
+		}
+
+		updateCurrent5eCharacter((entry) => {
+			const candidate = applyGridPatches(entry, decoded.edits.canonicalPatches);
+			const result = reduce5eSheetEditIntents(candidate, decoded.edits.intents);
+			if (!result.ok) {
+				reportStructuredEditIssues(result.issues);
+				return entry;
+			}
+			return result.character;
+		});
 	};
 </script>
 

@@ -51,3 +51,9 @@ The registry location, registration mechanism, route shape, rendering model, and
 The extraction produced three feature-local seams: static 5e presentation metadata, pure grouped sheet projections, and compatibility-patch translation for virtual editor paths. The route retains reactive character selection, page layout, validation, and save dispatch. Generic grid path, annotation, descriptor, and RFC 6902 application helpers remain in `src/lib/` rather than being duplicated in the feature modules.
 
 These seams are directly testable and useful evidence for a future adapter contract, but their current aggregate projection result, virtual paths, and patch-normalization signature remain 5e page-composition details. They must not be promoted unchanged into a registry API without comparison against another system. Broader module ownership work remains under `p1-050`.
+
+### 2026-07-18: `p1-055` typed edit boundary
+
+The compatibility-patch translation seam is now split into a narrow schema-backed decoder and a feature-local typed intent reducer. The decoder alone classifies current generic grid paths and unknown values; the reducer exhaustively applies semantic 5e edits and returns one validated next character or explicit issues. Direct primitive RFC 6902 editing remains route-owned.
+
+The decoder also returns unchanged canonical card patches that do not require 5e semantic translation. This is a thin compatibility responsibility until the generic grid API has a proven system-neutral hook for compound edits. The typed union and reducer remain 5e evidence rather than a registry contract, consistent with this decision.

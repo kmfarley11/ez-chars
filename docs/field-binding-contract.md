@@ -214,14 +214,14 @@ List item update with stable identity:
 
 ## Compatibility With Existing Grid Types
 
-The existing grid data already contains useful pieces:
+The existing grid data still contains useful compatibility pieces:
 
 - `bindPath` is the current value patch path.
 - `annotationBindPath` is the current annotation patch path.
 - `annotations` is the current annotation display data.
-- `GridContentPatch` is the current patch carrier with `{ path, value }`.
+- `GridContentPatch` is the generic card-wide editor carrier with `{ path, value }`.
 
-Later implementation can evolve these into a field-scoped binding object and JSON Patch payload without renaming everything at once. During migration, adapters may create the new contract from existing `GridContentField` data and convert simple `replace` operations back to `GridContentPatch`.
+Direct primitive fields use field-scoped bindings and emit RFC 6902 documents. Compound and card-wide editors still emit `GridContentPatch` values because the generic grid API does not yet expose system-neutral semantic operations.
 
 Slice 5 of `p1-040` split current grid patch projection into separate value and annotation collectors:
 
@@ -229,7 +229,7 @@ Slice 5 of `p1-040` split current grid patch projection into separate value and 
 - `collectAnnotationPatchesFromData` emits only annotation patches.
 - `collectPatchesFromData` remains as the legacy combined compatibility bridge for the current card-wide save path.
 
-This lets later field components consume value and annotation patch intent independently without changing current sheet save behavior yet.
+This lets field components consume value and annotation intent independently while preserving card-wide fallback editing.
 
 Slice 6 of `p1-040` added the field-scoped `FieldDraft` helper in [fieldDraftHelpers.ts](../src/lib/fieldDraftHelpers.ts):
 
@@ -247,10 +247,17 @@ Slice 7 of `p1-040` proved the contract on one live runtime sheet field:
 - The 5e page applies that document with `immutable-json-patch`, then validates the resulting character with the 5e schema before committing it through the existing local-first store path.
 - The field component does not know about LocalStorage, import/export, HTTP, auth, or future sync mechanics; those remain page/store responsibilities.
 
+`p1-055` replaced the 5e virtual-path normalization layer with a feature-local typed boundary:
+
+- `sheetEditDecoder.ts` is the only 5e module that classifies generic card paths or parses unknown editor values. It emits schema-backed semantic intents, explicit issues, and unchanged canonical compatibility patches.
+- `sheetEditIntents.ts` exhaustively reduces typed structured intents and validates one final candidate character. It preserves stable IDs and unrelated records and accepts an injectable ID factory for deterministic tests.
+- The 5e route applies canonical compatibility patches to an isolated candidate, reduces typed intents, and commits only a successful validated result. Direct primitive RFC 6902 application remains separate and unchanged.
+- The decoder/reducer vocabulary is feature-local evidence, not a shared multi-system mutation API.
+
 ## Non-Goals For These Contract Slices
 
 - Do not introduce a remote sync layer or HTTP-aware mutation model.
-- Do not replace all page-level patch normalization.
+- Do not force compound/card edits into primitive RFC 6902 operations when domain transformations are clearer as typed intents.
 - Do not remove the card-wide edit dialog.
 - Do not roll the proof surface out to every field until the remaining interaction slices are ready.
 
@@ -266,7 +273,7 @@ Before implementing later slices, confirm that the proposed API answers:
 - Is this binding a primitive field, a compound container, or an item within a compound container?
 - If this is an item binding, does it have a stable identity or only a current array position?
 - Which JSON Patch operation or operation sequence is emitted on save?
-- Can the mutation be adapted to current `GridContentPatch` handling during migration?
+- If the mutation comes from card-wide editing, which feature-local decoder intent owns its semantics?
 - What action commits a draft, and what action cancels it?
 - Where does validation happen?
 - Can the field preserve selection and copy behavior required by [field-interaction-model.md](field-interaction-model.md)?

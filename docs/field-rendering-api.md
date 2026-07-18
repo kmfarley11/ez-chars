@@ -238,7 +238,8 @@ Slice 5 implementation note:
 Slice 6 closure note:
 
 - `p1-035` is complete for the current migrated runtime/state field surfaces: the 5e route no longer renders standalone `InlineFieldDraft` blocks beside `GridContent`, and the compatibility `InlineFieldDraft` component now delegates to the shared primitive renderer.
-- `p1-045` subsequently extracted the remaining route-local projection builders, virtual-path merge helpers, and patch normalization logic into feature-local 5e modules without expanding the shared field/card API.
+- `p1-045` subsequently extracted the remaining route-local projection builders and virtual-path translation into feature-local 5e modules without expanding the shared field/card API.
+- `p1-055` replaced that translation monolith with a narrow schema-backed decoder and an exhaustive typed 5e intent reducer. Card-wide structured edits commit one validated next character, while direct primitive fields retain their existing RFC 6902 path.
 - Future field/card work should preserve the completed split: descriptor-driven `GridContent` data owns card composition, direct primitive affordances are shortcuts for frequent runtime edits, card-wide Edit remains the comprehensive value/structure fallback, and Notes remains the annotation surface.
 
 ## Guardrails
@@ -246,7 +247,7 @@ Slice 6 closure note:
 - Preserve the `p1-030` behavior: runtime/state fields stay fast to edit, reference/profile fields stay readable and selectable, and annotations stay explicit through Notes.
 - Preserve the `p1-040` boundary: field components emit patch intent; page/store code applies, validates, and persists.
 - Preserve the `p0-040`/`p1-025` performance lessons: do not increase always-mounted dialog/control DOM or add renderer patterns that visibly worsen fast scrolling.
-- Keep the completed 5e projections and compatibility patch translation feature-local. Their current signatures are evidence for a future multi-system contract, not a shared adapter API by themselves.
+- Keep the completed 5e projections, decoder, and typed intent reducer feature-local. Their current signatures are evidence for a future multi-system contract, not a shared adapter API by themselves.
 - Do reduce repeated page-level field plumbing where it directly supports the shared field/card API. `p1-035` defined the renderer-facing shape, and `p1-045` extracted the 5e-specific composition around it.
 - Do not introduce a second new field system. Evolve existing grid and draft primitives.
 - Do not expose more annotation component surfaces to the 5e route. Consolidate around a field/card Notes API, with display/editor components used internally.

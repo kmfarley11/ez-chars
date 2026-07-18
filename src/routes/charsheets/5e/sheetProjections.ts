@@ -770,7 +770,17 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 						value: spell.notes ?? '',
 						editOnly: true,
 						multiline: true
-					}
+					},
+					...(spell.spellId
+						? {
+								spellId: {
+									fieldName: 'Spell Id',
+									value: spell.spellId,
+									editOnly: true,
+									hidden: true
+								} satisfies GridContentField
+							}
+						: {})
 				}
 			}))
 	});

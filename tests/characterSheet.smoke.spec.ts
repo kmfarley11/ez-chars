@@ -6,10 +6,17 @@ const storageKey = 'ez-chars.characters.v1';
 
 test.beforeEach(async ({ page }) => {
 	installBrowserErrorGuard(page);
-	await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), {
-		key: storageKey,
-		value: e2eStoredCharacters
-	});
+	await page.addInitScript(
+		({ key, value }) => {
+			if (localStorage.getItem(key) === null) {
+				localStorage.setItem(key, JSON.stringify(value));
+			}
+		},
+		{
+			key: storageKey,
+			value: e2eStoredCharacters
+		}
+	);
 });
 
 test.afterEach(({ page }) => {
@@ -68,6 +75,36 @@ test('adds a D&D Beyond note annotation and exposes its reference link', async (
 
 	const reference = dialog.getByRole('link', { name: /dndbeyond-basic-rules-2014/ });
 	await expect(reference).toHaveAttribute('href', /dndbeyond\.com/);
+});
+
+test('adds a structured runtime action and preserves it after reload', async ({ page }) => {
+	await openSeededCharacter(page);
+
+	const actionsGroup = page
+		.getByRole('button', { name: 'Collapse Actions / Runtime Summary' })
+		.locator('../..');
+	await actionsGroup.getByRole('button', { name: 'Card actions' }).click();
+	await page.getByRole('menuitem', { name: 'Edit' }).click();
+
+	const dialog = page.getByRole('dialog').filter({ hasText: 'Runtime Actions' });
+	await dialog.getByRole('button', { name: 'Add Action' }).click();
+	await dialog.getByLabel('Runtime Actions Name').fill('Dash');
+	await dialog.getByLabel('Runtime Actions Timing').selectOption('action');
+	await dialog.getByLabel('Runtime Actions Category').selectOption('effect');
+	await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+
+	await expect(page.getByText(/Runtime Actions:\s*Dash/)).toBeVisible();
+	await expect
+		.poll(() =>
+			page.evaluate((key) => {
+				const raw = localStorage.getItem(key);
+				return raw ? JSON.parse(raw).characters[0].systemData.runtimeActions?.[0]?.name : undefined;
+			}, storageKey)
+		)
+		.toBe('Dash');
+
+	await page.reload();
+	await expect(page.getByText(/Runtime Actions:\s*Dash/)).toBeVisible();
 });
 
 test('exports and imports the seeded character backup', async ({ page }, testInfo) => {

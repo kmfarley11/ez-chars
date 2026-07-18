@@ -33,16 +33,17 @@ No active P0 items.
 Next recommended sequence for remaining P1 items:
 
 **Phase 1: Solidify the Data Foundation**
-1. `p1-055`: Replace virtual 5e compatibility patches with typed sheet edit intents (Active)
-2. `p1-060`: Normalize the 5e runtime model and migrate legacy persisted shapes (Active)
-3. `p1-050`: Refactor the repo structure so stores, fixtures, schema, and 5e feature code are less entangled
+
+1. `p1-060`: Normalize the 5e runtime model and migrate legacy persisted shapes (Active)
+2. `p1-050`: Refactor the repo structure so stores, fixtures, schema, and 5e feature code are less entangled
 
 **Phase 2: UX Polish & Playtest Prep**
-4. `p1-005`: Link runtime actions to source weapons, spells, and features (relies on the clean schema from `p1-060`)
-5. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
-6. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
 
-*(Note: `p1-010` for GitHub Actions remains deferred until CI needs justify it).*
+3. `p1-005`: Link runtime actions to source weapons, spells, and features (relies on the clean schema from `p1-060`)
+4. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
+5. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
+
+_(Note: `p1-010` for GitHub Actions remains deferred until CI needs justify it)._
 
 ### Refine backlog and agent workflow after spec-workflow decision
 
@@ -303,37 +304,6 @@ Refinement outputs:
   - Circular dependency checks report zero errors.
   - All existing storage contract tests continue to pass.
 
-### Replace virtual 5e compatibility patches with typed sheet edit intents
-
-ID:
-
-- `p1-055`
-
-Priority context:
-
-- next recommended target; complete before changing the canonical 5e data shape in `p1-060`
-
-Refinement outputs:
-
-- **Purpose:** Replace the guard-heavy `{ path, value: unknown }` compatibility boundary used by structured 5e card editing with explicit, typed edit intents so supported edits are easier to understand, validate, test, and evolve.
-- **Included behavior:**
-  - Define feature-local, discriminated 5e edit intents for every current virtual edit family: spells, runtime actions, languages, class features, inventory groups, currency, roleplay notes, scratchpad notes, and annotations.
-  - Parse each structured editor payload once at the feature boundary with schema-backed validation rather than repeating ad hoc property and enum guards throughout normalization.
-  - Apply intents through an exhaustive, immutable 5e reducer that preserves unrelated records, stable IDs, atomic multi-field edits, and existing deletion/default behavior.
-  - Rewire card-wide 5e editing to use the typed boundary and retire the virtual-path dispatch chain where it is no longer needed.
-  - Preserve direct primitive RFC 6902 edits and all current user-visible sheet behavior.
-- **Excluded behavior:**
-  - Changing the persisted character schema or storage envelope.
-  - Creating a universal multi-system adapter, reducer signature, or schema registry.
-  - Redesigning sheet layout or editing interactions.
-- **Ambiguities:**
-  - The implementation may return a validated next character or canonical RFC 6902 operations; the OpenSpec design must select the smaller boundary that preserves atomic validation and existing store ownership.
-- **Success:**
-  - Structured card edits no longer enter 5e domain logic as arbitrary virtual paths paired with `unknown` values.
-  - Every supported intent is exhaustively handled and schema-validated at one boundary.
-  - Compatibility tests and browser smoke tests demonstrate unchanged editing, annotation, persistence, and identity behavior.
-  - `sheetPatches.ts` is removed or reduced to a thin transitional adapter rather than remaining the owner of domain edit semantics.
-
 ### Normalize the 5e runtime model and migrate legacy persisted shapes
 
 ID:
@@ -406,3 +376,4 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 - completed `p1-022`: added Svelte 5 agent tooling and audited the current app, migrating legacy Svelte 4 structures to Svelte 5 runes (`$props()`, `$state()`, `$derived()`) and native event properties (e.g., `onclick` instead of `on:click`) to ensure compiler-clean build and lint checks
 - completed `p1-024`: drafted a new Architecture Decision Record (ADR) on modern platform primitives, audited custom UI overlays, and refactored `MenuButton.svelte` to use the native HTML Popover API and scoped CSS Anchor Positioning, eliminating custom JS focus/click-away event management
 - completed `p1-045`: extracted 5e metadata, grouped sheet projections, and virtual-path compatibility patch translation into tested feature-local modules; the route now focuses on reactive selection, layout, and save dispatch, with Chromium smoke coverage preserving current behavior
+- completed `p1-055`: replaced virtual 5e patch-domain dispatch with a schema-backed decoder and exhaustive typed intent reducer, preserving atomic edits, stable identities, direct primitive RFC 6902 editing, and current browser behavior
