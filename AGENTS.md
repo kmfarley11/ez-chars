@@ -91,7 +91,11 @@ This repository uses OpenSpec as the preferred workflow for all active, non-triv
 
 - **Durable Knowledge over Chat History**: Architectural decisions, specifications, and design rationale belong in version-controlled OpenSpec artifacts rather than ephemeral chat threads.
 - **Backlog is for Prioritization**: The `docs/backlog.md` file serves as a prioritized queue of candidate work, not as the active execution checklist for in-progress tasks.
-- **Backlog Refinement Workflow**: Before triaging new request ideas or moving them to active proposal workflows, refine backlog items using the structured refinement template (Purpose, Included/Excluded behavior, Ambiguities, Success) defined in [docs/backlog.md](docs/backlog.md).
+- **Backlog Refinement Workflow**: Before triaging new request ideas or moving them to active proposal workflows, refine backlog items using the structured refinement template (Purpose, Included/Excluded behavior, Ambiguities, Success) defined in [docs/backlog.md](docs/backlog.md). When an item is refined but not yet proposed, add it to the priority queue (`## P1`) and update the "Next recommended sequence" block to reflect its prioritized position.
+- **Workflow Skill Overrides**: When executing OpenSpec workflows (explore, propose, apply, archive), agents MUST follow these repository-specific rules over the generic skill instructions:
+  - **Explore**: If a feature idea is refined but no proposal is started, explicitly offer to capture the "Refined feature idea" into the `docs/backlog.md` priority queue.
+  - **Propose**: When generating `tasks.md`, always ensure the final section includes explicit tasks to prune the completed backlog item from `docs/backlog.md` and re-sequence the "Next recommended sequence" priority queue block.
+  - **Archive**: After performing the archive, reconcile the backlog. Check if the change corresponds to a prioritized backlog item in `docs/backlog.md`. If it does: remove the item from the priority queue, add a brief entry to `## Done Recently`, verify the completed change has been removed from the "Next recommended sequence" block and the remaining targets are properly shifted up, and update `docs/active-goals.md` if the change affects goals.
 - **Legacy Documentation Policy**: Existing repository documentation (e.g., `docs/field-*.md`, `docs/import-export-json.md`) remains authoritative until an OpenSpec change intentionally supersedes or reconciles it. Do not migrate legacy documentation solely to increase OpenSpec coverage.
 
 ## Change-Classification & ADR Triggers

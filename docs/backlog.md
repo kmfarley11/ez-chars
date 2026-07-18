@@ -30,7 +30,19 @@ No active P0 items.
 
 ## P1
 
-Next recommended targets: tackle `p1-055`, then `p1-060`. Keep `p1-027` as the next structural layout/performance follow-up.
+Next recommended sequence for remaining P1 items:
+
+**Phase 1: Solidify the Data Foundation**
+1. `p1-055`: Replace virtual 5e compatibility patches with typed sheet edit intents (Active)
+2. `p1-060`: Normalize the 5e runtime model and migrate legacy persisted shapes (Active)
+3. `p1-050`: Refactor the repo structure so stores, fixtures, schema, and 5e feature code are less entangled
+
+**Phase 2: UX Polish & Playtest Prep**
+4. `p1-005`: Link runtime actions to source weapons, spells, and features (relies on the clean schema from `p1-060`)
+5. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
+6. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
+
+*(Note: `p1-010` for GitHub Actions remains deferred until CI needs justify it).*
 
 ### Refine backlog and agent workflow after spec-workflow decision
 

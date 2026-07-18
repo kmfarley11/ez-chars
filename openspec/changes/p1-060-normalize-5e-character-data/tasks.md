@@ -40,7 +40,7 @@
 
 - [ ] 6.1 Reconcile `docs/import-export-json.md`, schema/field maintainer docs, the sheet architecture ADR, and long-term system-design notes with the implemented version and canonical ownership rules.
 - [ ] 6.2 Prune `p1-060` from `docs/backlog.md` and move it to `Done Recently` with a brief implementation and migration summary.
-- [ ] 6.3 Reconcile the `Next recommended target` header in `docs/backlog.md`, remove schema-semantic ambiguity from `p1-050`, and update `docs/active-goals.md` for the new current model.
+- [ ] 6.3 Re-sequence the `Next recommended sequence` block in `docs/backlog.md`, remove schema-semantic ambiguity from `p1-050`, and update `docs/active-goals.md` for the new current model.
 - [ ] 6.4 Run `npm run test`, `npm run check`, `npm run lint`, `npm run build`, and `npm run test:e2e`; use performance profiling only if evidence indicates a regression.
 - [ ] 6.5 Validate the final change with `openspec validate p1-060-normalize-5e-character-data --type change --strict`.
 

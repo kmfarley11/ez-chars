@@ -30,7 +30,7 @@
 
 - [ ] 5.1 Reconcile `docs/field-binding-contract.md`, `docs/field-rendering-api.md`, and the sheet adapter ADR with the final typed boundary and any remaining compatibility adapter.
 - [ ] 5.2 Prune `p1-055` from `docs/backlog.md` and move it to `Done Recently` with a brief implementation summary.
-- [ ] 5.3 Reconcile the `Next recommended target` header in `docs/backlog.md` and update `docs/active-goals.md` if the implementation changes its status or remaining work.
+- [ ] 5.3 Re-sequence the `Next recommended sequence` block in `docs/backlog.md` and update `docs/active-goals.md` if the implementation changes its status or remaining work.
 - [ ] 5.4 Run `npm run test`, `npm run check`, `npm run lint`, `npm run build`, and `npm run test:e2e`; use performance profiling only if evidence indicates a regression.
 - [ ] 5.5 Validate the final change with `openspec validate p1-055-typed-5e-sheet-edits --type change --strict`.
 
