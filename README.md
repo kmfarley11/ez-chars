@@ -33,20 +33,24 @@ Everything else is long-term vision, not the immediate build target. For roadmap
 
 The repository prefers a structured engineering workflow for human maintainers using agentic coder tooling. Prototyping, exploration, fallout, and reconciliation complement the OpenSpec active change lifecycle:
 
+- (optional) is self explanatory
+- (complex|mixed|simple) indicates which type of agentic coding model to use
+  - mixed indicates that the nature of the effort will vary the needs
+
 ```
 (optional) Prototype
         ↓
-(optional) Explore
+(optional, complex) Explore
         ↓
-(openspec) Proposal
+(openspec, complex) Proposal
         ↓
 Human Review / Approval
         ↓
-(openspec) Apply Changes
+(openspec, mixed) Apply Changes
         ↓
-Implementation Fallout
+(mixed) Implementation Fallout
         ↓
-Repository Reconciliation
+(mixed) Repository Reconciliation
         ↓
 Verify
         ↓

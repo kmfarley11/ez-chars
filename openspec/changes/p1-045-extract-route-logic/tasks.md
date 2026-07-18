@@ -1,40 +1,41 @@
-## 1. Extract 5e Sheet Constants
+## 1. Establish Feature-Local Boundaries
 
-- [ ] 1.1 Create `src/routes/charsheets/5e/sheetConstants.ts`
-- [ ] 1.2 Move static metadata objects (abilityMetadata, skillMetadata, spellSlotLevelMetadata, roleplayNoteMetadata, etc.) out of `+page.svelte`
-- [ ] 1.3 Move tag constants and keyword arrays (inventoryWeaponKeywords, inventoryArmorShieldKeywords, etc.) out of `+page.svelte`
-- [ ] 1.4 Create `docs/decisions/2026-07-17-sheet-architecture-adapter-vs-registry.md` documenting the sheet adapter architecture decisions and dynamic route registry roadmap
+- [ ] 1.1 Audit route-local path, annotation, and descriptor helpers against existing `src/lib/` utilities and identify which behavior is genuinely 5e-specific.
+- [ ] 1.2 Extract shared 5e sheet metadata while keeping single-owner constants with their projection or patch module.
+- [ ] 1.3 Extract virtual-path constants with the patch rules that own them rather than exposing them as a cross-system contract.
+- [ ] 1.4 Create `docs/decisions/2026-07-17-sheet-architecture-adapter-vs-registry.md` documenting feature-local modules now, the desired schema-registry plus dynamic-Svelte-rendering direction, and the deliberate deferral of registry mechanics and universal signatures until another system provides evidence.
 
 ## 2. Extract Data Projection Logic
 
-- [ ] 2.1 Create `src/routes/charsheets/5e/sheetProjections.ts`
-- [ ] 2.2 Move data projection helper functions (toSystemDataAnnotationPath, annotationsAtPath, withFieldAnnotations, createInventoryListField, etc.) out of `+page.svelte`
-- [ ] 2.3 Move high-level `GridContentData` projections (runtimeActionData, roleplayNoteData, metaPrimaryData, quickRefPrimaryData, etc.) out of `+page.svelte` and convert them into pure projection functions under the sheet adapter signature (e.g. `project5eCharacter`)
-- [ ] 2.4 Update imports in `+page.svelte` and replace local helper references with the new projection calls
+- [ ] 2.1 Create feature-local projection module(s) under `src/routes/charsheets/5e/` using cohesive current sheet surfaces as their boundaries.
+- [ ] 2.2 Reuse generic grid path, annotation, and descriptor utilities where their existing behavior matches; extract only 5e-specific annotation-path and presentation rules.
+- [ ] 2.3 Move overview, quick-reference, ability/proficiency/feature, runtime-action, spell, inventory, and organizational-note projections into focused functions without forcing them through one generic `GridContentData` return type.
+- [ ] 2.4 Rewire `+page.svelte` to derive its current card groups from the extracted projections while retaining Svelte state, selected-character lookup, layout, validation, and save dispatch.
 
-## 3. Extract JSON Patch Translation Logic
+## 3. Extract Compatibility Patch Translation
 
-- [ ] 3.1 Create `src/routes/charsheets/5e/sheetPatches.ts`
-- [ ] 3.2 Move virtual path path-matching functions (isSpellLevelListPath, isRuntimeActionListPath, etc.) out of `+page.svelte`
-- [ ] 3.3 Move patch merger and normalizer helpers (mergeSpellLevelPatch, mergeRuntimeActionListPatch, mergeInventoryPatches, etc.) out of `+page.svelte`
-- [ ] 3.4 Combine them into a single pure patch translator function `normalize5ePatches` matching the adapter contract, and update the save dispatcher in `+page.svelte` to use it
+- [ ] 3.1 Create a feature-local patch module containing virtual-path recognition, normalization, coalescing, default insertion, annotation conversion, and no-op removal.
+- [ ] 3.2 Preserve the existing `GridContentPatch[]` input and output contract, including array paths and `undefined` deletion semantics consumed by `applyGridPatches`.
+- [ ] 3.3 Add an injectable ID factory, defaulted to the production `createId`, for normalization paths that allocate annotations, actions, items, currency records, or notes.
+- [ ] 3.4 Rewire the card-wide save dispatcher to use the extracted normalizer without changing the separate RFC 6902 direct-field save path.
 
-## 4. Implement Unit Tests
+## 4. Implement Regression Coverage
 
-- [ ] 4.1 Create `src/routes/charsheets/5e/__tests__/sheetHelpers.test.ts`
-- [ ] 4.2 Write Vitest unit tests verifying that character projections correctly map nested document nodes to the flat `GridContentData` structures
-- [ ] 4.3 Write Vitest unit tests verifying that client-side patches containing virtual path tags are correctly translated and normalized to canonical JSON Patches
+- [ ] 4.1 Add nearby Vitest files for projection and patch modules, splitting tests by responsibility when that makes failures easier to diagnose.
+- [ ] 4.2 Test representative projections for every rendered sheet region, including annotation resolution, optional values, and legacy runtime-action fallback behavior.
+- [ ] 4.3 Test every virtual patch family, multi-patch currency and organizational-note coalescing, schema-backed defaults, annotation conversion, no-op removal, preservation of unrelated records, and deterministic injected IDs.
+- [ ] 4.4 Run the Chromium Playwright smoke suite to protect navigation, field save/reload, annotation editing, and sheet UI state through the refactor.
 
 ## 5. Backlog Updates & Reconciliation
 
-- [ ] 5.1 Run all check, lint, and test scripts (including `npm run test` and `npm run test:e2e`) to ensure zero behavioral regression
-- [ ] 5.2 Prune `p1-045` from `docs/backlog.md` and move it to `Done Recently` with a brief summary
-- [ ] 5.3 Reconcile the 'Next recommended target' header in `docs/backlog.md` to point to the next active priorities (e.g. `p1-027`, etc.)
-- [ ] 5.4 Add a low-priority backlog item (e.g. `p2-080`) to `docs/backlog.md` to track unified dynamic route sheet loading when more systems are implemented
-- [ ] 5.5 Validate the final change configuration using `openspec validate --changes`
+- [ ] 5.1 Run `npm run test`, `npm run check`, `npm run lint`, `npm run build`, and `npm run test:e2e`; use the performance workflow only if evidence indicates a regression.
+- [ ] 5.2 Prune `p1-045` from `docs/backlog.md` and move it to `Done Recently` with a brief implementation summary.
+- [ ] 5.3 Reconcile the `Next recommended target` header in `docs/backlog.md` and update `docs/active-goals.md` if implementation changes its status or remaining work.
+- [ ] 5.4 Reconcile the ADR and long-term system-design documentation with material implementation discoveries without inventing a registry API.
+- [ ] 5.5 Validate the final change with `openspec validate p1-045-extract-route-logic --type change --strict`.
 
 ## Executor Recommendation
 
-- **Reasoning Level:** Medium
+- **Reasoning Level:** High
 - **Model Complexity:** Complex
-- **Rationale:** While the refactoring consists mostly of moving code out of a bloated file into separate modules, the virtual path translation and patching logic contains intricate nested indexing and path checks. The executor must accurately re-wire these functions without changing Svelte runtime dynamics, requiring a reasoning model capable of handling large-scale file splits and importing contexts.
+- **Rationale:** The extraction crosses a large Svelte route and several behavior-sensitive projection and compatibility-patch branches. The executor must preserve Svelte reactivity, legacy patch semantics, identity behavior, and existing user flows while avoiding premature generic abstractions.

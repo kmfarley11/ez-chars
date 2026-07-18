@@ -12,6 +12,12 @@ This file preserves earlier broad design notes and cross-system observations. It
 - Cairn v2
 - other future candidates such as ATLA, Numenera, Daggerheart, Dragonbane
 
+## Long-Term Schema And Rendering Direction
+
+The desired long-term architecture pairs a system/schema registry with dynamic Svelte sheet rendering so additional TTRPG systems can reuse loading, editing, annotation, persistence, and layout infrastructure without duplicating entire character-sheet routes.
+
+This is an architectural intent, not a settled adapter API. The registry location, route shape, rendering mechanism, shared TypeScript signatures, and boundary between common and system-specific layout should remain open until at least one additional system supplies concrete requirements. As new schemas and sheet pages are introduced, their designs should identify reusable seams and document intentional deviations so independently implemented systems do not drift by default.
+
 ## Cross-System Observations
 
 ### Shared Needs

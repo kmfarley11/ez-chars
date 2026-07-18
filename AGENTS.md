@@ -136,6 +136,13 @@ To ensure predictable agent behavior, we enforce strict responsibility boundarie
 
 Agents MUST avoid bleeding implementation details into the Proposal or Specification, and MUST NOT introduce new behavioral requirements or scope changes in the Design or Tasks.
 
+### Artifact Quality & Writing Guidelines
+
+- **Focus on Observable Behavior:** Keep `proposal.md` and `specs/` readable and free of technical jargon. Do not list specific filenames, code imports, class properties, or store names in these files. Describe the system requirements in terms of what the user or developer observes and what behavior MUST be preserved.
+- **Clearly Delineate Scope Limits:** Explicitly define "Non-Goals" early in the proposal to establish strict boundaries and avoid feature creep during refactoring.
+- **Identify Testing Non-Determinism in Design:** If a design involves time, random generation, or UUID/ID allocation, the design MUST specify how these dependencies are injected or mocked so that unit tests remain fully deterministic.
+- **Resist Premature Abstraction (YAGNI):** Do not design generic system facades, registry interfaces, or universal adapter signatures when only a single TTRPG system is implemented. If the abstraction is user-requested, document the user's long-term architectural intent in the vision documents (e.g., `docs/vision/system-design-notes.md`) and design roadmap rather than freezing it into premature present-day code API contracts.
+
 ## Proposal Capabilities as Durable Vocabulary
 
 Capabilities defined in the Proposal and Specification represent **durable repository vocabulary**—stable behavioral concepts that the system exposes—rather than implementation features.

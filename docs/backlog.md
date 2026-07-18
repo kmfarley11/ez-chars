@@ -273,7 +273,7 @@ Definition of done:
 Svelte 5 audit finding (2026-07-16):
 
 - The Svelte 5 route is compiler-clean, but its current single-file shape still owns static metadata, projection builders, virtual path constants, and patch normalization in addition to layout orchestration. This is an ownership/readability concern for the planned extraction, not a reason to make an unrelated rune migration.
-- Storybook remains deferred and should not be a prerequisite for this browser-smoke coverage: browser flows validate application behavior, while Storybook can later provide isolated component and visual review.
+- Storybook remains active product scope but is not a prerequisite for this browser-smoke coverage: browser flows protect integrated application behavior, while Storybook provides complementary isolated component and visual review.
 
 Refinement outputs:
 

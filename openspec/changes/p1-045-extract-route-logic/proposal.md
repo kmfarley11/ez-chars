@@ -1,21 +1,19 @@
 ## Why
 
-The 5e character sheet route ([+page.svelte](../../src/routes/charsheets/5e/+page.svelte)) is currently bloated with static constants, data projections, and virtual JSON patch translation logic. Extracting these calculations into separate, pure modules improves codebase maintainability, allows isolated testing of sheet projections and patches, and establishes a clean sheet adapter pattern for future TTRPG systems.
+The 5e character sheet route currently interleaves page orchestration with extensive sheet-data projection and patch translation logic, making behavior-sensitive changes difficult to review and test. The shared field/card API is now stable enough to extract those responsibilities while preserving the current single-system MVP behavior.
 
 ## What Changes
 
-- Extract 5e constants (ability, skill, spell level metadata, tags, and keywords) into a local `sheetConstants.ts` file in the route folder.
-- Extract 5e data projection functions (mapping the character record to flat `GridContentData` card schemas) into a local `sheetProjections.ts` file.
-- Extract 5e virtual patch detection, normalization, and coalescing helpers into a local `sheetPatches.ts` file.
-- Redefine `+page.svelte` to focus solely on route orchestrations, state management, Svelte component composition, and event/save handlers.
-- Write an Architecture Decision Record (ADR) under `docs/decisions/` documenting the near-term local route folders vs. long-term unified dynamic registry.
-- Add comprehensive Vitest unit tests in `src/routes/charsheets/5e/__tests__/sheetHelpers.test.ts` to verify projection builders and patch mergers in isolation.
+- Separate 5e sheet metadata, data projections, and virtual patch translation from route orchestration.
+- Keep character selection, Svelte state, layout composition, validation, and save dispatch at the route boundary.
+- Preserve current rendering, editing, annotation, and persistence behavior through focused unit and browser regression coverage.
+- Record the near-term feature-local boundary and the non-binding long-term intent for schema-registry-driven, dynamically rendered system sheets without defining a universal adapter API prematurely.
 
 ## Capabilities
 
 ### New Capabilities
 
-- `sheet-adapter-refactoring`: Decouples the 5e sheet layout projections and virtual patch translation logic into stateless adapter modules, enabling isolated Vitest coverage.
+- `sheet-adapter-refactoring`: Preserves the observable 5e character-sheet experience while its projection and patch responsibilities are separated into independently testable feature modules.
 
 ### Modified Capabilities
 
@@ -23,9 +21,7 @@ None.
 
 ## Impact
 
-- `src/routes/charsheets/5e/+page.svelte`: Major reduction in size (bloat removed, delegate to helpers).
-- `src/routes/charsheets/5e/sheetConstants.ts`: New file housing static 5e sheet configuration parameters.
-- `src/routes/charsheets/5e/sheetProjections.ts`: New file containing pure functions for card-level data projections.
-- `src/routes/charsheets/5e/sheetPatches.ts`: New file containing pure functions for JSON Patch normalization and coalescing.
-- `src/routes/charsheets/5e/__tests__/sheetHelpers.test.ts`: New test file containing Vitest unit tests for the extracted helpers.
-- `docs/decisions/2026-07-17-sheet-architecture-adapter-vs-registry.md`: New ADR documenting the sheet layout adapter strategy and dynamic route roadmap.
+- The 5e sheet route will delegate feature-specific projection and compatibility-patch calculations to neighboring modules.
+- Focused Vitest coverage will protect projection and patch behavior, while the existing Playwright suite will protect representative user journeys.
+- No schema, persisted-data, storage, URL, or user-facing behavior changes are intended.
+- A lightweight architecture decision will document the current local boundary and future multi-system direction without fixing registry mechanics or cross-system signatures.

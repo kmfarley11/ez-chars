@@ -1,15 +1,25 @@
 ## ADDED Requirements
 
-### Requirement: Decoupled and unit-testable sheet adapter calculations
+### Requirement: Preserve the 5e sheet experience during internal decomposition
 
-The system MUST decouple the 5e sheet projections and virtual patch normalization rules into pure, stateless functions, ensuring they can be tested via Vitest in isolation without Svelte compilation or browser environments.
+The system MUST preserve the currently supported D&D 5e 2014 sheet rendering, editing, annotation, and persistence behavior while projection and patch responsibilities are reorganized internally.
 
-#### Scenario: Character projections return valid grid data structures
+#### Scenario: Existing character information remains available
 
-- **WHEN** the developer runs Vitest tests on the sheet adapter projections
-- **THEN** the system MUST return valid GridContentData projections for 5e characters
+- **WHEN** a user opens a supported 5e 2014 character after the refactor
+- **THEN** the sheet MUST continue to present the same supported overview, runtime, ability, proficiency, feature, spell, inventory, background, roleplay, and notes information derived from that character
 
-#### Scenario: Patches normalize correctly
+#### Scenario: Virtual collection edits preserve canonical character data
 
-- **WHEN** the developer runs Vitest tests on the sheet adapter patch normalizer
-- **THEN** the system MUST translate flat virtual grid patches back to canonical document patch operations successfully
+- **WHEN** a user edits a card backed by a virtual spell, action, proficiency, feature, inventory, currency, or organizational-note path
+- **THEN** the saved character MUST reflect the edit in its canonical schema-backed location while preserving unrelated records and existing identities
+
+#### Scenario: Field values and annotations continue to persist
+
+- **WHEN** a user saves a supported field value or annotation and later reloads the character
+- **THEN** the sheet MUST display the saved value or annotation through the existing local-first persistence behavior
+
+#### Scenario: Invalid character selection behavior remains unchanged
+
+- **WHEN** the 5e route receives a missing or unknown character identifier
+- **THEN** the route MUST continue to show its existing user-facing missing-character state without mutating stored characters
