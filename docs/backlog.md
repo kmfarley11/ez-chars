@@ -34,8 +34,9 @@ Next recommended sequence for remaining P1 items:
 
 **Phase 2: UX Polish & Playtest Prep**
 
-1. `p1-005`: Link runtime actions to source weapons, spells, and features (builds on the completed canonical action model from `p1-060`)
-2. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
+1. `p1-012`: Integrate Storybook for isolated component development and accessibility testing
+2. `p1-005`: Link runtime actions to source weapons, spells, and features (builds on the completed canonical action model from `p1-060`)
+3. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
 3. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
 
 _(Note: `p1-010` for GitHub Actions remains deferred until CI needs justify it)._
@@ -55,6 +56,30 @@ Outcome:
 Status:
 
 - **Complete.** Installed local `@fission-ai/openspec`, updated agent guidelines, repository README, decision records, and backlog instructions.
+
+### Integrate Storybook for isolated component development
+
+ID:
+
+- `p1-012`
+
+Refinement outputs:
+
+- **Purpose:** Provide an isolated local development environment for UI components. This allows human developers and AI agents to rapidly build, test, document, and audit visual primitives without booting the full character sheet or mocking complex 5e state.
+- **Included behavior:**
+  - Initialize Storybook using the official `@storybook/svelte-vite` framework.
+  - Configure Storybook to inherit the existing Vite setup (CSS imports, `$components` and `$utils` aliases).
+  - Configure stories to use standard TypeScript Component Story Format (CSF) `.stories.ts`.
+  - Install and configure `@storybook/addon-a11y` to run real-time accessibility audits (axe-core) on components.
+  - Write 2-3 baseline stories for core atoms (e.g., `BaseButton`, `Heading`) as proof of concept.
+- **Excluded behavior:**
+  - Writing stories for complex composite layouts or full pages (e.g., `GridContainer`, `+page.svelte`).
+  - Deploying Storybook to GitHub Pages or static hosting (keep it local-only for now).
+  - Setting up cloud-based visual regression testing (e.g., Chromatic).
+- **Ambiguities:** None.
+- **Success:**
+  - A developer can run `npm run storybook` to boot the local dashboard.
+  - `BaseButton` renders correctly, hot-reloads on edits, and displays a passing accessibility audit panel.
 
 ### Link runtime actions to source weapons, spells, and features
 
@@ -243,12 +268,7 @@ Refinement outputs:
 
 This content is a work in progress to dump rough thoughts, brainstorms, and refactor wishes before prioritizing or organizing them.
 
-- **[Priority 1] re-organize lib a bit better, consider a ui lib vs. utility lib**
-  - _Best Guess_: We want to group items under `src/lib/` logically—separating pure styling/UI primitives (like BaseButton, Heading, Table) from composite layout patterns (like GridContainer) and pure JS helper utilities (like theme, storage).
-  - _Critical Question_: Should this be done purely as directories under `src/lib/` (e.g. `src/lib/ui/` vs `src/lib/utils/`), or do we want to configure new path aliases in `svelte.config.js`/`vite.config.ts` (like `$ui/*`) to enforce boundaries?
-- **[Priority 2] integrate Storybook for isolated visual development and playtesting of Svelte 5 components**
-  - _Best Guess_: Storybook will host isolated stories for visual atoms (e.g. `BaseButton`, `Heading`) and composite cells (`GridPrimitiveField`, `MenuButton`), letting humans and agents test styles, reactivity, states, and accessibility interactively without loading the full 5e page context.
-  - _Critical Question_: What is the simplest Svelte 5 + Vite Storybook setup we can introduce without cluttering the package dependencies, and does it validate successfully inside the restricted container environment?
+
 - **[Priority 3] evaluate a Svelte-compatible form library such as TanStack Form or Felte after the first field-binding proof surface lands; prefer reuse for draft state, validation display, dirty tracking, and array editor ergonomics if it keeps local source smaller than custom form infrastructure**
   - _Best Guess_: Evaluate if an external library handles card-wide value validation, dirty checking, and array/nested list mutations more concisely and safely than our custom `FieldDraft` implementation.
   - _Critical Question_: Will introducing a third-party form helper conflict with our "platform-native first" preference or cause unnecessary bundle size increases, given we only have local-first state storage?
