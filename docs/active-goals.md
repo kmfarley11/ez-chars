@@ -52,8 +52,9 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 - field-level editing and annotation UX for surfaced runtime/state fields: high-frequency runtime values have persistent direct edit controls, reference/profile cards keep quieter menu-driven fallback editing, and Notes dialogs support annotation review/add/edit flows
 - consolidated field/card API for surfaced runtime/state proof surfaces: migrated runtime primitive fields render through descriptor-driven `GridContent` cards, inline affordances act as prioritized shortcuts, and card-wide Edit remains comprehensive for card values and structure
 - feature-local 5e sheet metadata, projection, schema-backed edit decoder, and exhaustive typed intent reducer; structured card edits commit atomically while the route retains reactive selection, layout, direct RFC 6902 editing, and persistence dispatch
+- versioned `dnd5e-2014.v2` character hydration and serialization: supported legacy local/imported data migrates into one canonical 5e model with explicit runtime actions, currency, roleplay, and source-aware language/tool proficiencies, while the shared core schema remains flexible for future systems
 - JSON import/export with a versioned backup envelope, file download, file validation, replace behavior, and merge-new behavior that skips duplicate character IDs
-- local automated verification with Vitest contract tests, coverage reporting, schema/import-export/storage coverage, and a thin create/edit/reload smoke path
+- local automated verification with Vitest contract tests, coverage reporting, schema/import-export/storage/migration coverage, and current plus migrated-data browser smoke paths
 
 ### Partial
 

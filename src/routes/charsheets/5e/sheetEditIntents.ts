@@ -10,22 +10,20 @@ import {
 	type CharacterDocument5e2014,
 	type FeatureRef,
 	type Item,
+	type NamedProficiency,
 	type NoteBlock,
+	type ProficiencySourceKind,
 	type RuntimeAction,
 	type SpellRef
 } from '../../../schema';
 import {
-	currencyTagForDenomination,
-	getCurrencyDenominationForItem,
 	getInventoryGroupForItem,
 	inventoryCurrencyMetadata,
-	isCurrencyInventoryItem,
-	roleplayNoteMetadata,
+	roleplayFieldMetadata,
 	withInventoryGroupTags,
 	type CurrencyDenomination,
 	type InventoryGroup,
-	type ProficiencyLanguageSource,
-	type RoleplayNoteKey,
+	type RoleplayFieldKey,
 	type SpellListLevel
 } from './sheetConstants';
 
@@ -57,11 +55,11 @@ export const runtimeActionEditorPayloadSchema = z.array(
 		.strict()
 );
 
-export const proficiencyLanguageEditorPayloadSchema = z.array(
+export const proficiencyEditorPayloadSchema = z.array(
 	z
 		.object({
 			name: z.string(),
-			source: z.enum(['race', 'background'])
+			source: z.enum(['ancestry', 'background', 'class', 'feature', 'other'])
 		})
 		.strict()
 );
@@ -91,7 +89,7 @@ export const inventoryEditorPayloadSchema = z.array(
 );
 
 export const currencyAmountEditorPayloadSchema = z.number().finite();
-export const roleplayNoteEditorPayloadSchema = z.string();
+export const roleplayFieldEditorPayloadSchema = z.string();
 
 export const scratchpadEditorPayloadSchema = z.array(
 	z
@@ -108,9 +106,7 @@ export const annotationEditorPayloadSchema = z.array(annotationSchema);
 
 export type SpellEditorPayload = z.infer<typeof spellEditorPayloadSchema>;
 export type RuntimeActionEditorPayload = z.infer<typeof runtimeActionEditorPayloadSchema>;
-export type ProficiencyLanguageEditorPayload = z.infer<
-	typeof proficiencyLanguageEditorPayloadSchema
->;
+export type ProficiencyEditorPayload = z.infer<typeof proficiencyEditorPayloadSchema>;
 export type ClassFeatureEditorPayload = z.infer<typeof classFeatureEditorPayloadSchema>;
 export type InventoryEditorPayload = z.infer<typeof inventoryEditorPayloadSchema>;
 export type ScratchpadEditorPayload = z.infer<typeof scratchpadEditorPayloadSchema>;
@@ -118,7 +114,8 @@ export type ScratchpadEditorPayload = z.infer<typeof scratchpadEditorPayloadSche
 export type SheetEditIntent =
 	| { type: 'replace-spell-level'; level: SpellListLevel; spells: SpellEditorPayload }
 	| { type: 'replace-runtime-actions'; actions: RuntimeActionEditorPayload }
-	| { type: 'replace-proficiency-languages'; languages: ProficiencyLanguageEditorPayload }
+	| { type: 'replace-proficiency-languages'; languages: ProficiencyEditorPayload }
+	| { type: 'replace-proficiency-tools'; tools: ProficiencyEditorPayload }
 	| { type: 'replace-class-features'; features: ClassFeatureEditorPayload }
 	| { type: 'replace-inventory-group'; group: InventoryGroup; items: InventoryEditorPayload }
 	| {
@@ -127,7 +124,7 @@ export type SheetEditIntent =
 	  }
 	| {
 			type: 'replace-organizational-notes';
-			roleplayBodies: Partial<Record<RoleplayNoteKey, string>>;
+			roleplayBodies: Partial<Record<RoleplayFieldKey, string>>;
 			scratchpad?: ScratchpadEditorPayload;
 	  }
 	| {
@@ -161,13 +158,29 @@ const trimmedIdOrNew = (candidate: string | undefined, createId: () => string): 
 	return trimmed ? trimmed : createId();
 };
 
-const roleplayNoteTitleForKey = (key: RoleplayNoteKey): string =>
-	roleplayNoteMetadata.find((entry) => entry.key === key)?.title ?? key;
-
-const isRoleplayNoteTitle = (title: string | undefined): boolean =>
-	roleplayNoteMetadata.some((entry) => entry.title === title);
-
 const normalizedCurrencyAmount = (value: number): number => Math.max(0, Math.floor(value));
+
+const replaceNamedProficiencies = (
+	current: Array<NamedProficiency>,
+	next: ProficiencyEditorPayload
+): Array<NamedProficiency> => {
+	const available = [...current];
+	return next.flatMap((entry) => {
+		const name = entry.name.trim();
+		if (!name) return [];
+		const currentIndex = available.findIndex(
+			(candidate) => candidate.name === name && candidate.source?.kind === entry.source
+		);
+		const matching = currentIndex >= 0 ? available.splice(currentIndex, 1)[0] : undefined;
+		return [
+			{
+				...matching,
+				name,
+				source: { ...matching?.source, kind: entry.source as ProficiencySourceKind }
+			} satisfies NamedProficiency
+		];
+	});
+};
 
 const assertNever = (intent: never): never => {
 	throw new Error(`Unhandled 5e sheet edit intent: ${JSON.stringify(intent)}`);
@@ -218,8 +231,7 @@ export const reduce5eSheetEditIntents = (
 			}
 
 			case 'replace-runtime-actions': {
-				const currentActions =
-					candidate.systemData.runtimeActions ?? candidate.systemData.attacks ?? [];
+				const currentActions = candidate.systemData.runtimeActions;
 				const currentActionsById = new Map(currentActions.map((action) => [action.id, action]));
 				const nextActions = intent.actions.flatMap((entry) => {
 					const name = entry.name.trim();
@@ -238,44 +250,23 @@ export const reduce5eSheetEditIntents = (
 						} satisfies RuntimeAction
 					];
 				});
-				if (nextActions.length > 0) candidate.systemData.runtimeActions = nextActions;
-				else delete candidate.systemData.runtimeActions;
-				delete candidate.systemData.attacks;
+				candidate.systemData.runtimeActions = nextActions;
 				break;
 			}
 
 			case 'replace-proficiency-languages': {
-				const nextLanguages: Record<ProficiencyLanguageSource, Array<string>> = {
-					race: [],
-					background: []
-				};
-				for (const entry of intent.languages) {
-					const name = entry.name.trim();
-					if (name) nextLanguages[entry.source].push(name);
-				}
-				if (nextLanguages.race.length > 0 || candidate.systemData.race?.languages !== undefined) {
-					candidate.systemData.race = {
-						...(candidate.systemData.race ?? {
-							name: candidate.identity.ancestryLineage ?? 'Ancestry'
-						}),
-						languages: nextLanguages.race
-					};
-				}
-				if (
-					nextLanguages.background.length > 0 ||
-					candidate.systemData.background?.proficiencies?.languages !== undefined
-				) {
-					const currentBackground = candidate.systemData.background ?? {
-						name: candidate.identity.background ?? 'Background'
-					};
-					candidate.systemData.background = {
-						...currentBackground,
-						proficiencies: {
-							...currentBackground.proficiencies,
-							languages: nextLanguages.background
-						}
-					};
-				}
+				candidate.systemData.proficiencies.languages = replaceNamedProficiencies(
+					candidate.systemData.proficiencies.languages,
+					intent.languages
+				);
+				break;
+			}
+
+			case 'replace-proficiency-tools': {
+				candidate.systemData.proficiencies.tools = replaceNamedProficiencies(
+					candidate.systemData.proficiencies.tools,
+					intent.tools
+				);
 				break;
 			}
 
@@ -317,7 +308,7 @@ export const reduce5eSheetEditIntents = (
 			}
 
 			case 'replace-inventory-group': {
-				const currentInventory = candidate.inventory ?? [];
+				const currentInventory = candidate.inventory;
 				const currentItemsById = new Map(currentInventory.map((item) => [item.id, item]));
 				const nextItems = intent.items.flatMap((entry) => {
 					const name = entry.name.trim();
@@ -338,59 +329,37 @@ export const reduce5eSheetEditIntents = (
 						} satisfies Item
 					];
 				});
-				const currencyItems = currentInventory.filter(isCurrencyInventoryItem);
 				const stableGroups: Record<InventoryGroup, Array<Item>> = {
-					weapons: currentInventory.filter(
-						(item) => !isCurrencyInventoryItem(item) && getInventoryGroupForItem(item) === 'weapons'
-					),
+					weapons: currentInventory.filter((item) => getInventoryGroupForItem(item) === 'weapons'),
 					armorShields: currentInventory.filter(
-						(item) =>
-							!isCurrencyInventoryItem(item) && getInventoryGroupForItem(item) === 'armorShields'
+						(item) => getInventoryGroupForItem(item) === 'armorShields'
 					),
-					other: currentInventory.filter(
-						(item) => !isCurrencyInventoryItem(item) && getInventoryGroupForItem(item) === 'other'
-					)
+					other: currentInventory.filter((item) => getInventoryGroupForItem(item) === 'other')
 				};
 				candidate.inventory = [
 					...(intent.group === 'weapons' ? nextItems : stableGroups.weapons),
 					...(intent.group === 'armorShields' ? nextItems : stableGroups.armorShields),
-					...(intent.group === 'other' ? nextItems : stableGroups.other),
-					...currencyItems
+					...(intent.group === 'other' ? nextItems : stableGroups.other)
 				];
 				break;
 			}
 
 			case 'update-currency': {
-				const currentInventory = candidate.inventory ?? [];
-				const stableItems = currentInventory.filter((item) => !isCurrencyInventoryItem(item));
-				const currentCurrencyItems = new Map(
-					currentInventory.flatMap((item) => {
-						const denomination = getCurrencyDenominationForItem(item);
-						return denomination ? [[denomination, item] as const] : [];
-					})
-				);
-				const nextCurrencyItems = inventoryCurrencyMetadata.flatMap(({ key, label }) => {
-					const currentItem = currentCurrencyItems.get(key);
+				const nextCurrency = structuredClone(candidate.systemData.currency);
+				for (const { key } of inventoryCurrencyMetadata) {
+					const currentAmount = nextCurrency[key];
 					const amount = normalizedCurrencyAmount(
-						intent.amounts[key] ?? currentItem?.quantity ?? 0
+						intent.amounts[key] ?? currentAmount?.amount ?? 0
 					);
-					if (amount === 0) return [];
-					return [
-						{
-							...currentItem,
-							id: currentItem?.id ?? createId(),
-							name: label,
-							quantity: amount,
-							tags: [currencyTagForDenomination(key)]
-						} satisfies Item
-					];
-				});
-				candidate.inventory = [...stableItems, ...nextCurrencyItems];
+					if (amount === 0) delete nextCurrency[key];
+					else nextCurrency[key] = { ...currentAmount, amount };
+				}
+				candidate.systemData.currency = nextCurrency;
 				break;
 			}
 
 			case 'replace-organizational-notes': {
-				const currentNotes = candidate.notes ?? [];
+				const currentNotes = candidate.notes;
 				const currentNotesById = new Map(currentNotes.map((note) => [note.id, note]));
 				const scratchpadNotes = intent.scratchpad
 					? intent.scratchpad.flatMap((entry) => {
@@ -408,24 +377,17 @@ export const reduce5eSheetEditIntents = (
 								} satisfies NoteBlock
 							];
 						})
-					: currentNotes.filter((note) => !isRoleplayNoteTitle(note.title));
-				const roleplayNotes = roleplayNoteMetadata.flatMap(({ key, title }) => {
-					const currentNote = currentNotes.find((note) => note.title === title);
-					const body = intent.roleplayBodies[key] ?? currentNote?.body ?? '';
-					if (!body.trim()) return [];
-					return [
-						{
-							...currentNote,
-							id: currentNote?.id ?? createId(),
-							title: roleplayNoteTitleForKey(key),
-							body,
-							kind: currentNote?.kind ?? 'lore'
-						} satisfies NoteBlock
-					];
-				});
-				const nextNotes = [...scratchpadNotes, ...roleplayNotes];
-				if (nextNotes.length > 0) candidate.notes = nextNotes;
-				else delete candidate.notes;
+					: currentNotes;
+				const nextRoleplay = structuredClone(candidate.systemData.roleplay);
+				for (const { key } of roleplayFieldMetadata) {
+					const currentField = nextRoleplay[key];
+					const body = intent.roleplayBodies[key] ?? currentField?.body;
+					if (body === undefined) continue;
+					if (!body.trim()) delete nextRoleplay[key];
+					else nextRoleplay[key] = { ...currentField, body };
+				}
+				candidate.notes = scratchpadNotes;
+				candidate.systemData.roleplay = nextRoleplay;
 				break;
 			}
 

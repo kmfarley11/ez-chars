@@ -57,3 +57,9 @@ These seams are directly testable and useful evidence for a future adapter contr
 The compatibility-patch translation seam is now split into a narrow schema-backed decoder and a feature-local typed intent reducer. The decoder alone classifies current generic grid paths and unknown values; the reducer exhaustively applies semantic 5e edits and returns one validated next character or explicit issues. Direct primitive RFC 6902 editing remains route-owned.
 
 The decoder also returns unchanged canonical card patches that do not require 5e semantic translation. This is a thin compatibility responsibility until the generic grid API has a proven system-neutral hook for compound edits. The typed union and reducer remain 5e evidence rather than a registry contract, consistent with this decision.
+
+### 2026-07-18: `p1-060` canonical character data
+
+The feature-local projection and typed reducer now receive only hydrated `dnd5e-2014.v2` characters. Historical action aliases, currency inventory tags, fixed-roleplay note titles, and ancestry/background proficiency ownership are confined to character migration. The steady-state 5e modules read and write explicit semantic groups.
+
+The shared core document intentionally remains less prescriptive: its root collections are still optional, while the current 5e schema requires the structural empty groups supported by this sheet. This preserves the registry direction without treating one system's proven runtime defaults as a universal contract.

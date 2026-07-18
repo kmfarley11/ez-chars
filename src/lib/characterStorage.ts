@@ -1,6 +1,10 @@
 import { browser } from '$app/environment';
 import { z } from 'zod';
-import { safeParseStoredCharacterDocuments, type CharacterWithSystemData } from '../schema';
+import {
+	safeParseStoredCharacterDocuments,
+	serializeStoredCharacterDocuments,
+	type CharacterWithSystemData
+} from '../schema';
 
 const CHARS_STORAGE_KEY = 'ez-chars.characters.v1';
 const CHARS_STORAGE_ENVELOPE_VERSION = 1;
@@ -25,52 +29,6 @@ export type LoadStoredCharactersResult = {
 	characters: CharacterWithSystemData[];
 	issue: StoredCharactersLoadIssue | null;
 };
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-	typeof value === 'object' && value !== null && !Array.isArray(value);
-
-const movementNumberFields = ['speed', 'speedFly', 'speedSwim', 'speedClimb'] as const;
-
-function repair5eMovementNumbers(input: unknown): unknown {
-	if (!Array.isArray(input)) return input;
-
-	return input.map((entry) => {
-		if (!isRecord(entry)) return entry;
-		const system = entry.system;
-		if (!isRecord(system) || system.id !== 'dnd5e-2014') return entry;
-		const systemData = entry.systemData;
-		if (!isRecord(systemData)) return entry;
-		const combat = systemData.combat;
-		if (!isRecord(combat)) return entry;
-
-		const nextCombat: Record<string, unknown> = { ...combat };
-		let changed = false;
-		for (const field of movementNumberFields) {
-			const value = nextCombat[field];
-			if (typeof value !== 'string') continue;
-			const trimmed = value.trim();
-			if (trimmed.length === 0) {
-				delete nextCombat[field];
-				changed = true;
-				continue;
-			}
-			const parsed = Number(trimmed);
-			if (Number.isInteger(parsed) && parsed >= 0) {
-				nextCombat[field] = parsed;
-				changed = true;
-			}
-		}
-
-		if (!changed) return entry;
-		return {
-			...entry,
-			systemData: {
-				...systemData,
-				combat: nextCombat
-			}
-		};
-	});
-}
 
 function migrateStoredCharactersEnvelope(
 	input: unknown
@@ -115,8 +73,7 @@ export const loadStoredCharacters = (
 			};
 		}
 
-		const repairedCharacters = repair5eMovementNumbers(migratedEnvelope.characters);
-		const validated = safeParseStoredCharacterDocuments(repairedCharacters);
+		const validated = safeParseStoredCharacterDocuments(migratedEnvelope.characters);
 		if (!validated.success) {
 			return {
 				characters: fallback,
@@ -137,9 +94,10 @@ export const saveStoredCharacters = (characters: CharacterWithSystemData[]): voi
 	if (!browser) return;
 
 	try {
+		const serializedCharacters = serializeStoredCharacterDocuments(characters);
 		const envelope: StoredCharactersEnvelope = {
 			version: CHARS_STORAGE_ENVELOPE_VERSION,
-			characters
+			characters: serializedCharacters
 		};
 
 		localStorage.setItem(CHARS_STORAGE_KEY, JSON.stringify(envelope));

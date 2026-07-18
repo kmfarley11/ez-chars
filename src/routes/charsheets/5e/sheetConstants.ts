@@ -3,15 +3,18 @@ import {
 	DND_BEYOND_BASIC_RULES_REF_5E_2014,
 	SRD_REF_5E_2014,
 	type AbilityKey,
+	type CurrencyDenomination as CharacterCurrencyDenomination,
 	type Dnd5eSkillName,
 	type Item,
+	type ProficiencySourceKind,
+	type RoleplayFieldKey as CharacterRoleplayFieldKey,
 	type SpellLevel
 } from '../../../schema';
 
 export type SpellListLevel = SpellLevel;
-export type ProficiencyLanguageSource = 'race' | 'background';
+export type ProficiencyEditorSource = ProficiencySourceKind;
 export type InventoryGroup = 'weapons' | 'armorShields' | 'other';
-export type CurrencyDenomination = 'pp' | 'gp' | 'ep' | 'sp' | 'cp';
+export type CurrencyDenomination = CharacterCurrencyDenomination;
 
 export const abilityMetadata: Array<{ key: AbilityKey; label: string; shortLabel: string }> = [
 	{ key: 'str', label: 'Strength', shortLabel: 'STR' },
@@ -61,16 +64,15 @@ export const spellSlotLevelMetadata: Array<{
 export const spellListLevelPathPrefix = '__spellLevelList';
 export const runtimeActionListPathPrefix = '__runtimeActions';
 export const proficiencyLanguagesPathPrefix = '__proficiencyLanguages';
+export const proficiencyToolsPathPrefix = '__proficiencyTools';
 export const classFeatureListPathPrefix = '__classFeatures';
 export const inventoryListPathPrefix = '__inventory';
-export const inventoryCurrencyPathPrefix = '__inventoryCurrency';
-export const roleplayNotePathPrefix = '__roleplayNote';
+export const currencyPathPrefix = '__currency';
+export const roleplayFieldPathPrefix = '__roleplayField';
 export const scratchpadNotesPathPrefix = '__scratchpadNotes';
 
 const inventoryWeaponTag = 'inventory:weapon';
 const inventoryArmorShieldTag = 'inventory:armor-shield';
-export const inventoryCurrencyTagPrefix = 'inventory:currency:';
-
 const inventoryWeaponKeywords = [
 	'axe',
 	'bow',
@@ -130,7 +132,7 @@ export const inventoryCurrencyMetadata: Array<{
 	{ key: 'cp', label: 'CP' }
 ];
 
-export const roleplayNoteMetadata = [
+export const roleplayFieldMetadata = [
 	{ key: 'motives', title: 'Motives' },
 	{ key: 'personalityTraits', title: 'Personality Traits' },
 	{ key: 'ideals', title: 'Ideals' },
@@ -139,9 +141,9 @@ export const roleplayNoteMetadata = [
 	{ key: 'otherBackgroundHistory', title: 'Other Background/History' },
 	{ key: 'factionsOrgs', title: 'Factions & Orgs' },
 	{ key: 'otherCharacterInfo', title: 'Other Character Info' }
-] as const;
+] as const satisfies ReadonlyArray<{ key: CharacterRoleplayFieldKey; title: string }>;
 
-export type RoleplayNoteKey = (typeof roleplayNoteMetadata)[number]['key'];
+export type RoleplayFieldKey = CharacterRoleplayFieldKey;
 
 export const annotationEditorConfig: GridAnnotationEditorConfig = {
 	defaultKind: 'note',
@@ -176,23 +178,8 @@ export const toSystemDataAnnotationPath = (
 	return undefined;
 };
 
-export const currencyTagForDenomination = (denomination: CurrencyDenomination): string =>
-	`${inventoryCurrencyTagPrefix}${denomination}`;
-
 export const isCurrencyDenomination = (value: string): value is CurrencyDenomination =>
 	inventoryCurrencyMetadata.some((entry) => entry.key === value);
-
-export const getCurrencyDenominationForItem = (item: Item): CurrencyDenomination | undefined => {
-	for (const tag of item.tags ?? []) {
-		if (!tag.startsWith(inventoryCurrencyTagPrefix)) continue;
-		const denomination = tag.slice(inventoryCurrencyTagPrefix.length);
-		if (isCurrencyDenomination(denomination)) return denomination;
-	}
-	return undefined;
-};
-
-export const isCurrencyInventoryItem = (item: Item): boolean =>
-	getCurrencyDenominationForItem(item) !== undefined;
 
 const inferLegacyInventoryGroup = (item: Item): InventoryGroup => {
 	const normalizedName = item.name.trim().toLowerCase();
@@ -216,10 +203,7 @@ export const withInventoryGroupTags = (
 	group: InventoryGroup
 ): Array<string> | undefined => {
 	const preservedTags = (tags ?? []).filter(
-		(tag) =>
-			tag !== inventoryWeaponTag &&
-			tag !== inventoryArmorShieldTag &&
-			!tag.startsWith(inventoryCurrencyTagPrefix)
+		(tag) => tag !== inventoryWeaponTag && tag !== inventoryArmorShieldTag
 	);
 	if (group === 'weapons') {
 		preservedTags.push(inventoryWeaponTag);

@@ -35,7 +35,7 @@ This confines path and unknown-value inspection to one narrow adapter. The reduc
 
 ## Decision Outcome
 
-Use feature-local discriminated 5e sheet edit intents for spells, runtime actions, proficiency languages, class features, inventory groups, currency, organizational notes, and annotations.
+Use feature-local discriminated 5e sheet edit intents for spells, runtime actions, proficiency languages and tools, class features, inventory groups, currency, organizational notes, and annotations.
 
 The boundary has two parts:
 
@@ -61,3 +61,9 @@ This decision does not define a shared adapter, registry, reducer signature, or 
 - `p1-060` should reuse the semantic intent vocabulary while updating reducers for normalized runtime and persisted shapes.
 - `p1-050` may relocate the feature-local modules if broader repository organization benefits, but should preserve their established responsibilities.
 - A future additional-system proposal must compare its editing needs with this boundary before extracting shared interfaces.
+
+### 2026-07-18: `p1-060` canonical reducer ownership
+
+The reducers now write only canonical `dnd5e-2014.v2` groups. Runtime actions remain a required collection; currency and roleplay are keyed semantic singletons without synthetic item/note IDs; and language/tool rows carry ancestry, background, class, feature, or other provenance under `systemData.proficiencies`. The decoder gained the matching tool-proficiency intent because direct array patches would otherwise write strings into source-aware records.
+
+Legacy representations are upgraded before the sheet receives a character. Removing their fallback branches from the decoder, reducer, and projections preserves the original semantic boundary rather than changing it into a migration layer.

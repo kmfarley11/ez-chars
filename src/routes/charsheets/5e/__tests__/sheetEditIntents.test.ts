@@ -31,8 +31,15 @@ describe('5e sheet edit intent reducer', () => {
 			{
 				type: 'replace-proficiency-languages',
 				languages: [
-					{ name: 'Elvish', source: 'race' },
+					{ name: 'Elvish', source: 'ancestry' },
 					{ name: 'Dwarvish', source: 'background' }
+				]
+			},
+			{
+				type: 'replace-proficiency-tools',
+				tools: [
+					{ name: 'Calligrapher supplies', source: 'background' },
+					{ name: "Thieves' tools", source: 'class' }
 				]
 			},
 			{
@@ -64,8 +71,18 @@ describe('5e sheet edit intent reducer', () => {
 			}),
 			expect.objectContaining({ id: 'second-wind-action', name: 'Second Wind' })
 		]);
-		expect(result.character.systemData.race?.languages).toEqual(['Elvish']);
-		expect(result.character.systemData.background?.proficiencies?.languages).toEqual(['Dwarvish']);
+		expect(result.character.systemData.proficiencies.languages).toEqual([
+			{ name: 'Elvish', source: { kind: 'ancestry' } },
+			{ name: 'Dwarvish', source: { kind: 'background' } }
+		]);
+		expect(result.character.systemData.proficiencies.tools).toEqual([
+			{
+				name: 'Calligrapher supplies',
+				source: { kind: 'background', sourceId: 'sage' },
+				annotations: [expect.objectContaining({ id: 'tool-note' })]
+			},
+			{ name: "Thieves' tools", source: { kind: 'class' } }
+		]);
 		expect(result.character.systemData.classes[0]?.features).toEqual([
 			expect.objectContaining({
 				featureId: 'second-wind',
@@ -91,7 +108,7 @@ describe('5e sheet edit intent reducer', () => {
 				},
 				{ type: 'update-currency', amounts: { gp: 9, sp: 3 } }
 			],
-			{ createId: deterministicIds('new-weapon', 'new-sp') }
+			{ createId: deterministicIds('new-weapon') }
 		);
 
 		expect(result.ok).toBe(true);
@@ -104,11 +121,13 @@ describe('5e sheet edit intent reducer', () => {
 					annotations: [expect.objectContaining({ id: 'weapon-note' })]
 				}),
 				expect.objectContaining({ id: 'new-weapon', name: 'Battleaxe' }),
-				expect.objectContaining({ id: 'gear-1', name: 'Rope' }),
-				expect.objectContaining({ id: 'gp-1', quantity: 9 }),
-				expect.objectContaining({ id: 'new-sp', quantity: 3 })
+				expect.objectContaining({ id: 'gear-1', name: 'Rope' })
 			])
 		);
+		expect(result.character.systemData.currency).toEqual({
+			gp: { amount: 9 },
+			sp: { amount: 3 }
+		});
 	});
 
 	it('coalesces roleplay and scratchpad edits and replaces annotations with stable IDs', () => {
@@ -149,14 +168,13 @@ describe('5e sheet edit intent reducer', () => {
 		expect(result.character.notes).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({ id: 'scratch-1', body: 'New scratch' }),
-				expect.objectContaining({ id: 'new-note', body: 'Met a dragon' }),
-				expect.objectContaining({
-					id: 'motives-1',
-					body: 'New motive',
-					annotations: [expect.objectContaining({ id: 'motive-note' })]
-				})
+				expect.objectContaining({ id: 'new-note', body: 'Met a dragon' })
 			])
 		);
+		expect(result.character.systemData.roleplay.motives).toEqual({
+			body: 'New motive',
+			annotations: [expect.objectContaining({ id: 'motive-note' })]
+		});
 		expect(getValueAtGridPath(result.character, annotationPath)).toEqual({
 			'annotation-1': expect.objectContaining({ id: 'annotation-1', text: 'Existing ID' }),
 			'annotation-2': expect.objectContaining({ id: 'annotation-2', text: 'New ID' })
@@ -177,29 +195,37 @@ describe('5e sheet edit intent reducer', () => {
 
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
-		expect(result.character.systemData.runtimeActions).toBeUndefined();
-		expect(result.character.systemData.attacks).toBeUndefined();
+		expect(result.character.systemData.runtimeActions).toEqual([]);
 		expect(result.character.inventory).toEqual([
 			expect.objectContaining({ id: 'weapon-1' }),
 			expect.objectContaining({ id: 'gear-1' })
 		]);
-		expect(result.character.notes).toBeUndefined();
+		expect(result.character.systemData.currency).toEqual({});
+		expect(result.character.systemData.roleplay).toEqual({});
+		expect(result.character.notes).toEqual([]);
 	});
 
-	it('adds identity-backed defaults when a language edit creates its parent record', () => {
+	it('updates proficiency provenance without creating ancestry source records', () => {
 		const character = createSheetEditCharacter();
 		delete character.systemData.race;
 		const result = reduce5eSheetEditIntents(character, [
 			{
 				type: 'replace-proficiency-languages',
-				languages: [{ name: 'Elvish', source: 'race' }]
+				languages: [{ name: 'Elvish', source: 'ancestry' }]
 			}
 		]);
 
 		expect(result).toMatchObject({
 			ok: true,
-			character: { systemData: { race: { name: 'Elf', languages: ['Elvish'] } } }
+			character: {
+				systemData: {
+					proficiencies: {
+						languages: [{ name: 'Elvish', source: { kind: 'ancestry' } }]
+					}
+				}
+			}
 		});
+		if (result.ok) expect(result.character.systemData.race).toBeUndefined();
 	});
 
 	it('fails atomically for an invalid semantic target without mutating the input', () => {

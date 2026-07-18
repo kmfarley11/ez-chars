@@ -13,22 +13,34 @@ export const createSheetEditCharacter = (): CharacterDocument5e2014 =>
 				equipped: true,
 				annotations: [{ id: 'weapon-note', origin: 'user', kind: 'note', text: 'Silvered' }]
 			},
-			{ id: 'gear-1', name: 'Rope', quantity: 1 },
-			{ id: 'gp-1', name: 'GP', quantity: 5, tags: ['inventory:currency:gp'] }
+			{ id: 'gear-1', name: 'Rope', quantity: 1 }
 		],
-		notes: [
-			{
-				id: 'motives-1',
-				title: 'Motives',
-				body: 'Old motive',
-				kind: 'lore',
-				annotations: [{ id: 'motive-note', origin: 'user', kind: 'note', text: 'Secret' }]
-			},
-			{ id: 'scratch-1', title: 'Scratch', body: 'Old scratch', kind: 'quick' }
-		],
+		notes: [{ id: 'scratch-1', title: 'Scratch', body: 'Old scratch', kind: 'quick' }],
 		systemData: {
-			race: { name: 'Elf', languages: ['Common'] },
-			background: { name: 'Sage', proficiencies: { languages: ['Draconic'] } },
+			race: { name: 'Elf' },
+			background: { name: 'Sage' },
+			currency: { gp: { amount: 5 } },
+			roleplay: {
+				motives: {
+					body: 'Old motive',
+					annotations: [{ id: 'motive-note', origin: 'user', kind: 'note', text: 'Secret' }]
+				}
+			},
+			proficiencies: {
+				languages: [
+					{ name: 'Common', source: { kind: 'ancestry' } },
+					{ name: 'Draconic', source: { kind: 'background' } }
+				],
+				tools: [
+					{
+						name: 'Calligrapher supplies',
+						source: { kind: 'background', sourceId: 'sage' },
+						annotations: [
+							{ id: 'tool-note', origin: 'user', kind: 'note', text: 'From background' }
+						]
+					}
+				]
+			},
 			classes: [
 				{
 					name: 'Fighter',

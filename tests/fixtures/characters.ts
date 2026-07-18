@@ -1,7 +1,7 @@
 export const e2eCharacter = {
 	meta: {
 		id: 'e2e-character',
-		schemaVersion: 'char.v1',
+		schemaVersion: 'dnd5e-2014.v2',
 		createdAt: '2026-07-17T00:00:00.000Z',
 		updatedAt: '2026-07-17T00:00:00.000Z'
 	},
@@ -12,6 +12,9 @@ export const e2eCharacter = {
 		annotations: []
 	},
 	identity: { name: 'E2E Test Adventurer' },
+	features: [],
+	inventory: [],
+	notes: [],
 	systemData: {
 		level: 0,
 		proficiencyBonus: 0,
@@ -30,11 +33,44 @@ export const e2eCharacter = {
 			hitPoints: { max: 17, current: 17, temp: 0 },
 			deathSaves: { successes: 0, failures: 0 }
 		},
-		classes: []
+		classes: [],
+		runtimeActions: [],
+		currency: {},
+		roleplay: {},
+		proficiencies: { languages: [], tools: [] }
 	}
 };
 
 export const e2eStoredCharacters = {
 	version: 1,
 	characters: [e2eCharacter]
+};
+
+export const e2eLegacyCharacter = {
+	meta: { ...e2eCharacter.meta, id: 'e2e-legacy-character', schemaVersion: 'char.v1' },
+	system: e2eCharacter.system,
+	identity: { ...e2eCharacter.identity, name: 'E2E Legacy Adventurer', ancestryLineage: 'Elf' },
+	inventory: [
+		{ id: 'legacy-rope', name: 'Rope', quantity: 1 },
+		{ id: 'legacy-gp', name: 'GP', quantity: 4, tags: ['inventory:currency:gp'] }
+	],
+	notes: [
+		{ id: 'legacy-motives', title: 'Motives', body: 'Protect the migrated party.', kind: 'lore' }
+	],
+	systemData: {
+		level: e2eCharacter.systemData.level,
+		proficiencyBonus: e2eCharacter.systemData.proficiencyBonus,
+		abilities: e2eCharacter.systemData.abilities,
+		saves: e2eCharacter.systemData.saves,
+		skills: e2eCharacter.systemData.skills,
+		combat: { ...e2eCharacter.systemData.combat, speed: '30' },
+		classes: [],
+		race: { name: 'Elf', languages: ['Common', 'Elvish'] },
+		attacks: [{ id: 'legacy-action', name: 'Legacy Dash', timing: 'action' }]
+	}
+};
+
+export const e2eLegacyStoredCharacters = {
+	version: 1,
+	characters: [e2eLegacyCharacter]
 };

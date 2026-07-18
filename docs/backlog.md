@@ -34,14 +34,13 @@ Next recommended sequence for remaining P1 items:
 
 **Phase 1: Solidify the Data Foundation**
 
-1. `p1-060`: Normalize the 5e runtime model and migrate legacy persisted shapes (Active)
-2. `p1-050`: Refactor the repo structure so stores, fixtures, schema, and 5e feature code are less entangled
+1. `p1-050`: Refactor the repo structure so stores, fixtures, schema, and 5e feature code are less entangled
 
 **Phase 2: UX Polish & Playtest Prep**
 
-3. `p1-005`: Link runtime actions to source weapons, spells, and features (relies on the clean schema from `p1-060`)
-4. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
-5. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
+2. `p1-005`: Link runtime actions to source weapons, spells, and features (builds on the completed canonical action model from `p1-060`)
+3. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
+4. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
 
 _(Note: `p1-010` for GitHub Actions remains deferred until CI needs justify it)._
 
@@ -259,8 +258,7 @@ Scope:
 - keep this item focused on module ownership and navigability, not as a substitute for the field-binding/patch abstraction work
 - build on the feature-local route projection and patch modules completed in `p1-045`; do not duplicate their responsibilities
 - improve navigability without changing behavior unnecessarily
-- review duplicated or provenance-bound schema storage that currently forces awkward feature-layer glue
-- leave typed sheet-edit dispatch and persisted 5e data-shape migration to `p1-055` and `p1-060`; this item may relocate those modules after their behavior is established but must not redesign them
+- preserve the completed typed sheet-edit dispatch and `dnd5e-2014.v2` hydration/serialization behavior; this item may relocate those modules after their behavior is established but must not redesign their schemas or migration policy
 
 Dependency notes:
 
@@ -304,40 +302,6 @@ Refinement outputs:
   - Circular dependency checks report zero errors.
   - All existing storage contract tests continue to pass.
 
-### Normalize the 5e runtime model and migrate legacy persisted shapes
-
-ID:
-
-- `p1-060`
-
-Priority context:
-
-- follow `p1-055` so schema migration can reuse stable typed edit intents instead of expanding the compatibility patch layer
-
-Refinement outputs:
-
-- **Purpose:** Give 5e projections and edit reducers one validated runtime shape with explicit domain ownership, reducing optional-parent guards and eliminating legacy conventions that encode domain meaning through aliases, titles, or tags.
-- **Included behavior:**
-  - Introduce a schema-backed hydration and serialization boundary that converts supported persisted 5e documents into one normalized runtime model and validates data before persistence.
-  - Retire the legacy `attacks` alias in favor of canonical runtime actions through a schema-version migration.
-  - Replace currency-as-tagged-inventory-item storage with an explicit 5e currency shape while preserving imported and locally stored values.
-  - Give roleplay fields stable semantic keys instead of identifying them by note titles, while retaining general scratchpad notes.
-  - Resolve language/proficiency provenance so character-earned, ancestry, background, and class sources can be represented without reconstructing ownership from flattened editor rows.
-  - Preserve IDs, annotations, unrelated inventory and notes, import/export round trips, and existing characters through explicit migrations and contract tests.
-  - Record the chosen runtime/persisted-data boundary and migration policy in a lightweight ADR.
-- **Excluded behavior:**
-  - Adding another game system or fixing the final cross-system registry/adapter API.
-  - Adding rules automation, copyrighted rules content, or new sheet presentation.
-  - Broad repository folder reorganization owned by `p1-050`.
-- **Ambiguities:**
-  - Decide in design whether the normalized runtime model is also the canonical persisted shape or whether serialization deliberately keeps a sparser external document.
-  - Decide the exact provenance representation for proficiencies without treating current race/background storage as the only future source vocabulary.
-- **Success:**
-  - Current and legacy 5e documents load into one normalized, fully validated runtime representation.
-  - Saving upgrades supported legacy data without silent loss, duplicated currency, title-based roleplay collisions, or action alias drift.
-  - Projection and edit code no longer needs fallback reads for legacy aliases or repeated guards for optional parent structures covered by hydration.
-  - Import/export, storage migration, schema, reducer, and browser behavior tests pass.
-
 ## Ideation Sandbox (Unsorted Ideas)
 
 This content is a work in progress to dump rough thoughts, brainstorms, and refactor wishes before prioritizing or organizing them.
@@ -377,3 +341,4 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 - completed `p1-024`: drafted a new Architecture Decision Record (ADR) on modern platform primitives, audited custom UI overlays, and refactored `MenuButton.svelte` to use the native HTML Popover API and scoped CSS Anchor Positioning, eliminating custom JS focus/click-away event management
 - completed `p1-045`: extracted 5e metadata, grouped sheet projections, and virtual-path compatibility patch translation into tested feature-local modules; the route now focuses on reactive selection, layout, and save dispatch, with Chromium smoke coverage preserving current behavior
 - completed `p1-055`: replaced virtual 5e patch-domain dispatch with a schema-backed decoder and exhaustive typed intent reducer, preserving atomic edits, stable identities, direct primitive RFC 6902 editing, and current browser behavior
+- completed `p1-060`: introduced `dnd5e-2014.v2` character hydration/serialization, migrated supported action aliases, tagged currency, titled roleplay fields, split proficiency provenance, and movement strings into one canonical model, rewired storage/import/export and 5e sheet code, and retained cross-system core flexibility with migration, round-trip, and browser smoke coverage

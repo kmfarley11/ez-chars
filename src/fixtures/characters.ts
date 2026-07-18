@@ -54,7 +54,6 @@ export const seedChars: CharacterWithSystemData[] = [
 	create5e2014Character({
 		meta: {
 			id: 'char-001',
-			schemaVersion: 'char.v1',
 			createdAt: '2026-02-27T16:00:00Z',
 			updatedAt: '2026-02-27T16:00:00Z'
 		},
@@ -134,7 +133,6 @@ export const seedChars: CharacterWithSystemData[] = [
 				subrace: 'High Elf',
 				size: 'Medium',
 				speed: 30,
-				languages: ['Common', 'Elvish'],
 				traits: [{ name: 'Darkvision' }, { name: 'Fey Ancestry' }, { name: 'Trance' }]
 			},
 
@@ -163,6 +161,14 @@ export const seedChars: CharacterWithSystemData[] = [
 					}
 				}
 			],
+
+			proficiencies: {
+				languages: [
+					{ name: 'Common', source: { kind: 'ancestry' } },
+					{ name: 'Elvish', source: { kind: 'ancestry' } }
+				],
+				tools: []
+			},
 
 			runtimeActions: [
 				{
@@ -201,7 +207,6 @@ export const seedChars: CharacterWithSystemData[] = [
 	create5e2014Character({
 		meta: {
 			id: 'char-002',
-			schemaVersion: 'char.v1',
 			createdAt: '2026-02-27T16:10:00Z',
 			updatedAt: '2026-02-27T16:10:00Z'
 		},
@@ -255,8 +260,7 @@ export const seedChars: CharacterWithSystemData[] = [
 			race: {
 				name: 'Human',
 				size: 'Medium',
-				speed: 30,
-				languages: ['Common']
+				speed: 30
 			},
 
 			classes: [
@@ -267,6 +271,11 @@ export const seedChars: CharacterWithSystemData[] = [
 					features: [{ name: 'Second Wind (Sidekick)' }]
 				}
 			],
+
+			proficiencies: {
+				languages: [{ name: 'Common', source: { kind: 'ancestry' } }],
+				tools: []
+			},
 
 			runtimeActions: [
 				{

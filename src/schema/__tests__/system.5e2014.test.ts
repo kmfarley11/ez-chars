@@ -4,14 +4,22 @@ import {
 	create5e2014Character,
 	parse5e2014CharacterDocument,
 	safeParse5e2014CharacterDocument,
-	SYSTEM_ID_5E2014_val
+	SYSTEM_ID_5E2014
 } from '../system.5e2014';
 
 describe('5e 2014 character schema', () => {
 	it('creates a valid default 5e character document', () => {
 		const character = create5e2014Character();
 
-		expect(character.system.id).toBe(SYSTEM_ID_5E2014_val);
+		expect(character.system.id).toBe(SYSTEM_ID_5E2014);
+		expect(character.features).toEqual([]);
+		expect(character.inventory).toEqual([]);
+		expect(character.notes).toEqual([]);
+		expect(character.systemData.runtimeActions).toEqual([]);
+		expect(character.systemData.currency).toEqual({});
+		expect(character.systemData.roleplay).toEqual({});
+		expect(character.systemData.proficiencies).toEqual({ languages: [], tools: [] });
+		expect(character.systemData.spellcasting).toBeUndefined();
 		expect(character.identity.name).toBe('Ole No Name');
 		expect(character.systemData.combat.armorClass).toBe(10);
 		expect(character.systemData.combat.hitPoints.current).toBe(5);
@@ -46,7 +54,7 @@ describe('5e 2014 character schema', () => {
 
 	it('validates the seeded 5e character documents', () => {
 		const seeded5eCharacters = seedChars.filter(
-			(character) => character.system.id === SYSTEM_ID_5E2014_val
+			(character) => character.system.id === SYSTEM_ID_5E2014
 		);
 
 		expect(seeded5eCharacters.length).toBeGreaterThan(0);

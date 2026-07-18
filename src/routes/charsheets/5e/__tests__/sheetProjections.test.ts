@@ -15,13 +15,9 @@ const createProjectionCharacter = (): CharacterDocument5e2014 =>
 		inventory: [
 			{ id: 'weapon-1', name: 'Longsword', equipped: true },
 			{ id: 'armor-1', name: 'Chain mail', equipped: true },
-			{ id: 'gear-1', name: 'Rope', quantity: 1 },
-			{ id: 'gp-1', name: 'GP', quantity: 12, tags: ['inventory:currency:gp'] }
+			{ id: 'gear-1', name: 'Rope', quantity: 1 }
 		],
-		notes: [
-			{ id: 'motives-1', title: 'Motives', body: 'Protect the party.', kind: 'lore' },
-			{ id: 'scratch-1', title: 'Reminder', body: 'Buy rations.', kind: 'quick' }
-		],
+		notes: [{ id: 'scratch-1', title: 'Reminder', body: 'Buy rations.', kind: 'quick' }],
 		systemData: {
 			level: 2,
 			proficiencyBonus: 2,
@@ -34,12 +30,18 @@ const createProjectionCharacter = (): CharacterDocument5e2014 =>
 			},
 			race: {
 				name: 'Elf',
-				languages: ['Common', 'Elvish'],
 				traits: [{ name: 'Darkvision' }]
 			},
-			background: {
-				name: 'Sage',
-				proficiencies: { languages: ['Draconic'], tools: ['Calligrapher supplies'] }
+			background: { name: 'Sage' },
+			currency: { gp: { amount: 12 } },
+			roleplay: { motives: { body: 'Protect the party.' } },
+			proficiencies: {
+				languages: [
+					{ name: 'Common', source: { kind: 'ancestry' } },
+					{ name: 'Elvish', source: { kind: 'ancestry' } },
+					{ name: 'Draconic', source: { kind: 'background' } }
+				],
+				tools: [{ name: 'Calligrapher supplies', source: { kind: 'background' } }]
 			},
 			classes: [
 				{
@@ -133,27 +135,5 @@ describe('5e sheet projections', () => {
 			'_annotations'
 		]);
 		expect(tempHp.binding?.valuePatchOperation).toBe('add');
-	});
-
-	it('uses legacy attacks when runtimeActions are absent', () => {
-		const character = create5e2014Character({
-			name: 'Legacy Fighter',
-			systemData: {
-				attacks: [{ id: 'legacy-attack', name: 'Spear', timing: 'action' }]
-			}
-		});
-
-		const projection = project5eSheet(character);
-		const actions = projection.runtimeActionData.actions.value;
-
-		expect(Array.isArray(actions)).toBe(true);
-		if (!Array.isArray(actions)) throw new Error('Expected projected runtime actions.');
-		expect(actions).toHaveLength(1);
-		expect(actions[0]).toMatchObject({
-			value: {
-				name: { value: 'Spear' },
-				id: { value: 'legacy-attack' }
-			}
-		});
 	});
 });

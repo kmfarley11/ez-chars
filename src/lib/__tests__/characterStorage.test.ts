@@ -43,6 +43,18 @@ describe('character storage adapter', () => {
 			version: 1,
 			characters
 		});
+		expect(JSON.parse(raw ?? '{}').characters[0]).toMatchObject({
+			meta: { schemaVersion: 'dnd5e-2014.v2' },
+			features: [],
+			inventory: [],
+			notes: [],
+			systemData: {
+				runtimeActions: [],
+				currency: {},
+				roleplay: {},
+				proficiencies: { languages: [], tools: [] }
+			}
+		});
 		expect(loadStoredCharacters([])).toEqual({
 			characters,
 			issue: null
@@ -63,6 +75,7 @@ describe('character storage adapter', () => {
 		const firstCharacter = parse5e2014CharacterDocument(cloneCharacters(seedChars)[0]);
 		const legacyCharacter = {
 			...firstCharacter,
+			meta: { ...firstCharacter.meta, schemaVersion: 'char.v1' },
 			systemData: {
 				...firstCharacter.systemData,
 				combat: {

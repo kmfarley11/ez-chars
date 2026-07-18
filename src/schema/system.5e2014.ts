@@ -1,8 +1,16 @@
 import type { Reference } from './core';
-import { SCHEMA_VER } from './core';
 import { nowIso, createId } from './helpers';
 import { FULL_2014_SRD_URL } from '$lib/urlHelpers';
 import { z } from 'zod';
+import {
+	hydrate5e2014CharacterDocument,
+	serialize5e2014CharacterDocument
+} from './migrations/system.5e2014';
+import {
+	CHARACTER_DATA_VERSION_5E2014,
+	RULES_VERSION_5E2014,
+	SYSTEM_ID_5E2014
+} from './versions.5e2014';
 import {
 	abilityKeySchema,
 	dnd5eSkillNameSchema,
@@ -19,6 +27,16 @@ import {
 	classLevelSchema,
 	featureRefSchema,
 	runtimeActionSchema,
+	currencyDenominationSchema,
+	currencyAmountSchema,
+	currencySchema,
+	roleplayFieldKeySchema,
+	roleplayFieldSchema,
+	roleplaySchema,
+	proficiencySourceKindSchema,
+	proficiencySourceSchema,
+	namedProficiencySchema,
+	proficienciesSchema,
 	spellcastingBlockSchema,
 	spellSlotsSchema,
 	spellRefSchema,
@@ -30,16 +48,12 @@ import {
 	noteBlockSchema
 } from './zod';
 
-// =======================================================
-// System: D&D 5e (2014) — SRD 5.1
-// =======================================================
-export const SYSTEM_ID_5E2014_val = 'dnd5e-2014';
-export type SYSTEM_ID_5E2014 = 'dnd5e-2014';
-
-export const CHAR_SCHEMA_VER_5E2014_val = 'SRD-5.1-2023';
-export type CHAR_SCHEMA_VER_5E2014 = 'SRD-5.1-2023';
-
 export {
+	CHARACTER_DATA_VERSION_5E2014,
+	RULES_VERSION_5E2014,
+	SYSTEM_ID_5E2014,
+	hydrate5e2014CharacterDocument,
+	serialize5e2014CharacterDocument,
 	abilityKeySchema,
 	dnd5eSkillNameSchema,
 	spellLevelSchema,
@@ -55,6 +69,16 @@ export {
 	classLevelSchema,
 	featureRefSchema,
 	runtimeActionSchema,
+	currencyDenominationSchema,
+	currencyAmountSchema,
+	currencySchema,
+	roleplayFieldKeySchema,
+	roleplayFieldSchema,
+	roleplaySchema,
+	proficiencySourceKindSchema,
+	proficiencySourceSchema,
+	namedProficiencySchema,
+	proficienciesSchema,
 	spellcastingBlockSchema,
 	spellSlotsSchema,
 	spellRefSchema,
@@ -77,15 +101,21 @@ export type BackgroundChoice = z.infer<typeof backgroundChoiceSchema>;
 export type ClassLevel = z.infer<typeof classLevelSchema>;
 export type FeatureRef = z.infer<typeof featureRefSchema>;
 export type RuntimeAction = z.infer<typeof runtimeActionSchema>;
+export type CurrencyDenomination = z.infer<typeof currencyDenominationSchema>;
+export type CurrencyAmount = z.infer<typeof currencyAmountSchema>;
+export type Currency = z.infer<typeof currencySchema>;
+export type RoleplayFieldKey = z.infer<typeof roleplayFieldKeySchema>;
+export type RoleplayField = z.infer<typeof roleplayFieldSchema>;
+export type Roleplay = z.infer<typeof roleplaySchema>;
+export type ProficiencySourceKind = z.infer<typeof proficiencySourceKindSchema>;
+export type ProficiencySource = z.infer<typeof proficiencySourceSchema>;
+export type NamedProficiency = z.infer<typeof namedProficiencySchema>;
+export type Proficiencies = z.infer<typeof proficienciesSchema>;
 export type SpellcastingBlock = z.infer<typeof spellcastingBlockSchema>;
 export type SpellSlots = z.infer<typeof spellSlotsSchema>;
 export type SpellRef = z.infer<typeof spellRefSchema>;
 export type Dnd5e2014SystemData = z.infer<typeof dnd5e2014SystemDataSchema>;
 export type CharacterDocument5e2014 = z.infer<typeof characterDocument5e2014Schema>;
-
-// TODO(p1-050): review duplicated proficiency storage such as languages split across
-// race/background. Players may gain proficiencies during play that are not cleanly tied
-// to those origins, so the 5e schema likely needs a clearer shared or provenance-aware home.
 
 export const SRD_REF_5E_2014: Reference = {
 	kind: 'pdf',
@@ -111,7 +141,7 @@ const create5e2014CharacterOptionsSchema = z
 		meta: z
 			.object({
 				id: z.string().min(1).optional(),
-				schemaVersion: z.string().min(1).optional(),
+				schemaVersion: z.literal(CHARACTER_DATA_VERSION_5E2014).optional(),
 				createdAt: z.string().min(1).optional(),
 				updatedAt: z.string().min(1).optional()
 			})
@@ -119,7 +149,7 @@ const create5e2014CharacterOptionsSchema = z
 			.optional(),
 		system: z
 			.object({
-				id: z.literal(SYSTEM_ID_5E2014_val).optional(),
+				id: z.literal(SYSTEM_ID_5E2014).optional(),
 				version: z.string().min(1).optional(),
 				source: z.enum(['local', 'remote', 'import']).optional(),
 				annotations: z.array(annotationSchema).optional()
@@ -210,13 +240,13 @@ export function create5e2014Character(
 	const base: CharacterDocument5e2014 = {
 		meta: {
 			id: createId(),
-			schemaVersion: SCHEMA_VER,
+			schemaVersion: CHARACTER_DATA_VERSION_5E2014,
 			createdAt: nowIso(),
 			updatedAt: nowIso()
 		},
 		system: {
-			id: SYSTEM_ID_5E2014_val,
-			version: CHAR_SCHEMA_VER_5E2014_val,
+			id: SYSTEM_ID_5E2014,
+			version: RULES_VERSION_5E2014,
 			source: 'local',
 			annotations: [
 				{ origin: 'source', kind: 'tag', text: '2014-5e' },
@@ -227,6 +257,9 @@ export function create5e2014Character(
 		identity: {
 			name: options.name ?? 'Ole No Name'
 		},
+		features: [],
+		inventory: [],
+		notes: [],
 		systemData: {
 			level: 0,
 			proficiencyBonus: 0,
@@ -252,7 +285,14 @@ export function create5e2014Character(
 					failures: 0
 				}
 			},
-			classes: []
+			classes: [],
+			runtimeActions: [],
+			currency: {},
+			roleplay: {},
+			proficiencies: {
+				languages: [],
+				tools: []
+			}
 		}
 	};
 
@@ -267,14 +307,13 @@ export function create5e2014Character(
 			...options.system
 		},
 		identity: deepMerge(base.identity, options.identity),
+		features: options.features ?? base.features,
+		inventory: options.inventory ?? base.inventory,
+		notes: options.notes ?? base.notes,
 		systemData: deepMerge(base.systemData, options.systemData)
 	};
 
-	if (options.features !== undefined) withOverrides.features = options.features;
-	if (options.inventory !== undefined) withOverrides.inventory = options.inventory;
-	if (options.notes !== undefined) withOverrides.notes = options.notes;
 	if (options.annotations !== undefined) withOverrides.annotations = options.annotations;
 
-	// Constructor returns trusted in-app model; use parse5e2014CharacterDocument at I/O boundaries.
-	return withOverrides;
+	return serialize5e2014CharacterDocument(withOverrides);
 }

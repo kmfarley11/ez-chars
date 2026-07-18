@@ -254,6 +254,15 @@ Slice 7 of `p1-040` proved the contract on one live runtime sheet field:
 - The 5e route applies canonical compatibility patches to an isolated candidate, reduces typed intents, and commits only a successful validated result. Direct primitive RFC 6902 application remains separate and unchanged.
 - The decoder/reducer vocabulary is feature-local evidence, not a shared multi-system mutation API.
 
+`p1-060` then moved those reducers onto the versioned canonical 5e model:
+
+- Runtime actions always read and write `systemData.runtimeActions`; historical `attacks` data is handled only during hydration.
+- Currency and the eight fixed roleplay fields are semantic keyed groups rather than synthetic inventory/note records, so their structured edits do not allocate container IDs.
+- Language and tool proficiency edits write source-aware entries under `systemData.proficiencies` rather than mutating ancestry/background choice records.
+- Required empty structural groups remove missing-parent reconstruction from steady-state projection and editing, while optional capabilities such as spellcasting still require deliberate creation.
+
+These are 5e canonical paths, not additions to the system-neutral field-binding contract. Historical formats belong to schema migration, not field components or generic grid helpers.
+
 ## Non-Goals For These Contract Slices
 
 - Do not introduce a remote sync layer or HTTP-aware mutation model.

@@ -1,10 +1,10 @@
 import { z } from 'zod';
 import { nowIso } from './helpers';
-import { safeParse5e2014CharacterDocument, type CharacterDocument5e2014 } from './system.5e2014';
-import { characterDocumentCoreSchema } from './zod';
-
-type CharacterDocumentUnknown = z.infer<typeof characterDocumentCoreSchema>;
-type CharacterWithSystemData = CharacterDocument5e2014 | CharacterDocumentUnknown;
+import {
+	safeParseStoredCharacterDocuments,
+	serializeStoredCharacterDocuments,
+	type CharacterWithSystemData
+} from './storedCharacters';
 
 export const CHARACTER_EXPORT_KIND = 'ez-chars.character-export';
 export const CHARACTER_EXPORT_VERSION = 1;
@@ -53,7 +53,7 @@ export const createCharacterExportEnvelope = (
 	app: {
 		name: 'ez-chars'
 	},
-	characters
+	characters: serializeStoredCharacterDocuments(characters)
 });
 
 export function safeParseCharacterExportEnvelope(
@@ -106,44 +106,4 @@ export function applyCharacterImport(
 		addedCount: newCharacters.length,
 		skippedDuplicateCount
 	};
-}
-
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function getSystemId(value: unknown): string | undefined {
-	if (!isObjectRecord(value)) return undefined;
-
-	const system = value.system;
-	if (!isObjectRecord(system)) return undefined;
-	if (typeof system.id !== 'string') return undefined;
-
-	return system.id;
-}
-
-function safeParseStoredCharacterDocument(input: unknown) {
-	const systemId = getSystemId(input);
-
-	if (systemId === 'dnd5e-2014') {
-		return safeParse5e2014CharacterDocument(input);
-	}
-
-	return characterDocumentCoreSchema.safeParse(input);
-}
-
-function safeParseStoredCharacterDocuments(
-	input: unknown
-): { success: true; data: CharacterWithSystemData[] } | { success: false } {
-	if (!Array.isArray(input)) return { success: false };
-
-	const parsedEntries: CharacterWithSystemData[] = [];
-
-	for (const entry of input) {
-		const parsed = safeParseStoredCharacterDocument(entry);
-		if (!parsed.success) return { success: false };
-		parsedEntries.push(parsed.data);
-	}
-
-	return { success: true, data: parsedEntries };
 }

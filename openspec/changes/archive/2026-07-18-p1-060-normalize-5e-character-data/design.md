@@ -61,9 +61,11 @@ A keyed singleton was selected over typed currency inventory items because curre
 
 ### Decision 4: Give fixed roleplay fields semantic keys
 
-Add `systemData.roleplay` with fixed 5e keys for personality traits, ideals, bonds, and flaws. Each populated field stores its body and annotations. General `notes` remains the ordered scratchpad/session/lore collection.
+Add `systemData.roleplay` with fixed 5e keys for the eight semantic fields already exposed by the MVP sheet: motives, personality traits, ideals, bonds, flaws, other background/history, factions and organizations, and other character information. Each populated field stores its body and annotations. General `notes` remains the ordered scratchpad/session/lore collection.
 
 Migration maps the first exact legacy roleplay-title match for each key into the semantic field. Additional title collisions remain general notes so migration never silently discards authored content. General note IDs and ordering are preserved. Synthetic IDs that existed only to make a fixed roleplay field look like a general note are retired; annotation identities remain preserved.
+
+This eight-field set reconciles the initial four traditional 5e roleplay examples with the current supported sheet behavior. It avoids dropping or hiding authored MVP data before playtesting and does not add a new presentation surface.
 
 ### Decision 5: Add source-aware language and tool proficiency entries
 

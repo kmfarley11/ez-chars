@@ -16,10 +16,10 @@ Everything else is long-term vision, not the immediate build target. For roadmap
 
 ## Current State
 
-- the 5e 2014 schema and reusable grid editing primitives exist
+- the versioned 5e 2014 schema hydrates supported legacy data into one canonical model, and reusable grid editing primitives exist
 - the home page lists locally stored or seeded characters
 - the 5e sheet route exists, but only part of the full sheet is surfaced in the UI
-- localStorage persistence and JSON import/export exist, but CI, storage tests, and a hardened storage adapter are still missing
+- validated localStorage persistence, JSON import/export, migration/storage contract tests, and browser smoke coverage exist; CI remains deferred
 
 ## Docs
 

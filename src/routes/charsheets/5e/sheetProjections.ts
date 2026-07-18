@@ -9,21 +9,20 @@ import type {
 	CharacterDocument5e2014,
 	FeatureRef,
 	Item,
-	NoteBlock
+	NamedProficiency
 } from '../../../schema';
 import {
 	abilityMetadata,
 	annotationEditorConfig,
 	classFeatureListPathPrefix,
-	getCurrencyDenominationForItem,
+	currencyPathPrefix,
 	getInventoryGroupForItem,
 	inventoryCurrencyMetadata,
-	inventoryCurrencyPathPrefix,
 	inventoryListPathPrefix,
-	isCurrencyInventoryItem,
 	proficiencyLanguagesPathPrefix,
-	roleplayNoteMetadata,
-	roleplayNotePathPrefix,
+	proficiencyToolsPathPrefix,
+	roleplayFieldMetadata,
+	roleplayFieldPathPrefix,
 	runtimeActionListPathPrefix,
 	scratchpadNotesPathPrefix,
 	skillMetadata,
@@ -31,8 +30,8 @@ import {
 	spellSlotLevelMetadata,
 	toSystemDataAnnotationPath,
 	type InventoryGroup,
-	type ProficiencyLanguageSource,
-	type RoleplayNoteKey,
+	type ProficiencyEditorSource,
+	type RoleplayFieldKey,
 	type SpellListLevel
 } from './sheetConstants';
 
@@ -82,7 +81,15 @@ export type Sheet5eProjection = {
 	spellSlotRuntimeCards: Array<SpellSlotRuntimeCard>;
 };
 
-const createStringListField = (
+const proficiencySourceOptions: Array<ProficiencyEditorSource> = [
+	'ancestry',
+	'background',
+	'class',
+	'feature',
+	'other'
+];
+
+const createProficiencyListField = (
 	withFieldAnnotations: (
 		value: PrimitiveGridValue,
 		bindPath: GridContentBindPath,
@@ -90,33 +97,42 @@ const createStringListField = (
 	) => GridContentField,
 	fieldName: string,
 	bindPath: GridContentBindPath,
-	values: Array<string>,
+	groupKey: 'languages' | 'tools',
+	values: Array<NamedProficiency>,
 	itemFieldName: string,
-	itemPlaceholder: string,
-	itemBindPathForIndex?: GridIndexBindPathResolver
+	defaultSource: ProficiencyEditorSource
 ): GridContentField => ({
 	fieldName,
 	addItemLabel: `Add ${itemFieldName}`,
 	addItemTemplate: {
 		fieldName: itemFieldName,
-		value: itemPlaceholder
+		value: {
+			name: { fieldName: 'Name', value: itemFieldName },
+			source: {
+				fieldName: 'Source',
+				value: defaultSource,
+				editOnly: true,
+				options: proficiencySourceOptions
+			}
+		}
 	},
 	bindPath,
-	value: values.map((entry, index) =>
-		itemBindPathForIndex
-			? {
-					fieldName: itemFieldName,
-					value: {
-						name: withFieldAnnotations(entry, itemBindPathForIndex(index), {
-							fieldName: 'Name'
-						})
-					}
-				}
-			: {
-					fieldName: itemFieldName,
-					value: entry
-				}
-	)
+	value: values.map((entry, index) => ({
+		fieldName: itemFieldName,
+		value: {
+			name: withFieldAnnotations(
+				entry.name,
+				['systemData', 'proficiencies', groupKey, index, 'name'],
+				{ fieldName: 'Name' }
+			),
+			source: {
+				fieldName: 'Source',
+				value: entry.source?.kind ?? 'other',
+				editOnly: true,
+				options: proficiencySourceOptions
+			}
+		}
+	}))
 });
 
 const createFeatureRefListField = (
@@ -218,7 +234,7 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 		};
 	};
 
-	const runtimeActions = char.systemData.runtimeActions ?? char.systemData.attacks ?? [];
+	const runtimeActions = char.systemData.runtimeActions;
 	const runtimeActionData: GridContentData = {
 		actions: {
 			fieldName: 'Runtime Actions',
@@ -273,22 +289,16 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 		}
 	};
 
-	const roleplayNoteTitleForKey = (key: RoleplayNoteKey): string =>
-		roleplayNoteMetadata.find((entry) => entry.key === key)?.title ?? key;
-	const isRoleplayNoteTitle = (title: string | undefined): boolean =>
-		roleplayNoteMetadata.some((entry) => entry.title === title);
-	const getRoleplayNote = (key: RoleplayNoteKey): NoteBlock | undefined =>
-		(char.notes ?? []).find((note) => note.title === roleplayNoteTitleForKey(key));
-	const createRoleplayNoteData = (keys: Array<RoleplayNoteKey>): GridContentData =>
+	const createRoleplayFieldData = (keys: Array<RoleplayFieldKey>): GridContentData =>
 		Object.fromEntries(
 			keys.map((key) => {
-				const title = roleplayNoteTitleForKey(key);
+				const title = roleplayFieldMetadata.find((entry) => entry.key === key)?.title ?? key;
 				return [
 					key,
 					{
 						fieldName: title,
-						bindPath: [roleplayNotePathPrefix, key],
-						value: getRoleplayNote(key)?.body ?? '',
+						bindPath: [roleplayFieldPathPrefix, key],
+						value: char.systemData.roleplay[key]?.body ?? '',
 						multiline: true
 					} satisfies GridContentField
 				];
@@ -498,10 +508,10 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 		char.systemData.spellcasting?.ability ??
 		char.systemData.classes.find((entry) => entry.spellcasting?.ability)?.spellcasting?.ability ??
 		'int';
-	const defaultProficiencyLanguageSource: ProficiencyLanguageSource =
+	const defaultProficiencySource: ProficiencyEditorSource =
 		char.systemData.background?.name !== undefined || char.identity.background !== undefined
 			? 'background'
-			: 'race';
+			: 'ancestry';
 
 	const traitRuntimeData: GridContentData = {
 		traits: createFeatureRefListField(
@@ -514,65 +524,25 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 		)
 	};
 	const proficiencyLanguagesRuntimeData: GridContentData = {
-		languages: {
-			fieldName: 'Prof. Languages',
-			addItemLabel: 'Add Language',
-			addItemTemplate: {
-				fieldName: 'Language',
-				value: {
-					name: { fieldName: 'Name', value: 'Language' },
-					source: {
-						fieldName: 'Source',
-						value: defaultProficiencyLanguageSource,
-						editOnly: true,
-						options: ['race', 'background']
-					}
-				}
-			},
-			bindPath: [proficiencyLanguagesPathPrefix],
-			value: [
-				...(char.systemData.race?.languages ?? []).map((entry, index) => ({
-					fieldName: 'Language',
-					value: {
-						name: withFieldAnnotations(entry, ['systemData', 'race', 'languages', index], {
-							fieldName: 'Name'
-						}),
-						source: {
-							fieldName: 'Source',
-							value: 'race' as const,
-							editOnly: true,
-							options: ['race', 'background']
-						}
-					}
-				})),
-				...(char.systemData.background?.proficiencies?.languages ?? []).map((entry, index) => ({
-					fieldName: 'Language',
-					value: {
-						name: withFieldAnnotations(
-							entry,
-							['systemData', 'background', 'proficiencies', 'languages', index],
-							{ fieldName: 'Name' }
-						),
-						source: {
-							fieldName: 'Source',
-							value: 'background' as const,
-							editOnly: true,
-							options: ['race', 'background']
-						}
-					}
-				}))
-			]
-		}
+		languages: createProficiencyListField(
+			withFieldAnnotations,
+			'Prof. Languages',
+			[proficiencyLanguagesPathPrefix],
+			'languages',
+			char.systemData.proficiencies.languages,
+			'Language',
+			defaultProficiencySource
+		)
 	};
 	const proficiencyToolsRuntimeData: GridContentData = {
-		tools: createStringListField(
+		tools: createProficiencyListField(
 			withFieldAnnotations,
 			'Prof. Tools',
-			['systemData', 'background', 'proficiencies', 'tools'],
-			char.systemData.background?.proficiencies?.tools ?? [],
+			[proficiencyToolsPathPrefix],
+			'tools',
+			char.systemData.proficiencies.tools,
 			'Tool',
-			'Tool',
-			(index) => ['systemData', 'background', 'proficiencies', 'tools', index]
+			defaultProficiencySource
 		)
 	};
 	const classFeaturesRuntimeData: GridContentData = {
@@ -615,14 +585,12 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 			key,
 			{
 				fieldName: label,
-				bindPath: [inventoryCurrencyPathPrefix, key],
-				value:
-					(char.inventory ?? []).find((item) => getCurrencyDenominationForItem(item) === key)
-						?.quantity ?? 0
+				bindPath: [currencyPathPrefix, key],
+				value: char.systemData.currency[key]?.amount ?? 0
 			} satisfies GridContentField
 		])
 	);
-	const inventory = (char.inventory ?? []).filter((item) => !isCurrencyInventoryItem(item));
+	const inventory = char.inventory;
 	const inventoryRuntimeCards: Array<InventoryRuntimeCard> = [
 		{
 			key: 'weapons',
@@ -675,14 +643,14 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 			{ fieldName: 'Description', multiline: true }
 		)
 	};
-	const roleplayPrimaryData = createRoleplayNoteData([
+	const roleplayPrimaryData = createRoleplayFieldData([
 		'motives',
 		'personalityTraits',
 		'ideals',
 		'bonds',
 		'flaws'
 	]);
-	const roleplaySecondaryData = createRoleplayNoteData([
+	const roleplaySecondaryData = createRoleplayFieldData([
 		'otherBackgroundHistory',
 		'factionsOrgs',
 		'otherCharacterInfo'
@@ -705,22 +673,20 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 				}
 			},
 			bindPath: [scratchpadNotesPathPrefix],
-			value: (char.notes ?? [])
-				.filter((note) => !isRoleplayNoteTitle(note.title))
-				.map((note) => ({
-					fieldName: 'Note',
-					value: {
-						title: { fieldName: 'Title', value: note.title ?? '' },
-						body: { fieldName: 'Body', value: note.body, multiline: true },
-						kind: {
-							fieldName: 'Kind',
-							value: note.kind ?? 'other',
-							editOnly: true,
-							options: ['quick', 'session', 'lore', 'rules', 'other']
-						},
-						id: { fieldName: 'Note Id', value: note.id, editOnly: true, hidden: true }
-					}
-				}))
+			value: char.notes.map((note) => ({
+				fieldName: 'Note',
+				value: {
+					title: { fieldName: 'Title', value: note.title ?? '' },
+					body: { fieldName: 'Body', value: note.body, multiline: true },
+					kind: {
+						fieldName: 'Kind',
+						value: note.kind ?? 'other',
+						editOnly: true,
+						options: ['quick', 'session', 'lore', 'rules', 'other']
+					},
+					id: { fieldName: 'Note Id', value: note.id, editOnly: true, hidden: true }
+				}
+			}))
 		}
 	};
 

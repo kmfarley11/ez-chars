@@ -5,8 +5,8 @@ import {
 	classFeatureEditorPayloadSchema,
 	currencyAmountEditorPayloadSchema,
 	inventoryEditorPayloadSchema,
-	proficiencyLanguageEditorPayloadSchema,
-	roleplayNoteEditorPayloadSchema,
+	proficiencyEditorPayloadSchema,
+	roleplayFieldEditorPayloadSchema,
 	runtimeActionEditorPayloadSchema,
 	scratchpadEditorPayloadSchema,
 	spellEditorPayloadSchema,
@@ -15,18 +15,19 @@ import {
 } from './sheetEditIntents';
 import {
 	classFeatureListPathPrefix,
-	inventoryCurrencyPathPrefix,
+	currencyPathPrefix,
 	inventoryListPathPrefix,
 	isCurrencyDenomination,
 	proficiencyLanguagesPathPrefix,
-	roleplayNoteMetadata,
-	roleplayNotePathPrefix,
+	proficiencyToolsPathPrefix,
+	roleplayFieldMetadata,
+	roleplayFieldPathPrefix,
 	runtimeActionListPathPrefix,
 	scratchpadNotesPathPrefix,
 	spellListLevelPathPrefix,
 	type CurrencyDenomination,
 	type InventoryGroup,
-	type RoleplayNoteKey,
+	type RoleplayFieldKey,
 	type SpellListLevel
 } from './sheetConstants';
 
@@ -74,7 +75,7 @@ export const decode5eGridPatches = (
 	const canonicalPatches: Array<GridContentPatch> = [];
 	const issues: Array<SheetEditIssue> = [];
 	const currencyAmounts: Partial<Record<CurrencyDenomination, number>> = {};
-	const roleplayBodies: Partial<Record<RoleplayNoteKey, string>> = {};
+	const roleplayBodies: Partial<Record<RoleplayFieldKey, string>> = {};
 	let sawCurrency = false;
 	let sawOrganizationalNotes = false;
 	let scratchpad: ReturnType<typeof scratchpadEditorPayloadSchema.parse> | undefined;
@@ -83,7 +84,7 @@ export const decode5eGridPatches = (
 		const [root, target] = patch.path;
 
 		if (
-			root === inventoryCurrencyPathPrefix &&
+			root === currencyPathPrefix &&
 			patch.path.length === 2 &&
 			typeof target === 'string' &&
 			isCurrencyDenomination(target)
@@ -96,14 +97,14 @@ export const decode5eGridPatches = (
 		}
 
 		if (
-			root === roleplayNotePathPrefix &&
+			root === roleplayFieldPathPrefix &&
 			patch.path.length === 2 &&
 			typeof target === 'string' &&
-			roleplayNoteMetadata.some((entry) => entry.key === target)
+			roleplayFieldMetadata.some((entry) => entry.key === target)
 		) {
 			sawOrganizationalNotes = true;
-			const parsed = roleplayNoteEditorPayloadSchema.safeParse(patch.value);
-			if (parsed.success) roleplayBodies[target as RoleplayNoteKey] = parsed.data;
+			const parsed = roleplayFieldEditorPayloadSchema.safeParse(patch.value);
+			if (parsed.success) roleplayBodies[target as RoleplayFieldKey] = parsed.data;
 			else issues.push(payloadIssue(patch, 'roleplay note', formatParseIssue(parsed.error.issues)));
 			continue;
 		}
@@ -144,13 +145,23 @@ export const decode5eGridPatches = (
 		}
 
 		if (root === proficiencyLanguagesPathPrefix && patch.path.length === 1) {
-			const parsed = proficiencyLanguageEditorPayloadSchema.safeParse(patch.value);
+			const parsed = proficiencyEditorPayloadSchema.safeParse(patch.value);
 			if (parsed.success) {
 				intents.push({ type: 'replace-proficiency-languages', languages: parsed.data });
 			} else {
 				issues.push(
 					payloadIssue(patch, 'proficiency language', formatParseIssue(parsed.error.issues))
 				);
+			}
+			continue;
+		}
+
+		if (root === proficiencyToolsPathPrefix && patch.path.length === 1) {
+			const parsed = proficiencyEditorPayloadSchema.safeParse(patch.value);
+			if (parsed.success) {
+				intents.push({ type: 'replace-proficiency-tools', tools: parsed.data });
+			} else {
+				issues.push(payloadIssue(patch, 'tool proficiency', formatParseIssue(parsed.error.issues)));
 			}
 			continue;
 		}

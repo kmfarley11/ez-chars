@@ -7,6 +7,7 @@ import {
 	metaSchema,
 	noteBlockSchema
 } from './core';
+import { CHARACTER_DATA_VERSION_5E2014, SYSTEM_ID_5E2014 } from '../versions.5e2014';
 
 const abilityKeys = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const;
 export const abilityKeySchema = z.enum(abilityKeys);
@@ -111,14 +112,16 @@ const combatSensesSchema = z
 	})
 	.strict();
 
+const movementNumberSchema = z.number().int().min(0);
+
 export const combatBlockSchema = z
 	.object({
 		armorClass: z.number().int().min(0),
 		initiative: z.number().int().optional(),
-		speed: z.number().int().optional(),
-		speedFly: z.number().int().optional(),
-		speedSwim: z.number().int().optional(),
-		speedClimb: z.number().int().optional(),
+		speed: movementNumberSchema.optional(),
+		speedFly: movementNumberSchema.optional(),
+		speedSwim: movementNumberSchema.optional(),
+		speedClimb: movementNumberSchema.optional(),
 		hitPoints: hitPointsSchema,
 		hitDice: hitDiceSchema.optional(),
 		deathSaves: deathSavesSchema.optional(),
@@ -127,6 +130,15 @@ export const combatBlockSchema = z
 		annotations: z.array(annotationSchema).optional()
 	})
 	.strict();
+
+const legacyMovementNumberSchema = z.union([movementNumberSchema, z.string()]);
+
+export const legacyCombatBlockSchema = combatBlockSchema.extend({
+	speed: legacyMovementNumberSchema.optional(),
+	speedFly: legacyMovementNumberSchema.optional(),
+	speedSwim: legacyMovementNumberSchema.optional(),
+	speedClimb: legacyMovementNumberSchema.optional()
+});
 
 export const featureRefSchema = z
 	.object({
@@ -145,11 +157,14 @@ export const raceChoiceSchema = z
 		speedFly: z.number().int().optional(),
 		speedSwim: z.number().int().optional(),
 		speedClimb: z.number().int().optional(),
-		languages: z.array(z.string()).optional(),
 		traits: z.array(featureRefSchema).optional(),
 		annotations: z.array(annotationSchema).optional()
 	})
 	.strict();
+
+export const legacyRaceChoiceSchema = raceChoiceSchema.extend({
+	languages: z.array(z.string()).optional()
+});
 
 export const backgroundChoiceSchema = z
 	.object({
@@ -157,15 +172,24 @@ export const backgroundChoiceSchema = z
 		features: z.array(featureRefSchema).optional(),
 		proficiencies: z
 			.object({
-				skills: z.array(dnd5eSkillNameSchema).optional(),
-				tools: z.array(z.string()).optional(),
-				languages: z.array(z.string()).optional()
+				skills: z.array(dnd5eSkillNameSchema).optional()
 			})
 			.strict()
 			.optional(),
 		annotations: z.array(annotationSchema).optional()
 	})
 	.strict();
+
+export const legacyBackgroundChoiceSchema = backgroundChoiceSchema.extend({
+	proficiencies: z
+		.object({
+			skills: z.array(dnd5eSkillNameSchema).optional(),
+			tools: z.array(z.string()).optional(),
+			languages: z.array(z.string()).optional()
+		})
+		.strict()
+		.optional()
+});
 
 export const classLevelSchema = z
 	.object({
@@ -193,6 +217,86 @@ export const runtimeActionSchema = z
 		target: z.string().optional(),
 		notes: z.string().optional(),
 		annotations: z.array(annotationSchema).optional()
+	})
+	.strict();
+
+export const currencyDenominationSchema = z.enum(['pp', 'gp', 'ep', 'sp', 'cp']);
+
+export const currencyAmountSchema = z
+	.object({
+		amount: z.number().int().min(0),
+		annotations: z.array(annotationSchema).optional()
+	})
+	.strict();
+
+export const currencySchema = z
+	.object({
+		pp: currencyAmountSchema.optional(),
+		gp: currencyAmountSchema.optional(),
+		ep: currencyAmountSchema.optional(),
+		sp: currencyAmountSchema.optional(),
+		cp: currencyAmountSchema.optional()
+	})
+	.strict();
+
+export const roleplayFieldKeySchema = z.enum([
+	'motives',
+	'personalityTraits',
+	'ideals',
+	'bonds',
+	'flaws',
+	'otherBackgroundHistory',
+	'factionsOrgs',
+	'otherCharacterInfo'
+]);
+
+export const roleplayFieldSchema = z
+	.object({
+		body: z.string(),
+		annotations: z.array(annotationSchema).optional()
+	})
+	.strict();
+
+export const roleplaySchema = z
+	.object({
+		motives: roleplayFieldSchema.optional(),
+		personalityTraits: roleplayFieldSchema.optional(),
+		ideals: roleplayFieldSchema.optional(),
+		bonds: roleplayFieldSchema.optional(),
+		flaws: roleplayFieldSchema.optional(),
+		otherBackgroundHistory: roleplayFieldSchema.optional(),
+		factionsOrgs: roleplayFieldSchema.optional(),
+		otherCharacterInfo: roleplayFieldSchema.optional()
+	})
+	.strict();
+
+export const proficiencySourceKindSchema = z.enum([
+	'ancestry',
+	'background',
+	'class',
+	'feature',
+	'other'
+]);
+
+export const proficiencySourceSchema = z
+	.object({
+		kind: proficiencySourceKindSchema,
+		sourceId: z.string().min(1).optional()
+	})
+	.strict();
+
+export const namedProficiencySchema = z
+	.object({
+		name: z.string().min(1),
+		source: proficiencySourceSchema.optional(),
+		annotations: z.array(annotationSchema).optional()
+	})
+	.strict();
+
+export const proficienciesSchema = z
+	.object({
+		languages: z.array(namedProficiencySchema),
+		tools: z.array(namedProficiencySchema)
 	})
 	.strict();
 
@@ -308,16 +412,39 @@ export const dnd5e2014SystemDataSchema = z
 		race: raceChoiceSchema.optional(),
 		background: backgroundChoiceSchema.optional(),
 		classes: z.array(classLevelSchema),
-		runtimeActions: z.array(runtimeActionSchema).optional(),
-		attacks: z.array(runtimeActionSchema).optional(),
+		runtimeActions: z.array(runtimeActionSchema),
+		currency: currencySchema,
+		roleplay: roleplaySchema,
+		proficiencies: proficienciesSchema,
 		spellcasting: spellcastingBlockSchema.optional(),
 		annotations: mirroredSystemDataAnnotationsSchema.optional()
 	})
 	.strict();
 
+export const legacyDnd5e2014SystemDataSchema = dnd5e2014SystemDataSchema
+	.omit({
+		combat: true,
+		race: true,
+		background: true,
+		runtimeActions: true,
+		currency: true,
+		roleplay: true,
+		proficiencies: true
+	})
+	.extend({
+		combat: legacyCombatBlockSchema,
+		race: legacyRaceChoiceSchema.optional(),
+		background: legacyBackgroundChoiceSchema.optional(),
+		runtimeActions: z.array(runtimeActionSchema).optional(),
+		attacks: z.array(runtimeActionSchema).optional(),
+		currency: currencySchema.optional(),
+		roleplay: roleplaySchema.optional(),
+		proficiencies: proficienciesSchema.optional()
+	});
+
 const systemRefSchema = z
 	.object({
-		id: z.literal('dnd5e-2014'),
+		id: z.literal(SYSTEM_ID_5E2014),
 		version: z.string().optional(),
 		source: z.enum(['local', 'remote', 'import']).optional(),
 		annotations: z.array(annotationSchema).optional()
@@ -326,13 +453,26 @@ const systemRefSchema = z
 
 export const characterDocument5e2014Schema = z
 	.object({
+		meta: metaSchema.extend({ schemaVersion: z.literal(CHARACTER_DATA_VERSION_5E2014) }),
+		system: systemRefSchema,
+		identity: identitySchema,
+		features: z.array(featureSchema),
+		inventory: z.array(itemSchema),
+		notes: z.array(noteBlockSchema),
+		systemData: dnd5e2014SystemDataSchema,
+		annotations: z.array(annotationSchema).optional()
+	})
+	.strict();
+
+export const legacyCharacterDocument5e2014Schema = z
+	.object({
 		meta: metaSchema,
 		system: systemRefSchema,
 		identity: identitySchema,
 		features: z.array(featureSchema).optional(),
 		inventory: z.array(itemSchema).optional(),
 		notes: z.array(noteBlockSchema).optional(),
-		systemData: dnd5e2014SystemDataSchema,
+		systemData: legacyDnd5e2014SystemDataSchema,
 		annotations: z.array(annotationSchema).optional()
 	})
 	.strict();

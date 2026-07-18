@@ -17,13 +17,13 @@ For current product scope, in/out-of-scope decisions, and success criteria, use 
 
 ## Current State
 
-- [src/schema/](src/schema/) contains typed Zod-backed data models; 5e 2014 is the only implemented system schema
+- [src/schema/](src/schema/) contains typed Zod-backed data models; 5e 2014 is the only implemented system schema and hydrates supported legacy data into canonical `dnd5e-2014.v2` documents
 - [`src/routes/+page.svelte`](src/routes/+page.svelte) is the home/list view
 - [`src/routes/charsheets/5e/+page.svelte`](src/routes/charsheets/5e/+page.svelte) is the only real sheet page
 - [`src/data.ts`](src/data.ts) currently mixes seed data, store wiring, and localStorage persistence
 - [src/lib/](src/lib/) contains the reusable grid display/editing primitives
 - The 5e UI currently exposes only part of the full schema
-- Vitest is wired for contract tests, but storage coverage and CI are still incomplete
+- Vitest covers schema migration, storage, import/export, and typed edit contracts; CI remains deferred
 - `immutable-json-patch` is the selected RFC 6902 patch library for the field-binding work; reuse the representative JSON Patch fixture in [src/test-utils/jsonPatchFixtures.ts](src/test-utils/jsonPatchFixtures.ts) for patch/binding tests
 
 ## Working Rules
@@ -173,6 +173,25 @@ These are preferences rather than hard boundaries. When work naturally spans bot
 - **Default to Writing Files**: When updates to planning artifacts or code are needed, write the file updates directly to disk by default so they can be reviewed via git tooling between prompts. DO NOT stage (`git add`) changes yourself unless explicitly asked to (see [the git constraints section](#git-constraints)).
 - **Prefer asking forgiveness over permission**: Do not halt to ask for confirmation or permission first unless there is a specific question about product requirements or architectural clarity that you need resolved.
 - **Answer questions directly**: If the prompt is directly a question though, directly answer the question and ask the user if they'd like to proceed based on the answer.
+
+## Review Workflows
+
+When the user asks you to review changes, specifically:
+
+- Do NOT make any direct edits to the code.
+- Summarize the unstaged changes, include the staged changes WHEN SPECIFICALLY REQUESTED.
+- Suggest commit message text should the user wish to proceed.
+
+Otherwise, adjust your behavior based on the specific phrasing:
+
+- **"Review the changes"**: Perform a standard code review. Look for correctness, logical errors, and standard best practices.
+- **"Strategically review the changes"** (or any phrasing indicating another agent wrote the code, or that a thorough analysis is necessary): Act as a strategic reviewer and synthesizer. Do all typical code review exercises but with an eye for scrutiny for cohesion in particular. i.e.:
+  - Scrutinize changes for human and agent readability/maintainability foremost.
+  - Where applicable (addressing ADR or openspec etc.)...
+    - Verify if all proposed objectives and requirements were met.
+    - Clarify what the next backlog item is after we finish review/archival.
+  - Evaluate whether the current changelist and the next item reflect the short vs. long term vision as maintained by our backlog docs. 
+
 
 ## Implementation Fallout & Reconciliation
 

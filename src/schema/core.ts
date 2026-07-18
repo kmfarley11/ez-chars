@@ -15,8 +15,6 @@ import {
 // Core: shared across systems
 // =======================================================
 
-export const SCHEMA_VER = '0.0.1';
-
 export type Id = string;
 
 export type Meta = z.infer<typeof metaSchema>;

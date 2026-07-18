@@ -2,10 +2,11 @@ import { describe, expect, it } from 'vitest';
 import type { GridContentPatch } from '$lib/gridContentTypes';
 import {
 	classFeatureListPathPrefix,
-	inventoryCurrencyPathPrefix,
+	currencyPathPrefix,
 	inventoryListPathPrefix,
 	proficiencyLanguagesPathPrefix,
-	roleplayNotePathPrefix,
+	proficiencyToolsPathPrefix,
+	roleplayFieldPathPrefix,
 	runtimeActionListPathPrefix,
 	scratchpadNotesPathPrefix,
 	spellListLevelPathPrefix
@@ -17,15 +18,15 @@ const malformedPayloadCases: Array<[string, GridContentPatch]> = [
 	['runtime action', { path: [runtimeActionListPathPrefix], value: [{ name: 12 }] }],
 	[
 		'proficiency language',
-		{ path: [proficiencyLanguagesPathPrefix], value: [{ name: 'Elvish', source: 'class' }] }
+		{ path: [proficiencyLanguagesPathPrefix], value: [{ name: 'Elvish', source: 'guild' }] }
 	],
 	[
 		'class feature',
 		{ path: [classFeatureListPathPrefix], value: [{ name: 'Feature', classIndex: -1 }] }
 	],
 	['inventory', { path: [inventoryListPathPrefix, 'other'], value: [{ name: false }] }],
-	['currency', { path: [inventoryCurrencyPathPrefix, 'gp'], value: Number.NaN }],
-	['roleplay note', { path: [roleplayNotePathPrefix, 'motives'], value: 12 }],
+	['currency', { path: [currencyPathPrefix, 'gp'], value: Number.NaN }],
+	['roleplay note', { path: [roleplayFieldPathPrefix, 'motives'], value: 12 }],
 	['scratchpad', { path: [scratchpadNotesPathPrefix], value: [{ title: 'Missing body' }] }],
 	[
 		'annotation',
@@ -46,7 +47,11 @@ describe('5e sheet edit decoder', () => {
 			},
 			{
 				path: [proficiencyLanguagesPathPrefix],
-				value: [{ name: 'Elvish', source: 'race' }]
+				value: [{ name: 'Elvish', source: 'ancestry' }]
+			},
+			{
+				path: [proficiencyToolsPathPrefix],
+				value: [{ name: "Thieves' tools", source: 'class' }]
 			},
 			{
 				path: [classFeatureListPathPrefix],
@@ -66,6 +71,7 @@ describe('5e sheet edit decoder', () => {
 					{ type: 'replace-spell-level', level: 1 },
 					{ type: 'replace-runtime-actions' },
 					{ type: 'replace-proficiency-languages' },
+					{ type: 'replace-proficiency-tools' },
 					{ type: 'replace-class-features' },
 					{ type: 'replace-inventory-group', group: 'weapons' }
 				]
@@ -75,10 +81,10 @@ describe('5e sheet edit decoder', () => {
 
 	it('coalesces currency and organizational note batches into atomic semantic intents', () => {
 		const decoded = decode5eGridPatches([
-			{ path: [inventoryCurrencyPathPrefix, 'gp'], value: 9 },
-			{ path: [inventoryCurrencyPathPrefix, 'sp'], value: 3 },
-			{ path: [roleplayNotePathPrefix, 'motives'], value: 'New motive' },
-			{ path: [roleplayNotePathPrefix, 'factionsOrgs'], value: 'The Harpers' },
+			{ path: [currencyPathPrefix, 'gp'], value: 9 },
+			{ path: [currencyPathPrefix, 'sp'], value: 3 },
+			{ path: [roleplayFieldPathPrefix, 'motives'], value: 'New motive' },
+			{ path: [roleplayFieldPathPrefix, 'factionsOrgs'], value: 'The Harpers' },
 			{
 				path: [scratchpadNotesPathPrefix],
 				value: [{ id: 'scratch-1', title: 'Scratch', body: 'Updated', kind: 'quick' }]

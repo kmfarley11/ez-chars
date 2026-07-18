@@ -1,6 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 import { expectNoBrowserErrors, installBrowserErrorGuard } from './browserTestGuards';
-import { e2eCharacter, e2eStoredCharacters } from './fixtures/characters';
+import {
+	e2eCharacter,
+	e2eLegacyCharacter,
+	e2eLegacyStoredCharacters,
+	e2eStoredCharacters
+} from './fixtures/characters';
 
 const storageKey = 'ez-chars.characters.v1';
 
@@ -123,4 +128,53 @@ test('exports and imports the seeded character backup', async ({ page }, testInf
 	await page.getByRole('button', { name: 'Replace All' }).click();
 	const seededRow = page.locator('tbody tr').filter({ hasText: e2eCharacter.identity.name });
 	await expect(seededRow).toHaveCount(1);
+});
+
+test('hydrates legacy local data before opening and persists the canonical character', async ({
+	page
+}) => {
+	await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), {
+		key: storageKey,
+		value: e2eLegacyStoredCharacters
+	});
+	await page.goto('/');
+	await page
+		.locator('tbody tr')
+		.filter({ hasText: e2eLegacyCharacter.identity.name })
+		.locator('td')
+		.first()
+		.click();
+
+	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-legacy-character/);
+	await expect(page.getByText(/Runtime Actions:\s*Legacy Dash/)).toBeVisible();
+	await expect(page.getByText(/Motives:\s*Protect the migrated party\./)).toBeVisible();
+	await expect
+		.poll(() =>
+			page.evaluate((key) => {
+				const raw = localStorage.getItem(key);
+				if (!raw) return undefined;
+				const character = JSON.parse(raw).characters[0];
+				return {
+					version: character.meta.schemaVersion,
+					hasAttacks: 'attacks' in character.systemData,
+					inventoryIds: character.inventory.map((item: { id: string }) => item.id),
+					gp: character.systemData.currency.gp?.amount,
+					motives: character.systemData.roleplay.motives?.body,
+					languages: character.systemData.proficiencies.languages,
+					speed: character.systemData.combat.speed
+				};
+			}, storageKey)
+		)
+		.toEqual({
+			version: 'dnd5e-2014.v2',
+			hasAttacks: false,
+			inventoryIds: ['legacy-rope'],
+			gp: 4,
+			motives: 'Protect the migrated party.',
+			languages: [
+				{ name: 'Common', source: { kind: 'ancestry' } },
+				{ name: 'Elvish', source: { kind: 'ancestry' } }
+			],
+			speed: 30
+		});
 });
