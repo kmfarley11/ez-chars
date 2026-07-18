@@ -30,7 +30,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: tackle `p1-027`.
+Next recommended targets: tackle `p1-055`, then `p1-060`. Keep `p1-027` as the next structural layout/performance follow-up.
 
 ### Refine backlog and agent workflow after spec-workflow decision
 
@@ -247,6 +247,7 @@ Scope:
 - build on the feature-local route projection and patch modules completed in `p1-045`; do not duplicate their responsibilities
 - improve navigability without changing behavior unnecessarily
 - review duplicated or provenance-bound schema storage that currently forces awkward feature-layer glue
+- leave typed sheet-edit dispatch and persisted 5e data-shape migration to `p1-055` and `p1-060`; this item may relocate those modules after their behavior is established but must not redesign them
 
 Dependency notes:
 
@@ -264,9 +265,7 @@ Suggested implementation slices:
 2. Move storage logic into its own module.
 3. Integrate the feature-local modules created by `p1-045` into the broader folder structure if their final location needs adjustment.
 4. Reorganize folders only after behavior-critical extractions are complete.
-5. Review duplicated 5e schema storage such as proficiencies/languages split across multiple origins, and document or refactor where cross-origin player-earned data should live.
-6. Review inventory storage compared to excalidraw visuals then follow up on schema vs. page implementations. Ensure there is a dedicated space for coinage vs. weapons vs. armor vs. other. And ensure that weapons vs. armor can house proficiency vs. damage type details as applicable.
-7. Follow up on inventory visuals to more closely match the excalidraw visuals after the schema gets properly updated.
+5. Relocate normalized 5e data and edit-reducer modules only if their established ownership boundary benefits from the broader folder reorganization.
 
 Definition of done:
 
@@ -283,7 +282,7 @@ Refinement outputs:
   - Move Svelte components into a dedicated visual folder: `src/lib/components/`.
   - Move localStorage and state persistence helpers into `src/lib/storage/`.
   - Move pure JS helper utilities (formatters, URL parsers) into `src/lib/utils/`.
-  - Review and clean up circular imports and proficiency schema redundancies.
+  - Review and clean up circular imports without changing persisted schema semantics.
 - **Excluded behavior:**
   - Modifying the core player/character JSON schema layout itself.
 - **Ambiguities:**
@@ -291,6 +290,71 @@ Refinement outputs:
 - **Success:**
   - Circular dependency checks report zero errors.
   - All existing storage contract tests continue to pass.
+
+### Replace virtual 5e compatibility patches with typed sheet edit intents
+
+ID:
+
+- `p1-055`
+
+Priority context:
+
+- next recommended target; complete before changing the canonical 5e data shape in `p1-060`
+
+Refinement outputs:
+
+- **Purpose:** Replace the guard-heavy `{ path, value: unknown }` compatibility boundary used by structured 5e card editing with explicit, typed edit intents so supported edits are easier to understand, validate, test, and evolve.
+- **Included behavior:**
+  - Define feature-local, discriminated 5e edit intents for every current virtual edit family: spells, runtime actions, languages, class features, inventory groups, currency, roleplay notes, scratchpad notes, and annotations.
+  - Parse each structured editor payload once at the feature boundary with schema-backed validation rather than repeating ad hoc property and enum guards throughout normalization.
+  - Apply intents through an exhaustive, immutable 5e reducer that preserves unrelated records, stable IDs, atomic multi-field edits, and existing deletion/default behavior.
+  - Rewire card-wide 5e editing to use the typed boundary and retire the virtual-path dispatch chain where it is no longer needed.
+  - Preserve direct primitive RFC 6902 edits and all current user-visible sheet behavior.
+- **Excluded behavior:**
+  - Changing the persisted character schema or storage envelope.
+  - Creating a universal multi-system adapter, reducer signature, or schema registry.
+  - Redesigning sheet layout or editing interactions.
+- **Ambiguities:**
+  - The implementation may return a validated next character or canonical RFC 6902 operations; the OpenSpec design must select the smaller boundary that preserves atomic validation and existing store ownership.
+- **Success:**
+  - Structured card edits no longer enter 5e domain logic as arbitrary virtual paths paired with `unknown` values.
+  - Every supported intent is exhaustively handled and schema-validated at one boundary.
+  - Compatibility tests and browser smoke tests demonstrate unchanged editing, annotation, persistence, and identity behavior.
+  - `sheetPatches.ts` is removed or reduced to a thin transitional adapter rather than remaining the owner of domain edit semantics.
+
+### Normalize the 5e runtime model and migrate legacy persisted shapes
+
+ID:
+
+- `p1-060`
+
+Priority context:
+
+- follow `p1-055` so schema migration can reuse stable typed edit intents instead of expanding the compatibility patch layer
+
+Refinement outputs:
+
+- **Purpose:** Give 5e projections and edit reducers one validated runtime shape with explicit domain ownership, reducing optional-parent guards and eliminating legacy conventions that encode domain meaning through aliases, titles, or tags.
+- **Included behavior:**
+  - Introduce a schema-backed hydration and serialization boundary that converts supported persisted 5e documents into one normalized runtime model and validates data before persistence.
+  - Retire the legacy `attacks` alias in favor of canonical runtime actions through a schema-version migration.
+  - Replace currency-as-tagged-inventory-item storage with an explicit 5e currency shape while preserving imported and locally stored values.
+  - Give roleplay fields stable semantic keys instead of identifying them by note titles, while retaining general scratchpad notes.
+  - Resolve language/proficiency provenance so character-earned, ancestry, background, and class sources can be represented without reconstructing ownership from flattened editor rows.
+  - Preserve IDs, annotations, unrelated inventory and notes, import/export round trips, and existing characters through explicit migrations and contract tests.
+  - Record the chosen runtime/persisted-data boundary and migration policy in a lightweight ADR.
+- **Excluded behavior:**
+  - Adding another game system or fixing the final cross-system registry/adapter API.
+  - Adding rules automation, copyrighted rules content, or new sheet presentation.
+  - Broad repository folder reorganization owned by `p1-050`.
+- **Ambiguities:**
+  - Decide in design whether the normalized runtime model is also the canonical persisted shape or whether serialization deliberately keeps a sparser external document.
+  - Decide the exact provenance representation for proficiencies without treating current race/background storage as the only future source vocabulary.
+- **Success:**
+  - Current and legacy 5e documents load into one normalized, fully validated runtime representation.
+  - Saving upgrades supported legacy data without silent loss, duplicated currency, title-based roleplay collisions, or action alias drift.
+  - Projection and edit code no longer needs fallback reads for legacy aliases or repeated guards for optional parent structures covered by hydration.
+  - Import/export, storage migration, schema, reducer, and browser behavior tests pass.
 
 ## Ideation Sandbox (Unsorted Ideas)
 
