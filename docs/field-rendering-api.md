@@ -9,7 +9,7 @@ The current field behavior works, but the component boundary is split:
 - `GridContent` renders card/grid fields, card fallback `Edit`, card `Notes`, field annotation badges, lists, and compound values.
 - `InlineFieldDraft` renders standalone primitive runtime editors with persistent edit controls and RFC 6902 JSON Patch output.
 - The 5e route composes those side by side in some cards, which makes the page harder to scan and makes future character-sheet surfaces choose between two different field APIs.
-- The 5e route also owns a large amount of projection and binding glue: annotation path derivation, annotation lookup, repeated value/annotation save wiring, optional add-vs-replace handling, and virtual path normalization for lists and schema-backed summaries.
+- The 5e route originally owned a large amount of projection and binding glue: annotation path derivation, annotation lookup, repeated value/annotation save wiring, optional add-vs-replace handling, and virtual path normalization for lists and schema-backed summaries. `p1-045` moved the system-specific portions into nearby projection, patch, and metadata modules while retaining generic helpers in `src/lib/`.
 
 The MVP target is one cohesive field/card interface that can express both runtime/state direct editing and quieter reference/profile card editing while making sheet pages mostly orchestrate which character data tidbits appear in which cards.
 
@@ -238,7 +238,7 @@ Slice 5 implementation note:
 Slice 6 closure note:
 
 - `p1-035` is complete for the current migrated runtime/state field surfaces: the 5e route no longer renders standalone `InlineFieldDraft` blocks beside `GridContent`, and the compatibility `InlineFieldDraft` component now delegates to the shared primitive renderer.
-- The remaining route-local projection builders, virtual path merge helpers, and patch normalization logic are intentionally deferred to `p1-045` rather than expanded inside the field/card API consolidation.
+- `p1-045` subsequently extracted the remaining route-local projection builders, virtual-path merge helpers, and patch normalization logic into feature-local 5e modules without expanding the shared field/card API.
 - Future field/card work should preserve the completed split: descriptor-driven `GridContent` data owns card composition, direct primitive affordances are shortcuts for frequent runtime edits, card-wide Edit remains the comprehensive value/structure fallback, and Notes remains the annotation surface.
 
 ## Guardrails
@@ -246,8 +246,8 @@ Slice 6 closure note:
 - Preserve the `p1-030` behavior: runtime/state fields stay fast to edit, reference/profile fields stay readable and selectable, and annotations stay explicit through Notes.
 - Preserve the `p1-040` boundary: field components emit patch intent; page/store code applies, validates, and persists.
 - Preserve the `p0-040`/`p1-025` performance lessons: do not increase always-mounted dialog/control DOM or add renderer patterns that visibly worsen fast scrolling.
-- Avoid broad 5e projection extraction here. `p1-045` owns moving builders and patch normalization out of the route after this API shape is proven.
-- Do reduce repeated page-level field plumbing where it directly supports the shared field/card API. `p1-035` should define the shape that `p1-045` later extracts, not merely move `InlineFieldDraft` markup around.
+- Keep the completed 5e projections and compatibility patch translation feature-local. Their current signatures are evidence for a future multi-system contract, not a shared adapter API by themselves.
+- Do reduce repeated page-level field plumbing where it directly supports the shared field/card API. `p1-035` defined the renderer-facing shape, and `p1-045` extracted the 5e-specific composition around it.
 - Do not introduce a second new field system. Evolve existing grid and draft primitives.
 - Do not expose more annotation component surfaces to the 5e route. Consolidate around a field/card Notes API, with display/editor components used internally.
 - Prefer adding metadata to projected field/card data over adding page-local glue that separately binds values and annotations.

@@ -51,13 +51,14 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 - major 5e sheet surface for the MVP: overview, quick reference, abilities/proficiencies/features/traits, action-economy runtime summaries, spells, inventory, and background/roleplay/notes, with runtime and organizational regions visually separated
 - field-level editing and annotation UX for surfaced runtime/state fields: high-frequency runtime values have persistent direct edit controls, reference/profile cards keep quieter menu-driven fallback editing, and Notes dialogs support annotation review/add/edit flows
 - consolidated field/card API for surfaced runtime/state proof surfaces: migrated runtime primitive fields render through descriptor-driven `GridContent` cards, inline affordances act as prioritized shortcuts, and card-wide Edit remains comprehensive for card values and structure
+- feature-local 5e sheet metadata, projection, and compatibility-patch modules, leaving the route focused on reactive character selection, layout, and save dispatch while preserving the long-term schema-registry and dynamic-rendering direction
 - JSON import/export with a versioned backup envelope, file download, file validation, replace behavior, and merge-new behavior that skips duplicate character IDs
 - local automated verification with Vitest contract tests, coverage reporting, schema/import-export/storage coverage, and a thin create/edit/reload smoke path
 
 ### Partial
 
 - 5e sheet route still does not expose every optional schema field or deeper 5e detail
-- the target field interaction model, field binding/mutation contract, and field/card API are documented in [docs/field-interaction-model.md](field-interaction-model.md), [docs/field-binding-contract.md](field-binding-contract.md), and [docs/field-rendering-api.md](field-rendering-api.md); the remaining work is route-level projection and patch glue extraction so the sheet is ready for broader feature work
+- the target field interaction model, field binding/mutation contract, and field/card API are documented in [docs/field-interaction-model.md](field-interaction-model.md), [docs/field-binding-contract.md](field-binding-contract.md), and [docs/field-rendering-api.md](field-rendering-api.md); broader feature work can now build on the extracted 5e projection and compatibility-patch boundary
 
 ### Missing
 

@@ -30,7 +30,7 @@ No active P0 items.
 
 ## P1
 
-Next recommended target: tackle `p1-045`, then `p1-027`.
+Next recommended target: tackle `p1-027`.
 
 ### Refine backlog and agent workflow after spec-workflow decision
 
@@ -230,69 +230,6 @@ Refinement outputs:
   - `GridContainerAuto.svelte` is deleted.
   - The character sheet resizes fluidly with zero Javascript-driven layout recalculations.
 
-### Extract 5e sheet projection and patch logic from the route
-
-ID:
-
-- `p1-045`
-
-Size:
-
-- medium-to-large; implement after the field rendering/editing API is consolidated enough to avoid extracting the wrong route shape, and after `p1-022`/`p1-024` unless an urgent feature needs the extraction sooner
-
-Scope:
-
-- reduce the size and responsibility of [src/routes/charsheets/5e/+page.svelte](../src/routes/charsheets/5e/+page.svelte)
-- move 5e-specific `GridContentData` projection builders out of the route
-- move virtual path constants and patch normalization helpers into feature-local modules
-- keep the route focused on selected-character lookup, layout composition, collapse state, and save dispatch
-- do not define the inline-edit interaction model or shared field-binding contract; that belongs to `p1-030` and `p1-040`
-- do not reorganize unrelated stores, fixtures, or schema folders; that belongs to `p1-050`
-- preserve current behavior unless a slice explicitly supports an active feature item
-- build on the completed consolidated field/card API instead of preserving route-local adjacent field editor composition
-- use the profiling guidance in [docs/verification.md](verification.md) if performance evidence points at route/module update cost rather than paint-only scroll cost
-
-Suggested implementation slices:
-
-1. Before or alongside the extraction, propose a compact browser-smoke suite that protects user-facing behavior: open a seeded character from home, edit and reload Current HP, enter/cancel/close Notes editing, and toggle a sheet region and the theme menu. Keep it black-box, using accessible roles/labels and visible behavior rather than component internals, CSS classes, or snapshots.
-2. Extract static 5e sheet metadata and options: ability metadata, skill metadata, spell slot metadata, runtime action options, inventory tags, and roleplay note metadata.
-3. Extract pure projection builders for current sheet surfaces: overview, quick reference, abilities/proficiencies/features/traits, runtime actions, spells, inventory, and organizational notes.
-4. Extract patch normalization helpers for virtual paths: runtime actions, spell levels, proficiency languages, class features, inventory groups/currency, and organizational notes.
-5. Add focused tests around projection and patch helpers once `p0-030` test tooling exists.
-6. Leave [+page.svelte](../src/routes/charsheets/5e/+page.svelte) as mostly layout/orchestration and verify no user-visible behavior changed.
-
-Definition of done:
-
-- [+page.svelte](../src/routes/charsheets/5e/+page.svelte) no longer owns most 5e-specific projection or patch normalization logic
-- virtual path handling has a clearer feature-local home
-- extracted helpers are easier to test and reuse
-- existing sheet editing behavior remains unchanged
-- browser-smoke coverage protects the representative edit, annotation, and UI-state workflows during route-level refactoring
-- relevant local verification from [docs/verification.md](verification.md) passes
-
-Svelte 5 audit finding (2026-07-16):
-
-- The Svelte 5 route is compiler-clean, but its current single-file shape still owns static metadata, projection builders, virtual path constants, and patch normalization in addition to layout orchestration. This is an ownership/readability concern for the planned extraction, not a reason to make an unrelated rune migration.
-- Storybook remains active product scope but is not a prerequisite for this browser-smoke coverage: browser flows protect integrated application behavior, while Storybook provides complementary isolated component and visual review.
-
-Refinement outputs:
-
-- **Purpose:** Clean up the bloated route file [+page.svelte](../src/routes/charsheets/5e/+page.svelte) by separating data projections and JSON patch logic from visual layout orchestration. This makes route edits less error-prone and allows testing raw calculations in isolation.
-- **Included behavior:**
-  - Extract static 5e metadata and dropdown arrays to a local helper file.
-  - Move HP, spell slots, and action patch builders to pure helper functions.
-  - Introduce a browser smoke test suite to guarantee zero layout or behavioral regression during refactoring.
-- **Excluded behavior:**
-  - Restructuring the component structure in `src/lib/`.
-  - Rewriting character loading or persistence stores.
-- **Ambiguities:**
-  - _Location_: Should helpers live in the route folder? (Yes, under `src/routes/charsheets/5e/` since they are highly coupled to the page composition details).
-  - _SvelteKit Page Loaders_: Reconciled. Keep reactive Svelte store subscriptions (like `$charsArray`) inside the `+page.svelte` component script. This ensures character updates propagate dynamically. Only extract static metadata constants and pure, non-reactive JSON patch/projection calculation functions.
-- **Success:**
-  - Route file size decreases significantly and focuses purely on layout composition.
-  - Pure helper modules are fully covered by Vitest tests.
-  - The browser smoke test suite passes cleanly.
-
 ### Refactor the repo structure so stores, fixtures, schema, and 5e feature code are less entangled
 
 ID:
@@ -307,7 +244,7 @@ Scope:
 
 - reduce coupling between stores, fixtures, schema modules, and 5e page-specific logic
 - keep this item focused on module ownership and navigability, not as a substitute for the field-binding/patch abstraction work
-- do not duplicate `p1-045`; route-level 5e projection and patch extraction should happen there first
+- build on the feature-local route projection and patch modules completed in `p1-045`; do not duplicate their responsibilities
 - improve navigability without changing behavior unnecessarily
 - review duplicated or provenance-bound schema storage that currently forces awkward feature-layer glue
 
@@ -315,7 +252,7 @@ Dependency notes:
 
 - This item is a cleanup/supporting refactor, not the primary dependency for inline field editing.
 - Prefer landing the first usable field-binding/patch abstraction before using this item to reorganize where those modules live.
-- Prefer landing `p1-045` before moving or reorganizing 5e feature modules more broadly.
+- `p1-045` is complete, so any broader reorganization should preserve its tested behavior and feature-local boundaries.
 
 Svelte 5 audit finding (2026-07-16):
 
@@ -392,3 +329,4 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 - completed `p1-035`: surfaced runtime/state primitive fields now render through descriptor-driven `GridContent` cards and the shared primitive renderer, the route no longer composes adjacent standalone `InlineFieldDraft` blocks beside migrated cards, card-wide Edit remains comprehensive for value/structure fallback, and Notes remains the annotation review/add/edit surface
 - completed `p1-022`: added Svelte 5 agent tooling and audited the current app, migrating legacy Svelte 4 structures to Svelte 5 runes (`$props()`, `$state()`, `$derived()`) and native event properties (e.g., `onclick` instead of `on:click`) to ensure compiler-clean build and lint checks
 - completed `p1-024`: drafted a new Architecture Decision Record (ADR) on modern platform primitives, audited custom UI overlays, and refactored `MenuButton.svelte` to use the native HTML Popover API and scoped CSS Anchor Positioning, eliminating custom JS focus/click-away event management
+- completed `p1-045`: extracted 5e metadata, grouped sheet projections, and virtual-path compatibility patch translation into tested feature-local modules; the route now focuses on reactive selection, layout, and save dispatch, with Chromium smoke coverage preserving current behavior

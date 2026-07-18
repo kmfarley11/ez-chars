@@ -27,6 +27,7 @@ Use these docs for near-term implementation work:
 - [decisions/2026-07-12-adopt-openspec-workflow.md](decisions/2026-07-12-adopt-openspec-workflow.md): ADR adopting OpenSpec and backlog refinement workflows
 - [decisions/2026-07-17-testing-strategy.md](decisions/2026-07-17-testing-strategy.md): ADR defining the Vitest and Playwright testing boundaries
 - [decisions/2026-07-17-prefer-platform-native-ui-primitives.md](decisions/2026-07-17-prefer-platform-native-ui-primitives.md): ADR preferring platform primitives while documenting retained UI exceptions
+- [decisions/2026-07-17-sheet-architecture-adapter-vs-registry.md](decisions/2026-07-17-sheet-architecture-adapter-vs-registry.md): ADR keeping current sheet helpers feature-local while preserving the long-term registry direction
 
 ## Long-Term Vision
 
