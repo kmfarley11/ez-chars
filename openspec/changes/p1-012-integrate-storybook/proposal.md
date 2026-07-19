@@ -1,25 +1,33 @@
 ## Why
 
-We are preparing for Phase 2 (UX Polish & Playtest Prep) and recognize the need to improve "Dev UX" significantly. Building Svelte 5 components directly within the main character sheet requires navigating complex 5e state hydration and layout grids, making it slow and brittle. We need a way to isolate visual UI components so they can be built, styled, and audited independent of the application logic. This will allow human developers and AI agents to rapidly iterate on visual primitives.
+Phase 2 shifts near-term emphasis toward developer experience so reusable UI work can proceed faster and with less dependence on the full character-sheet state and layout. Human developers and AI agents need an isolated, repeatable way to inspect component states and catch rendering, interaction, and automated accessibility failures early.
 
 ## What Changes
 
-- Initialize Storybook using the official `@storybook/svelte-vite` framework for local development.
-- Configure Storybook to inherit the existing Vite setup (CSS imports, `$components` and `$utils` aliases).
-- Enforce the use of standard TypeScript Component Story Format (CSF) `.stories.ts`.
-- Install and configure `@storybook/addon-a11y` to run real-time accessibility audits (axe-core) on components.
-- Write 2-3 baseline stories for core atoms (e.g., `BaseButton`, `Heading`) as proof of concept.
+- Add a local catalog for developing reusable UI components independently from application and character state.
+- Establish typed component examples as reviewable contracts for important visual and interaction states.
+- Add repeatable browser-backed component and accessibility checks that work both interactively and from a local command.
+- Seed the catalog with representative static, stateful, and input-validation examples that prove the workflow without expanding into page-level coverage.
+
+## Non-Goals
+
+- Cataloging full pages or complex character-sheet layouts in this initial change.
+- Hosting or publishing the component catalog.
+- Adding cloud visual-regression services or continuous-integration workflows.
+- Replacing application end-to-end tests, manual accessibility review, or mobile playtesting.
 
 ## Capabilities
 
 ### New Capabilities
-- `component-sandbox`: A local development sandbox and accessibility testing environment for UI components.
+
+- `component-sandbox`: Isolated local component development with repeatable rendering, interaction, and automated accessibility feedback.
 
 ### Modified Capabilities
+
 None.
 
 ## Impact
 
-- **Code:** Adds new `.stories.ts` files alongside components in `src/lib/components`.
-- **Dependencies:** Adds Storybook and related addons to `devDependencies` in `package.json`.
-- **Workflows:** Adds new `npm run storybook` command to `package.json`. Adds accessibility auditing to the component development loop.
+- **Developer workflow:** Adds a component-focused development and verification loop alongside the existing application workflow.
+- **Tooling:** Adds local development-only dependencies and browser-backed component-test configuration.
+- **Runtime:** Does not change production behavior, character data, storage, or schema boundaries.

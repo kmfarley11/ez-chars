@@ -62,6 +62,16 @@ Verify
 - **Implementation Fallout** and **Repository Reconciliation** are practices to report discoveries, update design documents, and reconcile durable codebase/maintainer knowledge before archiving.
 - For detailed agent guidelines and boundary rules, see [AGENTS.md](AGENTS.md). Particularly the [preferred agent responsibilities section](AGENTS.md#preferred-agent-responsibilities).
 
+### The Draft → Refine Agentic Workflow
+
+When executing complex architectural changes or creating new OpenSpec proposals, we strongly recommend the **Draft → Refine Workflow**:
+
+1. **Mid-Tier Draft**: Use a faster, less complex model to draft the initial proposal, layout the tasks, and write the boilerplate markdown.
+2. **Human Smell Test**: Review the drafted boundaries, scope, and objectives.
+3. **High-Tier Refinement**: Pass the draft to a high-reasoning model and ask it to "Strategically review the changes."
+
+**Why this works:** Mid-tier models are excellent at structurally formatting plans and identifying the "happy path" integration steps. High-tier models excel at scrutinizing those plans to identify framework-specific nuances, systemic edge cases (e.g., test runner pollution), and defensive architecture constraints. Combining them is highly cost-effective and produces superior, resilient architectures.
+
 ## Development
 
 You will need Git LFS installed to fetch the PDF assets used by the repo.

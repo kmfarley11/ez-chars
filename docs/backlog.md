@@ -34,10 +34,10 @@ Next recommended sequence for remaining P1 items:
 
 **Phase 2: UX Polish & Playtest Prep**
 
-1. `p1-012`: Integrate Storybook for isolated component development and accessibility testing
+1. `p1-012`: Integrate Storybook for isolated component development and executable component testing
 2. `p1-005`: Link runtime actions to source weapons, spells, and features (builds on the completed canonical action model from `p1-060`)
 3. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
-3. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
+4. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
 
 _(Note: `p1-010` for GitHub Actions remains deferred until CI needs justify it)._
 
@@ -57,7 +57,7 @@ Status:
 
 - **Complete.** Installed local `@fission-ai/openspec`, updated agent guidelines, repository README, decision records, and backlog instructions.
 
-### Integrate Storybook for isolated component development
+### Integrate Storybook for isolated component development and executable tests
 
 ID:
 
@@ -65,21 +65,25 @@ ID:
 
 Refinement outputs:
 
-- **Purpose:** Provide an isolated local development environment for UI components. This allows human developers and AI agents to rapidly build, test, document, and audit visual primitives without booting the full character sheet or mocking complex 5e state.
+- **Purpose:** Give human developers and AI agents a shared local environment for rapidly building, reviewing, documenting, and testing reusable UI components without booting the full character sheet or preparing complex 5e state.
 - **Included behavior:**
-  - Initialize Storybook using the official `@storybook/svelte-vite` framework.
-  - Configure Storybook to inherit the existing Vite setup (CSS imports, `$components` and `$utils` aliases).
-  - Configure stories to use standard TypeScript Component Story Format (CSF) `.stories.ts`.
-  - Install and configure `@storybook/addon-a11y` to run real-time accessibility audits (axe-core) on components.
-  - Write 2-3 baseline stories for core atoms (e.g., `BaseButton`, `Heading`) as proof of concept.
+  - Adopt the aligned Storybook `10.5.2` package family with the supported `@storybook/sveltekit` framework.
+  - Load the application stylesheet and verify all existing SvelteKit aliases in the component catalog.
+  - Standardize examples on TypeScript Component Story Format `.stories.ts` files.
+  - Configure `@storybook/addon-a11y` and `@storybook/addon-vitest` so the same stories provide interactive dashboard feedback and browser-backed local CLI checks.
+  - Keep existing unit tests and Storybook browser tests isolated in named Vitest projects.
+  - Write baseline stories for `BaseButton`, `Heading`, and interaction-bearing `ValidatedInputField` states.
+  - Document interactive, static-build, and executable component-test commands in the local verification guide.
 - **Excluded behavior:**
-  - Writing stories for complex composite layouts or full pages (e.g., `GridContainer`, `+page.svelte`).
-  - Deploying Storybook to GitHub Pages or static hosting (keep it local-only for now).
-  - Setting up cloud-based visual regression testing (e.g., Chromatic).
+  - Writing stories for full pages or complex composite layouts such as `GridContainer`.
+  - Deploying Storybook to GitHub Pages, static hosting, or CI.
+  - Adding cloud-based visual regression testing such as Chromatic.
+  - Replacing application E2E tests, manual accessibility review, mobile review, or later `p1-020` work.
 - **Ambiguities:** None.
 - **Success:**
-  - A developer can run `npm run storybook` to boot the local dashboard.
-  - `BaseButton` renders correctly, hot-reloads on edits, and displays a passing accessibility audit panel.
+  - `npm run storybook` starts the catalog, renders all three baseline component groups, and hot-reloads component or story edits.
+  - `npm run build-storybook` produces a successful static catalog build without changing the production application build.
+  - `npm run test:storybook -- --run` renders every story in Chromium, runs declared interactions, applies configured automated accessibility rules, and exits unsuccessfully on a rendering, interaction, or accessibility failure.
 
 ### Link runtime actions to source weapons, spells, and features
 
@@ -263,11 +267,9 @@ Refinement outputs:
   - `GridContainerAuto.svelte` is deleted.
   - The character sheet resizes fluidly with zero Javascript-driven layout recalculations.
 
-
 ## Ideation Sandbox (Unsorted Ideas)
 
 This content is a work in progress to dump rough thoughts, brainstorms, and refactor wishes before prioritizing or organizing them.
-
 
 - **[Priority 3] evaluate a Svelte-compatible form library such as TanStack Form or Felte after the first field-binding proof surface lands; prefer reuse for draft state, validation display, dirty tracking, and array editor ergonomics if it keeps local source smaller than custom form infrastructure**
   - _Best Guess_: Evaluate if an external library handles card-wide value validation, dirty checking, and array/nested list mutations more concisely and safely than our custom `FieldDraft` implementation.
