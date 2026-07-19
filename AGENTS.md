@@ -65,6 +65,8 @@ Place Vitest files in nearby `__tests__` folders, such as [`src/schema/__tests__
 Use existing shared test scaffolding from [src/test-utils/](src/test-utils/) for browser-like globals or memory-backed storage; do not duplicate ad hoc `MemoryStorage` or `window` setup inside individual tests.
 Use [src/test-utils/jsonPatchFixtures.ts](src/test-utils/jsonPatchFixtures.ts) for representative nested JSON Patch fixture data; it is purpose-built patch scaffolding, not canonical 5e schema seed data.
 Use [docs/verification.md](docs/verification.md) as the canonical local command guide, including when to run the full gate set, smaller subsets, and coverage reporting.
+For routine source changes, begin with `npm run verify:smoke`; it runs diagnostics, linting, unit tests, the Chromium application smoke suite, and Storybook component checks. It does not replace the full or dependency-change gates in [docs/verification.md](docs/verification.md).
+Use `npm run verify:all` only for a deliberately comprehensive automated pass or when directly requested; it includes audit, coverage, builds, cross-browser, and performance checks.
 
 ### Dependency Change Smoke Gate
 
@@ -96,7 +98,7 @@ This repository uses OpenSpec as the preferred workflow for all active, non-triv
 - **Workflow Skill Overrides**: When executing OpenSpec workflows (explore, propose, apply, archive), agents MUST follow these repository-specific rules over the generic skill instructions:
   - **Explore**: If a feature idea is refined but no proposal is started, explicitly offer to capture the "Refined feature idea" into the `docs/backlog.md` priority queue.
   - **Propose**: When generating `tasks.md`, always ensure the final section includes explicit tasks to prune the completed backlog item from `docs/backlog.md` and re-sequence the "Next recommended sequence" priority queue block.
-  - **Archive**: After performing the archive, reconcile the backlog. Check if the change corresponds to a prioritized backlog item in `docs/backlog.md`. If it does: remove the item from the priority queue, add a brief entry to `## Done Recently`, verify the completed change has been removed from the "Next recommended sequence" block and the remaining targets are properly shifted up, and update `docs/active-goals.md` if the change affects goals.
+  - **Archive**: If the change includes delta specs, ALWAYS sync them to the main specs directory automatically without prompting the user for permission. After performing the archive, reconcile the backlog. Check if the change corresponds to a prioritized backlog item in `docs/backlog.md`. If it does: remove the item from the priority queue, add a brief, timestamped entry to the top of `## Done Recently`, prune older entries in that section so only the 3-5 most recent items remain (to prevent unbounded file growth), verify the completed change has been removed from the "Next recommended sequence" block and the remaining targets are properly shifted up, and update `docs/active-goals.md` if the change affects goals. During this process also ALWAYS include a useful commit message.
 - **Legacy Documentation Policy**: Existing repository documentation (e.g., `docs/field-*.md`, `docs/import-export-json.md`) remains authoritative until an OpenSpec change intentionally supersedes or reconciles it. Do not migrate legacy documentation solely to increase OpenSpec coverage.
 
 ## Change-Classification & ADR Triggers

@@ -86,7 +86,15 @@ Run the dev server:
 npm run dev
 ```
 
-Run local verification as described in [docs/verification.md](docs/verification.md).
+Run the routine local smoke gate before handoff:
+
+```bash
+npm run verify:smoke
+```
+
+It covers diagnostics, linting, unit tests, Chromium application smoke tests, and Storybook component checks. For production builds, dependency changes, cross-browser coverage, or performance checks, follow the complete [local verification guide](docs/verification.md).
+
+For an explicit comprehensive local automated pass, run `npm run verify:all` instead; it is intentionally slower and includes audit, coverage, builds, cross-browser, and performance checks.
 
 ### Browser-test prerequisites
 

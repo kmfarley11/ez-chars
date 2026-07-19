@@ -10,16 +10,21 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
-		"test": "vitest run",
+		"test": "vitest run --project=unit",
 		"test:e2e": "playwright test --project=chromium",
 		"test:e2e:all": "playwright test",
 		"test:perf": "PLAYWRIGHT_PERF=1 playwright test tests/performance.perf.spec.ts --project=chromium",
-		"test:coverage": "vitest run --coverage",
-		"test:watch": "vitest",
+		"test:coverage": "vitest run --project=unit --coverage",
+		"test:watch": "vitest --project=unit",
 		"mcp:svelte": "svelte-mcp",
 		"format": "prettier --write . && prettier --write \"src/**/*.{js,ts}\" --plugin prettier-plugin-tailwindcss",
 		"lint": "prettier --check . && prettier --check \"src/**/*.{js,ts}\" --plugin prettier-plugin-tailwindcss && eslint .",
-		"deploy": "vite build && touch build/.nojekyll && npx gh-pages -d build -t && echo \"View deployed site: https://kmfarley11.github.io/ez-chars/\" && echo \"Monitor deploy branch/status: https://github.com/kmfarley11/ez-chars/tree/gh-pages\""
+		"deploy": "vite build && touch build/.nojekyll && npx gh-pages -d build -t && echo \"View deployed site: https://kmfarley11.github.io/ez-chars/\" && echo \"Monitor deploy branch/status: https://github.com/kmfarley11/ez-chars/tree/gh-pages\"",
+		"storybook": "storybook dev -p 6006 --no-open --disable-telemetry",
+		"build-storybook": "storybook build --disable-telemetry",
+		"test:storybook": "STORYBOOK_TEST=1 vitest --project=storybook",
+		"verify:smoke": "npm run check && npm run lint && npm run test && npm run test:e2e && npm run test:storybook -- --run",
+		"verify:all": "env -u npm_config_allow_scripts npm audit && npm run check && npm run lint && npm run test && npm run test:coverage && npm run build && npm run build-storybook && npm run test:storybook -- --run && npm run test:e2e:all && npm run test:perf"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
@@ -51,7 +56,13 @@
 		"typescript": "^5.0.0",
 		"vite": "^6.2.5",
 		"vitest": "^4.1.6",
-		"zod": "^4.3.6"
+		"zod": "^4.3.6",
+		"storybook": "10.5.2",
+		"@storybook/sveltekit": "10.5.2",
+		"@storybook/addon-vitest": "10.5.2",
+		"@storybook/addon-a11y": "10.5.2",
+		"@vitest/browser-playwright": "^4.1.6",
+		"playwright": "1.61.1"
 	},
 	"dependencies": {
 		"immutable-json-patch": "^6.0.2",

@@ -34,10 +34,9 @@ Next recommended sequence for remaining P1 items:
 
 **Phase 2: UX Polish & Playtest Prep**
 
-1. `p1-012`: Integrate Storybook for isolated component development and executable component testing
-2. `p1-005`: Link runtime actions to source weapons, spells, and features (builds on the completed canonical action model from `p1-060`)
-3. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
-4. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
+1. `p1-005`: Link runtime actions to source weapons, spells, and features (builds on the completed canonical action model from `p1-060`)
+2. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
+3. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
 
 _(Note: `p1-010` for GitHub Actions remains deferred until CI needs justify it)._
 
@@ -56,34 +55,6 @@ Outcome:
 Status:
 
 - **Complete.** Installed local `@fission-ai/openspec`, updated agent guidelines, repository README, decision records, and backlog instructions.
-
-### Integrate Storybook for isolated component development and executable tests
-
-ID:
-
-- `p1-012`
-
-Refinement outputs:
-
-- **Purpose:** Give human developers and AI agents a shared local environment for rapidly building, reviewing, documenting, and testing reusable UI components without booting the full character sheet or preparing complex 5e state.
-- **Included behavior:**
-  - Adopt the aligned Storybook `10.5.2` package family with the supported `@storybook/sveltekit` framework.
-  - Load the application stylesheet and verify all existing SvelteKit aliases in the component catalog.
-  - Standardize examples on TypeScript Component Story Format `.stories.ts` files.
-  - Configure `@storybook/addon-a11y` and `@storybook/addon-vitest` so the same stories provide interactive dashboard feedback and browser-backed local CLI checks.
-  - Keep existing unit tests and Storybook browser tests isolated in named Vitest projects.
-  - Write baseline stories for `BaseButton`, `Heading`, and interaction-bearing `ValidatedInputField` states.
-  - Document interactive, static-build, and executable component-test commands in the local verification guide.
-- **Excluded behavior:**
-  - Writing stories for full pages or complex composite layouts such as `GridContainer`.
-  - Deploying Storybook to GitHub Pages, static hosting, or CI.
-  - Adding cloud-based visual regression testing such as Chromatic.
-  - Replacing application E2E tests, manual accessibility review, mobile review, or later `p1-020` work.
-- **Ambiguities:** None.
-- **Success:**
-  - `npm run storybook` starts the catalog, renders all three baseline component groups, and hot-reloads component or story edits.
-  - `npm run build-storybook` produces a successful static catalog build without changing the production application build.
-  - `npm run test:storybook -- --run` renders every story in Chromium, runs declared interactions, applies configured automated accessibility rules, and exits unsuccessfully on a rendering, interaction, or accessibility failure.
 
 ### Link runtime actions to source weapons, spells, and features
 
@@ -219,6 +190,7 @@ Refinement outputs:
 
 - **Purpose:** Ensure the D&D character sheet is fully accessible and comfortable to use on mobile phones at active game tables.
 - **Included behavior:**
+  - Scaffold and run Storybook accessibility checks (`addon-a11y`) for MenuButton and Dialog components to drive accessibility fixes.
   - Audit all sheet interactive nodes to ensure touch targets meet the 44x44px minimum standard.
   - Maintain correct keyboard navigation order across grid layouts.
   - Verify native `<dialog>` modals correctly trap and release focus.
@@ -257,6 +229,7 @@ Refinement outputs:
 
 - **Purpose:** Eliminate JS ResizeObserver rendering overhead entirely by utilizing modern native CSS Container Queries to handle layout column adjustments based on card width.
 - **Included behavior:**
+  - Add GridCard stories to Storybook to prove the new Container Queries work in isolation before replacing the active grid.
   - Refactor layout elements to declare inline-size container contexts.
   - Implement CSS `@container` rules on child grid configurations to toggle column layouts natively.
   - Remove all ResizeObservers and the custom measurement Svelte component.
@@ -281,24 +254,8 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 
 ## Done Recently
 
-- split the docs between the active MVP working set and long-term vision docs
-- established [AGENTS.md](../AGENTS.md) as the shortest AI-facing entry point
-- completed the `Add real character management` backlog item
-- completed the [src/lib/](../src/lib/) grid cleanup backlog
-- completed `p0-010`: the 5e sheet now exposes the major MVP runtime and organizational sections, including seeded runtime action data, with check/lint/build passing
-- completed the focused `p0-040` scroll-performance pass: reduced hidden dialog DOM, simplified hover/paint costs, removed broad `GridContainerAuto` mutation observation, and moved residual jank follow-up to `p1-025`
-- completed `p1-015`: added a fast Chromium Playwright smoke suite covering seeded character navigation, responsive section collapse, Current HP editing, annotations, and JSON backup/restore; Firefox also passes, with testing strategy and execution boundaries documented
-- completed `p1-026`: routine Playwright flows now fail on browser console errors and ResizeObserver loop warnings; on-demand scroll-frame profiling and a Firefox Profiler/paint-debug workflow establish repeatable performance baselines and escalation guidance
-- completed `p1-025` diagnostic: a headed Firefox recording showed negligible synchronous reflow and scroll-handler time, so the cached-width/ResizeObserver trial was reverted; repeatable performance checks are deferred to `p1-026` after Playwright E2E, while `p1-027` owns the future native grid-model replacement
-- completed `p0-020`: JSON backup/restore supports a versioned export envelope, file download, import file selection, import validation, replace-all import, and merge-new import that skips duplicate character IDs
-- completed home action button polish: shared button chrome now aligns Create, Import, Export, and import apply actions consistently
-- completed `p0-030`: local automated verification now includes Vitest tooling, schema/import-export/storage contract tests, a create/edit/reload smoke path, V8 coverage reporting, shared browser test scaffolding, and [docs/verification.md](verification.md)
-- completed `p1-040`: field-level binding now uses an RFC 6902 JSON Patch contract, `immutable-json-patch` verification, split value/annotation patch projection, `FieldDraft`, a Current HP runtime proof surface, and documented field/page/store responsibility boundaries
-- completed the behavioral `p1-030` field interaction pass: runtime/state primitives have persistent direct edit controls, field annotations are accessible through explicit Notes affordances, card-wide Edit remains a value/structure fallback, and card Notes dialogs now handle annotation review/add/edit flows
-- completed `p1-035`: surfaced runtime/state primitive fields now render through descriptor-driven `GridContent` cards and the shared primitive renderer, the route no longer composes adjacent standalone `InlineFieldDraft` blocks beside migrated cards, card-wide Edit remains comprehensive for value/structure fallback, and Notes remains the annotation review/add/edit surface
-- completed `p1-022`: added Svelte 5 agent tooling and audited the current app, migrating legacy Svelte 4 structures to Svelte 5 runes (`$props()`, `$state()`, `$derived()`) and native event properties (e.g., `onclick` instead of `on:click`) to ensure compiler-clean build and lint checks
-- completed `p1-024`: drafted a new Architecture Decision Record (ADR) on modern platform primitives, audited custom UI overlays, and refactored `MenuButton.svelte` to use the native HTML Popover API and scoped CSS Anchor Positioning, eliminating custom JS focus/click-away event management
-- completed `p1-045`: extracted 5e metadata, grouped sheet projections, and virtual-path compatibility patch translation into tested feature-local modules; the route now focuses on reactive selection, layout, and save dispatch, with Chromium smoke coverage preserving current behavior
-- completed `p1-055`: replaced virtual 5e patch-domain dispatch with a schema-backed decoder and exhaustive typed intent reducer, preserving atomic edits, stable identities, direct primitive RFC 6902 editing, and current browser behavior
-- completed `p1-060`: introduced `dnd5e-2014.v2` character hydration/serialization, migrated supported action aliases, tagged currency, titled roleplay fields, split proficiency provenance, and movement strings into one canonical model, rewired storage/import/export and 5e sheet code, and retained cross-system core flexibility with migration, round-trip, and browser smoke coverage
-- completed `p1-050`: refactored the repo structure, created dedicated directories for $components, $storage, and $utils, configured Vite aliases, extracted data files into $fixtures, and updated imports to improve codebase maintainability
+- `2026-07-19` completed `p1-012`: added a local SvelteKit Storybook catalog with typed BaseButton, Heading, and ValidatedInputField stories; isolated browser-backed interaction and automated accessibility checks now run through the Storybook Vitest project
+- `2026-07-18` completed `p1-050`: refactored the repo structure, created dedicated directories for $components, $storage, and $utils, configured Vite aliases, extracted data files into $fixtures, and updated imports to improve codebase maintainability
+- `2026-07-18` completed `p1-060`: introduced `dnd5e-2014.v2` character hydration/serialization, migrated supported action aliases, tagged currency, titled roleplay fields, split proficiency provenance, and movement strings into one canonical model, rewired storage/import/export and 5e sheet code, and retained cross-system core flexibility with migration, round-trip, and browser smoke coverage
+- `2026-07-18` completed `p1-055`: replaced virtual 5e patch-domain dispatch with a schema-backed decoder and exhaustive typed intent reducer, preserving atomic edits, stable identities, direct primitive RFC 6902 editing, and current browser behavior
+- `2026-07-18` completed `p1-045`: extracted 5e metadata, grouped sheet projections, and virtual-path compatibility patch translation into tested feature-local modules; the route now focuses on reactive selection, layout, and save dispatch, with Chromium smoke coverage preserving current behavior

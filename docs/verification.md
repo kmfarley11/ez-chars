@@ -10,6 +10,26 @@ Use these commands to verify changes before handing work back.
 
 This document is the canonical operational guide for verification commands, performance thresholds, and profiling response. Keep decision rationale in the linked records rather than duplicating it here.
 
+## Routine Smoke Gate
+
+```bash
+npm run verify:smoke
+```
+
+Runs the normal pre-handoff feedback loop: Svelte diagnostics, formatting and ESLint, unit tests, Chromium application smoke tests, and headless Chromium Storybook interaction/accessibility checks. It stops at the first failure.
+
+This is a convenience command, not a replacement for the full or dependency-change gates below. It intentionally omits production and static-Storybook builds, coverage, `npm audit`, cross-browser tests, and performance checks.
+
+## Comprehensive Automated Gate
+
+```bash
+npm run verify:all
+```
+
+Runs every non-interactive automated check: dependency audit; diagnostics; formatting and linting; unit tests and coverage; production and static-Storybook builds; Storybook browser checks; Chromium, Firefox, and WebKit application smoke tests; and the Chromium performance baseline. Use it for a comprehensive local handoff or when explicitly requested, rather than as the routine iteration command.
+
+`verify:all` runs `test:e2e:all`, which already includes Chromium, so it does not also run the redundant Chromium-only `test:e2e` command.
+
 ## Main Gates
 
 Run the full set before considering behavior, schema, storage, import/export, or release-sensitive changes complete:
@@ -21,7 +41,7 @@ npm run lint
 npm run build
 ```
 
-For doc-only or narrow style-only changes, run the relevant subset and state what you skipped.
+For doc-only or narrow style-only changes, run the relevant subset and state what you skipped. For routine source changes, start with `npm run verify:smoke`; run the full set or dependency-change requirements when their scope applies.
 
 ## Test Commands
 
@@ -30,6 +50,23 @@ npm run test
 ```
 
 Runs the Vitest contract and smoke tests once.
+
+## Component Catalog
+
+```bash
+npm run storybook
+```
+
+Starts the local Storybook catalog at `http://localhost:6006` without opening a browser. Use it to inspect component states, the Controls panel, and the Accessibility panel while iterating; cataloged component and story edits hot-reload.
+
+```bash
+npm run build-storybook
+npm run test:storybook -- --run
+```
+
+The first command builds the local static catalog into the ignored `storybook-static/` directory. The second runs every catalog story in headless Chromium, including declared play-function interactions and configured automated accessibility checks. It is separate from `npm run test`, which remains the Node-based unit suite.
+
+Automated accessibility checks report supported machine-detectable findings only. They do not replace keyboard, focus, screen-reader, touch-target, responsive-layout, or table-play review; retain those checks for the relevant application work, including `p1-020`.
 
 ## Browser E2E Commands
 

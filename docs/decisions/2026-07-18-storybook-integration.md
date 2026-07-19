@@ -69,3 +69,8 @@ Choose Option 3.
 - Added a third interaction-bearing baseline story so the proof surface validates more than static rendering.
 - Added deterministic dependency setup, test-project isolation, required repository gates, and explicit limits on automated accessibility coverage.
 - Implementation is planned through OpenSpec change `p1-012-integrate-storybook`.
+
+### 2026-07-19 Implementation reconciliation
+
+- Kept the unit and Storybook Vitest projects independently configured: the unit project extends the application Vite configuration, while the catalog project loads SvelteKit only to transform Svelte components before the Storybook Vitest addon applies catalog configuration.
+- Kept the GitHub Pages base for unit tests, development, and production, but use the origin root only under the `STORYBOOK_TEST` command because Vitest Browser Mode serves its local runner there.

@@ -2,7 +2,7 @@ import adapter from '@sveltejs/adapter-static';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 // Keep base path stable across dev + production for GitHub Pages parity.
-const baseDir = '/ez-chars';
+const baseDir = process.env.STORYBOOK_TEST ? '' : '/ez-chars';
 
 const config = {
 	preprocess: vitePreprocess(),

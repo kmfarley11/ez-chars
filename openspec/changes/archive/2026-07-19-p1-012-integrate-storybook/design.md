@@ -93,3 +93,10 @@ Document the interactive server, static build, and component-test commands in th
 ## Open Questions
 
 None.
+
+## Implementation Reconciliation
+
+### 2026-07-19
+
+- The unit project extends the application Vite configuration, while the Storybook project loads SvelteKit only for Svelte transformation and lets the Storybook Vitest addon supply its own catalog configuration. This prevents unit-test settings from leaking into browser-backed catalog checks.
+- The SvelteKit deployment base is empty only when the `STORYBOOK_TEST` command environment is set. Vitest Browser Mode serves its runner at the origin root; retaining the GitHub Pages base there prevented catalog tests from loading. Unit, development, and production paths retain `/ez-chars`.
