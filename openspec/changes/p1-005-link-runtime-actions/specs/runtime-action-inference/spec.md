@@ -52,6 +52,28 @@ The system SHALL preserve the ability to create and edit manual, unlinked action
 - **WHEN** a user chooses to add a manual custom action
 - **THEN** a new action SHALL be added without a source link
 
+### Requirement: Runtime Action Summary and Bulk Editing
+
+The system SHALL present each runtime action as one concise entry that prioritizes its playable summary while retaining the existing card-level bulk editing and annotation workflows.
+
+#### Scenario: Viewing an action with player-authored notes
+
+- **WHEN** a runtime action has a name, timing, category, and non-empty notes
+- **THEN** its entry SHALL present the name, timing, and category as the primary summary
+- **AND** its notes SHALL appear beneath or after that summary as visually secondary italic text
+- **AND** the action SHALL NOT be duplicated in a separate source-status list
+
+#### Scenario: Viewing an action without notes
+
+- **WHEN** a runtime action has no authored note content
+- **THEN** its entry SHALL remain concise without displaying an empty-note placeholder
+
+#### Scenario: Using bulk action editing
+
+- **WHEN** a user needs to add, remove, or edit multiple runtime actions together
+- **THEN** the existing card-level bulk Edit workflow SHALL remain available
+- **AND** the existing card-level Notes workflow SHALL remain available for annotation/reference notes
+
 ### Requirement: Explicit Action Resync
 
 The system SHALL allow users to explicitly refresh a linked action's name and notes from its source item without replacing the action or its other user-edited fields.
@@ -67,15 +89,22 @@ The system SHALL allow users to explicitly refresh a linked action's name and no
 - **WHEN** the linked source item's notes have been removed and the user resyncs the action
 - **THEN** stale notes from the previous action snapshot SHALL no longer be present
 
-### Requirement: Source Status and Navigation
+### Requirement: Source Commands and Navigation
 
-The system SHALL distinguish linked actions from custom actions and SHALL provide a keyboard-accessible way to navigate from a linked action to its source item.
+The system SHALL keep source-specific commands attached to the linked action they affect and SHALL provide a keyboard-accessible way to navigate from that action to its source item without adding a separate source-status list.
 
-#### Scenario: Viewing actions in the list
+#### Scenario: Viewing a linked action
 
-- **WHEN** the user views runtime actions
-- **THEN** each linked action SHALL display its linked status and source item name
-- **AND** each custom action SHALL be presented without a source-navigation control
+- **WHEN** the user views a runtime action linked to an inventory item
+- **THEN** that action's entry SHALL expose a concise source control or menu containing source navigation and resync commands
+- **AND** the source item name SHALL be available within those commands
+- **AND** the action SHALL NOT appear in a second source-management list
+
+#### Scenario: Viewing a custom action
+
+- **WHEN** the user views a runtime action without a source link
+- **THEN** its entry SHALL NOT expose source navigation or resync commands
+- **AND** it SHALL NOT require a persistent custom-action label
 
 #### Scenario: Navigating to a source item
 

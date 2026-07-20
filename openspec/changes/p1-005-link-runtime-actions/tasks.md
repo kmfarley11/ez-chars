@@ -23,17 +23,23 @@
 ## 4. Feature-Local UI & Storybook
 
 - [x] 4.1 Build a feature-local 5e runtime-action component that composes the existing `GridContent` editor with inventory suggestions and linked/custom source controls; retain manual creation in loading, empty, and failure states.
-- [x] 4.2 Wire suggestion acceptance and explicit "Resync from source" controls to the new typed intents, with visible linked status and source item names.
+- [x] 4.2 Wire suggestion acceptance and explicit "Resync from source" controls to the new typed intents and source item resolution.
 - [x] 4.3 Implement route-owned source navigation that resolves the item's current inventory group, scrolls its focusable card wrapper into view, and moves keyboard focus there without adding 5e semantics to generic grid primitives.
 - [x] 4.4 Provide a deterministic injectable suggestion loader and add Storybook stories for resolved suggestions, pending, empty, rejected, linked, custom, and source-control interaction states with automated accessibility checks.
 - [x] 4.5 Follow the repository Svelte 5 agent workflow while implementing the component and keep any generic primitive change separately justified if actual implementation constraints invalidate composition.
 - [x] 4.6 Reconcile the human Storybook playground with a small stateful harness that applies real projection, patch-decoding, and typed-intent behavior for edits, suggestion acceptance, and resync while retaining deterministic scenario loaders and callback assertions.
+- [ ] 4.7 Add a feature-local row projection and render each runtime action once with name, timing, category, optional target metadata, and non-empty notes as secondary italic content.
+- [ ] 4.8 Retain the existing collection-level `GridContent` Edit and Notes workflows without duplicating the runtime summary; add only a semantic-free controls-only presentation option if composition requires it, with no per-row editing or annotation contract.
+- [ ] 4.9 Remove the separate action-source status list and place View-source and Resync commands in one compact, keyboard-accessible menu on each linked action row; custom actions receive no source menu or persistent status label.
+- [ ] 4.10 Update the stateful Storybook playground and deterministic scenario stories to cover visible authored notes, retained card-level Edit/Notes workflows, compact linked-source commands, custom actions, and suggestion request states.
 
 ## 5. Behavioral Verification
 
 - [x] 5.1 Add a focused Playwright flow covering suggestion acceptance, persistence after reload, source navigation, source edit plus explicit resync, and deletion fallback; assert through visible labels, roles, focus, and stored user-visible behavior.
 - [x] 5.2 Run `npm run verify:smoke`, `npm run test:coverage`, `npm run build`, and `npm run build-storybook`, and report any environmental blocker exactly.
 - [x] 5.3 Validate the final planning/implementation reconciliation with `openspec validate p1-005-link-runtime-actions --type change --strict`.
+- [ ] 5.4 Add focused projection/component contracts and update the Chromium flow to prove authored notes remain visible, source commands navigate/resync, card-level Edit/Notes remain available, and deletion fallback removes source controls without removing the action.
+- [ ] 5.5 Re-run `npm run verify:smoke`, `npm run test:coverage`, `npm run build`, `npm run build-storybook`, and strict OpenSpec validation after the row-oriented refinement.
 
 ## 6. Backlog Updates & Reconciliation
 
@@ -41,6 +47,7 @@
 - [x] 6.2 Move completed inventory-source item `p1-005` to `Done Recently` while preserving refined `p1-061` for spell and feature sources; reconcile its stable-identity, suggestion, navigation, deletion, and atomic-union details only if implementation evidence changes its assumptions.
 - [x] 6.3 Remove completed `p1-005` from the `Next recommended sequence` block, keep `p1-061` explicitly prioritized, and preserve the relative priority of `p1-027` and `p1-020` unless implementation evidence changes it.
 - [x] 6.4 Update `docs/active-goals.md`, `docs/import-export-json.md`, and other current-schema references from v2 to v3 where applicable.
+- [ ] 6.5 Reconcile the runtime-action ADR, active-goal wording, and provisional `p1-005` Done Recently entry with the exact row-oriented implementation while preserving both `p1-061` and the generic collection-interaction backlog follow-up.
 
 ## Executor Recommendation
 

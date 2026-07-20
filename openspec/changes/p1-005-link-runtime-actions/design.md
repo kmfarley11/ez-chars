@@ -10,6 +10,7 @@ The current canonical 5e character layout is the strict, versioned `dnd5e-2014.v
 
 - Suggest runtime-action snapshots from equipped inventory items through a narrow 5e-specific asynchronous boundary.
 - Persist accepted actions with an atomic item-source link while keeping every accepted action independently editable.
+- Keep the runtime summary player-focused by presenting each action once with its note content visible while retaining the current card-level bulk editing controls.
 - Keep ID allocation, reducer behavior, asynchronous component states, and migration tests deterministic.
 - Establish an inventory implementation that can be widened to spell and feature sources through a subsequent explicit change rather than a speculative present-day adapter contract.
 
@@ -19,6 +20,7 @@ The current canonical 5e character layout is the strict, versioned `dnd5e-2014.v
 - Implement automatic field propagation or per-field override tracking. The source relationship supports status, navigation, and explicit resync; it is not a live normalized view.
 - Add external compendium fetching, a bundled SRD rules database, rules automation, a multi-system registry, or a universal source adapter.
 - Change the generic core item or feature schemas.
+- Redesign item-level editing for every grid-backed collection or rename the repository-wide annotation Notes affordance.
 
 ## Decisions
 
@@ -67,11 +69,15 @@ Add feature-local `accept-runtime-action-suggestion` and `resync-runtime-action`
 - The existing `replace-runtime-actions` edit path must continue spreading the current record so ordinary edits preserve source metadata.
 - `replace-inventory-group` computes removed IDs from the previous records in the edited group and the committed replacement records, then strips matching action-source links in the same validated transaction. Action fields and order remain unchanged.
 
-### 5. Compose feature-local source controls around the generic editor
+### 5. Compose row-oriented runtime actions around the existing bulk editor
 
-Build a 5e-local runtime-action component that composes the existing `GridContent` action editor with suggestion and per-action source controls. Do not add item/action semantics to `GridContent` and do not create a generic extension API solely for this feature.
+Build a 5e-local runtime-action component that owns the player-facing action list. Each action appears exactly once: name, timing, and category form its primary summary; an optional target may remain concise secondary metadata; and non-empty player-authored notes appear as secondary italic text. Remove the separate action-source status list.
 
-The component receives a suggestion loader and callbacks for acceptance, resync, and navigation. Production uses the inventory suggestion function; Storybook and component tests inject resolved, pending, and rejected loaders so loading, empty, failure, linked, and custom states are deterministic. Storybook wraps the component in a small stateful harness that applies the same projection, patch decoder, and typed reducer path as production, so the catalog remains a useful human playground rather than stopping at callback-spy assertions. Manual action creation through the existing editor remains available in every request state.
+Retain one `GridContent` instance with the original collection descriptor so its existing card-level Edit and Notes workflows remain the only value-editing and annotation entry points in this change. If composition requires suppressing the generic value summary to avoid duplicating the feature-local list, permit only the smallest semantic-free controls-only presentation option. Do not add per-action editor descriptors, direct row Edit/Notes controls, runtime-action callbacks, or source semantics to the generic grid API.
+
+For linked actions, render one compact feature-local source menu on the action row with commands such as "View Longsword" and "Resync from source." Custom actions render no source menu and need no persistent custom-status label. This keeps source operations discoverable without duplicating every action in a second list.
+
+The component continues to receive a suggestion loader and callbacks for acceptance, resync, and navigation. Production uses the inventory suggestion function; Storybook and component tests inject resolved, pending, and rejected loaders so loading, empty, failure, linked, and custom states are deterministic. Storybook's stateful harness applies the same projection, patch decoder, and typed reducer path as production so row presentation, bulk editing, annotation access, acceptance, and resync remain useful to humans and testable in the browser. Manual and bulk action creation remain available in every suggestion-request state.
 
 Source navigation remains route-owned because the route owns sheet layout. It resolves the item to its current inventory group, scrolls a focusable wrapper around that group card into view, and moves focus to the wrapper. This supplies a concrete keyboard-visible destination without teaching the generic grid component about runtime-action links.
 
@@ -84,7 +90,8 @@ This change completes only the inventory slice of the original `p1-005` outcome.
 - **[Risk] A data-layout bump adds migration work for one optional field.** → Use the sequential migration boundary built by `p1-060`; the v2-to-v3 transformation changes only the version marker and is protected by identity, semantic-equivalence, idempotence, storage, and import/export tests.
 - **[Risk] Asynchronous results become stale before acceptance.** → Revalidate the source item's existence and equipped state inside the acceptance reducer transaction.
 - **[Risk] Resync erases unrelated customization.** → Update only `name` and `notes`, test preservation of every other current field, and treat absent source notes as an intentional clearing operation.
-- **[Risk] Feature-local UI duplicates generic editing behavior.** → Compose the existing `GridContent` editor instead of reimplementing it; keep only suggestion/source controls in the feature-local wrapper.
+- **[Risk] Feature-local rows duplicate the generic summary.** → Render the runtime summary only in the feature-local list and, if required, use a controls-only presentation option on the one collection-level `GridContent` instance rather than hiding duplicate output through CSS or duplicating editor logic.
+- **[Risk] “Notes” may be confused with authored action notes.** → Retain the existing annotation-dialog label for consistency in this change and defer repository-wide annotation terminology to the collection-interaction UX follow-up.
 - **[Risk] The item-only schema is mistaken for abandonment of spells/features.** → Preserve the three-kind architecture in the ADR and keep refined follow-up `p1-061` explicitly sequenced during backlog reconciliation.
 - **[Trade-off] Snapshots duplicate source text.** → Accept the small local-storage cost for offline stability, independent editing, and graceful source deletion; explicit resync makes the duplication manageable.
 
@@ -94,8 +101,9 @@ This change completes only the inventory slice of the original `p1-005` outcome.
 2. Add v3 schemas and a pure v2-to-v3 migration; route pre-v2 inputs sequentially through v2 and then v3.
 3. Rewire the version constant, factory, hydration, serialization, fixtures, storage, and import/export expectations to the current v3 layout.
 4. Add source-link behavior and UI only after old and current unlinked documents hydrate successfully.
-5. If implementation is rolled back before release, restore the v2 current-schema selection before any v3 document is distributed. Once v3 documents are in use, retain the migration and correct forward rather than silently relabeling the shape.
+5. Replace the first-pass source-status list with the row-oriented runtime summary, compact linked-source controls, and retained card-level bulk workflows without changing the persisted v3 contract.
+6. If implementation is rolled back before release, restore the v2 current-schema selection before any v3 document is distributed. Once v3 documents are in use, retain the migration and correct forward rather than silently relabeling the shape.
 
 ## Open Questions
 
-None block implementation. Spell and feature identity/source semantics remain deliberately deferred to the required follow-up change.
+None block implementation. Spell and feature identity/source semantics remain deliberately deferred to the required follow-up change. The repository-wide name for annotation/reference-note affordances remains a non-blocking UX follow-up; this change retains the current Notes label.

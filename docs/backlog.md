@@ -231,6 +231,12 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 
 ### Raw Human Ideation, Unsorted
 
+- Revisit collection-row edit and annotation interaction UX across runtime actions, inventory, spells, features, proficiencies, and other aggregate item renderings.
+  - _Why_: Permanent Edit and Notes buttons on every row could overwhelm dense sheet surfaces and keyboard tab order, while bulk-only dialogs make focused changes cumbersome and hide item-local annotation context.
+  - _Explore_: A consistent row-action model; one compact explicit menu; hover/focus emphasis; persistent indicators when annotations exist; optional right-click or long-press shortcuts that open the same actions; and whether the annotation affordance should be renamed from Notes to Annotations.
+  - _Constraints_: Preserve text selection and copying, provide equivalent mouse/keyboard/touch paths, never require hover or long-press, retain explicit focus behavior, and keep bulk editing as a fallback during migration. Build on [the field interaction model](field-interaction-model.md) and [field rendering API](field-rendering-api.md) rather than adding collection-specific conventions independently.
+  - _Open questions_: Which collection should prove the pattern, whether row selection and editing should remain distinct actions, when controls should be persistent versus revealed, how annotation presence changes affordance priority, and whether context-menu gestures are valuable enough to support as secondary shortcuts.
+  - _Refinement trigger_: Explore before expanding direct per-item controls across collections or standardizing new `GridContent` row-action APIs; coordinate sequencing with the accessibility/mobile review so that review evaluates the intended interaction model.
 - Consider rebasing the schemas before we actually cut a live playtest (i.e reset the schema to v1 or v0, prune old unused schema versions)
 - Consider an in-app side panel to help host the character's system-relevant SRD pdf for player convenience.
   - Consider that srd ref links could autonav in the side panel instead of a new tab.
