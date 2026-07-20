@@ -90,3 +90,11 @@ To ensure the Logic Transformer does not become tangled with the UI, we will int
 - **Snapshot Semantics:** The source link is referential metadata, while action fields remain materialized snapshots. This intentionally duplicates a small amount of text to preserve offline stability, independent editing, and graceful fallback when a source is deleted. Resync replaces only source-owned snapshot fields; automatic bubbling and override masks remain deferred pending playtest evidence.
 - **Source-Specific Seam:** The first suggestion function is explicitly inventory-specific. Spell and feature lookup may add separate narrow functions or a composition layer only after their concrete identity and retrieval requirements are known.
 - **Required Follow-Up:** Completing the inventory slice does not complete the spell/feature portion of the decision. Refined backlog item `p1-061` owns stable spell/feature identity, suggestions, navigation, deletion fallback, and widening the atomic source union.
+
+**2026-07-19: Inventory-Slice Implementation Outcome**
+
+- The canonical layout is now `dnd5e-2014.v3`. Its strict runtime-action source schema accepts only `{ kind: 'item', id }`; v2 and older supported documents migrate sequentially without invented links.
+- Suggestion generation remains one deterministic, asynchronous, inventory-specific function. Acceptance and resync commit through feature-local typed intents, including commit-time source validation and injected action-ID allocation.
+- The 5e runtime-action component composes the existing grid editor and owns suggestion/source controls. The route owns inventory-group navigation and focus. No generic grid primitive or universal source contract was introduced.
+- Source edits leave action snapshots unchanged until explicit resync, and source deletion removes links atomically while preserving action fields and order. Storage, import/export, Storybook, reducer, and Chromium flows cover these invariants.
+- No material deviation widens the approved boundary. `p1-061` remains the next recommended P1 item and must resolve spell/feature identity and eligibility before widening the source union.

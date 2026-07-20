@@ -60,6 +60,6 @@ The decoder also returns unchanged canonical card patches that do not require 5e
 
 ### 2026-07-18: `p1-060` canonical character data
 
-The feature-local projection and typed reducer now receive only hydrated `dnd5e-2014.v2` characters. Historical action aliases, currency inventory tags, fixed-roleplay note titles, and ancestry/background proficiency ownership are confined to character migration. The steady-state 5e modules read and write explicit semantic groups.
+The feature-local projection and typed reducer now receive only hydrated `dnd5e-2014.v3` characters. Historical action aliases, currency inventory tags, fixed-roleplay note titles, and ancestry/background proficiency ownership are confined to character migration. The steady-state 5e modules read and write explicit semantic groups.
 
 The shared core document intentionally remains less prescriptive: its root collections are still optional, while the current 5e schema requires the structural empty groups supported by this sheet. This preserves the registry direction without treating one system's proven runtime defaults as a universal contract.

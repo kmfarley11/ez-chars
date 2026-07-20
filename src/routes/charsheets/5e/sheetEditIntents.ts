@@ -1,5 +1,6 @@
 import { applyGridPatches } from '$utils/characterGridHelpers';
 import type { GridContentBindPath } from '$utils/gridContentTypes';
+import type { RuntimeActionSuggestion } from '$lib/compendium/dnd5e2014/suggestInventoryRuntimeActions';
 import { z } from 'zod';
 import { createId as createProductionId } from '../../../schema/helpers';
 import {
@@ -114,6 +115,8 @@ export type ScratchpadEditorPayload = z.infer<typeof scratchpadEditorPayloadSche
 export type SheetEditIntent =
 	| { type: 'replace-spell-level'; level: SpellListLevel; spells: SpellEditorPayload }
 	| { type: 'replace-runtime-actions'; actions: RuntimeActionEditorPayload }
+	| { type: 'accept-runtime-action-suggestion'; suggestion: RuntimeActionSuggestion }
+	| { type: 'resync-runtime-action'; actionId: string }
 	| { type: 'replace-proficiency-languages'; languages: ProficiencyEditorPayload }
 	| { type: 'replace-proficiency-tools'; tools: ProficiencyEditorPayload }
 	| { type: 'replace-class-features'; features: ClassFeatureEditorPayload }
@@ -254,6 +257,65 @@ export const reduce5eSheetEditIntents = (
 				break;
 			}
 
+			case 'accept-runtime-action-suggestion': {
+				const sourceItem = candidate.inventory.find(
+					(item) => item.id === intent.suggestion.source.id && item.equipped === true
+				);
+				if (!sourceItem) {
+					return {
+						ok: false,
+						issues: [
+							{
+								code: 'invalid-intent-target',
+								message: `Action suggestion source item ${intent.suggestion.source.id} is missing or no longer equipped.`
+							}
+						]
+					};
+				}
+				candidate.systemData.runtimeActions = [
+					...candidate.systemData.runtimeActions,
+					{ ...intent.suggestion, id: createId() } satisfies RuntimeAction
+				];
+				break;
+			}
+
+			case 'resync-runtime-action': {
+				const actionIndex = candidate.systemData.runtimeActions.findIndex(
+					(action) => action.id === intent.actionId
+				);
+				const action = candidate.systemData.runtimeActions[actionIndex];
+				if (!action?.source) {
+					return {
+						ok: false,
+						issues: [
+							{
+								code: 'invalid-intent-target',
+								message: `Runtime action ${intent.actionId} is missing or has no linked source.`
+							}
+						]
+					};
+				}
+				const sourceItem = candidate.inventory.find((item) => item.id === action.source?.id);
+				if (!sourceItem) {
+					return {
+						ok: false,
+						issues: [
+							{
+								code: 'invalid-intent-target',
+								message: `Runtime action ${intent.actionId} references missing item ${action.source.id}.`
+							}
+						]
+					};
+				}
+				const { notes: _notes, ...actionWithoutNotes } = action;
+				candidate.systemData.runtimeActions[actionIndex] = {
+					...actionWithoutNotes,
+					name: sourceItem.name,
+					...(sourceItem.notes !== undefined ? { notes: sourceItem.notes } : {})
+				};
+				break;
+			}
+
 			case 'replace-proficiency-languages': {
 				candidate.systemData.proficiencies.languages = replaceNamedProficiencies(
 					candidate.systemData.proficiencies.languages,
@@ -309,6 +371,11 @@ export const reduce5eSheetEditIntents = (
 
 			case 'replace-inventory-group': {
 				const currentInventory = candidate.inventory;
+				const currentGroupItemIds = new Set(
+					currentInventory
+						.filter((item) => getInventoryGroupForItem(item) === intent.group)
+						.map((item) => item.id)
+				);
 				const currentItemsById = new Map(currentInventory.map((item) => [item.id, item]));
 				const nextItems = intent.items.flatMap((entry) => {
 					const name = entry.name.trim();
@@ -341,6 +408,21 @@ export const reduce5eSheetEditIntents = (
 					...(intent.group === 'armorShields' ? nextItems : stableGroups.armorShields),
 					...(intent.group === 'other' ? nextItems : stableGroups.other)
 				];
+				const nextItemIds = new Set(nextItems.map((item) => item.id));
+				const removedItemIds = new Set(
+					[...currentGroupItemIds].filter((itemId) => !nextItemIds.has(itemId))
+				);
+				if (removedItemIds.size > 0) {
+					candidate.systemData.runtimeActions = candidate.systemData.runtimeActions.map(
+						(action) => {
+							if (action.source?.kind !== 'item' || !removedItemIds.has(action.source.id)) {
+								return action;
+							}
+							const { source: _source, ...unlinkedAction } = action;
+							return unlinkedAction;
+						}
+					);
+				}
 				break;
 			}
 

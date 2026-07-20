@@ -3,6 +3,7 @@ import { seedChars } from '../../fixtures/characters';
 import {
 	create5e2014Character,
 	parse5e2014CharacterDocument,
+	runtimeActionSchema,
 	safeParse5e2014CharacterDocument,
 	SYSTEM_ID_5E2014
 } from '../system.5e2014';
@@ -73,5 +74,31 @@ describe('5e 2014 character schema', () => {
 
 		expect(safeParse5e2014CharacterDocument(malformedCharacter).success).toBe(false);
 		expect(() => parse5e2014CharacterDocument(malformedCharacter)).toThrow();
+	});
+
+	it('accepts strict item links while preserving unlinked runtime actions', () => {
+		expect(
+			runtimeActionSchema.safeParse({
+				id: 'linked-action',
+				name: 'Longsword',
+				source: { kind: 'item', id: 'item-1' }
+			}).success
+		).toBe(true);
+		expect(runtimeActionSchema.safeParse({ id: 'custom-action', name: 'Improvise' }).success).toBe(
+			true
+		);
+	});
+
+	it('rejects malformed and unsupported runtime-action source links', () => {
+		for (const source of [
+			{ kind: 'spell', id: 'spell-1' },
+			{ kind: 'item' },
+			{ kind: 'item', id: '' },
+			{ kind: 'item', id: 'item-1', provider: 'external' }
+		]) {
+			expect(
+				runtimeActionSchema.safeParse({ id: 'linked-action', name: 'Longsword', source }).success
+			).toBe(false);
+		}
 	});
 });

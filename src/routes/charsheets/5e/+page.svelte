@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import RuntimeActionsCard from './components/RuntimeActionsCard.svelte';
 	import GridContent from '$components/GridContent.svelte';
 	import GridContainer from '$components/GridContainer.svelte';
 	import { applyGridPatches } from '$utils/characterGridHelpers';
@@ -8,8 +9,14 @@
 	import '../../../app.css';
 	import { charsArray, emptyChar } from '$storage/store.js';
 	import { parse5e2014CharacterDocument, type CharacterDocument5e2014 } from '../../../schema';
+	import type { RuntimeActionSuggestion } from '$lib/compendium/dnd5e2014/suggestInventoryRuntimeActions';
 	import { decode5eGridPatches } from './sheetEditDecoder';
-	import { reduce5eSheetEditIntents, type SheetEditIssue } from './sheetEditIntents';
+	import {
+		reduce5eSheetEditIntents,
+		type SheetEditIntent,
+		type SheetEditIssue
+	} from './sheetEditIntents';
+	import { getInventoryGroupForItem, type InventoryGroup } from './sheetConstants';
 	import { project5eSheet } from './sheetProjections';
 
 	interface Props {
@@ -44,6 +51,12 @@
 	let isOverviewRegionCollapsed = $state(false);
 	let isRuntimeRegionCollapsed = $state(false);
 	let isOrganizationalRegionCollapsed = $state(false);
+	let inventoryCardElements = $state<Partial<Record<InventoryGroup, HTMLElement>>>({});
+	const inventoryGroupLabels: Record<InventoryGroup, string> = {
+		weapons: 'Weapons inventory',
+		armorShields: 'Armor and shields inventory',
+		other: 'Other inventory'
+	};
 
 	const {
 		annotationEditorConfig,
@@ -111,6 +124,41 @@
 
 	const reportStructuredEditIssues = (issues: ReadonlyArray<SheetEditIssue>) => {
 		console.warn('Could not apply structured 5e sheet edit.', issues);
+	};
+
+	const handleSheetIntents = (intents: ReadonlyArray<SheetEditIntent>) => {
+		updateCurrent5eCharacter((entry) => {
+			const result = reduce5eSheetEditIntents(entry, intents);
+			if (!result.ok) {
+				reportStructuredEditIssues(result.issues);
+				return entry;
+			}
+			return result.character;
+		});
+	};
+
+	const handleAcceptActionSuggestion = (suggestion: RuntimeActionSuggestion) => {
+		handleSheetIntents([{ type: 'accept-runtime-action-suggestion', suggestion }]);
+	};
+
+	const handleResyncRuntimeAction = (actionId: string) => {
+		handleSheetIntents([{ type: 'resync-runtime-action', actionId }]);
+	};
+
+	const handleNavigateToInventorySource = (itemId: string) => {
+		const sourceItem = char.inventory.find((item) => item.id === itemId);
+		if (!sourceItem) return;
+		const cardElement = inventoryCardElements[getInventoryGroupForItem(sourceItem)];
+		cardElement?.scrollIntoView({ block: 'center' });
+		cardElement?.focus({ preventScroll: true });
+	};
+
+	const registerInventoryCard = (group: InventoryGroup) => (element: HTMLElement) => {
+		inventoryCardElements[group] = element;
+
+		return () => {
+			if (inventoryCardElements[group] === element) delete inventoryCardElements[group];
+		};
 	};
 
 	const handleGridPatchesSave = (patches: Array<GridContentPatch>) => {
@@ -267,12 +315,15 @@
 					classes="gap-3"
 				>
 					<GridContainer border={true} pad={true} classes="rounded-md">
-						<GridContent
-							handleEditSavePatches={handleGridPatchesSave}
-							{annotationEditorConfig}
-							displayArrayMode="stack"
-							displayMaxCols={1}
+						<RuntimeActionsCard
 							data={runtimeActionData}
+							actions={char.systemData.runtimeActions}
+							inventory={char.inventory}
+							{annotationEditorConfig}
+							handleEditSavePatches={handleGridPatchesSave}
+							onAcceptSuggestion={handleAcceptActionSuggestion}
+							onResyncAction={handleResyncRuntimeAction}
+							onNavigateToSource={handleNavigateToInventorySource}
 						/>
 					</GridContainer>
 				</GridContainer>
@@ -394,15 +445,23 @@
 					</GridContainer>
 					<GridContainer flow="row" count={1} countMd={3} classes="gap-3">
 						{#each inventoryRuntimeCards as inventoryCard (inventoryCard.key)}
-							<GridContainer border={true} pad={true} classes="rounded-md">
-								<GridContent
-									handleEditSavePatches={handleGridPatchesSave}
-									{annotationEditorConfig}
-									displayArrayMode="stack"
-									displayMaxCols={1}
-									data={inventoryCard.data}
-								/>
-							</GridContainer>
+							<section
+								{@attach registerInventoryCard(inventoryCard.key)}
+								tabindex="-1"
+								aria-label={inventoryGroupLabels[inventoryCard.key]}
+								data-inventory-group={inventoryCard.key}
+								class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
+							>
+								<GridContainer border={true} pad={true} classes="rounded-md">
+									<GridContent
+										handleEditSavePatches={handleGridPatchesSave}
+										{annotationEditorConfig}
+										displayArrayMode="stack"
+										displayMaxCols={1}
+										data={inventoryCard.data}
+									/>
+								</GridContainer>
+							</section>
 						{/each}
 					</GridContainer>
 				</GridContainer>

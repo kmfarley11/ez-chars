@@ -64,6 +64,6 @@ This decision does not define a shared adapter, registry, reducer signature, or 
 
 ### 2026-07-18: `p1-060` canonical reducer ownership
 
-The reducers now write only canonical `dnd5e-2014.v2` groups. Runtime actions remain a required collection; currency and roleplay are keyed semantic singletons without synthetic item/note IDs; and language/tool rows carry ancestry, background, class, feature, or other provenance under `systemData.proficiencies`. The decoder gained the matching tool-proficiency intent because direct array patches would otherwise write strings into source-aware records.
+The reducers now write only canonical `dnd5e-2014.v3` groups. Runtime actions remain a required collection and may carry atomic item-source links; currency and roleplay are keyed semantic singletons without synthetic item/note IDs; and language/tool rows carry ancestry, background, class, feature, or other provenance under `systemData.proficiencies`. The decoder gained the matching tool-proficiency intent because direct array patches would otherwise write strings into source-aware records.
 
 Legacy representations are upgraded before the sheet receives a character. Removing their fallback branches from the decoder, reducer, and projections preserves the original semantic boundary rather than changing it into a migration layer.

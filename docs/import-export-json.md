@@ -24,7 +24,7 @@ Fields:
 - `version`: export envelope version; MVP starts at `1`.
 - `exportedAt`: ISO timestamp generated when the file is exported.
 - `app`: optional producer metadata; MVP uses `{ "name": "ez-chars" }`.
-- `characters`: all locally stored character documents, serialized through each system's current typed character schema. D&D 5e 2014 exports currently use character data layout `dnd5e-2014.v2`.
+- `characters`: all locally stored character documents, serialized through each system's current typed character schema. D&D 5e 2014 exports currently use character data layout `dnd5e-2014.v3`.
 
 The export envelope `version` and each character's `meta.schemaVersion` have separate responsibilities. Envelope version `1` identifies this backup container. Character schema versions identify the data layout inside each character and can advance without changing the envelope.
 

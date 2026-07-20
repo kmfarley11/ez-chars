@@ -9,6 +9,7 @@ export const createSheetEditCharacter = (): CharacterDocument5e2014 =>
 			{
 				id: 'weapon-1',
 				name: 'Longsword',
+				notes: 'Fresh item notes.',
 				tags: ['inventory:weapon'],
 				equipped: true,
 				annotations: [{ id: 'weapon-note', origin: 'user', kind: 'note', text: 'Silvered' }]
@@ -62,6 +63,9 @@ export const createSheetEditCharacter = (): CharacterDocument5e2014 =>
 					name: 'Longsword',
 					timing: 'action',
 					category: 'attack',
+					target: 'One creature',
+					notes: 'Old snapshot notes.',
+					source: { kind: 'item', id: 'weapon-1' },
 					annotations: [{ id: 'action-note', origin: 'user', kind: 'note', text: 'Reach 5 ft.' }]
 				}
 			],

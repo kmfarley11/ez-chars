@@ -8,6 +8,7 @@ import {
 } from './migrations/system.5e2014';
 import {
 	CHARACTER_DATA_VERSION_5E2014,
+	CHARACTER_DATA_VERSION_5E2014_V2,
 	RULES_VERSION_5E2014,
 	SYSTEM_ID_5E2014
 } from './versions.5e2014';
@@ -26,6 +27,7 @@ import {
 	backgroundChoiceSchema,
 	classLevelSchema,
 	featureRefSchema,
+	runtimeActionSourceSchema,
 	runtimeActionSchema,
 	currencyDenominationSchema,
 	currencyAmountSchema,
@@ -50,6 +52,7 @@ import {
 
 export {
 	CHARACTER_DATA_VERSION_5E2014,
+	CHARACTER_DATA_VERSION_5E2014_V2,
 	RULES_VERSION_5E2014,
 	SYSTEM_ID_5E2014,
 	hydrate5e2014CharacterDocument,
@@ -68,6 +71,7 @@ export {
 	backgroundChoiceSchema,
 	classLevelSchema,
 	featureRefSchema,
+	runtimeActionSourceSchema,
 	runtimeActionSchema,
 	currencyDenominationSchema,
 	currencyAmountSchema,
@@ -100,6 +104,7 @@ export type RaceChoice = z.infer<typeof raceChoiceSchema>;
 export type BackgroundChoice = z.infer<typeof backgroundChoiceSchema>;
 export type ClassLevel = z.infer<typeof classLevelSchema>;
 export type FeatureRef = z.infer<typeof featureRefSchema>;
+export type RuntimeActionSource = z.infer<typeof runtimeActionSourceSchema>;
 export type RuntimeAction = z.infer<typeof runtimeActionSchema>;
 export type CurrencyDenomination = z.infer<typeof currencyDenominationSchema>;
 export type CurrencyAmount = z.infer<typeof currencyAmountSchema>;

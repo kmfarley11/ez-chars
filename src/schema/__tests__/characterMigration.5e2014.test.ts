@@ -6,6 +6,7 @@ import {
 } from '../migrations/system.5e2014';
 import {
 	CHARACTER_DATA_VERSION_5E2014,
+	CHARACTER_DATA_VERSION_5E2014_V2,
 	create5e2014Character,
 	safeParse5e2014CharacterDocument
 } from '../system.5e2014';
@@ -36,14 +37,48 @@ describe('5e 2014 character data migration', () => {
 			kind: 'legacy',
 			version: 'char.v1'
 		});
-		expect(classify5e2014CharacterDataVersion('dnd5e-2014.v3')).toEqual({
+		expect(classify5e2014CharacterDataVersion(CHARACTER_DATA_VERSION_5E2014_V2)).toEqual({
+			kind: 'legacy',
+			version: CHARACTER_DATA_VERSION_5E2014_V2
+		});
+		expect(classify5e2014CharacterDataVersion('dnd5e-2014.v4')).toEqual({
 			kind: 'future',
-			version: 'dnd5e-2014.v3'
+			version: 'dnd5e-2014.v4'
 		});
 		expect(classify5e2014CharacterDataVersion('mystery')).toEqual({
 			kind: 'unsupported',
 			version: 'mystery'
 		});
+	});
+
+	it('migrates v2 to v3 without inventing links or changing authored data', () => {
+		const current = create5e2014Character({
+			meta: { id: 'v2-character' },
+			inventory: [{ id: 'sword-1', name: 'Longsword', equipped: true }],
+			systemData: {
+				runtimeActions: [
+					{
+						id: 'action-1',
+						name: 'Longsword',
+						timing: 'action',
+						category: 'attack',
+						notes: 'Authored action notes.'
+					}
+				]
+			}
+		});
+		const v2 = {
+			...structuredClone(current),
+			meta: { ...current.meta, schemaVersion: CHARACTER_DATA_VERSION_5E2014_V2 }
+		};
+
+		const migrated = hydrateOrThrow(v2);
+
+		expect(migrated).toEqual({
+			...v2,
+			meta: { ...v2.meta, schemaVersion: CHARACTER_DATA_VERSION_5E2014 }
+		});
+		expect(migrated.systemData.runtimeActions[0]).not.toHaveProperty('source');
 	});
 
 	it('normalizes sparse legacy groups and version-owned movement values', () => {
@@ -182,7 +217,7 @@ describe('5e 2014 character data migration', () => {
 
 	it('rejects future versions and invalid current documents with explicit reasons', () => {
 		const future = cloneLegacy5eFixture(legacyComprehensive5eCharacter);
-		future.meta.schemaVersion = 'dnd5e-2014.v3';
+		future.meta.schemaVersion = 'dnd5e-2014.v4';
 		const futureResult = hydrate5e2014CharacterDocument(future);
 		expect(futureResult).toMatchObject({
 			success: false,

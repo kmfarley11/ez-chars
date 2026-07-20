@@ -1,17 +1,20 @@
 import { z } from 'zod';
 import {
 	characterDocument5e2014Schema,
+	characterDocument5e2014V2Schema,
 	currencyDenominationSchema,
 	legacyCharacterDocument5e2014Schema,
 	annotationSchema
 } from '../zod';
 import {
 	CHARACTER_DATA_VERSION_5E2014,
+	CHARACTER_DATA_VERSION_5E2014_V2,
 	LEGACY_CHARACTER_DATA_VERSIONS_5E2014,
 	SYSTEM_ID_5E2014
 } from '../versions.5e2014';
 
 type CurrentCharacter = z.infer<typeof characterDocument5e2014Schema>;
+type V2Character = z.infer<typeof characterDocument5e2014V2Schema>;
 type LegacyCharacter = z.infer<typeof legacyCharacterDocument5e2014Schema>;
 type Annotation = z.infer<typeof annotationSchema>;
 type CurrencyDenomination = z.infer<typeof currencyDenominationSchema>;
@@ -229,7 +232,7 @@ const migrateProficiencies = (systemData: LegacyCharacter['systemData']) => {
 	return { proficiencies, race, background };
 };
 
-const migrateLegacyV1ToCurrent = (legacy: LegacyCharacter): unknown => {
+const migrateLegacyV1ToV2 = (legacy: LegacyCharacter): unknown => {
 	const character = structuredClone(legacy);
 	const { currency, inventory } = migrateCurrency(character);
 	const { roleplay, notes } = migrateRoleplay(character);
@@ -246,7 +249,7 @@ const migrateLegacyV1ToCurrent = (legacy: LegacyCharacter): unknown => {
 		...character,
 		meta: {
 			...character.meta,
-			schemaVersion: CHARACTER_DATA_VERSION_5E2014
+			schemaVersion: CHARACTER_DATA_VERSION_5E2014_V2
 		},
 		features: character.features ?? [],
 		inventory,
@@ -263,6 +266,14 @@ const migrateLegacyV1ToCurrent = (legacy: LegacyCharacter): unknown => {
 		}
 	};
 };
+
+const migrateV2ToCurrent = (character: V2Character): unknown => ({
+	...structuredClone(character),
+	meta: {
+		...character.meta,
+		schemaVersion: CHARACTER_DATA_VERSION_5E2014
+	}
+});
 
 const zodIssues = (
 	code: 'invalid-historical-data' | 'invalid-current-data',
@@ -329,15 +340,38 @@ export const hydrate5e2014CharacterDocument = (input: unknown): Hydrate5e2014Cha
 			: { success: false, issues: zodIssues('invalid-current-data', parsed.error) };
 	}
 
-	const historical = legacyCharacterDocument5e2014Schema.safeParse(input);
-	if (!historical.success) {
-		return {
-			success: false,
-			issues: zodIssues('invalid-historical-data', historical.error)
-		};
+	let v2Character: V2Character;
+	if (classification.version === CHARACTER_DATA_VERSION_5E2014_V2) {
+		const historicalV2 = characterDocument5e2014V2Schema.safeParse(input);
+		if (!historicalV2.success) {
+			return {
+				success: false,
+				issues: zodIssues('invalid-historical-data', historicalV2.error)
+			};
+		}
+		v2Character = historicalV2.data;
+	} else {
+		const historical = legacyCharacterDocument5e2014Schema.safeParse(input);
+		if (!historical.success) {
+			return {
+				success: false,
+				issues: zodIssues('invalid-historical-data', historical.error)
+			};
+		}
+
+		const normalizedV2 = characterDocument5e2014V2Schema.safeParse(
+			migrateLegacyV1ToV2(historical.data)
+		);
+		if (!normalizedV2.success) {
+			return {
+				success: false,
+				issues: zodIssues('invalid-historical-data', normalizedV2.error)
+			};
+		}
+		v2Character = normalizedV2.data;
 	}
 
-	const migrated = migrateLegacyV1ToCurrent(historical.data);
+	const migrated = migrateV2ToCurrent(v2Character);
 	const current = characterDocument5e2014Schema.safeParse(migrated);
 	return current.success
 		? { success: true, data: current.data }

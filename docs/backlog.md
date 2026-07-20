@@ -34,10 +34,9 @@ Next recommended sequence for remaining P1 items:
 
 **Phase 2: UX Polish & Playtest Prep**
 
-1. `p1-005`: Link runtime actions to equipped inventory sources (active OpenSpec change; builds on the canonical action model from `p1-060`)
-2. `p1-061`: Extend runtime-action sources to spells and features after their stable identity and suggestion semantics are refined
-3. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
-4. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
+1. `p1-061`: Extend runtime-action sources to spells and features after their stable identity and suggestion semantics are refined
+2. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
+3. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
 
 _(Note: `p1-010` for GitHub Actions remains deferred until CI needs justify it)._
 
@@ -56,31 +55,6 @@ Outcome:
 Status:
 
 - **Complete.** Installed local `@fission-ai/openspec`, updated agent guidelines, repository README, decision records, and backlog instructions.
-
-### Link runtime actions to equipped inventory sources
-
-ID:
-
-- `p1-005`
-
-Refinement outputs:
-
-- **Purpose:** Reduce duplicate entry between equipped inventory and the existing action/bonus-action/reaction runtime summary while keeping every table action independently editable.
-- **Included behavior:**
-  - Suggest name/notes snapshots from explicitly equipped inventory items.
-  - Accept suggestions as independently editable actions with an atomic link to the character-owned item; allow multiple actions to share one source.
-  - Keep manual custom actions available and provide linked/custom status, source navigation, and explicit name/notes resync.
-  - Preserve action snapshots and remove their links atomically when a source item is deleted.
-  - Advance the strict 5e character layout through the existing versioned migration boundary so persisted links are honest and round-trip safely.
-- **Excluded behavior:**
-  - Spell and feature sources, owned by `p1-061`.
-  - Automatic source bubbling, per-field override masks, rules automation, external compendium fetching, or a universal adapter contract.
-- **Ambiguities:**
-  - None currently blocking; the approved runtime-action templating ADR selects snapshots plus explicit resync and custom-action fallback on source deletion.
-- **Success:**
-  - A user can accept an equipped item suggestion, edit the action without changing the item, navigate back to the source, and explicitly resync its name/notes.
-  - Manual actions remain unlinked, multiple variants may link to one item, and deleting the item preserves those actions as custom snapshots.
-  - Existing supported characters migrate without invented links or lost authored data, and linked actions survive save/import/export round trips.
 
 ### Extend runtime-action sources to spells and features
 
@@ -263,6 +237,7 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 
 ## Done Recently
 
+- `2026-07-19` completed `p1-005`: advanced 5e characters to `dnd5e-2014.v3`, added persisted item-source links for independently editable runtime-action snapshots, and delivered equipped-item suggestions, explicit resync, source navigation, deletion fallback, Storybook states, and end-to-end coverage while retaining `p1-061` for spell and feature sources
 - `2026-07-19` completed `p1-012`: added a local SvelteKit Storybook catalog with typed BaseButton, Heading, and ValidatedInputField stories; isolated browser-backed interaction and automated accessibility checks now run through the Storybook Vitest project
 - `2026-07-18` completed `p1-050`: refactored the repo structure, created dedicated directories for $components, $storage, and $utils, configured Vite aliases, extracted data files into $fixtures, and updated imports to improve codebase maintainability
 - `2026-07-18` completed `p1-060`: introduced `dnd5e-2014.v2` character hydration/serialization, migrated supported action aliases, tagged currency, titled roleplay fields, split proficiency provenance, and movement strings into one canonical model, rewired storage/import/export and 5e sheet code, and retained cross-system core flexibility with migration, round-trip, and browser smoke coverage

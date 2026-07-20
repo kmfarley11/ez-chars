@@ -67,10 +67,12 @@ describe('5e sheet edit intent reducer', () => {
 			expect.objectContaining({
 				id: 'action-1',
 				name: 'Longsword +1',
+				source: { kind: 'item', id: 'weapon-1' },
 				annotations: [expect.objectContaining({ id: 'action-note' })]
 			}),
 			expect.objectContaining({ id: 'second-wind-action', name: 'Second Wind' })
 		]);
+		expect(result.character.systemData.runtimeActions[1].source).toBeUndefined();
 		expect(result.character.systemData.proficiencies.languages).toEqual([
 			{ name: 'Elvish', source: { kind: 'ancestry' } },
 			{ name: 'Dwarvish', source: { kind: 'background' } }
@@ -91,6 +93,122 @@ describe('5e sheet edit intent reducer', () => {
 			}),
 			{ featureId: 'action-surge', name: 'Action Surge' }
 		]);
+	});
+
+	it('accepts repeated suggestions with unique action IDs after revalidating the source', () => {
+		const character = createSheetEditCharacter();
+		const suggestion = {
+			name: 'Longsword',
+			notes: 'Suggested snapshot.',
+			source: { kind: 'item' as const, id: 'weapon-1' }
+		};
+		const result = reduce5eSheetEditIntents(
+			character,
+			[
+				{ type: 'accept-runtime-action-suggestion', suggestion },
+				{ type: 'accept-runtime-action-suggestion', suggestion }
+			],
+			{ createId: deterministicIds('suggested-1', 'suggested-2') }
+		);
+
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.character.systemData.runtimeActions.slice(-2)).toEqual([
+			{ ...suggestion, id: 'suggested-1' },
+			{ ...suggestion, id: 'suggested-2' }
+		]);
+	});
+
+	it('rejects a stale suggestion without mutating the source character', () => {
+		const character = createSheetEditCharacter();
+		const original = structuredClone(character);
+		const result = reduce5eSheetEditIntents(character, [
+			{
+				type: 'accept-runtime-action-suggestion',
+				suggestion: {
+					name: 'Missing Sword',
+					source: { kind: 'item', id: 'missing-item' }
+				}
+			}
+		]);
+
+		expect(result).toMatchObject({
+			ok: false,
+			issues: [{ code: 'invalid-intent-target' }]
+		});
+		expect(character).toEqual(original);
+
+		character.inventory[0].equipped = false;
+		expect(
+			reduce5eSheetEditIntents(character, [
+				{
+					type: 'accept-runtime-action-suggestion',
+					suggestion: {
+						name: 'Unequipped Sword',
+						source: { kind: 'item', id: 'weapon-1' }
+					}
+				}
+			])
+		).toMatchObject({ ok: false, issues: [{ code: 'invalid-intent-target' }] });
+	});
+
+	it('resyncs only source-owned snapshot fields and clears removed notes', () => {
+		const character = createSheetEditCharacter();
+		const resynced = reduce5eSheetEditIntents(character, [
+			{ type: 'resync-runtime-action', actionId: 'action-1' }
+		]);
+
+		expect(resynced.ok).toBe(true);
+		if (!resynced.ok) return;
+		expect(resynced.character.systemData.runtimeActions[0]).toEqual({
+			id: 'action-1',
+			name: 'Longsword',
+			timing: 'action',
+			category: 'attack',
+			target: 'One creature',
+			notes: 'Fresh item notes.',
+			source: { kind: 'item', id: 'weapon-1' },
+			annotations: [{ id: 'action-note', origin: 'user', kind: 'note', text: 'Reach 5 ft.' }]
+		});
+
+		delete resynced.character.inventory[0].notes;
+		const cleared = reduce5eSheetEditIntents(resynced.character, [
+			{ type: 'resync-runtime-action', actionId: 'action-1' }
+		]);
+		expect(cleared.ok).toBe(true);
+		if (cleared.ok)
+			expect(cleared.character.systemData.runtimeActions[0]).not.toHaveProperty('notes');
+	});
+
+	it('rejects resync when the action source cannot be resolved', () => {
+		const character = createSheetEditCharacter();
+		character.systemData.runtimeActions[0].source = { kind: 'item', id: 'missing-item' };
+
+		expect(
+			reduce5eSheetEditIntents(character, [{ type: 'resync-runtime-action', actionId: 'action-1' }])
+		).toMatchObject({ ok: false, issues: [{ code: 'invalid-intent-target' }] });
+	});
+
+	it('unlinks every snapshot whose item is removed from an inventory group', () => {
+		const character = createSheetEditCharacter();
+		character.systemData.runtimeActions.push({
+			id: 'action-2',
+			name: 'Longsword two-handed',
+			notes: '1d10 slashing',
+			source: { kind: 'item', id: 'weapon-1' }
+		});
+		const originalSnapshots = structuredClone(character.systemData.runtimeActions);
+
+		const result = reduce5eSheetEditIntents(character, [
+			{ type: 'replace-inventory-group', group: 'weapons', items: [] }
+		]);
+
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.character.inventory).toEqual([expect.objectContaining({ id: 'gear-1' })]);
+		expect(result.character.systemData.runtimeActions).toEqual(
+			originalSnapshots.map(({ source: _source, ...snapshot }) => snapshot)
+		);
 	});
 
 	it('replaces one inventory group and updates currency without disturbing other records', () => {

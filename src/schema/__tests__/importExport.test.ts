@@ -7,7 +7,11 @@ import {
 	createCharacterExportEnvelope,
 	safeParseCharacterExportEnvelope
 } from '../importExport';
-import { create5e2014Character, parse5e2014CharacterDocument } from '../system.5e2014';
+import {
+	CHARACTER_DATA_VERSION_5E2014,
+	create5e2014Character,
+	parse5e2014CharacterDocument
+} from '../system.5e2014';
 import { legacyComprehensive5eCharacter } from './fixtures/legacy5eCharacters';
 
 describe('character import/export envelope', () => {
@@ -67,7 +71,7 @@ describe('character import/export envelope', () => {
 		expect(imported.success).toBe(true);
 		if (!imported.success) return;
 		const migrated = imported.data.characters[0];
-		expect(migrated.meta.schemaVersion).toBe('dnd5e-2014.v2');
+		expect(migrated.meta.schemaVersion).toBe(CHARACTER_DATA_VERSION_5E2014);
 		if (migrated.system.id === 'dnd5e-2014') {
 			const migrated5e = parse5e2014CharacterDocument(migrated);
 			expect(migrated5e.systemData).not.toHaveProperty('attacks');
@@ -76,6 +80,39 @@ describe('character import/export envelope', () => {
 
 		const reExported = createCharacterExportEnvelope(imported.data.characters);
 		expect(reExported.characters).toEqual(imported.data.characters);
+	});
+
+	it('round-trips current item-linked runtime actions', () => {
+		const linkedCharacter = create5e2014Character({
+			meta: { id: 'linked-character' },
+			inventory: [{ id: 'item-1', name: 'Longsword', equipped: true }],
+			systemData: {
+				runtimeActions: [
+					{
+						id: 'action-1',
+						name: 'Longsword',
+						notes: '1d8 slashing',
+						source: { kind: 'item', id: 'item-1' }
+					}
+				]
+			}
+		});
+
+		const envelope = createCharacterExportEnvelope([linkedCharacter]);
+		const imported = safeParseCharacterExportEnvelope(envelope);
+
+		expect(imported).toMatchObject({
+			success: true,
+			data: {
+				characters: [
+					{
+						systemData: {
+							runtimeActions: [{ id: 'action-1', source: { kind: 'item', id: 'item-1' } }]
+						}
+					}
+				]
+			}
+		});
 	});
 
 	it('replaces all current characters with imported characters', () => {

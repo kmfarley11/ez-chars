@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { seedChars } from '$fixtures/characters.js';
 import type { CharacterWithSystemData } from '../../../schema/index.js';
-import { parse5e2014CharacterDocument } from '../../../schema/system.5e2014.js';
+import {
+	create5e2014Character,
+	parse5e2014CharacterDocument
+} from '../../../schema/system.5e2014.js';
 import { installMemoryLocalStorage } from '../../../test-utils/browser.js';
 import {
 	clearStoredCharacters,
@@ -44,7 +47,7 @@ describe('character storage adapter', () => {
 			characters
 		});
 		expect(JSON.parse(raw ?? '{}').characters[0]).toMatchObject({
-			meta: { schemaVersion: 'dnd5e-2014.v2' },
+			meta: { schemaVersion: 'dnd5e-2014.v3' },
 			features: [],
 			inventory: [],
 			notes: [],
@@ -67,6 +70,28 @@ describe('character storage adapter', () => {
 
 		expect(loadStoredCharacters([])).toEqual({
 			characters,
+			issue: null
+		});
+	});
+
+	it('persists and reloads item-linked runtime actions', () => {
+		const linkedCharacter = create5e2014Character({
+			inventory: [{ id: 'item-1', name: 'Longsword', equipped: true }],
+			systemData: {
+				runtimeActions: [
+					{
+						id: 'action-1',
+						name: 'Longsword',
+						source: { kind: 'item', id: 'item-1' }
+					}
+				]
+			}
+		});
+
+		saveStoredCharacters([linkedCharacter]);
+
+		expect(loadStoredCharacters([])).toEqual({
+			characters: [linkedCharacter],
 			issue: null
 		});
 	});

@@ -1,7 +1,7 @@
 export const e2eCharacter = {
 	meta: {
 		id: 'e2e-character',
-		schemaVersion: 'dnd5e-2014.v2',
+		schemaVersion: 'dnd5e-2014.v3',
 		createdAt: '2026-07-17T00:00:00.000Z',
 		updatedAt: '2026-07-17T00:00:00.000Z'
 	},
@@ -44,6 +44,33 @@ export const e2eCharacter = {
 export const e2eStoredCharacters = {
 	version: 1,
 	characters: [e2eCharacter]
+};
+
+export const e2eRuntimeActionLinkCharacter = {
+	...e2eCharacter,
+	meta: {
+		...e2eCharacter.meta,
+		id: 'e2e-runtime-action-link'
+	},
+	identity: { name: 'E2E Runtime Action Link' },
+	inventory: [
+		{
+			id: 'e2e-longsword',
+			name: 'Longsword',
+			notes: 'Original item notes.',
+			tags: ['inventory:weapon'],
+			equipped: true
+		}
+	],
+	systemData: {
+		...e2eCharacter.systemData,
+		runtimeActions: []
+	}
+};
+
+export const e2eRuntimeActionLinkStoredCharacters = {
+	version: 1,
+	characters: [e2eRuntimeActionLinkCharacter]
 };
 
 export const e2eLegacyCharacter = {

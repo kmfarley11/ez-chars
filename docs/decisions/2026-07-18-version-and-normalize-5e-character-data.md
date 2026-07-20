@@ -34,7 +34,7 @@ This makes historical knowledge explicit and testable. Application features rece
 
 ## Decision Outcome
 
-Use `meta.schemaVersion` as the data-layout discriminator for each character. The current D&D 5e 2014 layout is `dnd5e-2014.v2`; the repository-supported legacy values are `0.0.1` and `char.v1`. `system.id` continues to select the game system, and `system.version` continues to identify the rules/source release (`SRD-5.1-2023`). Storage-envelope and export-envelope versions remain unchanged.
+Use `meta.schemaVersion` as the data-layout discriminator for each character. This decision introduced D&D 5e 2014 layout `dnd5e-2014.v2`; the current layout is `dnd5e-2014.v3`, and repository-supported legacy values are `0.0.1`, `char.v1`, and `dnd5e-2014.v2`. `system.id` continues to select the game system, and `system.version` continues to identify the rules/source release (`SRD-5.1-2023`). Storage-envelope and export-envelope versions remain unchanged.
 
 Hydration inspects the system and character data version, validates with the matching historical schema, applies pure ordered migration steps, and then validates the current schema. Current documents are validated directly. Unsupported future versions fail explicitly and are not rewritten.
 

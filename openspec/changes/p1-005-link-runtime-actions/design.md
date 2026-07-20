@@ -71,7 +71,7 @@ Add feature-local `accept-runtime-action-suggestion` and `resync-runtime-action`
 
 Build a 5e-local runtime-action component that composes the existing `GridContent` action editor with suggestion and per-action source controls. Do not add item/action semantics to `GridContent` and do not create a generic extension API solely for this feature.
 
-The component receives a suggestion loader and callbacks for acceptance, resync, and navigation. Production uses the inventory suggestion function; Storybook and component tests inject resolved, pending, and rejected loaders so loading, empty, failure, linked, and custom states are deterministic. Manual action creation through the existing editor remains available in every request state.
+The component receives a suggestion loader and callbacks for acceptance, resync, and navigation. Production uses the inventory suggestion function; Storybook and component tests inject resolved, pending, and rejected loaders so loading, empty, failure, linked, and custom states are deterministic. Storybook wraps the component in a small stateful harness that applies the same projection, patch decoder, and typed reducer path as production, so the catalog remains a useful human playground rather than stopping at callback-spy assertions. Manual action creation through the existing editor remains available in every request state.
 
 Source navigation remains route-owned because the route owns sheet layout. It resolves the item to its current inventory group, scrolls a focusable wrapper around that group card into view, and moves focus to the wrapper. This supplies a concrete keyboard-visible destination without teaching the generic grid component about runtime-action links.
 

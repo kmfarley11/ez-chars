@@ -17,7 +17,7 @@ For current product scope, in/out-of-scope decisions, and success criteria, use 
 
 ## Current State
 
-- [src/schema/](src/schema/) contains typed Zod-backed data models; 5e 2014 is the only implemented system schema and hydrates supported legacy data into canonical `dnd5e-2014.v2` documents
+- [src/schema/](src/schema/) contains typed Zod-backed data models; 5e 2014 is the only implemented system schema and hydrates supported legacy data into canonical `dnd5e-2014.v3` documents
 - [`src/routes/+page.svelte`](src/routes/+page.svelte) is the home/list view
 - [`src/routes/charsheets/5e/+page.svelte`](src/routes/charsheets/5e/+page.svelte) is the only real sheet page
 - [`src/data.ts`](src/data.ts) currently mixes seed data, store wiring, and localStorage persistence

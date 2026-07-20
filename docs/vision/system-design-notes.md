@@ -20,7 +20,7 @@ This is an architectural intent, not a settled adapter API. The registry locatio
 
 The current D&D 5e 2014 implementation provides one useful boundary example: shared core identity and document concepts remain flexible, while the system schema owns its required empty groups, currency denominations, fixed roleplay fields, proficiency provenance vocabulary, and character-data migration. Future systems should reuse shared shapes where they fit naturally, but they should not inherit 5e structural requirements merely to make a registry uniform.
 
-Character data versions are per-character layout discriminators and are separate from rules/source versions and storage/export envelope versions. A future registry should eventually dispatch system-specific hydration and serialization, but `dnd5e-2014.v2` does not establish the final registry interface.
+Character data versions are per-character layout discriminators and are separate from rules/source versions and storage/export envelope versions. A future registry should eventually dispatch system-specific hydration and serialization, but `dnd5e-2014.v3` does not establish the final registry interface.
 
 ## Cross-System Observations
 
