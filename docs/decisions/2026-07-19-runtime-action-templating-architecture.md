@@ -69,7 +69,7 @@ source?: {
 }
 ```
 
-_(Note: As part of implementation, we must ensure `spellId` in `spellRefSchema` becomes required or generates a stable identity to support this linkage.)_
+This three-kind union is the architectural destination, not the schema accepted by the first delivery slice. The inventory slice will initially accept only `kind: 'item'`; spell and feature links require a follow-up decision that gives their currently optional references stable identities. Refined backlog item `p1-061` owns that follow-up and must remain sequenced when the inventory slice is completed.
 
 **4. Source Deletion Fallback**
 Because actions are editable snapshots, deleting the linked item/spell/feature should preserve the action and convert it to a custom/unlinked action (by removing the source reference) rather than deleting the action or making it invalid.
@@ -79,7 +79,14 @@ Because actions are editable snapshots, deleting the linked item/spell/feature s
 **2026-07-19: Narrowing the Async Seam**
 To ensure the Logic Transformer does not become tangled with the UI, we will introduce a dedicated asynchronous boundary.
 
-- **Narrow Naming:** To explicitly enforce YAGNI and prevent this boundary from inflating into a speculative universal platform contract, the module will be narrowly named (e.g., `src/lib/compendium/dnd5e2014/suggestRuntimeActions.ts`) and expose a specific function like `async suggest5eRuntimeActions(sources)`.
-- **MVP Implementation:** The function will resolve a local, synchronous 1:1 text-sync transformer.
+- **Narrow Naming:** To explicitly enforce YAGNI and prevent this boundary from inflating into a speculative universal platform contract, the first module and function will be inventory-specific (for example, `src/lib/compendium/dnd5e2014/suggestInventoryRuntimeActions.ts` and `suggest5eInventoryRuntimeActions(items)`).
+- **MVP Implementation:** The asynchronous function will resolve a local, deterministic 1:1 text-sync result.
 - **Future API Readiness:** The async call shape is intentional because network lookup is a near-term roadmap item. While the async boundary preserves the calling convention and insulates the UI from parsing logic, the UI will eventually need to handle new network-specific UX states (loading, offline, ambiguous matches).
 - **Scope Restriction:** This is a 5e-specific application boundary, not a multi-system registry. Future operations (like fetching spell details) are explicitly not part of this contract.
+
+**2026-07-19: Inventory-First, Versioned Delivery**
+
+- **Persisted Layout:** Adding the atomic source link changes the strict canonical character shape, so the inventory implementation advances the layout from `dnd5e-2014.v2` to `dnd5e-2014.v3`. The sequential migration preserves v2 content and does not invent links for existing actions.
+- **Snapshot Semantics:** The source link is referential metadata, while action fields remain materialized snapshots. This intentionally duplicates a small amount of text to preserve offline stability, independent editing, and graceful fallback when a source is deleted. Resync replaces only source-owned snapshot fields; automatic bubbling and override masks remain deferred pending playtest evidence.
+- **Source-Specific Seam:** The first suggestion function is explicitly inventory-specific. Spell and feature lookup may add separate narrow functions or a composition layer only after their concrete identity and retrieval requirements are known.
+- **Required Follow-Up:** Completing the inventory slice does not complete the spell/feature portion of the decision. Refined backlog item `p1-061` owns stable spell/feature identity, suggestions, navigation, deletion fallback, and widening the atomic source union.

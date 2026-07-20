@@ -34,9 +34,10 @@ Next recommended sequence for remaining P1 items:
 
 **Phase 2: UX Polish & Playtest Prep**
 
-1. `p1-005`: Link runtime actions to source weapons, spells, and features (builds on the completed canonical action model from `p1-060`)
-2. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
-3. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
+1. `p1-005`: Link runtime actions to equipped inventory sources (active OpenSpec change; builds on the canonical action model from `p1-060`)
+2. `p1-061`: Extend runtime-action sources to spells and features after their stable identity and suggestion semantics are refined
+3. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
+4. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
 
 _(Note: `p1-010` for GitHub Actions remains deferred until CI needs justify it)._
 
@@ -56,57 +57,57 @@ Status:
 
 - **Complete.** Installed local `@fission-ai/openspec`, updated agent guidelines, repository README, decision records, and backlog instructions.
 
-### Link runtime actions to source weapons, spells, and features
+### Link runtime actions to equipped inventory sources
 
 ID:
 
 - `p1-005`
 
-Size:
+Refinement outputs:
 
-- medium; scope after the MVP sheet is stable
+- **Purpose:** Reduce duplicate entry between equipped inventory and the existing action/bonus-action/reaction runtime summary while keeping every table action independently editable.
+- **Included behavior:**
+  - Suggest name/notes snapshots from explicitly equipped inventory items.
+  - Accept suggestions as independently editable actions with an atomic link to the character-owned item; allow multiple actions to share one source.
+  - Keep manual custom actions available and provide linked/custom status, source navigation, and explicit name/notes resync.
+  - Preserve action snapshots and remove their links atomically when a source item is deleted.
+  - Advance the strict 5e character layout through the existing versioned migration boundary so persisted links are honest and round-trip safely.
+- **Excluded behavior:**
+  - Spell and feature sources, owned by `p1-061`.
+  - Automatic source bubbling, per-field override masks, rules automation, external compendium fetching, or a universal adapter contract.
+- **Ambiguities:**
+  - None currently blocking; the approved runtime-action templating ADR selects snapshots plus explicit resync and custom-action fallback on source deletion.
+- **Success:**
+  - A user can accept an equipped item suggestion, edit the action without changing the item, navigate back to the source, and explicitly resync its name/notes.
+  - Manual actions remain unlinked, multiple variants may link to one item, and deleting the item preserves those actions as custom snapshots.
+  - Existing supported characters migrate without invented links or lost authored data, and linked actions survive save/import/export round trips.
 
-Scope:
+### Extend runtime-action sources to spells and features
 
-- keep the current action-economy runtime summary fully user-driven
-- make it possible for runtime action rows to optionally reference source records from inventory, spells, or features
-- avoid hard-coupling actions to a single source because table actions can be custom, combined, conditional, supportive, or improvised
+ID:
 
-Suggested implementation slices:
-
-1. Define a lightweight source reference shape for runtime actions, such as inventory item, spell, feature, or custom.
-2. Add UI affordances to show whether an action is custom or linked to a source record.
-3. Consider source-based action suggestions without overwriting user-edited runtime summaries.
-
-Definition of done:
-
-- runtime actions can remain fully manual
-- an action can optionally point back to the item, spell, or feature it summarizes
-- source links improve navigation or editing without making the runtime action list redundant or fragile
+- `p1-061`
 
 Refinement outputs:
 
-TODO - revisit this before proposing! Read the designs up to this point and tell the user whether `runtimeAction` includes bonus actions, reactions, etc. or _just_ actions. If _just actions_ then inform the user where runtimeBonusActions or similar may end up as part of this. PROMPT THE USER TO AGREE on whether the findings and result jive with expectations.
-
-- **Purpose:** Allow player actions in the sheet's runtime list to link to inventory items, active spells, or class features. This enables automatic sync/reset choices and links to reference cards, reducing manual copying mistakes and streamlining table play.
+- **Purpose:** Complete the approved runtime-action source architecture by allowing spell and feature records—not only inventory items—to seed and link runtime summaries without weakening data identity or introducing a speculative universal adapter.
 - **Included behavior:**
-  - Add optional `sourceId` and `sourceType` (e.g. `'inventory'`, `'spell'`, `'feature'`) properties to the D&D 5e `runtimeAction` schema.
-  - Display a visual indicator (like a small external-link icon) on linked action rows that navigates to the source record card.
-  - Support one-way bubbling of values: source changes automatically update action values unless overridden.
-  - Support "override" fields on the runtime action row: user edits are stored as overrides that take precedence over the source value, rendering a visual "Customized" reminder indicator.
-  - Support multiple runtime actions pointing to the same source ID (e.g., standard attack, two-handed attack variant, special reaction spell trigger).
-  - Allow users to toggle visibility/hide source-driven actions to avoid layout clutter.
-  - Provide a "suggested actions" list derived from equipped weapons, active spells, or actions-granting features.
-  - Allow users to manually sync/reset text and damage fields from the source item/spell.
+  - Establish and migrate stable identities for the 5e spell and feature references that are selected as linkable source records.
+  - Widen the atomic runtime-action source union to the supported spell and feature kinds.
+  - Add source-specific suggestions, linked/custom status, navigation, explicit resync, and source-deletion fallback consistent with the inventory slice.
+  - Preserve multiple actions per source and independently editable action snapshots.
 - **Excluded behavior:**
-  - Automating mechanics checking, dice rolls, or calculations based on the source link.
-  - Restricting editing: users must always be able to manually override linked values.
+  - A generic multi-system source registry, automatic per-field bubbling/override masks, dice or mechanics automation, and external-provider identity on runtime actions.
+  - Assuming every spell or feature grants a runtime action without a source-specific eligibility rule.
 - **Ambiguities:**
-  - _Data deletion fallback_: If a source weapon is deleted, what happens to the action? (It should turn into a "custom" action instead of deleting the action row).
+  - Which spell state qualifies for suggestions (known, prepared, active, or another explicit subset)?
+  - Which root, ancestry, background, class, and subclass feature collections become sourceable, and how are stable IDs migrated without identity collisions?
+  - Can the first spell/feature suggestions remain text-only, or do their concrete records require source-specific mapping before the behavior is useful?
+  - Should this follow-up precede or follow the first external compendium lookup once that work is refined?
 - **Success:**
-  - Schema supports action source references.
-  - A user equips a weapon and sees it as a suggested action.
-  - Clicking the link navigates to the item details, and syncing restores standard item stats.
+  - Supported spell and feature records have stable migrated identities and may be linked without data loss or dangling references.
+  - A user can discover, accept, navigate, resync, and safely unlink spell/feature-derived action snapshots through the same observable lifecycle as inventory-derived actions.
+  - The implementation remains 5e- and source-specific until repeated concrete seams justify any shared composition layer.
 
 ### Add GitHub Actions for quality gates
 
@@ -240,9 +241,11 @@ Refinement outputs:
   - `GridContainerAuto.svelte` is deleted.
   - The character sheet resizes fluidly with zero Javascript-driven layout recalculations.
 
-## Ideation Sandbox (Unsorted Ideas)
+## Ideation Sandbox (Raw / Rough Ideas)
 
 This content is a work in progress to dump rough thoughts, brainstorms, and refactor wishes before prioritizing or organizing them.
+
+### Roughly Prioritized and Vaguely Refined
 
 - **[Priority 3] evaluate a Svelte-compatible form library such as TanStack Form or Felte after the first field-binding proof surface lands; prefer reuse for draft state, validation display, dirty tracking, and array editor ergonomics if it keeps local source smaller than custom form infrastructure**
   - _Best Guess_: Evaluate if an external library handles card-wide value validation, dirty checking, and array/nested list mutations more concisely and safely than our custom `FieldDraft` implementation.
@@ -251,6 +254,12 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
   - _Best Guess_: Redesign the character sheet UI. The character name/level (meta) and active reference panel stay pinned (sticky) to the screen, while the rest of the layout is nested in three tabs: Adventure (stats/skills), Combat (actions/spells/inventory), and Roleplay (bio/notes).
   - _Critical Question_: Does this imply removing the grid scroll layout entirely for mobile/desktop, or do tabs just act as filters on top of the grids? How will users react to tapping between views during fast-paced table encounters?
   - _Best Guess on drawer_: Implementing a drawer panel would act as a modal-like quick-reference slide-out for details instead of full-screen overlays, maximizing viewport utility.
+
+### Raw Human Ideation, Unsorted
+
+- Consider rebasing the schemas before we actually cut a live playtest (i.e reset the schema to v1 or v0, prune old unused schema versions)
+- Consider an in-app side panel to help host the character's system-relevant SRD pdf for player convenience.
+  - Consider that srd ref links could autonav in the side panel instead of a new tab.
 
 ## Done Recently
 
