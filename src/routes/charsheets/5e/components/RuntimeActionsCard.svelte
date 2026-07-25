@@ -1,8 +1,11 @@
 <script lang="ts">
 	import BaseButton from '$components/BaseButton.svelte';
-	import GridContent from '$components/GridContent.svelte';
+	import GridContentActionMenu from '$components/GridContentActionMenu.svelte';
+	import GridContentEditDialog from '$components/GridContentEditDialog.svelte';
+	import GridContentNotesDialog from '$components/GridContentNotesDialog.svelte';
 	import MenuButton from '$components/MenuButton.svelte';
 	import MenuItemButton from '$components/MenuItemButton.svelte';
+	import InventoryActionDialog from './InventoryActionDialog.svelte';
 	import {
 		suggest5eInventoryRuntimeActions,
 		type RuntimeActionSuggestion
@@ -48,19 +51,21 @@
 
 	const uid = $props.id();
 	let isSuggestionPanelOpen = $state(false);
-	let suggestionRequest = $state<Promise<ReadonlyArray<RuntimeActionSuggestion>> | undefined>(
-		undefined
-	);
+	let isEditDialogOpen = $state(false);
+	let isNotesDialogOpen = $state(false);
+	let cardActionsTriggerEl = $state<HTMLButtonElement>();
 	const actionRows = $derived(projectRuntimeActionRows(actions, inventory));
 
 	const requestSuggestions = () => {
 		isSuggestionPanelOpen = true;
-		suggestionRequest = Promise.resolve().then(() => loadSuggestions(inventory));
 	};
 
 	const closeSuggestions = () => {
 		isSuggestionPanelOpen = false;
-		suggestionRequest = undefined;
+	};
+
+	const restoreCardActionsFocus = () => {
+		cardActionsTriggerEl?.focus();
 	};
 
 	const runSourceCommand = (event: MouseEvent, command: () => void) => {
@@ -77,11 +82,24 @@
 			<h3 id={`${uid}-actions-heading`} class="text-sm font-semibold">Runtime actions</h3>
 			<div class="flex items-center gap-2">
 				<BaseButton size="sm" onclick={requestSuggestions}>Add action from inventory</BaseButton>
-				<GridContent
+				<GridContentActionMenu
+					canEdit={true}
+					onEdit={() => (isEditDialogOpen = true)}
+					onNotes={() => (isNotesDialogOpen = true)}
+					bind:triggerEl={cardActionsTriggerEl}
+				/>
+				<GridContentEditDialog
+					bind:open={isEditDialogOpen}
+					{data}
+					{handleEditSavePatches}
+					onClosed={restoreCardActionsFocus}
+				/>
+				<GridContentNotesDialog
+					bind:open={isNotesDialogOpen}
 					{data}
 					{annotationEditorConfig}
 					{handleEditSavePatches}
-					presentation="controls-only"
+					onClosed={restoreCardActionsFocus}
 				/>
 			</div>
 		</div>
@@ -139,48 +157,11 @@
 		{/if}
 	</section>
 
-	{#if isSuggestionPanelOpen && suggestionRequest}
-		<section class="space-y-3 rounded-md border p-3" aria-labelledby={`${uid}-suggestions-heading`}>
-			<div class="flex items-center justify-between gap-2">
-				<h3 id={`${uid}-suggestions-heading`} class="text-sm font-semibold">
-					Inventory action suggestions
-				</h3>
-				<BaseButton size="sm" onclick={closeSuggestions}>Close</BaseButton>
-			</div>
-
-			{#await suggestionRequest}
-				<p class="theme-text-muted text-sm" role="status">Loading inventory suggestions…</p>
-			{:then suggestions}
-				{#if suggestions.length === 0}
-					<p class="theme-text-muted text-sm">No equipped inventory items to suggest.</p>
-				{:else}
-					<ul class="space-y-2" aria-label="Inventory action suggestions">
-						{#each suggestions as suggestion (`${suggestion.source.id}-${suggestion.name}`)}
-							<li
-								class="flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2"
-							>
-								<div>
-									<p class="text-sm font-semibold">{suggestion.name}</p>
-									{#if suggestion.notes}
-										<p class="theme-text-muted text-xs">{suggestion.notes}</p>
-									{/if}
-								</div>
-								<BaseButton size="sm" onclick={() => onAcceptSuggestion(suggestion)}>
-									Add {suggestion.name}
-								</BaseButton>
-							</li>
-						{/each}
-					</ul>
-				{/if}
-			{:catch}
-				<p class="text-sm" role="alert">
-					Inventory suggestions could not be loaded. You can still add a custom action.
-				</p>
-			{/await}
-
-			<p class="theme-text-muted text-xs">
-				Manual custom actions remain available from Card actions → Edit.
-			</p>
-		</section>
-	{/if}
+	<InventoryActionDialog
+		bind:open={isSuggestionPanelOpen}
+		{inventory}
+		{loadSuggestions}
+		onConfirm={onAcceptSuggestion}
+		onClose={closeSuggestions}
+	/>
 </div>

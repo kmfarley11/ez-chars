@@ -8,23 +8,19 @@ Define inventory-based runtime-action suggestions, independently editable linked
 
 ### Requirement: Inventory Action Suggestions
 
-The system SHALL offer one action suggestion for each equipped inventory item and SHALL seed the suggestion from that item's current name and notes.
+The system SHALL offer one action suggestion for any inventory item and SHALL seed the suggestion from that item's current name and notes. Equipped items SHALL be presented first in the default view.
 
-#### Scenario: Viewing suggestions for equipped items
-
-- **WHEN** a user requests suggestions for equipped inventory items
-- **THEN** the system SHALL present one suggestion per equipped item in the same order as those items appear in inventory
-- **AND** each suggestion SHALL contain the source item's current name and notes
-
-#### Scenario: Ignoring unequipped items
+#### Scenario: Viewing suggestions for inventory items
 
 - **WHEN** a user requests inventory-based action suggestions
-- **THEN** unequipped inventory items SHALL NOT produce suggestions
+- **THEN** the system SHALL present suggestions for all inventory items
+- **AND** equipped items SHALL be sorted before unequipped items, while preserving the underlying inventory order within each group
+- **AND** each suggestion SHALL contain the source item's current name and notes
 
-#### Scenario: No equipped items are available
+#### Scenario: No inventory items are available
 
-- **WHEN** a user requests suggestions and no inventory items are equipped
-- **THEN** the system SHALL display an empty state
+- **WHEN** a user requests suggestions and no inventory items exist
+- **THEN** the system SHALL display an empty state explaining that inventory is empty
 - **AND** manual custom-action creation SHALL remain available
 
 ### Requirement: Action Snapshot Creation

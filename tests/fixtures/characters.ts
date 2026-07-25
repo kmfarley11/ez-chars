@@ -85,6 +85,13 @@ export const e2eRuntimeActionLinkCharacter = {
 			notes: 'Original item notes.',
 			tags: ['inventory:weapon'],
 			equipped: true
+		},
+		{
+			id: 'e2e-rope',
+			name: 'Rope',
+			notes: '50 feet of hempen rope.',
+			tags: ['inventory:gear'],
+			equipped: false
 		}
 	],
 	systemData: {

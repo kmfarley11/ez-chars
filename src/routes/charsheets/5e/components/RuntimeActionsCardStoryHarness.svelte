@@ -18,7 +18,7 @@
 		loadSuggestions?: (
 			// eslint-disable-next-line no-unused-vars
 			items: ReadonlyArray<Item>
-		) => Promise<ReadonlyArray<RuntimeActionSuggestion>>;
+		) => Promise<RuntimeActionSuggestion[]>;
 		// eslint-disable-next-line no-unused-vars
 		onEditSavePatches?: (_patches: Array<GridContentPatch>) => void;
 		// eslint-disable-next-line no-unused-vars

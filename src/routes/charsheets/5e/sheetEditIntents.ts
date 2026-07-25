@@ -259,7 +259,7 @@ export const reduce5eSheetEditIntents = (
 
 			case 'accept-runtime-action-suggestion': {
 				const sourceItem = candidate.inventory.find(
-					(item) => item.id === intent.suggestion.source.id && item.equipped === true
+					(item) => item.id === intent.suggestion.source.id
 				);
 				if (!sourceItem) {
 					return {
@@ -267,7 +267,7 @@ export const reduce5eSheetEditIntents = (
 						issues: [
 							{
 								code: 'invalid-intent-target',
-								message: `Action suggestion source item ${intent.suggestion.source.id} is missing or no longer equipped.`
+								message: `Action suggestion source item ${intent.suggestion.source.id} is missing.`
 							}
 						]
 					};

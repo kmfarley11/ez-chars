@@ -100,7 +100,8 @@ test('adds a structured runtime action and preserves it after reload', async ({ 
 	const actionsGroup = page
 		.getByRole('button', { name: 'Collapse Actions / Runtime Summary' })
 		.locator('../..');
-	await actionsGroup.getByRole('button', { name: 'Card actions' }).click();
+	const cardActions = actionsGroup.getByRole('button', { name: 'Card actions' });
+	await cardActions.click();
 	await page.getByRole('menuitem', { name: 'Edit' }).click();
 
 	const dialog = page.getByRole('dialog').filter({ hasText: 'Runtime Actions' });
@@ -109,6 +110,13 @@ test('adds a structured runtime action and preserves it after reload', async ({ 
 	await dialog.getByLabel('Runtime Actions Timing').last().selectOption('action');
 	await dialog.getByLabel('Runtime Actions Category').last().selectOption('effect');
 	await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+	await expect(cardActions).toBeFocused();
+
+	await cardActions.click();
+	await page.getByRole('menuitem', { name: 'Notes' }).click();
+	const notesDialog = page.getByRole('dialog', { name: 'Notes' });
+	await notesDialog.getByRole('button', { name: 'Close' }).click();
+	await expect(cardActions).toBeFocused();
 
 	await expect(runtimeActionList.getByText('Dash', { exact: true })).toBeVisible();
 	await expect
@@ -151,7 +159,22 @@ test('links an inventory suggestion through resync and source deletion fallback'
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-runtime-action-link/);
 
 	await page.getByRole('button', { name: 'Add action from inventory' }).click();
-	await page.getByRole('button', { name: 'Add Longsword' }).click();
+	const dialog = page.getByRole('dialog', { name: 'Select Inventory Item' });
+	await expect(dialog).toBeVisible();
+
+	// Check filtering and back behavior
+	await dialog.getByRole('searchbox').fill('Unknown');
+	await expect(dialog.getByText('No items match your search')).toBeVisible();
+	await dialog.getByRole('searchbox').clear();
+
+	await dialog.getByRole('button', { name: /Longsword/ }).click();
+	await expect(page.getByRole('dialog', { name: 'Customize Action' })).toBeVisible();
+
+	await page.getByRole('button', { name: 'Back', exact: true }).click();
+	await expect(dialog).toBeVisible();
+
+	await dialog.getByRole('button', { name: /Longsword/ }).click();
+	await page.getByRole('button', { name: 'Confirm Action' }).click();
 	const runtimeActionList = page.getByRole('list', { name: 'Runtime actions' });
 	await expect(runtimeActionList.getByText('Original item notes.')).toBeVisible();
 	await expect(
@@ -190,8 +213,9 @@ test('links an inventory suggestion through resync and source deletion fallback'
 	await weaponsRegion.getByRole('button', { name: 'Card actions' }).click();
 	await page.getByRole('menuitem', { name: 'Edit' }).click();
 	let inventoryDialog = page.getByRole('dialog');
-	await inventoryDialog.getByLabel('Weapons Detail').fill('Updated item notes.');
+	await inventoryDialog.getByLabel('Weapons Detail').first().fill('Updated item notes.');
 	await inventoryDialog.getByRole('button', { name: 'Save', exact: true }).click();
+	await expect(weaponsRegion.getByRole('button', { name: 'Card actions' })).toBeFocused();
 	await expect
 		.poll(() =>
 			page.evaluate((key) => {
@@ -220,11 +244,11 @@ test('links an inventory suggestion through resync and source deletion fallback'
 	await weaponsRegion.getByRole('button', { name: 'Card actions' }).click();
 	await page.getByRole('menuitem', { name: 'Edit' }).click();
 	inventoryDialog = page.getByRole('dialog');
-	await inventoryDialog.getByRole('button', { name: 'Remove' }).click();
+	await inventoryDialog.getByRole('button', { name: 'Remove' }).first().click();
 	await inventoryDialog.getByRole('button', { name: 'Save', exact: true }).click();
 
 	await expect(runtimeActionList.getByText('Updated item notes.')).toBeVisible();
-	await expect(page.getByText('Custom action')).toHaveCount(0);
+	await expect(page.getByText('Custom action', { exact: true })).toHaveCount(0);
 	await expect(
 		runtimeActionList.getByRole('button', { name: 'Source actions for Longsword' })
 	).toHaveCount(0);
@@ -241,7 +265,7 @@ test('links an inventory suggestion through resync and source deletion fallback'
 			}, storageKey)
 		)
 		.toMatchObject({
-			inventoryCount: 0,
+			inventoryCount: 1,
 			action: { name: 'Longsword', notes: 'Updated item notes.' }
 		});
 	await expect
@@ -253,6 +277,73 @@ test('links an inventory suggestion through resync and source deletion fallback'
 			}, storageKey)
 		)
 		.toBe(false);
+});
+
+test('dialog interaction behavior: cancellation, filtered selection retention, and focus restoration', async ({
+	page
+}) => {
+	await page.addInitScript(
+		({ characterId, key, value }) => {
+			const raw = localStorage.getItem(key);
+			const storedCharacterId = raw ? JSON.parse(raw).characters?.[0]?.meta?.id : undefined;
+			if (storedCharacterId !== characterId) localStorage.setItem(key, JSON.stringify(value));
+		},
+		{
+			characterId: e2eRuntimeActionLinkCharacter.meta.id,
+			key: storageKey,
+			value: e2eRuntimeActionLinkStoredCharacters
+		}
+	);
+	await page.goto('/');
+	await page
+		.locator('tbody tr')
+		.filter({ hasText: e2eRuntimeActionLinkCharacter.identity.name })
+		.locator('td')
+		.first()
+		.click();
+	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-runtime-action-link/);
+
+	// 1. Focus restoration & Cancellation
+	const triggerButton = page.getByRole('button', { name: 'Add action from inventory' });
+	await triggerButton.click();
+
+	const dialog = page.getByRole('dialog', { name: 'Select Inventory Item' });
+	await expect(dialog).toBeVisible();
+
+	// Test filtered-selection retention
+	const searchInput = dialog.getByRole('searchbox');
+	await searchInput.fill('sword');
+	await expect(dialog.getByRole('button', { name: /Longsword/ })).toBeVisible();
+
+	await dialog.getByRole('button', { name: /Longsword/ }).click();
+	const customizeDialog = page.getByRole('dialog', { name: 'Customize Action' });
+	await expect(customizeDialog).toBeVisible();
+
+	// Go back, change the query so the selected item is filtered out, and retain it.
+	await page.getByRole('button', { name: 'Back', exact: true }).click();
+	await expect(dialog).toBeVisible();
+	await expect(searchInput).toHaveValue('sword');
+	await searchInput.fill('rope');
+	await expect(dialog.getByRole('button', { name: /Rope/ })).toBeVisible();
+	await expect(dialog.getByText('Selected (Filtered)')).toBeVisible();
+	await expect(dialog.getByRole('button', { name: /Longsword/ })).toBeVisible();
+
+	// Proceed and cancel to verify no mutation and focus restoration
+	await dialog.getByRole('button', { name: /Longsword/ }).click();
+	await expect(customizeDialog).toBeVisible();
+
+	// Modify draft slightly before cancelling to ensure it's not saved
+	await customizeDialog.getByRole('textbox', { name: 'Target' }).fill('Nothing');
+
+	await page.getByRole('button', { name: 'Cancel' }).click();
+	await expect(dialog).not.toBeVisible();
+	await expect(customizeDialog).not.toBeVisible();
+
+	await expect(triggerButton).toBeFocused();
+
+	// Verify no action was added
+	const runtimeActionList = page.getByRole('list', { name: 'Runtime actions' });
+	await expect(runtimeActionList.getByText('Longsword')).toHaveCount(0);
 });
 
 test('exports and imports the seeded character backup', async ({ page }, testInfo) => {

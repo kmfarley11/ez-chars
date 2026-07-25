@@ -29,7 +29,6 @@ For current product scope, in/out-of-scope decisions, and success criteria, use 
 ## Working Rules
 
 - **Agent Self-Maintenance:** If you are asked to read, review, or modify this `AGENTS.md` file and notice it has exceeded 400 lines, you MUST proactively warn the user that the file is becoming too large and should be pruned or reorganized to maintain optimal AI attention and performance.
-- **Agent Role Boundary:** generally, we split duties between agents: **Antigravity** (Architectural Ideation, Backlog Refinement, & Specification writing) and **Codex** (Code Implementation & Test Execution). If you are asked to perform a task outside your designated role (e.g., asking Antigravity to write extensive implementation code, or Codex to design a new API boundary), stop, flag this to the user, and ask if they want to proceed or delegate to the other agent.
 - **Path Portability:** All files committed to the repository (documentation, specifications, designs, proposals, task checklists) MUST use repo-relative paths (e.g., `docs/backlog.md` or relative links like `../../src/lib/`) rather than absolute file paths or machine-specific `file://` URIs. This guarantees documents are portable across developer environments, CI systems, and execution machines.
 - Prefer completing the current 5e 2014 MVP before expanding systems
 - Keep current MVP docs up to date when scope or backlog changes
@@ -39,6 +38,7 @@ For current product scope, in/out-of-scope decisions, and success criteria, use 
 - If a task touches storage or schema I/O, validate or migrate persisted data rather than raw-casting parsed JSON
 - If a task changes tested behavior or a stable data boundary, add or update the relevant Vitest contract tests in the same change
 - If a task affects current goals, update [docs/active-goals.md](docs/active-goals.md) or [docs/backlog.md](docs/backlog.md) in the same change
+- When adding or reclassifying component stories, follow the [component composition taxonomy](docs/decisions/2026-07-25-classify-ui-component-composition.md): atoms are primitives, molecules are focused groupings of primitives, and organisms compose molecules into cohesive regions or workflows; templates and pages remain deferred.
 
 ## Git Constraints
 
@@ -177,18 +177,26 @@ Capabilities defined in the Proposal and Specification represent **durable repos
 - Agents MUST NOT use Capabilities for implementation decomposition, source files, modules, APIs, frameworks, or other architectural details.
 - Capability names should remain stable even if the underlying code is completely rewritten.
 
-## Preferred Agent Responsibilities
+## Provider-Neutral Execution Guidance
 
-The repository prefers:
+Route work by required capability, reasoning depth, tools, and context—not agent name.
 
-- **Antigravity**: exploration, repository analysis, OpenSpec artifact generation, artifact refinement, holistic review.
-- **Codex**: implementation, focused testing, implementation fixes, repository reconciliation.
+- An active agent meeting the task's minimum capability and reasoning recommendation should execute directly.
+- Do not delegate solely because another agent is historically preferred.
+- Use subagents only for concrete independent work where the benefit exceeds coordination and approval overhead.
+- Obtain explicit user opt-in before delegation that may create additional approval prompts.
+- If the current model is below the required tier, explain the mismatch and ask whether to switch or proceed.
+- The active agent remains responsible for review, verification, reconciliation, and communication.
 
-These are preferences rather than hard boundaries. When work naturally spans both areas, complete the adjacent work if it is small and directly supports the user's request. Surface significant architectural or scope decisions rather than stopping solely because work crosses a preferred responsibility.
+Use provider-neutral task labels such as:
+
+- Minimum capability tier: Standard | Advanced | Frontier
+- Reasoning depth: Medium | High
 
 ## Workflow & Communication Style
 
 - **Default to Writing Files**: When updates to planning artifacts or code are needed, write the file updates directly to disk by default so they can be reviewed via git tooling between prompts. DO NOT stage (`git add`) changes yourself unless explicitly asked to (see [the git constraints section](#git-constraints)).
+- **Use Structured Edit Tools**: Use the environment’s native structured patch or file-editing tools for ordinary repository changes. Do not use shell redirection, heredocs (`>`, `>>`, `cat <<EOF`), or disposable Python/Node scripts merely to create or modify repository files. If structured editing is unavailable or a large mechanical transformation is materially safer as a script, explain the exception, keep temporary helpers outside the repository when possible, remove any temporary artifacts before completion, and account for every untracked file with `git status --short`.
 - **Prefer asking forgiveness over permission**: Do not halt to ask for confirmation or permission first unless there is a specific question about product requirements or architectural clarity that you need resolved.
 - **Answer questions directly**: If the prompt is directly a question though, directly answer the question and ask the user if they'd like to proceed based on the answer.
 

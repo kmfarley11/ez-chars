@@ -88,6 +88,7 @@
 		margin: 0.25rem 0 0;
 		border: 0;
 		background: transparent;
+		position-try-fallbacks: flip-block, flip-inline;
 	}
 
 	.menu-popover-right {

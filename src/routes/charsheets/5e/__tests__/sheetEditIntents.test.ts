@@ -137,19 +137,25 @@ describe('5e sheet edit intent reducer', () => {
 			issues: [{ code: 'invalid-intent-target' }]
 		});
 		expect(character).toEqual(original);
+	});
 
+	it('accepts an unequipped inventory suggestion', () => {
+		const character = createSheetEditCharacter();
 		character.inventory[0].equipped = false;
-		expect(
-			reduce5eSheetEditIntents(character, [
-				{
-					type: 'accept-runtime-action-suggestion',
-					suggestion: {
-						name: 'Unequipped Sword',
-						source: { kind: 'item', id: 'weapon-1' }
-					}
+		const result = reduce5eSheetEditIntents(character, [
+			{
+				type: 'accept-runtime-action-suggestion',
+				suggestion: {
+					name: 'Unequipped Sword',
+					source: { kind: 'item', id: 'weapon-1' }
 				}
-			])
-		).toMatchObject({ ok: false, issues: [{ code: 'invalid-intent-target' }] });
+			}
+		]);
+		expect(result.ok).toBe(true);
+		if (!result.ok) throw new Error('Expected intent to succeed');
+		expect(result.character.systemData.runtimeActions).toEqual(
+			expect.arrayContaining([expect.objectContaining({ name: 'Unequipped Sword' })])
+		);
 	});
 
 	it('resyncs only source-owned snapshot fields and clears removed notes', () => {

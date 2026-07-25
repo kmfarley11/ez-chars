@@ -7,7 +7,8 @@ import RuntimeActionsCardStoryHarness from './RuntimeActionsCardStoryHarness.sve
 const character = create5e2014Character({
 	inventory: [
 		{ id: 'sword-1', name: 'Longsword', equipped: true, notes: '1d8 slashing' },
-		{ id: 'rope-1', name: 'Rope', equipped: false, notes: '50 feet' }
+		{ id: 'rope-1', name: 'Rope', equipped: false, notes: '50 feet' },
+		{ id: 'shield-1', name: 'Shield', equipped: true, notes: '+2 AC' }
 	],
 	systemData: {
 		runtimeActions: [
@@ -29,13 +30,11 @@ const character = create5e2014Character({
 		]
 	}
 });
-const suggestions: RuntimeActionSuggestion[] = [
-	{
-		name: 'Longsword',
-		notes: '1d8 slashing',
-		source: { kind: 'item', id: 'sword-1' }
-	}
-];
+const suggestions: RuntimeActionSuggestion[] = character.inventory.map((item) => ({
+	name: item.name,
+	notes: item.notes,
+	source: { kind: 'item', id: item.id }
+}));
 
 const meta = {
 	title: 'Organisms/RuntimeActionsCard',
@@ -75,91 +74,155 @@ export const LinkedAndCustom: Story = {
 			'Source navigation requested for Longsword'
 		);
 		await expect(args.onNavigateToSource).toHaveBeenCalledWith('sword-1');
-
-		await userEvent.click(
-			actionList.getByRole('button', { name: 'Source actions for Longsword attack' })
-		);
-		await userEvent.click(actionList.getByRole('menuitem', { name: 'Resync from source' }));
-		await expect(args.onResyncAction).toHaveBeenCalledWith('linked-action');
-		await expect(canvas.getByRole('status')).toHaveTextContent(
-			'Resynced action from its inventory source'
-		);
 	}
 };
 
-export const EditableActions: Story = {
-	play: async ({ canvasElement, args }) => {
-		const canvas = within(canvasElement);
-		await userEvent.click(canvas.getByRole('button', { name: 'Card actions' }));
-		await userEvent.click(canvas.getByRole('menuitem', { name: 'Edit' }));
-		const dialog = within(canvas.getByRole('dialog'));
-		const actionNames = dialog.getAllByLabelText('Runtime Actions Name');
-		await userEvent.clear(actionNames[0]);
-		await userEvent.type(actionNames[0], 'Longsword strike');
-		await userEvent.click(dialog.getByRole('button', { name: 'Save' }));
-		const actionList = within(canvas.getByRole('list', { name: 'Runtime actions' }));
-		await expect(actionList.getByText('Longsword strike', { exact: true })).toBeVisible();
-		await expect(canvas.getByRole('status')).toHaveTextContent('Saved runtime action changes');
-		await expect(args.onEditSavePatches).toHaveBeenCalled();
-
-		await userEvent.click(canvas.getByRole('button', { name: 'Card actions' }));
-		await userEvent.click(canvas.getByRole('menuitem', { name: 'Notes' }));
-		const notesDialog = within(canvas.getByRole('dialog'));
-		await expect(notesDialog.getByRole('heading', { name: 'Notes' })).toBeVisible();
-		await userEvent.click(notesDialog.getByRole('button', { name: 'Close' }));
-	}
-};
-
-export const ResolvedSuggestions: Story = {
+export const DialogFlow: Story = {
 	play: async ({ canvasElement, args }) => {
 		const canvas = within(canvasElement);
 		await userEvent.click(canvas.getByRole('button', { name: 'Add action from inventory' }));
-		await userEvent.click(await canvas.findByRole('button', { name: 'Add Longsword' }));
-		await expect(args.onAcceptSuggestion).toHaveBeenCalledWith(suggestions[0]);
-		await expect(canvas.getByRole('status')).toHaveTextContent('Added Longsword');
-		const actionList = within(canvas.getByRole('list', { name: 'Runtime actions' }));
-		await expect(actionList.getByText('Longsword', { exact: true })).toBeVisible();
-		await expect(actionList.getByText('1d8 slashing')).toBeVisible();
-		await expect(
-			actionList.getByRole('button', { name: 'Source actions for Longsword' })
-		).toBeVisible();
-	}
-};
 
-export const PendingSuggestions: Story = {
-	args: {
-		loadSuggestions: () => new Promise<ReadonlyArray<RuntimeActionSuggestion>>(() => undefined)
-	},
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement);
-		await userEvent.click(canvas.getByRole('button', { name: 'Add action from inventory' }));
-		await expect(canvas.getByRole('status')).toHaveTextContent('Loading inventory suggestions');
-	}
-};
+		const document = canvasElement.ownerDocument;
+		const dialog = await within(document.body).findByRole('dialog', {
+			name: 'Select Inventory Item'
+		});
 
-export const EmptySuggestions: Story = {
-	args: {
-		loadSuggestions: async () => []
-	},
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement);
-		await userEvent.click(canvas.getByRole('button', { name: 'Add action from inventory' }));
-		await expect(await canvas.findByText('No equipped inventory items to suggest.')).toBeVisible();
-	}
-};
+		await expect(dialog).toBeVisible();
 
-export const RejectedSuggestions: Story = {
-	args: {
-		loadSuggestions: async () => {
-			throw new Error('Suggestion service unavailable');
-		}
-	},
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement);
-		await userEvent.click(canvas.getByRole('button', { name: 'Add action from inventory' }));
-		await expect(await canvas.findByRole('alert')).toHaveTextContent(
-			'Inventory suggestions could not be loaded'
+		const dialogWithin = within(dialog);
+		await expect(await dialogWithin.findByText('Longsword')).toBeVisible();
+		await userEvent.click(dialogWithin.getByRole('button', { name: /Longsword/ }));
+
+		// Step 2
+		const customizeDialog = within(document.body).getByRole('dialog', { name: 'Customize Action' });
+		await expect(customizeDialog).toBeVisible();
+
+		const customizeWithin = within(customizeDialog);
+		await userEvent.type(customizeWithin.getByRole('textbox', { name: 'Target' }), 'Self');
+
+		await userEvent.click(customizeWithin.getByRole('button', { name: 'Confirm Action' }));
+		await expect(args.onAcceptSuggestion).toHaveBeenCalledWith(
+			expect.objectContaining({ name: 'Longsword', target: 'Self' })
 		);
-		await expect(canvas.getByText(/Manual custom actions remain available/)).toBeVisible();
+	}
+};
+
+export const DialogBackNavigation: Story = {
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		await userEvent.click(canvas.getByRole('button', { name: 'Add action from inventory' }));
+
+		const document = canvasElement.ownerDocument;
+
+		const dialog = await within(document.body).findByRole('dialog', {
+			name: 'Select Inventory Item'
+		});
+		const dialogWithin = within(dialog);
+
+		await userEvent.click(dialogWithin.getByRole('button', { name: /Longsword/ }));
+
+		const customizeDialog = within(document.body).getByRole('dialog', { name: 'Customize Action' });
+		const customizeWithin = within(customizeDialog);
+		await userEvent.click(customizeWithin.getByRole('button', { name: 'Back' }));
+
+		const dialogAgain = within(document.body).getByRole('dialog', {
+			name: 'Select Inventory Item'
+		});
+		await expect(dialogAgain).toBeVisible();
+		const searchInput = within(dialogAgain).getByRole('searchbox');
+		await userEvent.type(searchInput, 'rope');
+		await expect(within(dialogAgain).getByText('Selected (Filtered)')).toBeVisible();
+	}
+};
+
+export const EmptyInventory: Story = {
+	args: {
+		initialCharacter: create5e2014Character({ inventory: [] })
+	},
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		await userEvent.click(canvas.getByRole('button', { name: 'Add action from inventory' }));
+
+		const document = canvasElement.ownerDocument;
+		const dialog = within(document.body).getByRole('dialog', { name: 'Select Inventory Item' });
+		await expect(within(dialog).getByText('Your inventory is empty.')).toBeVisible();
+	}
+};
+
+export const LoadingState: Story = {
+	args: {
+		loadSuggestions: () => new Promise(() => {}) // never resolves
+	},
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		await userEvent.click(canvas.getByRole('button', { name: 'Add action from inventory' }));
+
+		const document = canvasElement.ownerDocument;
+		const dialog = within(document.body).getByRole('dialog', { name: 'Select Inventory Item' });
+		await expect(within(dialog).getByText('Loading inventory items…')).toBeVisible();
+	}
+};
+
+export const ErrorState: Story = {
+	args: {
+		loadSuggestions: () => Promise.reject(new Error('Failed'))
+	},
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		await userEvent.click(canvas.getByRole('button', { name: 'Add action from inventory' }));
+
+		const document = canvasElement.ownerDocument;
+		const dialog = await within(document.body).findByRole('dialog', {
+			name: 'Select Inventory Item'
+		});
+		await expect(await within(dialog).findByText('Failed to load suggestions')).toBeVisible();
+	}
+};
+
+const clutteredItems = [
+	{ id: 'clutter-longsword', name: 'Longsword', equipped: true, notes: '1d8 slashing damage' },
+	{ id: 'clutter-shield', name: 'Shield', equipped: true, notes: '+2 AC' },
+	{ id: 'clutter-tools', name: "Thieves' tools", equipped: true, notes: 'For locks and traps' },
+	{ id: 'clutter-rope', name: 'Rope', quantity: 2, notes: '50 feet of hempen rope' },
+	{ id: 'clutter-bucket', name: 'Bucket', notes: 'Wooden, slightly dented' },
+	{ id: 'clutter-rock', name: 'Random rock', notes: 'Found in the XYZ dungeon' },
+	{
+		id: 'clutter-potion',
+		name: 'Potion of Healing',
+		quantity: 2,
+		notes: 'Regain 2d4 + 2 hit points'
+	},
+	{ id: 'clutter-chalk', name: 'Chalk', quantity: 10, notes: 'White sticks for markings' },
+	{ id: 'clutter-rations', name: 'Rations', quantity: 7, notes: 'One day of travel food' },
+	{ id: 'clutter-oil', name: 'Flask of oil', quantity: 4, notes: 'Burns for 6 hours' },
+	{ id: 'clutter-hook', name: 'Grappling hook', notes: 'Iron hook and 50 feet of rope' },
+	{ id: 'clutter-waterskin', name: 'Waterskin', notes: 'Holds 4 pints' },
+	{ id: 'clutter-spellbook', name: 'Spellbook', notes: 'Ink-stained travel journal' },
+	{ id: 'clutter-key', name: 'Old brass key', notes: 'Marked with a crescent moon' }
+];
+
+export const ClutteredInventory: Story = {
+	args: {
+		initialCharacter: create5e2014Character({ inventory: clutteredItems }),
+		loadSuggestions: async () =>
+			clutteredItems.map((i) => ({
+				name: i.name,
+				notes: i.notes,
+				source: { kind: 'item' as const, id: i.id }
+			}))
+	},
+	play: async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		await userEvent.click(canvas.getByRole('button', { name: 'Add action from inventory' }));
+
+		const document = canvasElement.ownerDocument;
+		const dialog = await within(document.body).findByRole('dialog', {
+			name: 'Select Inventory Item'
+		});
+		const searchInput = within(dialog).getByRole('searchbox');
+
+		await userEvent.type(searchInput, 'xyz rock');
+		await expect(within(dialog).getByText('Random rock')).toBeVisible();
+		await expect(within(dialog).queryByText('Rope')).not.toBeInTheDocument();
 	}
 };
