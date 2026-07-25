@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD
+Define atomic, identity-preserving character-sheet edits that keep structured card workflows and direct field editing consistent through validation and persistence.
 
 ## Requirements
 

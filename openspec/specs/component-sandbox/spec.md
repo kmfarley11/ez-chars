@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Component Sandbox
+
+## Purpose
+
+Provide an isolated, browser-backed catalog for reviewing reusable UI states, exercising representative interactions, and receiving automated accessibility feedback.
+
+## Requirements
 
 ### Requirement: Isolated Component Catalog
 

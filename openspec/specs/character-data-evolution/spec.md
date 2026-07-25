@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD
+Define how supported character documents migrate, validate, and serialize into one canonical, versioned 5e model without losing authored data or meaningful absence.
 
 ## Requirements
 
