@@ -1,6 +1,8 @@
 <script lang="ts">
 	import BaseButton from '$components/BaseButton.svelte';
 	import GridContent from '$components/GridContent.svelte';
+	import MenuButton from '$components/MenuButton.svelte';
+	import MenuItemButton from '$components/MenuItemButton.svelte';
 	import {
 		suggest5eInventoryRuntimeActions,
 		type RuntimeActionSuggestion
@@ -11,6 +13,7 @@
 		GridContentPatch
 	} from '$utils/gridContentTypes';
 	import type { Item, RuntimeAction } from '../../../../schema';
+	import { projectRuntimeActionRows } from './runtimeActionRows';
 
 	interface Props {
 		data: GridContentData;
@@ -48,7 +51,7 @@
 	let suggestionRequest = $state<Promise<ReadonlyArray<RuntimeActionSuggestion>> | undefined>(
 		undefined
 	);
-	const inventoryById = $derived(new Map(inventory.map((item) => [item.id, item])));
+	const actionRows = $derived(projectRuntimeActionRows(actions, inventory));
 
 	const requestSuggestions = () => {
 		isSuggestionPanelOpen = true;
@@ -59,50 +62,75 @@
 		isSuggestionPanelOpen = false;
 		suggestionRequest = undefined;
 	};
+
+	const runSourceCommand = (event: MouseEvent, command: () => void) => {
+		const popover =
+			event.currentTarget instanceof Element ? event.currentTarget.closest('[popover]') : undefined;
+		if (popover instanceof HTMLElement) popover.hidePopover();
+		command();
+	};
 </script>
 
 <div class="space-y-4">
-	<GridContent
-		{data}
-		{annotationEditorConfig}
-		{handleEditSavePatches}
-		displayArrayMode="stack"
-		displayMaxCols={1}
-	/>
-
-	<section class="space-y-2 border-t pt-3" aria-labelledby={`${uid}-source-heading`}>
+	<section class="space-y-3" aria-labelledby={`${uid}-actions-heading`}>
 		<div class="flex flex-wrap items-center justify-between gap-2">
-			<h3 id={`${uid}-source-heading`} class="text-sm font-semibold">Action sources</h3>
-			<BaseButton size="sm" onclick={requestSuggestions}>Add action from inventory</BaseButton>
+			<h3 id={`${uid}-actions-heading`} class="text-sm font-semibold">Runtime actions</h3>
+			<div class="flex items-center gap-2">
+				<BaseButton size="sm" onclick={requestSuggestions}>Add action from inventory</BaseButton>
+				<GridContent
+					{data}
+					{annotationEditorConfig}
+					{handleEditSavePatches}
+					presentation="controls-only"
+				/>
+			</div>
 		</div>
 
-		{#if actions.length === 0}
+		{#if actionRows.length === 0}
 			<p class="theme-text-muted text-sm">No runtime actions yet.</p>
 		{:else}
-			<ul class="space-y-2" aria-label="Runtime action source status">
-				{#each actions as action (action.id)}
-					{@const sourceItem = action.source ? inventoryById.get(action.source.id) : undefined}
+			<ul class="space-y-2" aria-label="Runtime actions">
+				{#each actionRows as action (action.id)}
 					<li class="rounded-md border px-3 py-2">
-						<div class="flex flex-wrap items-center justify-between gap-2">
-							<div>
-								<p class="text-sm font-semibold">{action.name}</p>
-								{#if action.source}
-									<p class="theme-text-muted text-xs">
-										{sourceItem ? `Linked to ${sourceItem.name}` : 'Linked item unavailable'}
+						<div class="flex items-start justify-between gap-3">
+							<div class="min-w-0">
+								<p class="text-sm">
+									<span class="font-semibold">{action.name}</span>
+									<span class="theme-text-muted">
+										<span aria-hidden="true"> · </span>{action.timingLabel}
+										<span aria-hidden="true"> · </span>{action.categoryLabel}
+									</span>
+								</p>
+								{#if action.target}
+									<p class="theme-text-muted mt-1 text-xs">Target: {action.target}</p>
+								{/if}
+								{#if action.notes}
+									<p class="theme-text-muted mt-1 whitespace-pre-line text-sm italic">
+										{action.notes}
 									</p>
-								{:else}
-									<p class="theme-text-muted text-xs">Custom action</p>
 								{/if}
 							</div>
-							{#if action.source && sourceItem}
-								<div class="flex flex-wrap gap-2">
-									<BaseButton size="sm" onclick={() => onNavigateToSource(sourceItem.id)}>
-										View {sourceItem.name}
-									</BaseButton>
-									<BaseButton size="sm" onclick={() => onResyncAction(action.id)}>
+							{#if action.source}
+								{@const source = action.source}
+								<MenuButton
+									text="Source"
+									iconVariant="chevron"
+									buttonSize="sm"
+									ariaLabel={`Source actions for ${action.name}`}
+									title={`Source actions for ${action.name}`}
+								>
+									<MenuItemButton
+										onclick={(event) =>
+											runSourceCommand(event, () => onNavigateToSource(source.itemId))}
+									>
+										View {source.itemName}
+									</MenuItemButton>
+									<MenuItemButton
+										onclick={(event) => runSourceCommand(event, () => onResyncAction(action.id))}
+									>
 										Resync from source
-									</BaseButton>
-								</div>
+									</MenuItemButton>
+								</MenuButton>
 							{/if}
 						</div>
 					</li>

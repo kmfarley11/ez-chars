@@ -64,6 +64,26 @@ describe('5e 2014 character schema', () => {
 		}
 	});
 
+	it('keeps linked and fully custom runtime actions in representative seed characters', () => {
+		const representativeCharacters = seedChars
+			.filter((character) => ['char-001', 'char-002'].includes(character.meta.id))
+			.map((character) => parse5e2014CharacterDocument(character));
+
+		expect(representativeCharacters).toHaveLength(2);
+		for (const character of representativeCharacters) {
+			const linkedActions = character.systemData.runtimeActions.filter(
+				(action) => action.source?.kind === 'item'
+			);
+			const customActions = character.systemData.runtimeActions.filter((action) => !action.source);
+			const linkedSourceId = linkedActions[0]?.source?.id;
+
+			expect(linkedActions).toHaveLength(1);
+			expect(customActions).toHaveLength(1);
+			expect(linkedSourceId).toBeDefined();
+			expect(character.inventory.some((item) => item.id === linkedSourceId)).toBe(true);
+		}
+	});
+
 	it('rejects malformed 5e character documents', () => {
 		const malformedCharacter = {
 			...create5e2014Character(),

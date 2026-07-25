@@ -39,6 +39,7 @@
 		displayMaxCols?: number;
 		displayAlign?: 'left' | 'center';
 		displayArrayMode?: 'inline' | 'stack';
+		presentation?: 'default' | 'controls-only';
 		// Optional domain-level annotation behavior injected by page/feature layers.
 		annotationEditorConfig?: GridAnnotationEditorConfig;
 		// eslint-disable-next-line no-unused-vars
@@ -55,6 +56,7 @@
 		displayMaxCols = 3,
 		displayAlign = 'left',
 		displayArrayMode = 'inline',
+		presentation = 'default',
 		annotationEditorConfig = undefined,
 		handleEditSave,
 		handleEditSavePatches,
@@ -239,7 +241,12 @@
 	);
 </script>
 
-<div class="grid-content-shell relative min-h-8" role="presentation">
+<div
+	class={presentation === 'controls-only'
+		? 'grid-content-shell relative h-7 w-7 shrink-0'
+		: 'grid-content-shell relative min-h-8'}
+	role="presentation"
+>
 	<div class="absolute top-0 right-0">
 		<MenuButton
 			iconVariant="ellipsis"
@@ -256,104 +263,106 @@
 			<MenuItemButton onclick={onHelpOpen}>Notes</MenuItemButton>
 		</MenuButton>
 	</div>
-	<div class="pr-9">
-		{#if leadFieldEntries.length > 0}
-			<div class={gridEntries.length > 0 ? 'mb-2 grid gap-2 border-b pb-2' : 'grid gap-2'}>
-				{#each leadFieldEntries as [fieldKey, field] (fieldKey)}
-					<GridPrimitiveField
-						{fieldKey}
-						{field}
-						{annotationEditorConfig}
-						onSavePatch={savePrimitiveFieldPatch}
-						onSaveAnnotations={savePrimitiveFieldAnnotations}
-					/>
-				{/each}
-			</div>
-		{/if}
-		{#if gridEntries.length > 0}
-			<GridContainerAuto maxCols={displayMaxCols} classes="gap-2">
-				{#each gridEntries as [fieldKey, field] (fieldKey)}
-					{@const labeledParts = getLabeledDisplayParts(field)}
-					{@const fieldLabel = field.fieldName ?? fieldKey}
-					<GridContainer
-						classes={displayAlign === 'center' ? 'flex min-w-0 justify-center' : 'min-w-0'}
-					>
-						<div class={displayAlign === 'center' ? 'min-w-0 text-center' : 'min-w-0'}>
-							<span data-grid-auto-item class={displayItemClass}>
-								{#if isDirectEditablePrimitiveField(field)}
-									<GridPrimitiveField
-										{fieldKey}
-										{field}
-										{annotationEditorConfig}
-										onSavePatch={savePrimitiveFieldPatch}
-										onSaveAnnotations={savePrimitiveFieldAnnotations}
-									/>
-								{:else if typeof field.value === 'boolean'}
-									<span class="inline-flex items-center gap-2 align-middle">
-										<input
-											class="theme-input theme-checkbox-readonly h-4 w-4 cursor-not-allowed rounded border"
-											type="checkbox"
-											checked={field.value}
-											aria-label={`${field.fieldName}: ${field.value ? 'enabled' : 'disabled'}`}
-											disabled
-										/>
-										<span class="font-semibold">{field.fieldName}</span>
-									</span>
-								{:else if labeledParts}
-									<span class="inline-flex flex-nowrap items-baseline gap-1 whitespace-nowrap">
-										<span class="font-semibold">{field.fieldName}:</span>
-										{#each labeledParts as part, idx (`${fieldKey}-${idx}`)}
-											{#if idx > 0}
-												<span aria-hidden="true">/</span>
-											{/if}
-											<span>
-												{part.value}
-												{#if part.label}
-													<span class="theme-text-muted text-xs italic">&nbsp;{part.label}</span>
-												{/if}
-											</span>
-										{/each}
-									</span>
-								{:else if displayArrayMode === 'stack' && isGridFieldArray(field.value)}
-									<span class="font-semibold">{field.fieldName}:</span>
-									<span class="mt-1 block">
-										{#if field.value.length === 0}
-											<span class="theme-text-muted text-sm italic">No entries yet.</span>
-										{:else}
-											<ul class="mt-1 list-disc space-y-1 pl-5">
-												{#each field.value as arrayEntry, arrayIdx (`${fieldKey}-${arrayIdx}`)}
-													<li>{formatFieldValue(arrayEntry, '___', ' ')}</li>
-												{/each}
-											</ul>
-										{/if}
-									</span>
-								{:else}
-									<span class="font-semibold">{field.fieldName}:</span>
-									{formatFieldValue(field)}
-								{/if}
-								{#if field.label}
-									<span class="theme-text-muted text-xs italic"> ({field.label}) </span>
-								{/if}
-								{#if field.annotationBindPath}
-									<span class="ml-1 inline-flex align-middle">
-										<FieldAnnotationControl
-											{fieldLabel}
-											annotations={field.annotations ?? []}
-											annotationAffordance="badge"
+	{#if presentation !== 'controls-only'}
+		<div class="pr-9">
+			{#if leadFieldEntries.length > 0}
+				<div class={gridEntries.length > 0 ? 'mb-2 grid gap-2 border-b pb-2' : 'grid gap-2'}>
+					{#each leadFieldEntries as [fieldKey, field] (fieldKey)}
+						<GridPrimitiveField
+							{fieldKey}
+							{field}
+							{annotationEditorConfig}
+							onSavePatch={savePrimitiveFieldPatch}
+							onSaveAnnotations={savePrimitiveFieldAnnotations}
+						/>
+					{/each}
+				</div>
+			{/if}
+			{#if gridEntries.length > 0}
+				<GridContainerAuto maxCols={displayMaxCols} classes="gap-2">
+					{#each gridEntries as [fieldKey, field] (fieldKey)}
+						{@const labeledParts = getLabeledDisplayParts(field)}
+						{@const fieldLabel = field.fieldName ?? fieldKey}
+						<GridContainer
+							classes={displayAlign === 'center' ? 'flex min-w-0 justify-center' : 'min-w-0'}
+						>
+							<div class={displayAlign === 'center' ? 'min-w-0 text-center' : 'min-w-0'}>
+								<span data-grid-auto-item class={displayItemClass}>
+									{#if isDirectEditablePrimitiveField(field)}
+										<GridPrimitiveField
+											{fieldKey}
+											{field}
 											{annotationEditorConfig}
-											onSaveAnnotations={(nextAnnotations) => {
-												saveFieldAnnotations(field, nextAnnotations);
-											}}
+											onSavePatch={savePrimitiveFieldPatch}
+											onSaveAnnotations={savePrimitiveFieldAnnotations}
 										/>
-									</span>
-								{/if}
-							</span>
-						</div>
-					</GridContainer>
-				{/each}
-			</GridContainerAuto>
-		{/if}
-	</div>
+									{:else if typeof field.value === 'boolean'}
+										<span class="inline-flex items-center gap-2 align-middle">
+											<input
+												class="theme-input theme-checkbox-readonly h-4 w-4 cursor-not-allowed rounded border"
+												type="checkbox"
+												checked={field.value}
+												aria-label={`${field.fieldName}: ${field.value ? 'enabled' : 'disabled'}`}
+												disabled
+											/>
+											<span class="font-semibold">{field.fieldName}</span>
+										</span>
+									{:else if labeledParts}
+										<span class="inline-flex flex-nowrap items-baseline gap-1 whitespace-nowrap">
+											<span class="font-semibold">{field.fieldName}:</span>
+											{#each labeledParts as part, idx (`${fieldKey}-${idx}`)}
+												{#if idx > 0}
+													<span aria-hidden="true">/</span>
+												{/if}
+												<span>
+													{part.value}
+													{#if part.label}
+														<span class="theme-text-muted text-xs italic">&nbsp;{part.label}</span>
+													{/if}
+												</span>
+											{/each}
+										</span>
+									{:else if displayArrayMode === 'stack' && isGridFieldArray(field.value)}
+										<span class="font-semibold">{field.fieldName}:</span>
+										<span class="mt-1 block">
+											{#if field.value.length === 0}
+												<span class="theme-text-muted text-sm italic">No entries yet.</span>
+											{:else}
+												<ul class="mt-1 list-disc space-y-1 pl-5">
+													{#each field.value as arrayEntry, arrayIdx (`${fieldKey}-${arrayIdx}`)}
+														<li>{formatFieldValue(arrayEntry, '___', ' ')}</li>
+													{/each}
+												</ul>
+											{/if}
+										</span>
+									{:else}
+										<span class="font-semibold">{field.fieldName}:</span>
+										{formatFieldValue(field)}
+									{/if}
+									{#if field.label}
+										<span class="theme-text-muted text-xs italic"> ({field.label}) </span>
+									{/if}
+									{#if field.annotationBindPath}
+										<span class="ml-1 inline-flex align-middle">
+											<FieldAnnotationControl
+												{fieldLabel}
+												annotations={field.annotations ?? []}
+												annotationAffordance="badge"
+												{annotationEditorConfig}
+												onSaveAnnotations={(nextAnnotations) => {
+													saveFieldAnnotations(field, nextAnnotations);
+												}}
+											/>
+										</span>
+									{/if}
+								</span>
+							</div>
+						</GridContainer>
+					{/each}
+				</GridContainerAuto>
+			{/if}
+		</div>
+	{/if}
 </div>
 
 {#if shouldRenderEditDialog}

@@ -14,9 +14,18 @@ const character = create5e2014Character({
 			{
 				id: 'linked-action',
 				name: 'Longsword attack',
+				timing: 'action',
+				category: 'attack',
+				target: 'One creature',
+				notes: 'Player-authored strike note.',
 				source: { kind: 'item', id: 'sword-1' }
 			},
-			{ id: 'custom-action', name: 'Improvise' }
+			{
+				id: 'custom-action',
+				name: 'Improvise',
+				timing: 'bonusAction',
+				category: 'effect'
+			}
 		]
 	}
 });
@@ -29,7 +38,7 @@ const suggestions: RuntimeActionSuggestion[] = [
 ];
 
 const meta = {
-	title: 'Molecules/RuntimeActionsCard',
+	title: 'Organisms/RuntimeActionsCard',
 	component: RuntimeActionsCardStoryHarness,
 	args: {
 		initialCharacter: character,
@@ -50,17 +59,31 @@ export const InteractivePlayground: Story = {};
 export const LinkedAndCustom: Story = {
 	play: async ({ canvasElement, args }) => {
 		const canvas = within(canvasElement);
-		await userEvent.click(canvas.getByRole('button', { name: 'View Longsword' }));
+		const actionList = within(canvas.getByRole('list', { name: 'Runtime actions' }));
+		await expect(actionList.getByText('Player-authored strike note.')).toBeVisible();
+		await expect(actionList.getAllByText('Longsword attack', { exact: true })).toHaveLength(1);
+		await expect(actionList.getByText(/Bonus action/)).toBeVisible();
+		await expect(
+			actionList.queryByRole('button', { name: 'Source actions for Improvise' })
+		).not.toBeInTheDocument();
+
+		await userEvent.click(
+			actionList.getByRole('button', { name: 'Source actions for Longsword attack' })
+		);
+		await userEvent.click(actionList.getByRole('menuitem', { name: 'View Longsword' }));
 		await expect(canvas.getByRole('status')).toHaveTextContent(
 			'Source navigation requested for Longsword'
 		);
-		await userEvent.click(canvas.getByRole('button', { name: 'Resync from source' }));
 		await expect(args.onNavigateToSource).toHaveBeenCalledWith('sword-1');
+
+		await userEvent.click(
+			actionList.getByRole('button', { name: 'Source actions for Longsword attack' })
+		);
+		await userEvent.click(actionList.getByRole('menuitem', { name: 'Resync from source' }));
 		await expect(args.onResyncAction).toHaveBeenCalledWith('linked-action');
 		await expect(canvas.getByRole('status')).toHaveTextContent(
 			'Resynced action from its inventory source'
 		);
-		await expect(canvas.queryByRole('button', { name: /View Improvise/ })).not.toBeInTheDocument();
 	}
 };
 
@@ -74,10 +97,16 @@ export const EditableActions: Story = {
 		await userEvent.clear(actionNames[0]);
 		await userEvent.type(actionNames[0], 'Longsword strike');
 		await userEvent.click(dialog.getByRole('button', { name: 'Save' }));
-		const sourceStatus = within(canvas.getByRole('list', { name: 'Runtime action source status' }));
-		await expect(sourceStatus.getByText('Longsword strike', { exact: true })).toBeVisible();
+		const actionList = within(canvas.getByRole('list', { name: 'Runtime actions' }));
+		await expect(actionList.getByText('Longsword strike', { exact: true })).toBeVisible();
 		await expect(canvas.getByRole('status')).toHaveTextContent('Saved runtime action changes');
 		await expect(args.onEditSavePatches).toHaveBeenCalled();
+
+		await userEvent.click(canvas.getByRole('button', { name: 'Card actions' }));
+		await userEvent.click(canvas.getByRole('menuitem', { name: 'Notes' }));
+		const notesDialog = within(canvas.getByRole('dialog'));
+		await expect(notesDialog.getByRole('heading', { name: 'Notes' })).toBeVisible();
+		await userEvent.click(notesDialog.getByRole('button', { name: 'Close' }));
 	}
 };
 
@@ -88,7 +117,12 @@ export const ResolvedSuggestions: Story = {
 		await userEvent.click(await canvas.findByRole('button', { name: 'Add Longsword' }));
 		await expect(args.onAcceptSuggestion).toHaveBeenCalledWith(suggestions[0]);
 		await expect(canvas.getByRole('status')).toHaveTextContent('Added Longsword');
-		await expect(canvas.getAllByText('Linked to Longsword')).toHaveLength(2);
+		const actionList = within(canvas.getByRole('list', { name: 'Runtime actions' }));
+		await expect(actionList.getByText('Longsword', { exact: true })).toBeVisible();
+		await expect(actionList.getByText('1d8 slashing')).toBeVisible();
+		await expect(
+			actionList.getByRole('button', { name: 'Source actions for Longsword' })
+		).toBeVisible();
 	}
 };
 

@@ -13,7 +13,15 @@ export const e2eCharacter = {
 	},
 	identity: { name: 'E2E Test Adventurer' },
 	features: [],
-	inventory: [],
+	inventory: [
+		{
+			id: 'e2e-seed-longsword',
+			name: 'Longsword',
+			notes: 'Seeded item detail.',
+			tags: ['inventory:weapon'],
+			equipped: true
+		}
+	],
 	notes: [],
 	systemData: {
 		level: 0,
@@ -34,7 +42,24 @@ export const e2eCharacter = {
 			deathSaves: { successes: 0, failures: 0 }
 		},
 		classes: [],
-		runtimeActions: [],
+		runtimeActions: [
+			{
+				id: 'e2e-seed-linked-action',
+				name: 'Longsword attack',
+				timing: 'action',
+				category: 'attack',
+				target: 'one creature within 5 ft',
+				notes: 'Seeded item detail.',
+				source: { kind: 'item', id: 'e2e-seed-longsword' }
+			},
+			{
+				id: 'e2e-seed-custom-action',
+				name: 'Improvise',
+				timing: 'bonusAction',
+				category: 'effect',
+				notes: 'A completely custom runtime action.'
+			}
+		],
 		currency: {},
 		roleplay: {},
 		proficiencies: { languages: [], tools: [] }

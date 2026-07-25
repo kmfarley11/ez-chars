@@ -69,6 +69,7 @@ export const seedChars: CharacterWithSystemData[] = [
 			{
 				id: 'item-1',
 				name: 'Longsword',
+				notes: '+5 to hit; 1d8+2 slashing.',
 				equipped: true
 			},
 			{
@@ -177,7 +178,8 @@ export const seedChars: CharacterWithSystemData[] = [
 					timing: 'action',
 					category: 'attack',
 					target: 'one creature within 5 ft',
-					notes: '+5 to hit; 1d8+2 slashing.'
+					notes: '+5 to hit; 1d8+2 slashing.',
+					source: { kind: 'item', id: 'item-1' }
 				},
 				{
 					id: 'act-1',
@@ -221,6 +223,7 @@ export const seedChars: CharacterWithSystemData[] = [
 			{
 				id: 'item-1',
 				name: 'Spear',
+				notes: '+4 to hit; 1d6+2 piercing.',
 				equipped: true
 			}
 		],
@@ -284,7 +287,16 @@ export const seedChars: CharacterWithSystemData[] = [
 					timing: 'action',
 					category: 'attack',
 					target: 'one creature within 5 ft or 20/60 ft',
-					notes: '+4 to hit; 1d6+2 piercing.'
+					notes: '+4 to hit; 1d6+2 piercing.',
+					source: { kind: 'item', id: 'item-1' }
+				},
+				{
+					id: 'act-1',
+					name: 'Second Wind',
+					timing: 'bonusAction',
+					category: 'effect',
+					target: 'self',
+					notes: 'Regain hit points once per short rest.'
 				}
 			]
 		}

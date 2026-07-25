@@ -87,6 +87,16 @@ test('adds a D&D Beyond note annotation and exposes its reference link', async (
 test('adds a structured runtime action and preserves it after reload', async ({ page }) => {
 	await openSeededCharacter(page);
 
+	const runtimeActionList = page.getByRole('list', { name: 'Runtime actions' });
+	await expect(runtimeActionList.getByText('Longsword attack', { exact: true })).toBeVisible();
+	await expect(runtimeActionList.getByText('Improvise', { exact: true })).toBeVisible();
+	await expect(
+		runtimeActionList.getByRole('button', { name: 'Source actions for Longsword attack' })
+	).toBeVisible();
+	await expect(
+		runtimeActionList.getByRole('button', { name: 'Source actions for Improvise' })
+	).toHaveCount(0);
+
 	const actionsGroup = page
 		.getByRole('button', { name: 'Collapse Actions / Runtime Summary' })
 		.locator('../..');
@@ -95,23 +105,24 @@ test('adds a structured runtime action and preserves it after reload', async ({ 
 
 	const dialog = page.getByRole('dialog').filter({ hasText: 'Runtime Actions' });
 	await dialog.getByRole('button', { name: 'Add Action' }).click();
-	await dialog.getByLabel('Runtime Actions Name').fill('Dash');
-	await dialog.getByLabel('Runtime Actions Timing').selectOption('action');
-	await dialog.getByLabel('Runtime Actions Category').selectOption('effect');
+	await dialog.getByLabel('Runtime Actions Name').last().fill('Dash');
+	await dialog.getByLabel('Runtime Actions Timing').last().selectOption('action');
+	await dialog.getByLabel('Runtime Actions Category').last().selectOption('effect');
 	await dialog.getByRole('button', { name: 'Save', exact: true }).click();
 
-	await expect(page.getByText(/Runtime Actions:\s*Dash/)).toBeVisible();
+	await expect(runtimeActionList.getByText('Dash', { exact: true })).toBeVisible();
 	await expect
 		.poll(() =>
 			page.evaluate((key) => {
 				const raw = localStorage.getItem(key);
-				return raw ? JSON.parse(raw).characters[0].systemData.runtimeActions?.[0]?.name : undefined;
+				const actions = raw ? JSON.parse(raw).characters[0].systemData.runtimeActions : [];
+				return actions.find((action: { name: string }) => action.name === 'Dash');
 			}, storageKey)
 		)
-		.toBe('Dash');
+		.toMatchObject({ name: 'Dash' });
 
 	await page.reload();
-	await expect(page.getByText(/Runtime Actions:\s*Dash/)).toBeVisible();
+	await expect(runtimeActionList.getByText('Dash', { exact: true })).toBeVisible();
 });
 
 test('links an inventory suggestion through resync and source deletion fallback', async ({
@@ -141,7 +152,12 @@ test('links an inventory suggestion through resync and source deletion fallback'
 
 	await page.getByRole('button', { name: 'Add action from inventory' }).click();
 	await page.getByRole('button', { name: 'Add Longsword' }).click();
-	await expect(page.getByText('Linked to Longsword')).toBeVisible();
+	const runtimeActionList = page.getByRole('list', { name: 'Runtime actions' });
+	await expect(runtimeActionList.getByText('Original item notes.')).toBeVisible();
+	await expect(
+		runtimeActionList.getByRole('button', { name: 'Source actions for Longsword' })
+	).toBeVisible();
+	await expect(page.getByText('Linked to Longsword')).toHaveCount(0);
 	await expect
 		.poll(() =>
 			page.evaluate((key) => {
@@ -155,10 +171,20 @@ test('links an inventory suggestion through resync and source deletion fallback'
 			source: { kind: 'item', id: 'e2e-longsword' }
 		});
 
+	const actionsGroup = page
+		.getByRole('button', { name: 'Collapse Actions / Runtime Summary' })
+		.locator('../..');
+	await actionsGroup.getByRole('button', { name: 'Card actions' }).click();
+	await page.getByRole('menuitem', { name: 'Notes' }).click();
+	const notesDialog = page.getByRole('dialog').filter({ hasText: 'Notes' });
+	await expect(notesDialog).toBeVisible();
+	await notesDialog.getByRole('button', { name: 'Close' }).click();
+
 	await page.reload();
-	await expect(page.getByText('Linked to Longsword')).toBeVisible();
+	await expect(runtimeActionList.getByText('Original item notes.')).toBeVisible();
 	const weaponsRegion = page.getByRole('region', { name: 'Weapons inventory' });
-	await page.getByRole('button', { name: 'View Longsword' }).click();
+	await runtimeActionList.getByRole('button', { name: 'Source actions for Longsword' }).click();
+	await runtimeActionList.getByRole('menuitem', { name: 'View Longsword' }).click();
 	await expect(weaponsRegion).toBeFocused();
 
 	await weaponsRegion.getByRole('button', { name: 'Card actions' }).click();
@@ -180,7 +206,8 @@ test('links an inventory suggestion through resync and source deletion fallback'
 		)
 		.toEqual({ itemNotes: 'Updated item notes.', actionNotes: 'Original item notes.' });
 
-	await page.getByRole('button', { name: 'Resync from source' }).click();
+	await runtimeActionList.getByRole('button', { name: 'Source actions for Longsword' }).click();
+	await runtimeActionList.getByRole('menuitem', { name: 'Resync from source' }).click();
 	await expect
 		.poll(() =>
 			page.evaluate((key) => {
@@ -196,9 +223,11 @@ test('links an inventory suggestion through resync and source deletion fallback'
 	await inventoryDialog.getByRole('button', { name: 'Remove' }).click();
 	await inventoryDialog.getByRole('button', { name: 'Save', exact: true }).click();
 
-	await expect(page.getByText('Custom action')).toBeVisible();
-	await expect(page.getByRole('button', { name: 'View Longsword' })).toHaveCount(0);
-	await expect(page.getByRole('button', { name: 'Resync from source' })).toHaveCount(0);
+	await expect(runtimeActionList.getByText('Updated item notes.')).toBeVisible();
+	await expect(page.getByText('Custom action')).toHaveCount(0);
+	await expect(
+		runtimeActionList.getByRole('button', { name: 'Source actions for Longsword' })
+	).toHaveCount(0);
 	await expect
 		.poll(() =>
 			page.evaluate((key) => {
@@ -260,7 +289,9 @@ test('hydrates legacy local data before opening and persists the canonical chara
 		.click();
 
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-legacy-character/);
-	await expect(page.getByText(/Runtime Actions:\s*Legacy Dash/)).toBeVisible();
+	await expect(
+		page.getByRole('list', { name: 'Runtime actions' }).getByText('Legacy Dash', { exact: true })
+	).toBeVisible();
 	await expect(page.getByText(/Motives:\s*Protect the migrated party\./)).toBeVisible();
 	await expect
 		.poll(() =>

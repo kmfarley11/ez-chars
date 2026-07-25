@@ -32,11 +32,12 @@ No active P0 items.
 
 Next recommended sequence for remaining P1 items:
 
-**Phase 2: UX Polish & Playtest Prep**
+_goal: UX Polish & Playtest Prep_
 
-1. `p1-061`: Extend runtime-action sources to spells and features after their stable identity and suggestion semantics are refined
-2. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
-3. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
+1. `p1-062`: Add a guided inventory-action templating dialog with source selection and final draft review
+2. `p1-061`: Extend runtime-action sources to spells and features after their stable identity and suggestion semantics are refined
+3. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
+4. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
 
 _(Note: `p1-010` for GitHub Actions remains deferred until CI needs justify it)._
 
@@ -55,6 +56,50 @@ Outcome:
 Status:
 
 - **Complete.** Installed local `@fission-ai/openspec`, updated agent guidelines, repository README, decision records, and backlog instructions.
+
+### Add a guided inventory-action templating dialog
+
+ID:
+
+- `p1-062`
+
+Priority context:
+
+- Make this the next change now that `p1-005` is archived so the inventory workflow is comfortable to use before the same source pattern expands to spells and features.
+
+Refinement outputs:
+
+- **Purpose:** Let a user deliberately choose an inventory source and review the resulting runtime-action draft before anything is added, instead of immediately committing the first generated suggestion.
+- **Included behavior:**
+  - Activating "Add action from inventory" opens an accessible modal workflow without changing character data.
+  - The first step presents eligible inventory sources and lets the user select which item should seed the action.
+  - The next step presents an editable draft seeded from that source, including the action name, timing, category, optional target, and notes.
+  - Back, cancel, and final-save behavior is explicit; only final confirmation creates the linked action.
+  - Loading, empty, and failure states preserve a clear path to manual custom-action creation.
+  - Begin with a behavior-preserving composition slice that separates `GridContent` field display from its card-action menu and Edit/Notes dialog orchestration; `RuntimeActionsCard` consumes the focused action/dialog boundary directly instead of relying on `presentation="controls-only"`.
+  - Remove the controls-only presentation prop and conditional after the focused boundary is composed by both ordinary `GridContent` consumers and the runtime-action organism, while preserving existing patch callbacks, dialog behavior, and focus restoration.
+  - Extract only the concrete dialog/form molecules proven by the existing GridContent workflows and this guided flow; keep source selection, draft state, and multi-step coordination feature-local to the organism.
+  - Storybook establishes a deliberate hierarchy for this flow: atoms remain primitive controls, molecules are reusable combinations such as a basic dialog or form component, and the feature-specific multi-step workflow composed with `RuntimeActionsCard` is catalogued as an organism.
+  - Storybook demonstrates the reusable dialog/form behavior, multi-step navigation, and the composed organism with interaction and accessibility checks.
+- **Excluded behavior:**
+  - Changing snapshot/resync persistence semantics, adding field-level source overrides, or introducing append/replace merge modes.
+  - Adding spell or feature sources; `p1-061` continues to own that expansion.
+  - Broadly rewriting GridContent rendering or editing contracts beyond removing the controls-only bridge and extracting the concrete boundaries required by the existing and guided workflows.
+  - Forcing unrelated existing stories into new categories, treating page- or feature-specific compositions as reusable molecules, or introducing a universal wizard framework.
+- **Ambiguities:**
+  - Should the source-selection step retain the current equipped-only eligibility rule or allow all inventory items?
+  - Should source selection and draft review be two pages of one dialog or a deliberate handoff between two focused dialogs?
+  - Should final review reuse the current collection editor machinery or use a focused action-draft form?
+  - Should GridContent card-action orchestration remain one focused molecule or compose smaller menu, dialog-shell, and form-body molecules?
+  - Which reusable boundaries belong at the molecule level—a dialog-form shell, step navigation, focused form sections, or some combination—while the runtime-action workflow remains the organism?
+  - Should a multi-step dialog preserve draft edits when the user moves back and chooses a different source?
+  - On small screens, should the same native dialog remain centered or adopt a full-height presentation?
+- **Success:**
+  - A user can open the workflow, select an eligible item, review and edit the seeded fields, and confirm one linked runtime action containing the reviewed values.
+  - Canceling at either step creates no action, while moving backward does not cause an accidental commit.
+  - Keyboard focus, accessible names, loading/error feedback, and touch-sized controls work in Storybook and the main Chromium flow.
+  - Manual custom-action creation remains available when no source can be selected.
+  - `RuntimeActionsCard` no longer passes a controls-only presentation mode, `GridContent` no longer contains that special display conditional, and existing GridContent display, bulk Edit, Notes, patch, and focus behavior remains covered and unchanged.
 
 ### Extend runtime-action sources to spells and features
 
@@ -237,13 +282,19 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
   - _Constraints_: Preserve text selection and copying, provide equivalent mouse/keyboard/touch paths, never require hover or long-press, retain explicit focus behavior, and keep bulk editing as a fallback during migration. Build on [the field interaction model](field-interaction-model.md) and [field rendering API](field-rendering-api.md) rather than adding collection-specific conventions independently.
   - _Open questions_: Which collection should prove the pattern, whether row selection and editing should remain distinct actions, when controls should be persistent versus revealed, how annotation presence changes affordance priority, and whether context-menu gestures are valuable enough to support as secondary shortcuts.
   - _Refinement trigger_: Explore before expanding direct per-item controls across collections or standardizing new `GridContent` row-action APIs; coordinate sequencing with the accessibility/mobile review so that review evaluates the intended interaction model.
+- Explore source-backed runtime actions as source content plus explicit player overrides rather than fully materialized snapshots.
+  - _Why_: Under the current snapshot contract, ordinary edits change the same `name` and `notes` fields that explicit resync later replaces, so resync can erase intentional player detail even though the action remains linked.
+  - _Explore_: Separate source-derived base values from player overrides; per-field modes such as inherit, replace, or append; a resync review that lets the user choose which base or effective fields may be replaced; and a deliberately shallow link that computes effective display content without weakening offline ownership.
+  - _Constraints_: Never discard player-authored content silently, preserve deterministic migration and source-deletion fallback, keep current 5e behavior usable offline, and avoid a generic cross-system override framework until concrete spell/feature cases justify one.
+  - _Open questions_: Which fields are source-owned, how normal editing creates or clears an override, whether annotations are always action-owned, how source deletion materializes the effective action, and whether the persisted model stores base values, override operations, or both.
+  - _Refinement trigger_: Revisit after the guided templating dialog is playtested and before `p1-061` widens source links to spells and features; decide explicitly whether expansion should retain snapshot semantics or introduce a new versioned override model first.
 - Consider rebasing the schemas before we actually cut a live playtest (i.e reset the schema to v1 or v0, prune old unused schema versions)
 - Consider an in-app side panel to help host the character's system-relevant SRD pdf for player convenience.
   - Consider that srd ref links could autonav in the side panel instead of a new tab.
 
 ## Done Recently
 
-- `2026-07-19` completed `p1-005`: advanced 5e characters to `dnd5e-2014.v3`, added persisted item-source links for independently editable runtime-action snapshots, and delivered equipped-item suggestions, explicit resync, source navigation, deletion fallback, Storybook states, and end-to-end coverage while retaining `p1-061` for spell and feature sources
+- `2026-07-25` completed `p1-005`: advanced 5e characters to `dnd5e-2014.v3`, added persisted item-source links for independently editable runtime-action snapshots, and delivered equipped-item suggestions, single-entry playable action rows with authored notes, compact source navigation/resync menus, deletion fallback, retained card-level Edit/Notes workflows, Storybook states, and end-to-end coverage while retaining `p1-061` for spell and feature sources
 - `2026-07-19` completed `p1-012`: added a local SvelteKit Storybook catalog with typed BaseButton, Heading, and ValidatedInputField stories; isolated browser-backed interaction and automated accessibility checks now run through the Storybook Vitest project
 - `2026-07-18` completed `p1-050`: refactored the repo structure, created dedicated directories for $components, $storage, and $utils, configured Vite aliases, extracted data files into $fixtures, and updated imports to improve codebase maintainability
 - `2026-07-18` completed `p1-060`: introduced `dnd5e-2014.v2` character hydration/serialization, migrated supported action aliases, tagged currency, titled roleplay fields, split proficiency provenance, and movement strings into one canonical model, rewired storage/import/export and 5e sheet code, and retained cross-system core flexibility with migration, round-trip, and browser smoke coverage
