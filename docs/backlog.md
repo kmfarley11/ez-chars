@@ -58,7 +58,6 @@ No active P0 items.
 - [`BL-064` — Scale dense collection rendering and discovery](#scale-dense-collection-rendering-and-discovery)
 - [`p1-027` — Replace custom grid auto-measurement with native CSS Container Queries](#replace-custom-grid-auto-measurement-with-native-css-container-queries)
 - [`p1-020` — Improve accessibility and mobile review of menus, dialogs, and sheet sections](#improve-accessibility-and-mobile-review-of-menus-dialogs-and-sheet-sections)
-- [`BL-063` — Move character import review and confirmation into a dialog](#move-character-import-review-and-confirmation-into-a-dialog)
 - [`p1-010` — Add GitHub Actions for quality gates](#add-github-actions-for-quality-gates) _(trigger-deferred and omitted from the recommended sequence until CI needs justify it)_
 
 ### P2 — Future Feature Work
@@ -73,7 +72,6 @@ _Goal: UX Polish & Playtest Prep_
 2. `BL-064`: Scale dense collection rendering and discovery
 3. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
 4. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
-5. `BL-063`: Move character import review and confirmation into a dialog
 
 ## Refined Backlog Catalog
 
@@ -212,38 +210,6 @@ Refinement outputs:
   - Opening, interacting with, and closing a dialog does not unexpectedly change the user’s background sheet position; the chosen scroll behavior is documented and consistent.
   - Screen reader navigation reads all action buttons logically.
   - Touch interaction feels fluid and behaves correctly on phone screens.
-
-### Move character import review and confirmation into a dialog
-
-ID:
-
-- `BL-063`
-
-Sequencing context:
-
-- Follow the higher-impact sheet and collection work; the current inline import flow is functional, but its validation messages and destructive replace action add visual clutter to the home page and now have a proven dialog-shell pattern to build on.
-
-Refinement outputs:
-
-- **Purpose:** Give character import a focused, accessible review and confirmation workflow instead of rendering transient file status and apply controls directly in the home-page toolbar.
-- **Included behavior:**
-  - Open a focused import workflow from the existing "Import Characters" command and keep file selection, validation feedback, file summary, and apply choices within that workflow.
-  - Reuse the native dialog shell and focused form/status patterns where their current APIs fit; extend them only for concrete import needs.
-  - Preserve the existing validated export-envelope boundary and the current Merge New and Replace All semantics.
-  - Clearly distinguish invalid JSON, unsupported or invalid export data, ready-to-import state, and successful completion.
-  - Explain duplicate skipping for Merge New and the destructive effect of Replace All before either action is applied.
-  - Canceling or dismissing the workflow must leave local character data unchanged and restore focus to the import trigger.
-  - Retain browser coverage for invalid input, merge, replace, cancellation, and persisted results.
-- **Excluded behavior:**
-  - Changing the backup format, schema migration policy, merge identity rules, or export workflow.
-  - Adding drag-and-drop, multi-file import, cloud storage, or a generic file-workflow framework.
-- **Ambiguities:**
-  - Should the dialog open before file selection, or should the system file picker open first and the review dialog appear only after a file is chosen?
-  - After a successful import, should confirmation remain in the dialog or close it and use a concise page-level status?
-- **Success:**
-  - Import validation and apply controls no longer expand the home-page toolbar.
-  - A user can select, validate, review, merge, replace, or cancel without accidental mutation.
-  - Replace All receives appropriately prominent confirmation and both apply modes retain their existing tested data behavior.
 
 ### Replace custom grid auto-measurement with native CSS Container Queries
 
@@ -388,8 +354,8 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 
 ## Done Recently
 
+- `2026-07-26` completed `BL-063`: moved character import review and confirmation into a focused dialog flow, removing inline home-page clutter while preserving Merge New and Replace All semantics
 - `2026-07-26` completed `p1-061`: rebased 5e characters to the strict pre-playtest `dnd5e-2014.schema.v0` layout and expanded the guided runtime-action workflow across inventory, spells, Features, Traits, and custom entry with stable source identity, source-pronounced runtime rows, navigation, confirmed source-owned resync, deletion fallback, and mixed-source automated coverage
 - `2026-07-26` completed `BL-065`: added a global pre-release warning banner to manage data preservation expectations before the v0 schema baseline reset
 - `2026-07-25` completed `p1-062`: added a guided, searchable inventory-action templating dialog with final draft review; extracted focused card-action and dialog molecules; and preserved the existing bulk Edit/Notes workflows
 - `2026-07-25` completed `p1-005`: advanced 5e characters to `dnd5e-2014.v3`, added persisted item-source links for independently editable runtime-action snapshots, and delivered equipped-item suggestions, single-entry playable action rows with authored notes, compact source navigation/resync menus, deletion fallback, retained card-level Edit/Notes workflows, Storybook states, and end-to-end coverage while leaving spell and feature sources to a follow-up
-- `2026-07-19` completed `p1-012`: added a local SvelteKit Storybook catalog with typed BaseButton, Heading, and ValidatedInputField stories; isolated browser-backed interaction and automated accessibility checks now run through the Storybook Vitest project

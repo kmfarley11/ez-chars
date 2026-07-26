@@ -447,20 +447,139 @@ test('dialog interaction behavior: cancellation, filtered selection retention, a
 	await expect(runtimeActionList.getByText('Longsword')).toHaveCount(0);
 });
 
-test('exports and imports the seeded character backup', async ({ page }, testInfo) => {
+test('exports and imports the seeded character backup with dialogs', async ({ page }, testInfo) => {
+	let downloadCount = 0;
+	page.on('download', () => {
+		downloadCount++;
+	});
+
+	await page.addInitScript(() => {
+		const originalText = File.prototype.text;
+		(window as any).__slowTextResolvers = [];
+		File.prototype.text = function () {
+			if (this.name === 'slow.json') {
+				return new Promise((resolve) =>
+					(window as any).__slowTextResolvers.push(() => resolve('not json'))
+				);
+			}
+			return originalText.call(this);
+		};
+	});
+
 	await page.goto('/');
-	const downloadPromise = page.waitForEvent('download');
+
+	// 1. Export Flow: Cancellation
 	await page.getByRole('button', { name: 'Export Characters' }).click();
+	const exportDialog = page.getByRole('dialog', { name: 'Export Characters' });
+	await expect(exportDialog).toBeVisible();
+	await exportDialog.getByRole('button', { name: 'Cancel' }).click();
+	await expect(exportDialog).not.toBeVisible();
+	await expect(page.getByRole('button', { name: 'Export Characters' })).toBeFocused();
+	expect(downloadCount).toBe(0);
+
+	// 2. Export Flow: Success
+	await page.getByRole('button', { name: 'Export Characters' }).click();
+	await expect(exportDialog).toBeVisible();
+	const downloadPromise = page.waitForEvent('download');
+	await exportDialog.getByRole('button', { name: 'Export' }).click();
 	const download = await downloadPromise;
 	const backupPath = testInfo.outputPath('ez-chars-backup.json');
 	await download.saveAs(backupPath);
+	await expect(exportDialog).not.toBeVisible();
+	await expect(page.getByRole('button', { name: 'Export Characters' })).toBeFocused();
+	expect(downloadCount).toBe(1);
+
+	// 3. Import Flow: Invalid JSON
+	let fileChooserPromise = page.waitForEvent('filechooser');
+	await page.getByRole('button', { name: 'Import Characters' }).click();
+	let fileChooser = await fileChooserPromise;
+	await fileChooser.setFiles({
+		name: 'invalid.json',
+		mimeType: 'application/json',
+		buffer: Buffer.from('not json')
+	});
+	const importDialog = page.getByRole('dialog', { name: 'Import Characters' });
+	await expect(importDialog).toBeVisible();
+	await expect(importDialog.getByText('That file is not valid JSON.')).toBeVisible();
+	await importDialog.getByRole('button', { name: 'Cancel' }).click();
+
+	// 4. Import Flow: Unsupported data
+	fileChooserPromise = page.waitForEvent('filechooser');
+	await page.getByRole('button', { name: 'Import Characters' }).click();
+	fileChooser = await fileChooserPromise;
+	await fileChooser.setFiles({
+		name: 'unsupported.json',
+		mimeType: 'application/json',
+		buffer: Buffer.from('{"foo":"bar"}')
+	});
+	await expect(importDialog).toBeVisible();
+	await expect(importDialog.getByText('not a supported ez-chars character export')).toBeVisible();
+	await importDialog.getByRole('button', { name: 'Cancel' }).click();
+
+	// 5. Import Flow: Merge New with duplicates
+	fileChooserPromise = page.waitForEvent('filechooser');
+	await page.getByRole('button', { name: 'Import Characters' }).click();
+	fileChooser = await fileChooserPromise;
+	await fileChooser.setFiles(backupPath);
+	await expect(importDialog).toBeVisible();
+	await expect(importDialog.getByText('Ready to import 1 character')).toBeVisible();
+	await expect(
+		importDialog.getByText('Destructive. Discards your current local list entirely.')
+	).toBeVisible();
+	await importDialog.getByRole('button', { name: 'Merge New' }).click();
+	await expect(
+		importDialog.getByText('Merged 0 new characters and skipped 1 duplicate character')
+	).toBeVisible();
+	await importDialog.getByRole('button', { name: 'Done' }).click();
+	await expect(importDialog).not.toBeVisible();
+
+	await expect
+		.poll(() =>
+			page.evaluate((key) => {
+				const raw = localStorage.getItem(key);
+				return raw ? JSON.parse(raw).characters.length : undefined;
+			}, storageKey)
+		)
+		.toBe(1);
+
+	// 6. Import Flow: Cancellation explicitly preserving data
+	fileChooserPromise = page.waitForEvent('filechooser');
+	await page.getByRole('button', { name: 'Import Characters' }).click();
+	fileChooser = await fileChooserPromise;
+	await fileChooser.setFiles(backupPath);
+	await expect(importDialog).toBeVisible();
+
+	const preCancelStorage = await page.evaluate((key) => localStorage.getItem(key), storageKey);
+
+	// Immediate cancel simulates cancellation while a read remains pending or completes
+	await importDialog.getByRole('button', { name: 'Cancel' }).click();
+	await expect(importDialog).not.toBeVisible();
+
+	const postCancelStorage = await page.evaluate((key) => localStorage.getItem(key), storageKey);
+	expect(postCancelStorage).toBe(preCancelStorage);
 
 	await page.evaluate((key) => localStorage.removeItem(key), storageKey);
 	await expect(page.evaluate((key) => localStorage.getItem(key), storageKey)).resolves.toBeNull();
 
-	await page.getByLabel('Choose character import JSON file').setInputFiles(backupPath);
-	await expect(page.getByRole('status')).toContainText('Ready to import 1 character');
-	await page.getByRole('button', { name: 'Replace All' }).click();
+	// 7. Import Flow: Selecting the same file again
+	fileChooserPromise = page.waitForEvent('filechooser');
+	await page.getByRole('button', { name: 'Import Characters' }).click();
+	fileChooser = await fileChooserPromise;
+	await fileChooser.setFiles(backupPath); // Same file!
+
+	await expect(importDialog).toBeVisible();
+	await expect(importDialog.getByText('Ready to import 1 character')).toBeVisible();
+
+	// 3. Import Flow: Replace All and Success State
+	await importDialog.getByRole('button', { name: 'Replace All' }).click();
+	await expect(
+		importDialog.getByText('Replaced local characters with 1 imported character')
+	).toBeVisible();
+	await importDialog.getByRole('button', { name: 'Done' }).click();
+
+	await expect(importDialog).not.toBeVisible();
+	await expect(page.getByRole('button', { name: 'Import Characters' })).toBeFocused();
+
 	const seededRow = page.locator('tbody tr').filter({ hasText: e2eCharacter.identity.name });
 	await expect(seededRow).toHaveCount(1);
 	await expect
@@ -471,6 +590,44 @@ test('exports and imports the seeded character backup', async ({ page }, testInf
 			}, storageKey)
 		)
 		.toBe('dnd5e-2014.schema.v0');
+
+	// 9. Import Flow: Cancellation/reselection while a read remains pending
+	fileChooserPromise = page.waitForEvent('filechooser');
+	await page.getByRole('button', { name: 'Import Characters' }).click();
+	fileChooser = await fileChooserPromise;
+	await fileChooser.setFiles({
+		name: 'slow.json',
+		mimeType: 'application/json',
+		buffer: Buffer.from('')
+	});
+
+	await expect(importDialog).toBeVisible();
+	await expect(importDialog.getByText('Reading import file...')).toBeVisible();
+	await importDialog.getByRole('button', { name: 'Cancel' }).click();
+	await expect(importDialog).not.toBeVisible();
+
+	// Proceed to start a new import
+	fileChooserPromise = page.waitForEvent('filechooser');
+	await page.getByRole('button', { name: 'Import Characters' }).click();
+	fileChooser = await fileChooserPromise;
+	await fileChooser.setFiles({
+		name: 'unsupported.json',
+		mimeType: 'application/json',
+		buffer: Buffer.from('{"foo":"bar"}')
+	});
+
+	await expect(importDialog).toBeVisible();
+	await expect(importDialog.getByText('not a supported ez-chars character export')).toBeVisible();
+
+	// Now resolve the stale read
+	await page.evaluate(() => {
+		(window as any).__slowTextResolvers.forEach((r: () => void) => r());
+	});
+
+	// Verify the dialog hasn't changed its state
+	await expect(importDialog.getByText('not a supported ez-chars character export')).toBeVisible();
+	await expect(importDialog.getByText('That file is not valid JSON.')).toHaveCount(0);
+	await importDialog.getByRole('button', { name: 'Cancel' }).click();
 });
 
 test('preserves rejected outdated local data and offers non-destructive recovery', async ({

@@ -1,11 +1,14 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { tick } from 'svelte';
 	import { charsArray, createNew5eCharacter, deleteCharacterById } from '$storage/store.js';
 
 	import BaseButton from '$components/BaseButton.svelte';
 	import Table from '$components/Table.svelte';
 	import MenuItemButton from '$components/MenuItemButton.svelte';
 	import MenuButton from '$components/MenuButton.svelte';
+	import CharacterImportDialog from './components/CharacterImportDialog.svelte';
+	import CharacterExportDialog from './components/CharacterExportDialog.svelte';
 	import {
 		applyCharacterImport,
 		createCharacterExportEnvelope,
@@ -15,15 +18,23 @@
 	} from '../schema/index.js';
 	import { FULL_2014_SRD_HREF, OFFICIAL_2014_CHAR_SHEET_HREF } from '$utils/urlHelpers.js';
 
-	type ImportValidationState = 'idle' | 'reading' | 'valid' | 'error' | 'applied';
-
 	const charsheetHref = resolve('/charsheets/5e');
 	const jsonMimeType = 'application/json';
 	let importFileInput = $state<HTMLInputElement>();
-	let selectedImportFileName = $state('');
-	let importValidationState = $state<ImportValidationState>('idle');
-	let importValidationMessage = $state('');
+	let importButtonEl = $state<HTMLButtonElement>();
+	let exportButtonEl = $state<HTMLButtonElement>();
+
+	// Import State
+	let importDialogOpen = $state(false);
+	let importState = $state<'reading' | 'error' | 'ready' | 'success'>('reading');
+	let importErrorMessage = $state('');
+	let importCharacterCount = $state(0);
+	let importSuccessMessage = $state('');
 	let pendingImportEnvelope = $state<CharacterExportEnvelope>();
+	let importAttemptToken = $state(0);
+
+	// Export State
+	let exportDialogOpen = $state(false);
 
 	const openCharacterSheet = (charId: string) => {
 		location.href = `${charsheetHref}?id=${encodeURIComponent(charId)}`;
@@ -47,7 +58,7 @@
 		return `ez-chars-${timestamp}.json`;
 	};
 
-	const handleExportCharacters = () => {
+	const handleExportConfirm = async () => {
 		const envelope = createCharacterExportEnvelope($charsArray);
 		const blob = new Blob([JSON.stringify(envelope, null, 2)], {
 			type: jsonMimeType
@@ -62,14 +73,21 @@
 		link.click();
 		link.remove();
 		URL.revokeObjectURL(url);
+
+		exportDialogOpen = false;
+		await tick();
+		exportButtonEl?.focus();
+	};
+
+	const handleExportClose = async () => {
+		exportDialogOpen = false;
+		await tick();
+		exportButtonEl?.focus();
 	};
 
 	const handleChooseImportFile = () => {
 		if (!importFileInput) return;
 		importFileInput.value = '';
-		selectedImportFileName = '';
-		importValidationState = 'idle';
-		importValidationMessage = '';
 		pendingImportEnvelope = undefined;
 		importFileInput.click();
 	};
@@ -77,38 +95,41 @@
 	const handleImportFileSelect = async (event: Event) => {
 		const input = event.currentTarget as HTMLInputElement;
 		const selectedFile = input.files?.[0];
-		selectedImportFileName = selectedFile?.name ?? '';
 		pendingImportEnvelope = undefined;
 
 		if (!selectedFile) {
-			importValidationState = 'idle';
-			importValidationMessage = '';
 			return;
 		}
 
-		importValidationState = 'reading';
-		importValidationMessage = 'Checking import file...';
+		importDialogOpen = true;
+		importState = 'reading';
+
+		importAttemptToken++;
+		const currentToken = importAttemptToken;
 
 		let parsedJson: unknown;
 		try {
 			parsedJson = JSON.parse(await selectedFile.text());
 		} catch {
-			importValidationState = 'error';
-			importValidationMessage = 'That file is not valid JSON.';
+			if (importAttemptToken !== currentToken) return;
+			importState = 'error';
+			importErrorMessage = 'That file is not valid JSON.';
 			return;
 		}
 
+		if (importAttemptToken !== currentToken) return;
+
 		const parsedEnvelope = safeParseCharacterExportEnvelope(parsedJson);
 		if (!parsedEnvelope.success) {
-			importValidationState = 'error';
-			importValidationMessage =
+			importState = 'error';
+			importErrorMessage =
 				'That JSON file is not a supported ez-chars character export, or one of its characters is invalid.';
 			return;
 		}
 
 		pendingImportEnvelope = parsedEnvelope.data;
-		importValidationState = 'valid';
-		importValidationMessage = `Ready to import ${parsedEnvelope.data.characters.length} character${parsedEnvelope.data.characters.length === 1 ? '' : 's'}. Choose how to apply it in the next step.`;
+		importCharacterCount = parsedEnvelope.data.characters.length;
+		importState = 'ready';
 	};
 
 	const handleReplaceImportedCharacters = () => {
@@ -116,8 +137,9 @@
 		const importResult = applyCharacterImport($charsArray, pendingImportEnvelope, 'replace');
 		charsArray.set(importResult.characters);
 		pendingImportEnvelope = undefined;
-		importValidationState = 'applied';
-		importValidationMessage = `Replaced local characters with ${importResult.addedCount} imported character${importResult.addedCount === 1 ? '' : 's'}.`;
+
+		importState = 'success';
+		importSuccessMessage = `Replaced local characters with ${importResult.addedCount} imported character${importResult.addedCount === 1 ? '' : 's'}.`;
 	};
 
 	const handleMergeImportedCharacters = () => {
@@ -131,8 +153,16 @@
 		});
 
 		pendingImportEnvelope = undefined;
-		importValidationState = 'applied';
-		importValidationMessage = `Merged ${importResult?.addedCount ?? 0} new character${importResult?.addedCount === 1 ? '' : 's'}${importResult && importResult.skippedDuplicateCount > 0 ? ` and skipped ${importResult.skippedDuplicateCount} duplicate ${importResult.skippedDuplicateCount === 1 ? 'character' : 'characters'}` : ''}.`;
+
+		importState = 'success';
+		importSuccessMessage = `Merged ${importResult?.addedCount ?? 0} new character${importResult?.addedCount === 1 ? '' : 's'}${importResult && importResult.skippedDuplicateCount > 0 ? ` and skipped ${importResult.skippedDuplicateCount} duplicate ${importResult.skippedDuplicateCount === 1 ? 'character' : 'characters'}` : ''}.`;
+	};
+
+	const handleImportClose = async () => {
+		importDialogOpen = false;
+		importAttemptToken++; // invalidate any pending reads
+		await tick();
+		importButtonEl?.focus();
 	};
 </script>
 
@@ -180,40 +210,34 @@
 						aria-label="Choose character import JSON file"
 						onchange={handleImportFileSelect}
 					/>
-					<BaseButton onclick={handleChooseImportFile}>Import Characters</BaseButton>
-					{#if selectedImportFileName}
-						<p class="theme-text-muted max-w-72 truncate text-right text-sm">
-							Selected: {selectedImportFileName}
-						</p>
-					{/if}
-					{#if importValidationMessage}
-						<p
-							class="max-w-96 text-right text-sm {importValidationState === 'error'
-								? 'text-red-700 dark:text-red-300'
-								: 'theme-text-muted'}"
-							role={importValidationState === 'error' ? 'alert' : 'status'}
-							aria-live="polite"
-						>
-							{importValidationMessage}
-						</p>
-					{/if}
-					{#if pendingImportEnvelope}
-						<div class="flex flex-wrap justify-end gap-2" aria-label="Apply imported characters">
-							<BaseButton size="sm" onclick={handleMergeImportedCharacters}>Merge New</BaseButton>
-							<BaseButton size="sm" onclick={handleReplaceImportedCharacters}
-								>Replace All</BaseButton
-							>
-						</div>
-						<p class="theme-text-muted max-w-96 text-right text-xs">
-							Merge skips characters with IDs already in your local list. Replace discards the
-							current local list.
-						</p>
-					{/if}
+					<BaseButton bind:buttonEl={importButtonEl} onclick={handleChooseImportFile}
+						>Import Characters</BaseButton
+					>
 				</div>
-				<BaseButton onclick={handleExportCharacters}>Export Characters</BaseButton>
+				<BaseButton bind:buttonEl={exportButtonEl} onclick={() => (exportDialogOpen = true)}
+					>Export Characters</BaseButton
+				>
 			</div>
 		</div>
 	</div>
 
 	<Table tableData={$charsArray} onSelect={handleCharSelect} onDelete={handleCharacterDelete} />
 </div>
+
+<CharacterImportDialog
+	bind:open={importDialogOpen}
+	state={importState}
+	characterCount={importCharacterCount}
+	errorMessage={importErrorMessage}
+	successMessage={importSuccessMessage}
+	onmerge={handleMergeImportedCharacters}
+	onreplace={handleReplaceImportedCharacters}
+	onclose={handleImportClose}
+/>
+
+<CharacterExportDialog
+	bind:open={exportDialogOpen}
+	characterCount={$charsArray.length}
+	onconfirm={handleExportConfirm}
+	onclose={handleExportClose}
+/>
