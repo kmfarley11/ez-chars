@@ -6,6 +6,8 @@ This document defines the only active product scope for near-term implementation
 
 Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014 character sheets. A user should be able to create, open, edit, reopen, export, and import characters without needing an account.
 
+The product is currently pre-release and has not begun real external playtesting. Character data created during this phase is experimental and is not guaranteed to survive schema changes. The pre-playtest schema uses an explicitly unstable v0 epoch; the first external playtest will establish an immutable v1 baseline and begin the durable migration policy defined by the [character-data versioning decision](decisions/2026-07-18-version-and-normalize-5e-character-data.md).
+
 ## In Scope
 
 - single system: D&D 5e 2014
@@ -26,7 +28,7 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 - additional game systems
 - accounts or backend storage
 - shared editing or multiplayer
-- PDF import/export
+- durable backward compatibility for character layouts created before the first real external playtest
 - dice rolling engines or heavy rules automation
 - hosting premium or copyrighted rules text
 
@@ -67,8 +69,11 @@ Build a local-first, mobile-friendly web app for viewing and editing D&D 5e 2014
 ### Missing
 
 - polished empty states
+- a visible pre-release data-preservation warning before the pre-playtest schema reset
+- the clean `dnd5e-2014.schema.v0` baseline that removes obsolete experimental compatibility before outside playtesting
 
 ### Deferred
 
+- durable character-data migration support begins with the first external-playtest `dnd5e-2014.schema.v1` baseline; BL-067 owns the exact playtest trigger, optional final-v0 transition, and v1 release criteria
 - CI; local verification in [docs/verification.md](verification.md) remains the current source of truth until contributor count, release cadence, or branch-protection needs justify GitHub Actions.
 - Firefox-specific dense-sheet scroll optimization; the representative profile did not implicate application layout work. Use the repeatable profiling workflow in [docs/verification.md](verification.md) for regressions; `p1-027` owns the future grid-model replacement.

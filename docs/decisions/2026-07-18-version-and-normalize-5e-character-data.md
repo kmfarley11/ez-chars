@@ -34,7 +34,7 @@ This makes historical knowledge explicit and testable. Application features rece
 
 ## Decision Outcome
 
-Use `meta.schemaVersion` as the data-layout discriminator for each character. This decision introduced D&D 5e 2014 layout `dnd5e-2014.v2`; the current layout is `dnd5e-2014.v3`, and repository-supported legacy values are `0.0.1`, `char.v1`, and `dnd5e-2014.v2`. `system.id` continues to select the game system, and `system.version` continues to identify the rules/source release (`SRD-5.1-2023`). Storage-envelope and export-envelope versions remain unchanged.
+Use `meta.schemaVersion` as the data-layout discriminator for each character. This decision introduced D&D 5e 2014 layout `dnd5e-2014.v2`; at the time of this decision, the current layout became `dnd5e-2014.v3`, and repository-supported legacy values were `0.0.1`, `char.v1`, and `dnd5e-2014.v2`. The [2026-07-26 pre-playtest refinement](#2026-07-26-establish-a-pre-playtest-v0-epoch-and-future-migration-contract) supersedes that compatibility set. `system.id` continues to select the game system, and `system.version` continues to identify the rules/source release (`SRD-5.1-2023`). Storage-envelope and export-envelope versions remain unchanged.
 
 Hydration inspects the system and character data version, validates with the matching historical schema, applies pure ordered migration steps, and then validates the current schema. Current documents are validated directly. Unsupported future versions fail explicitly and are not rewritten.
 
@@ -76,3 +76,29 @@ The implementation audit found that the live 5e sheet exposes eight fixed semant
 ### Future system registry work
 
 Use this 5e boundary as implementation evidence, not as a mandatory cross-system interface. A second implemented system should compare which versioning, root defaults, and semantic groups are genuinely shared before extracting registry contracts or changing the core document requirements.
+
+### 2026-07-26: Establish a pre-playtest v0 epoch and future migration contract
+
+The application has not begun real external playtesting, but its executable compatibility surface already spans several rapidly changing experimental layouts. Preserving those layouts indefinitely would turn short-lived development artifacts into product obligations and increase schema, fixture, test, and coding-agent context before any user has been promised durable data.
+
+The following refinement supersedes the earlier supported-version set while retaining the centralized hydration architecture:
+
+1. `dnd5e-2014.schema.v0` identifies the pre-playtest compatibility epoch. The `.schema.` namespace permanently distinguishes the new compatibility line from retired experimental identifiers such as `dnd5e-2014.v2`; those identifiers will never be reused. Until the first real external playtest, the current strict v0 shape may be replaced in place. Previously saved v0 data may consequently fail current validation.
+2. The p1-061 baseline removes executable compatibility with `0.0.1`, `char.v1`, `dnd5e-2014.v2`, and `dnd5e-2014.v3`. Those layouts are rejected as outdated and are not migrated into v0.
+3. Rejected local or imported data must not be overwritten automatically. Existing invalid/outdated recovery remains the user-visible fallback, and the pre-release warning communicates that preservation is not guaranteed.
+4. Git history, archived OpenSpec changes, and ADRs preserve schema evolution and rationale. Historical runtime schemas and fixtures are retained only when they implement a current compatibility promise.
+5. Storage-envelope and export-envelope versions remain separate concerns. Rebasing the character layout does not require renumbering either envelope unless its own structure changes.
+
+The first real external playtest establishes `dnd5e-2014.schema.v1` as an immutable supported character layout. Before that playtest begins, the repository must decide explicitly whether the final v0 shape receives a one-time v0-to-v1 migration; no earlier v0 shape is implicitly supported.
+
+From v1 onward, schema evolution follows this contract:
+
+- Each character-data version denotes one frozen strict shape. Never change the accepted meaning of a released v1-or-later identifier.
+- A breaking persisted-shape change increments the character-data version and preserves the immediately preceding strict schema as a historical input.
+- Hydration validates the declared historical shape, applies explicit pure migrations one version at a time, validates each next-version result, and finally validates the current representation.
+- Migration functions operate only on character data. They do not read UI state, storage, clocks, randomness, network data, or process-global allocation state.
+- Migrations preserve authored content, stable identities, annotations, meaningful absence, and collection order unless an approved specification and ADR explicitly define otherwise.
+- Every supported version retains a representative frozen fixture and tests for its single-step migration, the complete sequential chain, current idempotence, import/export round trips, future-version rejection, and non-destructive failure.
+- Supported v1-or-later versions remain supported by default. Pruning them requires a separately approved compatibility reset, advance user communication, an ADR, and a recovery or export strategy appropriate to the product's maturity.
+
+This contract intentionally avoids a generic migration framework before it is needed. Explicit historical schemas and small sequential functions remain preferable because they keep each transformation auditable and prevent one large oldest-to-current converter from becoming brittle.
