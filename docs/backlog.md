@@ -50,7 +50,7 @@ These lightweight queues record priority membership only. Detailed definitions l
 
 ### P0 — Product Prerequisites
 
-- [`BL-065` — Add pre-release warning banner to manage data preservation expectations](#add-pre-release-warning-banner-to-manage-data-preservation-expectations)
+No active P0 items.
 
 ### P1 — Priority Improvements
 
@@ -70,13 +70,12 @@ These lightweight queues record priority membership only. Detailed definitions l
 
 _Goal: UX Polish & Playtest Prep_
 
-1. `BL-065`: Add pre-release warning banner to manage data preservation expectations
-2. `p1-061`: Establish the pre-playtest v0 schema baseline while extending runtime-action sources to spells and features
-3. `BL-067`: Define the first-playtest/v1 milestone and its durable compatibility promise
-4. `BL-064`: Scale dense collection rendering and discovery
-5. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
-6. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
-7. `BL-063`: Move character import review and confirmation into a dialog
+1. `p1-061`: Establish the pre-playtest v0 schema baseline while extending runtime-action sources to spells and features
+2. `BL-067`: Define the first-playtest/v1 milestone and its durable compatibility promise
+3. `BL-064`: Scale dense collection rendering and discovery
+4. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
+5. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
+6. `BL-063`: Move character import review and confirmation into a dialog
 
 ## Refined Backlog Catalog
 
@@ -330,28 +329,7 @@ Refinement outputs:
   - `GridContainerAuto.svelte` is deleted.
   - The character sheet resizes fluidly with zero Javascript-driven layout recalculations.
 
-### Add pre-release warning banner to manage data preservation expectations
-
-ID:
-
-- `BL-065`
-
-Sequencing context:
-
-- Execute immediately and before p1-061 establishes the breaking v0 baseline. This is required for public playtesting to prevent users from mistaking experimental characters or exports for durable long-term data.
-
-Refinement outputs:
-
-- **Purpose:** Clearly communicate to users that the application is in a pre-release phase, meaning characters exported today might not be successfully imported in future versions if schema or storage layouts change.
-- **Included behavior:**
-  - Add a visible warning banner (e.g., at the top of the home view or globally).
-  - State that data preservation between exports and imports is not guaranteed during ongoing updates.
-- **Excluded behavior:**
-  - Building a robust backwards-compatibility migration system for every legacy schema before v1.0.
-  - User opt-in/dismissal of the banner (it can remain persistent for now).
-- **Ambiguities:** None.
-- **Success:**
-  - Users are informed of the pre-release state and the risks to long-term data preservation.
+  - The character sheet resizes fluidly with zero Javascript-driven layout recalculations.
 
 ### Support official character sheet PDF import and export
 
@@ -394,19 +372,16 @@ Refinement outputs:
 - **Included behavior:**
   - Audit the completed MVP features against current user expectations.
   - Draft and finalize a PRD v1 detailing supported platforms, playtest goals, and finalized functional scope.
-  - Define what event constitutes the first real external playtest and therefore freezes `dnd5e-2014.schema.v1`.
-  - Confirm the v1-and-later compatibility policy, including frozen historical schemas, sequential migrations, supported-version retention, and recovery expectations.
-  - Decide whether the final pre-playtest v0 shape receives a one-time v0-to-v1 migration when v1 is cut.
-  - Update `docs/active-goals.md` to reflect the v1 release milestone.
+  - Update `docs/active-goals.md` to memorialize exiting pre-release and cutting v1 only after successful one-shot playtests across at least 3 distinct systems (e.g., 5e 2014, 5e 2024, and one non-5e system like Shadowdark).
+  - Explicitly document that there will be no migration support from `v0` to `v1`.
 - **Excluded behavior:**
   - Adding new feature implementation tasks as part of this planning item.
-- **Ambiguities:**
-  - What concrete distribution or participant threshold marks the first real external playtest?
-  - Is a one-time migration from the final v0 shape to v1 worth supporting, given that earlier v0 shapes remain intentionally unsupported?
+  - Supporting a migration path for any pre-v1 experimental character data.
+- **Ambiguities:** None.
 - **Success:**
   - A formal PRD v1 artifact is created.
-  - `docs/active-goals.md` is updated with clear v1 release criteria.
-  - The playtest starting event, optional final-v0 transition, and durable v1-and-later migration promise are unambiguous.
+  - `docs/active-goals.md` is updated with clear v1 release criteria and the 3-system playtest threshold.
+  - The absence of a v0-to-v1 migration is clearly communicated.
 
 ## Ideation Sandbox (Raw / Rough Ideas)
 
@@ -461,8 +436,8 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 
 ## Done Recently
 
+- `2026-07-26` completed `BL-065`: added a global pre-release warning banner to manage data preservation expectations before the v0 schema baseline reset
 - `2026-07-25` completed `p1-062`: added a guided, searchable inventory-action templating dialog with final draft review; extracted focused card-action and dialog molecules; and preserved the existing bulk Edit/Notes workflows
 - `2026-07-25` completed `p1-005`: advanced 5e characters to `dnd5e-2014.v3`, added persisted item-source links for independently editable runtime-action snapshots, and delivered equipped-item suggestions, single-entry playable action rows with authored notes, compact source navigation/resync menus, deletion fallback, retained card-level Edit/Notes workflows, Storybook states, and end-to-end coverage while retaining `p1-061` for spell and feature sources
 - `2026-07-19` completed `p1-012`: added a local SvelteKit Storybook catalog with typed BaseButton, Heading, and ValidatedInputField stories; isolated browser-backed interaction and automated accessibility checks now run through the Storybook Vitest project
 - `2026-07-18` completed `p1-060`: introduced `dnd5e-2014.v2` character hydration/serialization, migrated supported action aliases, tagged currency, titled roleplay fields, split proficiency provenance, and movement strings into one canonical model, rewired storage/import/export and 5e sheet code, and retained cross-system core flexibility with migration, round-trip, and browser smoke coverage
-- `2026-07-18` completed `p1-055`: replaced virtual 5e patch-domain dispatch with a schema-backed decoder and exhaustive typed intent reducer, preserving atomic edits, stable identities, direct primitive RFC 6902 editing, and current browser behavior

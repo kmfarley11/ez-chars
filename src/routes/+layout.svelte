@@ -14,6 +14,17 @@
 
 <div class="theme-page">
 	<NavBar />
+	<div class="mx-4 mt-4 rounded-md border border-amber-500/50 p-4 theme-grid-layer" role="alert">
+		<div class="space-y-1">
+			<p class="text-sm font-semibold text-amber-600 dark:text-amber-400">
+				🚧 Pre-Release Playtest
+			</p>
+			<p class="theme-text-muted text-sm">
+				The app is in an active pre-release phase. Data preservation between exports and imports is
+				not guaranteed during ongoing updates.
+			</p>
+		</div>
+	</div>
 	{#if $charsStorageIssue}
 		<div class="mx-4 mt-4 rounded-md border p-4 theme-grid-layer" role="alert" aria-live="polite">
 			<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
