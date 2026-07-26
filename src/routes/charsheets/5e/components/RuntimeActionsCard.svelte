@@ -1,52 +1,52 @@
 <script lang="ts">
+	import Badge from '$components/Badge.svelte';
 	import BaseButton from '$components/BaseButton.svelte';
 	import GridContentActionMenu from '$components/GridContentActionMenu.svelte';
 	import GridContentEditDialog from '$components/GridContentEditDialog.svelte';
 	import GridContentNotesDialog from '$components/GridContentNotesDialog.svelte';
 	import MenuButton from '$components/MenuButton.svelte';
 	import MenuItemButton from '$components/MenuItemButton.svelte';
-	import InventoryActionDialog from './InventoryActionDialog.svelte';
 	import {
-		suggest5eInventoryRuntimeActions,
-		type RuntimeActionSuggestion
-	} from '$lib/compendium/dnd5e2014/suggestInventoryRuntimeActions';
+		list5eRuntimeActionSourceCandidates,
+		type RuntimeActionDraft
+	} from '$lib/dnd5e2014/runtimeActionSources';
 	import type {
 		GridAnnotationEditorConfig,
 		GridContentData,
 		GridContentPatch
 	} from '$utils/gridContentTypes';
-	import type { Item, RuntimeAction } from '../../../../schema';
+	import type { CharacterDocument5e2014, RuntimeActionSource } from '../../../../schema';
 	import { projectRuntimeActionRows } from './runtimeActionRows';
+	import RuntimeActionDialog from './RuntimeActionDialog.svelte';
 
 	interface Props {
 		data: GridContentData;
-		actions: ReadonlyArray<RuntimeAction>;
-		inventory: ReadonlyArray<Item>;
+		character: CharacterDocument5e2014;
 		annotationEditorConfig?: GridAnnotationEditorConfig;
 		// eslint-disable-next-line no-unused-vars
 		handleEditSavePatches: (_patches: Array<GridContentPatch>) => void;
-		loadSuggestions?: (
-			// eslint-disable-next-line no-unused-vars
-			items: ReadonlyArray<Item>
-		) => Promise<ReadonlyArray<RuntimeActionSuggestion>>;
 		// eslint-disable-next-line no-unused-vars
-		onAcceptSuggestion: (_suggestion: RuntimeActionSuggestion) => void;
+		onCreateAction: (_draft: RuntimeActionDraft) => void;
 		// eslint-disable-next-line no-unused-vars
 		onResyncAction: (_actionId: string) => void;
 		// eslint-disable-next-line no-unused-vars
-		onNavigateToSource: (_itemId: string) => void;
+		onNavigateToSource: (_source: RuntimeActionSource) => void;
+		// eslint-disable-next-line no-unused-vars
+		confirmResync?: (_actionName: string, _sourceLabel: string) => boolean;
 	}
 
 	let {
 		data,
-		actions,
-		inventory,
+		character,
 		annotationEditorConfig = undefined,
 		handleEditSavePatches,
-		loadSuggestions = suggest5eInventoryRuntimeActions,
-		onAcceptSuggestion,
+		onCreateAction,
 		onResyncAction,
-		onNavigateToSource
+		onNavigateToSource,
+		confirmResync = (actionName, sourceLabel) =>
+			window.confirm(
+				`Resync "${actionName}" from ${sourceLabel}? Source-owned name and detail may overwrite direct edits on this action.`
+			)
 	}: Props = $props();
 
 	const uid = $props.id();
@@ -54,7 +54,10 @@
 	let isEditDialogOpen = $state(false);
 	let isNotesDialogOpen = $state(false);
 	let cardActionsTriggerEl = $state<HTMLButtonElement>();
-	const actionRows = $derived(projectRuntimeActionRows(actions, inventory));
+	const actionRows = $derived(
+		projectRuntimeActionRows(character.systemData.runtimeActions, character)
+	);
+	const sourceCandidates = $derived(list5eRuntimeActionSourceCandidates(character));
 
 	const requestSuggestions = () => {
 		isSuggestionPanelOpen = true;
@@ -74,6 +77,10 @@
 		if (popover instanceof HTMLElement) popover.hidePopover();
 		command();
 	};
+
+	const handleResyncRequest = (actionId: string, actionName: string, sourceLabel: string) => {
+		if (confirmResync(actionName, sourceLabel)) onResyncAction(actionId);
+	};
 </script>
 
 <div class="space-y-4">
@@ -81,7 +88,7 @@
 		<div class="flex flex-wrap items-center justify-between gap-2">
 			<h3 id={`${uid}-actions-heading`} class="text-sm font-semibold">Runtime actions</h3>
 			<div class="flex items-center gap-2">
-				<BaseButton size="sm" onclick={requestSuggestions}>Add action from inventory</BaseButton>
+				<BaseButton size="sm" onclick={requestSuggestions}>Add action</BaseButton>
 				<GridContentActionMenu
 					canEdit={true}
 					onEdit={() => (isEditDialogOpen = true)}
@@ -118,6 +125,11 @@
 										<span aria-hidden="true"> · </span>{action.timingLabel}
 										<span aria-hidden="true"> · </span>{action.categoryLabel}
 									</span>
+									{#if action.sourceCategoryLabel}
+										<span class="ml-1.5 inline-flex align-middle">
+											<Badge label={action.sourceCategoryLabel} />
+										</span>
+									{/if}
 								</p>
 								{#if action.target}
 									<p class="theme-text-muted mt-1 text-xs">Target: {action.target}</p>
@@ -139,12 +151,15 @@
 								>
 									<MenuItemButton
 										onclick={(event) =>
-											runSourceCommand(event, () => onNavigateToSource(source.itemId))}
+											runSourceCommand(event, () => onNavigateToSource(source.reference))}
 									>
-										View {source.itemName}
+										View {source.label}
 									</MenuItemButton>
 									<MenuItemButton
-										onclick={(event) => runSourceCommand(event, () => onResyncAction(action.id))}
+										onclick={(event) =>
+											runSourceCommand(event, () =>
+												handleResyncRequest(action.id, action.name, source.label)
+											)}
 									>
 										Resync from source
 									</MenuItemButton>
@@ -157,11 +172,10 @@
 		{/if}
 	</section>
 
-	<InventoryActionDialog
+	<RuntimeActionDialog
 		bind:open={isSuggestionPanelOpen}
-		{inventory}
-		{loadSuggestions}
-		onConfirm={onAcceptSuggestion}
+		candidates={sourceCandidates}
+		onConfirm={onCreateAction}
 		onClose={closeSuggestions}
 	/>
 </div>

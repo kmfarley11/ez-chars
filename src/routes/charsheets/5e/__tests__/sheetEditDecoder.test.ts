@@ -1,15 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import type { GridContentPatch } from '$utils/gridContentTypes';
 import {
-	classFeatureListPathPrefix,
 	currencyPathPrefix,
+	featureListPathPrefix,
 	inventoryListPathPrefix,
 	proficiencyLanguagesPathPrefix,
 	proficiencyToolsPathPrefix,
 	roleplayFieldPathPrefix,
 	runtimeActionListPathPrefix,
 	scratchpadNotesPathPrefix,
-	spellListLevelPathPrefix
+	spellListLevelPathPrefix,
+	traitListPathPrefix
 } from '../sheetConstants';
 import { decode5eGridPatches } from '../sheetEditDecoder';
 
@@ -21,9 +22,13 @@ const malformedPayloadCases: Array<[string, GridContentPatch]> = [
 		{ path: [proficiencyLanguagesPathPrefix], value: [{ name: 'Elvish', source: 'guild' }] }
 	],
 	[
-		'class feature',
-		{ path: [classFeatureListPathPrefix], value: [{ name: 'Feature', classIndex: -1 }] }
+		'feature',
+		{
+			path: [featureListPathPrefix],
+			value: [{ name: 'Feature', owner: 'class', classIndex: -1 }]
+		}
 	],
+	['trait', { path: [traitListPathPrefix], value: [{ name: false }] }],
 	['inventory', { path: [inventoryListPathPrefix, 'other'], value: [{ name: false }] }],
 	['currency', { path: [currencyPathPrefix, 'gp'], value: Number.NaN }],
 	['roleplay note', { path: [roleplayFieldPathPrefix, 'motives'], value: 12 }],
@@ -54,8 +59,19 @@ describe('5e sheet edit decoder', () => {
 				value: [{ name: "Thieves' tools", source: 'class' }]
 			},
 			{
-				path: [classFeatureListPathPrefix],
-				value: [{ featureId: 'second-wind', name: 'Second Wind', classIndex: 0 }]
+				path: [featureListPathPrefix],
+				value: [
+					{
+						featureId: 'second-wind',
+						name: 'Second Wind',
+						owner: 'class',
+						classIndex: 0
+					}
+				]
+			},
+			{
+				path: [traitListPathPrefix],
+				value: [{ featureId: 'darkvision', name: 'Darkvision' }]
 			},
 			{
 				path: [inventoryListPathPrefix, 'weapons'],
@@ -72,7 +88,8 @@ describe('5e sheet edit decoder', () => {
 					{ type: 'replace-runtime-actions' },
 					{ type: 'replace-proficiency-languages' },
 					{ type: 'replace-proficiency-tools' },
-					{ type: 'replace-class-features' },
+					{ type: 'replace-features' },
+					{ type: 'replace-traits' },
 					{ type: 'replace-inventory-group', group: 'weapons' }
 				]
 			}

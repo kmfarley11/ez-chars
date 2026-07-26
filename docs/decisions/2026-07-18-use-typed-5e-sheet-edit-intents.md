@@ -67,3 +67,9 @@ This decision does not define a shared adapter, registry, reducer signature, or 
 The reducers now write only canonical `dnd5e-2014.v3` groups. Runtime actions remain a required collection and may carry atomic item-source links; currency and roleplay are keyed semantic singletons without synthetic item/note IDs; and language/tool rows carry ancestry, background, class, feature, or other provenance under `systemData.proficiencies`. The decoder gained the matching tool-proficiency intent because direct array patches would otherwise write strings into source-aware records.
 
 Legacy representations are upgraded before the sheet receives a character. Removing their fallback branches from the decoder, reducer, and projections preserves the original semantic boundary rather than changing it into a migration layer.
+
+### 2026-07-26: v0 source lifecycle and collection editing
+
+The reducer now writes only the strict pre-playtest `dnd5e-2014.schema.v0` shape; retired experimental layouts are rejected before reaching sheet code rather than upgraded. Feature-local intents cover focused runtime-action creation plus complete Features and Traits replacement. Feature projections carry non-persisted owner metadata so a single Features editor can route general and class/subclass edits while preserving unexposed record data and stable identity.
+
+Inventory, spell, Features, and Traits edits share one end-of-batch source reconciliation pass. A removed or no-longer-resolvable source loses its runtime-action link in the same atomic commit while the action snapshot, order, and annotations remain unchanged. Create and resync intents re-resolve links against the candidate character at commit time, so the UI cannot commit a stale or ambiguous source selection.

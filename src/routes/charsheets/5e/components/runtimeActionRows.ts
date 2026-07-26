@@ -1,4 +1,13 @@
-import type { Item, RuntimeAction } from '../../../../schema';
+import type {
+	CharacterDocument5e2014,
+	RuntimeAction,
+	RuntimeActionSource
+} from '../../../../schema';
+import {
+	get5eRuntimeActionSourceCategoryLabel,
+	resolve5eRuntimeActionSource,
+	type RuntimeActionSourceDestination
+} from '$lib/dnd5e2014/runtimeActionSources';
 
 const timingLabels: Record<NonNullable<RuntimeAction['timing']>, string> = {
 	action: 'Action',
@@ -19,11 +28,14 @@ export type RuntimeActionRow = {
 	name: string;
 	timingLabel: string;
 	categoryLabel: string;
+	sourceCategoryLabel?: string;
 	target?: string;
 	notes?: string;
 	source?: {
-		itemId: string;
-		itemName: string;
+		reference: RuntimeActionSource;
+		label: string;
+		context: string;
+		destination: RuntimeActionSourceDestination;
 	};
 };
 
@@ -34,12 +46,12 @@ const nonEmptyText = (value: string | undefined): string | undefined => {
 
 export const projectRuntimeActionRows = (
 	actions: ReadonlyArray<RuntimeAction>,
-	inventory: ReadonlyArray<Item>
+	character: CharacterDocument5e2014
 ): Array<RuntimeActionRow> => {
-	const inventoryById = new Map(inventory.map((item) => [item.id, item]));
-
 	return actions.map((action) => {
-		const sourceItem = action.source ? inventoryById.get(action.source.id) : undefined;
+		const resolvedSource = action.source
+			? resolve5eRuntimeActionSource(character, action.source)
+			: undefined;
 		const target = nonEmptyText(action.target);
 		const notes = nonEmptyText(action.notes);
 		return {
@@ -47,13 +59,22 @@ export const projectRuntimeActionRows = (
 			name: action.name,
 			timingLabel: timingLabels[action.timing ?? 'action'],
 			categoryLabel: categoryLabels[action.category ?? 'attack'],
+			...(resolvedSource
+				? {
+						sourceCategoryLabel: get5eRuntimeActionSourceCategoryLabel(resolvedSource.category)
+					}
+				: !action.source
+					? { sourceCategoryLabel: 'Custom' }
+					: {}),
 			...(target ? { target } : {}),
 			...(notes ? { notes } : {}),
-			...(sourceItem
+			...(resolvedSource
 				? {
 						source: {
-							itemId: sourceItem.id,
-							itemName: sourceItem.name
+							reference: resolvedSource.source,
+							label: resolvedSource.sourceLabel,
+							context: resolvedSource.context,
+							destination: resolvedSource.destination
 						}
 					}
 				: {})

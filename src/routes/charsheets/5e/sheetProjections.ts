@@ -8,18 +8,12 @@ import type {
 	GridContentData,
 	GridContentField
 } from '$utils/gridContentTypes';
-import type {
-	AbilityKey,
-	CharacterDocument5e2014,
-	FeatureRef,
-	Item,
-	NamedProficiency
-} from '../../../schema';
+import type { AbilityKey, CharacterDocument5e2014, Item, NamedProficiency } from '../../../schema';
 import {
 	abilityMetadata,
 	annotationEditorConfig,
-	classFeatureListPathPrefix,
 	currencyPathPrefix,
+	featureListPathPrefix,
 	getInventoryGroupForItem,
 	inventoryCurrencyMetadata,
 	inventoryListPathPrefix,
@@ -33,6 +27,7 @@ import {
 	spellListLevelPathPrefix,
 	spellSlotLevelMetadata,
 	toSystemDataAnnotationPath,
+	traitListPathPrefix,
 	type InventoryGroup,
 	type ProficiencyEditorSource,
 	type RoleplayFieldKey,
@@ -40,7 +35,6 @@ import {
 } from './sheetConstants';
 
 type PrimitiveGridValue = string | number | boolean;
-type GridIndexBindPathResolver = (_index: number) => GridContentBindPath;
 
 export type AbilityRuntimeColumn = {
 	key: AbilityKey;
@@ -74,7 +68,7 @@ export type Sheet5eProjection = {
 	traitRuntimeData: GridContentData;
 	proficiencyLanguagesRuntimeData: GridContentData;
 	proficiencyToolsRuntimeData: GridContentData;
-	classFeaturesRuntimeData: GridContentData;
+	featuresRuntimeData: GridContentData;
 	inventoryCurrencyRuntimeData: GridContentData;
 	inventoryRuntimeCards: Array<InventoryRuntimeCard>;
 	organizationalBackgroundData: GridContentData;
@@ -135,54 +129,6 @@ const createProficiencyListField = (
 				editOnly: true,
 				options: proficiencySourceOptions
 			}
-		}
-	}))
-});
-
-const createFeatureRefListField = (
-	withFieldAnnotations: (
-		value: PrimitiveGridValue,
-		bindPath: GridContentBindPath,
-		options?: Pick<GridContentField, 'fieldName' | 'label' | 'multiline' | 'inputKind'>
-	) => GridContentField,
-	fieldName: string,
-	bindPath: GridContentBindPath,
-	values: Array<FeatureRef>,
-	itemFieldName: string,
-	itemBindPathForIndex?: GridIndexBindPathResolver
-): GridContentField => ({
-	fieldName,
-	addItemLabel: `Add ${itemFieldName}`,
-	addItemTemplate: {
-		fieldName: itemFieldName,
-		value: {
-			name: {
-				fieldName: 'Name',
-				value: itemFieldName
-			}
-		}
-	},
-	bindPath,
-	value: values.map((entry, index) => ({
-		fieldName: itemFieldName,
-		value: {
-			name: itemBindPathForIndex
-				? withFieldAnnotations(entry.name, [...itemBindPathForIndex(index), 'name'], {
-						fieldName: 'Name'
-					})
-				: {
-						fieldName: 'Name',
-						value: entry.name
-					},
-			...(entry.featureId
-				? {
-						featureId: {
-							fieldName: 'Feature Id',
-							value: entry.featureId,
-							editOnly: true
-						} satisfies GridContentField
-					}
-				: {})
 		}
 	}))
 });
@@ -518,14 +464,31 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 			: 'ancestry';
 
 	const traitRuntimeData: GridContentData = {
-		traits: createFeatureRefListField(
-			withFieldAnnotations,
-			'Traits',
-			['systemData', 'race', 'traits'],
-			char.systemData.race?.traits ?? [],
-			'Trait',
-			(index) => ['systemData', 'race', 'traits', index]
-		)
+		traits: {
+			fieldName: 'Traits',
+			addItemLabel: 'Add Trait',
+			addItemTemplate: {
+				fieldName: 'Trait',
+				value: {
+					name: { fieldName: 'Name', value: 'Trait' }
+				}
+			},
+			bindPath: [traitListPathPrefix],
+			value: (char.systemData.race?.traits ?? []).map((trait, index) => ({
+				fieldName: 'Trait',
+				value: {
+					name: withFieldAnnotations(trait.name, ['systemData', 'race', 'traits', index, 'name'], {
+						fieldName: 'Name'
+					}),
+					featureId: {
+						fieldName: 'Feature Id',
+						value: trait.featureId,
+						editOnly: true,
+						hidden: true
+					}
+				}
+			}))
+		}
 	};
 	const proficiencyLanguagesRuntimeData: GridContentData = {
 		languages: createProficiencyListField(
@@ -549,38 +512,75 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 			defaultProficiencySource
 		)
 	};
-	const classFeaturesRuntimeData: GridContentData = {
+	const featuresRuntimeData: GridContentData = {
 		features: {
-			fieldName: 'Class Features',
-			bindPath: [classFeatureListPathPrefix],
-			value: char.systemData.classes.flatMap((entry, classIndex) =>
-				(entry.features ?? []).map((feature, featureIndex) => ({
-					fieldName: entry.subclass ? `${entry.name} (${entry.subclass})` : entry.name,
+			fieldName: 'Features',
+			addItemLabel: 'Add Feature',
+			addItemTemplate: {
+				fieldName: 'General',
+				value: {
+					name: { fieldName: 'Name', value: 'Feature' },
+					owner: {
+						fieldName: 'Owner',
+						value: 'general',
+						editOnly: true,
+						hidden: true
+					}
+				}
+			},
+			bindPath: [featureListPathPrefix],
+			value: [
+				...char.features.map((feature, featureIndex) => ({
+					fieldName: 'General',
 					value: {
-						name: withFieldAnnotations(
-							feature.name,
-							['systemData', 'classes', classIndex, 'features', featureIndex, 'name'],
-							{ fieldName: 'Name' }
-						),
-						classIndex: {
-							fieldName: 'Class Index',
-							value: classIndex,
+						name: withFieldAnnotations(feature.name, ['features', featureIndex, 'name'], {
+							fieldName: 'Name'
+						}),
+						owner: {
+							fieldName: 'Owner',
+							value: 'general',
 							editOnly: true,
 							hidden: true
 						},
-						...(feature.featureId
-							? {
-									featureId: {
-										fieldName: 'Feature Id',
-										value: feature.featureId,
-										editOnly: true,
-										hidden: true
-									} satisfies GridContentField
-								}
-							: {})
+						featureId: {
+							fieldName: 'Feature Id',
+							value: feature.id,
+							editOnly: true,
+							hidden: true
+						}
 					}
-				}))
-			)
+				})),
+				...char.systemData.classes.flatMap((entry, classIndex) =>
+					(entry.features ?? []).map((feature, featureIndex) => ({
+						fieldName: entry.subclass ? `${entry.name} (${entry.subclass})` : entry.name,
+						value: {
+							name: withFieldAnnotations(
+								feature.name,
+								['systemData', 'classes', classIndex, 'features', featureIndex, 'name'],
+								{ fieldName: 'Name' }
+							),
+							owner: {
+								fieldName: 'Owner',
+								value: 'class',
+								editOnly: true,
+								hidden: true
+							},
+							classIndex: {
+								fieldName: 'Class Index',
+								value: classIndex,
+								editOnly: true,
+								hidden: true
+							},
+							featureId: {
+								fieldName: 'Feature Id',
+								value: feature.featureId,
+								editOnly: true,
+								hidden: true
+							}
+						}
+					}))
+				)
+			]
 		}
 	};
 
@@ -821,7 +821,7 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 		traitRuntimeData,
 		proficiencyLanguagesRuntimeData,
 		proficiencyToolsRuntimeData,
-		classFeaturesRuntimeData,
+		featuresRuntimeData,
 		inventoryCurrencyRuntimeData,
 		inventoryRuntimeCards,
 		organizationalBackgroundData,

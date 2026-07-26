@@ -24,7 +24,7 @@ Fields:
 - `version`: export envelope version; MVP starts at `1`.
 - `exportedAt`: ISO timestamp generated when the file is exported.
 - `app`: optional producer metadata; MVP uses `{ "name": "ez-chars" }`.
-- `characters`: all locally stored character documents, serialized through each system's current typed character schema. D&D 5e 2014 exports currently use character data layout `dnd5e-2014.v3`.
+- `characters`: all locally stored character documents, serialized through each system's current typed character schema. D&D 5e 2014 exports currently use the explicitly unstable pre-playtest character layout `dnd5e-2014.schema.v0`.
 
 The export envelope `version` and each character's `meta.schemaVersion` have separate responsibilities. Envelope version `1` identifies this backup container. Character schema versions identify the data layout inside each character and can advance without changing the envelope.
 
@@ -38,7 +38,7 @@ An import is valid only when:
 - `characters` is an array
 - every character hydrates through the same schema boundary used for stored character documents
 
-For D&D 5e 2014, imports accept the explicitly supported historical character versions, migrate them into the current validated model, and reject unknown future versions. Migration does not make the backup envelope itself more permissive: raw arrays, storage envelopes, partial fragments, and unknown character versions remain invalid imports.
+For D&D 5e 2014, imports accept only the current strict `dnd5e-2014.schema.v0` layout. Retired experimental layouts and unknown future versions are rejected rather than migrated. This character-layout policy does not make the backup envelope itself more permissive: raw arrays, storage envelopes, partial fragments, and unsupported character versions remain invalid imports.
 
 The UI makes the write behavior explicit before changing local data:
 
@@ -54,4 +54,4 @@ The shared contract lives in [src/schema/importExport.ts](../src/schema/importEx
 - `createCharacterExportEnvelope(characters)` validates current characters and creates the versioned export envelope.
 - `safeParseCharacterExportEnvelope(input)` validates the envelope and hydrates contained character documents.
 
-Shared character dispatch and serialization live in [src/schema/storedCharacters.ts](../src/schema/storedCharacters.ts). The D&D 5e 2014 historical schemas and pure migration live under [src/schema/migrations/](../src/schema/migrations/); feature and UI code should consume only hydrated current characters.
+Shared character dispatch and serialization live in [src/schema/storedCharacters.ts](../src/schema/storedCharacters.ts). The D&D 5e 2014 hydration boundary under [src/schema/migrations/](../src/schema/migrations/) validates the current layout and classifies unsupported or future versions; feature and UI code should consume only validated current characters.

@@ -8,7 +8,6 @@ import {
 } from './migrations/system.5e2014';
 import {
 	CHARACTER_DATA_VERSION_5E2014,
-	CHARACTER_DATA_VERSION_5E2014_V2,
 	RULES_VERSION_5E2014,
 	SYSTEM_ID_5E2014
 } from './versions.5e2014';
@@ -52,7 +51,6 @@ import {
 
 export {
 	CHARACTER_DATA_VERSION_5E2014,
-	CHARACTER_DATA_VERSION_5E2014_V2,
 	RULES_VERSION_5E2014,
 	SYSTEM_ID_5E2014,
 	hydrate5e2014CharacterDocument,

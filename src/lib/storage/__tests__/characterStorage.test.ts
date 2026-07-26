@@ -1,10 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { seedChars } from '$fixtures/characters.js';
 import type { CharacterWithSystemData } from '../../../schema/index.js';
-import {
-	create5e2014Character,
-	parse5e2014CharacterDocument
-} from '../../../schema/system.5e2014.js';
+import { create5e2014Character } from '../../../schema/system.5e2014.js';
 import { installMemoryLocalStorage } from '../../../test-utils/browser.js';
 import {
 	clearStoredCharacters,
@@ -47,7 +44,7 @@ describe('character storage adapter', () => {
 			characters
 		});
 		expect(JSON.parse(raw ?? '{}').characters[0]).toMatchObject({
-			meta: { schemaVersion: 'dnd5e-2014.v3' },
+			meta: { schemaVersion: 'dnd5e-2014.schema.v0' },
 			features: [],
 			inventory: [],
 			notes: [],
@@ -96,32 +93,21 @@ describe('character storage adapter', () => {
 		});
 	});
 
-	it('repairs legacy string movement fields before validation', () => {
-		const firstCharacter = parse5e2014CharacterDocument(cloneCharacters(seedChars)[0]);
-		const legacyCharacter = {
+	it('preserves outdated source data while falling back with a recovery issue', () => {
+		const fallback = cloneCharacters(seedChars);
+		const firstCharacter = fallback[0];
+		const outdatedCharacter = {
 			...firstCharacter,
-			meta: { ...firstCharacter.meta, schemaVersion: 'char.v1' },
-			systemData: {
-				...firstCharacter.systemData,
-				combat: {
-					...firstCharacter.systemData.combat,
-					speed: ' 35 ',
-					speedClimb: '',
-					speedSwim: '20',
-					speedFly: '0'
-				}
-			}
+			meta: { ...firstCharacter.meta, schemaVersion: 'dnd5e-2014.v3' }
 		};
-		localStorage.setItem(CHARS_STORAGE_KEY, JSON.stringify([legacyCharacter]));
+		const stored = JSON.stringify([outdatedCharacter]);
+		localStorage.setItem(CHARS_STORAGE_KEY, stored);
 
-		const result = loadStoredCharacters([]);
-
-		expect(result.issue).toBeNull();
-		const repairedCharacter = parse5e2014CharacterDocument(result.characters[0]);
-		expect(repairedCharacter.systemData.combat.speed).toBe(35);
-		expect(repairedCharacter.systemData.combat.speedClimb).toBeUndefined();
-		expect(repairedCharacter.systemData.combat.speedSwim).toBe(20);
-		expect(repairedCharacter.systemData.combat.speedFly).toBe(0);
+		expect(loadStoredCharacters(fallback)).toEqual({
+			characters: fallback,
+			issue: { kind: 'invalid_or_outdated' }
+		});
+		expect(localStorage.getItem(CHARS_STORAGE_KEY)).toBe(stored);
 	});
 
 	it('falls back with an issue for invalid JSON', () => {

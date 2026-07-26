@@ -1,16 +1,40 @@
 import type { Meta, StoryObj } from '@storybook/sveltekit';
 import { expect, fn, userEvent, within } from 'storybook/test';
-import type { RuntimeActionSuggestion } from '$lib/compendium/dnd5e2014/suggestInventoryRuntimeActions';
 import { create5e2014Character } from '../../../../schema';
 import RuntimeActionsCardStoryHarness from './RuntimeActionsCardStoryHarness.svelte';
 
 const character = create5e2014Character({
+	features: [
+		{
+			id: 'shield-feature',
+			name: 'Shield',
+			summary: 'A general feature with a duplicate name.'
+		}
+	],
 	inventory: [
 		{ id: 'sword-1', name: 'Longsword', equipped: true, notes: '1d8 slashing' },
 		{ id: 'rope-1', name: 'Rope', equipped: false, notes: '50 feet' },
-		{ id: 'shield-1', name: 'Shield', equipped: true, notes: '+2 AC' }
+		{ id: 'shield-item', name: 'Shield', equipped: true, notes: '+2 AC' }
 	],
 	systemData: {
+		race: {
+			name: 'Elf',
+			traits: [{ featureId: 'darkvision', name: 'Darkvision' }]
+		},
+		classes: [
+			{
+				name: 'Wizard',
+				level: 2,
+				features: [{ featureId: 'arcane-recovery', name: 'Arcane Recovery' }]
+			}
+		],
+		spellcasting: {
+			ability: 'int',
+			spells: [
+				{ spellId: 'shield-spell', name: 'Shield', level: 1, prepared: true },
+				{ spellId: 'fire-bolt', name: 'Fire Bolt', level: 0 }
+			]
+		},
 		runtimeActions: [
 			{
 				id: 'linked-action',
@@ -22,6 +46,13 @@ const character = create5e2014Character({
 				source: { kind: 'item', id: 'sword-1' }
 			},
 			{
+				id: 'spell-action',
+				name: 'Shield reaction',
+				timing: 'reaction',
+				category: 'effect',
+				source: { kind: 'spell', id: 'shield-spell' }
+			},
+			{
 				id: 'custom-action',
 				name: 'Improvise',
 				timing: 'bonusAction',
@@ -30,199 +61,151 @@ const character = create5e2014Character({
 		]
 	}
 });
-const suggestions: RuntimeActionSuggestion[] = character.inventory.map((item) => ({
-	name: item.name,
-	notes: item.notes,
-	source: { kind: 'item', id: item.id }
-}));
 
 const meta = {
 	title: 'Organisms/RuntimeActionsCard',
 	component: RuntimeActionsCardStoryHarness,
 	args: {
 		initialCharacter: character,
-		loadSuggestions: async () => suggestions,
 		onEditSavePatches: fn(),
-		onAcceptSuggestion: fn(),
+		onCreateAction: fn(),
 		onResyncAction: fn(),
-		onNavigateToSource: fn()
+		onNavigateToSource: fn(),
+		confirmResync: fn(() => true)
 	}
 } satisfies Meta<typeof RuntimeActionsCardStoryHarness>;
 
 export default meta;
-
 type Story = StoryObj<typeof meta>;
 
-export const InteractivePlayground: Story = {};
-
-export const LinkedAndCustom: Story = {
+export const MixedLinkedAndCustom: Story = {
 	play: async ({ canvasElement, args }) => {
 		const canvas = within(canvasElement);
-		const actionList = within(canvas.getByRole('list', { name: 'Runtime actions' }));
-		await expect(actionList.getByText('Player-authored strike note.')).toBeVisible();
-		await expect(actionList.getAllByText('Longsword attack', { exact: true })).toHaveLength(1);
-		await expect(actionList.getByText(/Bonus action/)).toBeVisible();
+		const actions = within(canvas.getByRole('list', { name: 'Runtime actions' }));
+		await expect(actions.getByText('Player-authored strike note.')).toBeVisible();
+		const inventoryAction = actions.getByText('Longsword attack').closest('li');
+		const spellAction = actions.getByText('Shield reaction').closest('li');
+		const customAction = actions.getByText('Improvise').closest('li');
+		if (!inventoryAction || !spellAction || !customAction) {
+			throw new Error('Expected all runtime-action rows');
+		}
+		await expect(within(inventoryAction).getByText('Inventory')).toBeVisible();
+		await expect(within(spellAction).getByText('Spell')).toBeVisible();
+		await expect(within(customAction).getByText('Custom')).toBeVisible();
 		await expect(
-			actionList.queryByRole('button', { name: 'Source actions for Improvise' })
+			actions.queryByRole('button', { name: 'Source actions for Improvise' })
 		).not.toBeInTheDocument();
 
 		await userEvent.click(
-			actionList.getByRole('button', { name: 'Source actions for Longsword attack' })
+			actions.getByRole('button', { name: 'Source actions for Shield reaction' })
 		);
-		await userEvent.click(actionList.getByRole('menuitem', { name: 'View Longsword' }));
+		await userEvent.click(actions.getByRole('menuitem', { name: 'View Spell · Shield' }));
 		await expect(canvas.getByRole('status')).toHaveTextContent(
-			'Source navigation requested for Longsword'
+			'Source navigation requested for Spell · Shield'
 		);
-		await expect(args.onNavigateToSource).toHaveBeenCalledWith('sword-1');
+		await expect(args.onNavigateToSource).toHaveBeenCalledWith({
+			kind: 'spell',
+			id: 'shield-spell'
+		});
 	}
 };
 
-export const DialogFlow: Story = {
+export const MixedSourceDialogFlow: Story = {
 	play: async ({ canvasElement, args }) => {
 		const canvas = within(canvasElement);
-		await userEvent.click(canvas.getByRole('button', { name: 'Add action from inventory' }));
-
-		const document = canvasElement.ownerDocument;
-		const dialog = await within(document.body).findByRole('dialog', {
-			name: 'Select Inventory Item'
+		await userEvent.click(canvas.getByRole('button', { name: 'Add action' }));
+		const dialog = await within(canvasElement.ownerDocument.body).findByRole('dialog', {
+			name: 'Add action'
 		});
+		const picker = within(dialog);
+		await expect(picker.getByText('Level 1 · Prepared')).toBeVisible();
+		await expect(picker.getAllByText('Spell')[0]).toBeVisible();
+		await userEvent.click(picker.getByRole('button', { name: /Arcane Recovery/ }));
 
-		await expect(dialog).toBeVisible();
-
-		const dialogWithin = within(dialog);
-		await expect(await dialogWithin.findByText('Longsword')).toBeVisible();
-		await userEvent.click(dialogWithin.getByRole('button', { name: /Longsword/ }));
-
-		// Step 2
-		const customizeDialog = within(document.body).getByRole('dialog', { name: 'Customize Action' });
-		await expect(customizeDialog).toBeVisible();
-
-		const customizeWithin = within(customizeDialog);
-		await userEvent.type(customizeWithin.getByRole('textbox', { name: 'Target' }), 'Self');
-
-		await userEvent.click(customizeWithin.getByRole('button', { name: 'Confirm Action' }));
-		await expect(args.onAcceptSuggestion).toHaveBeenCalledWith(
-			expect.objectContaining({ name: 'Longsword', target: 'Self' })
+		const review = within(canvasElement.ownerDocument.body).getByRole('dialog', {
+			name: 'Review action'
+		});
+		await userEvent.type(within(review).getByRole('textbox', { name: 'Target' }), 'Self');
+		await userEvent.click(within(review).getByRole('button', { name: 'Confirm Action' }));
+		await expect(args.onCreateAction).toHaveBeenCalledWith(
+			expect.objectContaining({
+				name: 'Arcane Recovery',
+				target: 'Self',
+				source: { kind: 'feature', id: 'arcane-recovery' }
+			})
 		);
 	}
 };
 
-export const DialogBackNavigation: Story = {
-	play: async ({ canvasElement }) => {
+export const CustomActionFlow: Story = {
+	play: async ({ canvasElement, args }) => {
 		const canvas = within(canvasElement);
-		await userEvent.click(canvas.getByRole('button', { name: 'Add action from inventory' }));
-
-		const document = canvasElement.ownerDocument;
-
-		const dialog = await within(document.body).findByRole('dialog', {
-			name: 'Select Inventory Item'
+		await userEvent.click(canvas.getByRole('button', { name: 'Add action' }));
+		const dialog = within(canvasElement.ownerDocument.body).getByRole('dialog', {
+			name: 'Add action'
 		});
-		const dialogWithin = within(dialog);
-
-		await userEvent.click(dialogWithin.getByRole('button', { name: /Longsword/ }));
-
-		const customizeDialog = within(document.body).getByRole('dialog', { name: 'Customize Action' });
-		const customizeWithin = within(customizeDialog);
-		await userEvent.click(customizeWithin.getByRole('button', { name: 'Back' }));
-
-		const dialogAgain = within(document.body).getByRole('dialog', {
-			name: 'Select Inventory Item'
+		await userEvent.click(within(dialog).getByRole('button', { name: /Create custom action/ }));
+		const review = within(canvasElement.ownerDocument.body).getByRole('dialog', {
+			name: 'Review action'
 		});
-		await expect(dialogAgain).toBeVisible();
-		const searchInput = within(dialogAgain).getByRole('searchbox');
-		await userEvent.type(searchInput, 'rope');
-		await expect(within(dialogAgain).getByText('Selected (Filtered)')).toBeVisible();
+		await userEvent.type(within(review).getByRole('textbox', { name: 'Name' }), 'Distract');
+		await userEvent.click(within(review).getByRole('button', { name: 'Confirm Action' }));
+		await expect(args.onCreateAction).toHaveBeenCalledWith(
+			expect.not.objectContaining({ source: expect.anything() })
+		);
 	}
 };
 
-export const EmptyInventory: Story = {
+export const ResyncConfirmationCancelled: Story = {
 	args: {
-		initialCharacter: create5e2014Character({ inventory: [] })
+		confirmResync: fn(() => false)
 	},
-	play: async ({ canvasElement }) => {
+	play: async ({ canvasElement, args }) => {
 		const canvas = within(canvasElement);
-		await userEvent.click(canvas.getByRole('button', { name: 'Add action from inventory' }));
-
-		const document = canvasElement.ownerDocument;
-		const dialog = within(document.body).getByRole('dialog', { name: 'Select Inventory Item' });
-		await expect(within(dialog).getByText('Your inventory is empty.')).toBeVisible();
-	}
-};
-
-export const LoadingState: Story = {
-	args: {
-		loadSuggestions: () => new Promise(() => {}) // never resolves
-	},
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement);
-		await userEvent.click(canvas.getByRole('button', { name: 'Add action from inventory' }));
-
-		const document = canvasElement.ownerDocument;
-		const dialog = within(document.body).getByRole('dialog', { name: 'Select Inventory Item' });
-		await expect(within(dialog).getByText('Loading inventory items…')).toBeVisible();
-	}
-};
-
-export const ErrorState: Story = {
-	args: {
-		loadSuggestions: () => Promise.reject(new Error('Failed'))
-	},
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement);
-		await userEvent.click(canvas.getByRole('button', { name: 'Add action from inventory' }));
-
-		const document = canvasElement.ownerDocument;
-		const dialog = await within(document.body).findByRole('dialog', {
-			name: 'Select Inventory Item'
-		});
-		await expect(await within(dialog).findByText('Failed to load suggestions')).toBeVisible();
+		const actions = within(canvas.getByRole('list', { name: 'Runtime actions' }));
+		await userEvent.click(
+			actions.getByRole('button', { name: 'Source actions for Longsword attack' })
+		);
+		await userEvent.click(actions.getByRole('menuitem', { name: 'Resync from source' }));
+		await expect(args.confirmResync).toHaveBeenCalledWith(
+			'Longsword attack',
+			'Inventory · Longsword'
+		);
+		await expect(args.onResyncAction).not.toHaveBeenCalled();
 	}
 };
 
 const clutteredItems = [
 	{ id: 'clutter-longsword', name: 'Longsword', equipped: true, notes: '1d8 slashing damage' },
 	{ id: 'clutter-shield', name: 'Shield', equipped: true, notes: '+2 AC' },
-	{ id: 'clutter-tools', name: "Thieves' tools", equipped: true, notes: 'For locks and traps' },
 	{ id: 'clutter-rope', name: 'Rope', quantity: 2, notes: '50 feet of hempen rope' },
 	{ id: 'clutter-bucket', name: 'Bucket', notes: 'Wooden, slightly dented' },
 	{ id: 'clutter-rock', name: 'Random rock', notes: 'Found in the XYZ dungeon' },
-	{
-		id: 'clutter-potion',
-		name: 'Potion of Healing',
-		quantity: 2,
-		notes: 'Regain 2d4 + 2 hit points'
-	},
+	{ id: 'clutter-potion', name: 'Potion of Healing', notes: 'Regain 2d4 + 2 hit points' },
 	{ id: 'clutter-chalk', name: 'Chalk', quantity: 10, notes: 'White sticks for markings' },
 	{ id: 'clutter-rations', name: 'Rations', quantity: 7, notes: 'One day of travel food' },
 	{ id: 'clutter-oil', name: 'Flask of oil', quantity: 4, notes: 'Burns for 6 hours' },
-	{ id: 'clutter-hook', name: 'Grappling hook', notes: 'Iron hook and 50 feet of rope' },
-	{ id: 'clutter-waterskin', name: 'Waterskin', notes: 'Holds 4 pints' },
-	{ id: 'clutter-spellbook', name: 'Spellbook', notes: 'Ink-stained travel journal' },
-	{ id: 'clutter-key', name: 'Old brass key', notes: 'Marked with a crescent moon' }
+	{ id: 'clutter-hook', name: 'Grappling hook', notes: 'Iron hook and rope' }
 ];
 
-export const ClutteredInventory: Story = {
+export const SearchableClutteredSources: Story = {
 	args: {
-		initialCharacter: create5e2014Character({ inventory: clutteredItems }),
-		loadSuggestions: async () =>
-			clutteredItems.map((i) => ({
-				name: i.name,
-				notes: i.notes,
-				source: { kind: 'item' as const, id: i.id }
-			}))
+		initialCharacter: create5e2014Character({ inventory: clutteredItems })
 	},
 	play: async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
-		await userEvent.click(canvas.getByRole('button', { name: 'Add action from inventory' }));
-
-		const document = canvasElement.ownerDocument;
-		const dialog = await within(document.body).findByRole('dialog', {
-			name: 'Select Inventory Item'
+		await userEvent.click(canvas.getByRole('button', { name: 'Add action' }));
+		const dialog = within(canvasElement.ownerDocument.body).getByRole('dialog', {
+			name: 'Add action'
 		});
-		const searchInput = within(dialog).getByRole('searchbox');
-
-		await userEvent.type(searchInput, 'xyz rock');
+		await userEvent.type(within(dialog).getByRole('searchbox'), 'xyz rock');
 		await expect(within(dialog).getByText('Random rock')).toBeVisible();
 		await expect(within(dialog).queryByText('Rope')).not.toBeInTheDocument();
+	}
+};
+
+export const NarrowScreen: Story = {
+	parameters: {
+		viewport: { defaultViewport: 'mobile1' }
 	}
 };

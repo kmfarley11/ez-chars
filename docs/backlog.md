@@ -55,7 +55,6 @@ No active P0 items.
 ### P1 — Priority Improvements
 
 - [`BL-067` — Schedule PRD v1 and active-goals refinement](#schedule-prd-v1-and-active-goals-refinement)
-- [`p1-061` — Extend runtime-action sources to spells and features](#extend-runtime-action-sources-to-spells-and-features)
 - [`BL-064` — Scale dense collection rendering and discovery](#scale-dense-collection-rendering-and-discovery)
 - [`p1-027` — Replace custom grid auto-measurement with native CSS Container Queries](#replace-custom-grid-auto-measurement-with-native-css-container-queries)
 - [`p1-020` — Improve accessibility and mobile review of menus, dialogs, and sheet sections](#improve-accessibility-and-mobile-review-of-menus-dialogs-and-sheet-sections)
@@ -70,62 +69,15 @@ No active P0 items.
 
 _Goal: UX Polish & Playtest Prep_
 
-1. `p1-061`: Establish the pre-playtest v0 schema baseline while extending runtime-action sources to spells and features
-2. `BL-067`: Define the first-playtest/v1 milestone and its durable compatibility promise
-3. `BL-064`: Scale dense collection rendering and discovery
-4. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
-5. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
-6. `BL-063`: Move character import review and confirmation into a dialog
+1. `BL-067`: Define the first-playtest/v1 milestone and its durable compatibility promise
+2. `BL-064`: Scale dense collection rendering and discovery
+3. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
+4. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
+5. `BL-063`: Move character import review and confirmation into a dialog
 
 ## Refined Backlog Catalog
 
 Each active refined item has one stable detailed definition in this catalog. Queue entries and the recommended sequence point here; reprioritization must not relocate or duplicate these definitions. When an item is completed and archived, remove its queue link and catalog definition, then retain only the bounded summary required by [Done Recently](#done-recently).
-
-### Extend runtime-action sources to spells and features
-
-ID:
-
-- `p1-061`
-
-Sequencing context:
-
-- Proceed after BL-065 and before external compendium integration. This slice establishes the clean pre-playtest v0 data baseline while completing the on-character-sheet source lifecycle, so future provider lookups can add character-owned records without making runtime actions depend directly on external identities.
-
-Refinement outputs:
-
-- **Purpose:** Complete the approved runtime-action source architecture by allowing on-sheet spells, features, and ancestry traits—not only inventory items—to seed and link runtime summaries through one coherent, text-first workflow without weakening data identity or introducing a speculative universal adapter.
-- **Included behavior:**
-  - Rebase the current character layout to an explicitly unstable `dnd5e-2014.schema.v0` pre-playtest epoch. Remove executable compatibility with earlier experimental layouts while retaining strict current validation, current serialization, and explicit outdated/future rejection.
-  - Require stable identities for every on-sheet spell and every eligible general feature, class/subclass feature, and ancestry trait. Reject missing or colliding current identities rather than inventing or repairing them during hydration.
-  - Widen the atomic runtime-action source union to `item`, `spell`, and `feature`; ancestry traits use the feature kind while remaining a distinct user-facing collection.
-  - Treat every spell present on the character sheet as eligible regardless of prepared or active state. Show level and prepared state only as distinguishing context.
-  - Make general/manual features plus class and subclass features available through a sheet list labeled "Features." Keep ancestry Traits as a separate sheet list and picker category.
-  - Present inventory, spell, feature, and trait sources through one searchable guided workflow with source-category filtering, source-specific context, and the existing final draft review. Inventory retains equipped context and filtering without applying that concept to other source kinds.
-  - Provide a direct "Create custom action" path through the same focused draft workflow; confirming it creates an unlinked action without requiring the bulk editor.
-  - Seed text-only drafts without introducing mechanics modeling: inventory and spells contribute name and notes, general features contribute name and available summary/description text, and class/subclass features or traits may contribute name only.
-  - Add source-specific linked/custom presentation, navigation, explicit resync, and source-deletion fallback consistent with the inventory lifecycle.
-  - Reuse or evolve the guided source-selection interaction around a shared searchable-selection molecule now that multiple concrete source kinds demonstrate the same selection, filtering, and rendering lifecycle. Keep source resolution and candidate projection 5e-specific.
-  - Preserve multiple actions per source and independently editable action snapshots using the current snapshot-and-explicit-resync semantics.
-  - Before resyncing any linked action, require clear confirmation that source-owned text may overwrite values edited directly on the action. Resync changes only fields supplied by that source kind; action-authored notes remain intact when a name-only feature or trait source does not own notes.
-- **Excluded behavior:**
-  - Background features as action sources in this first expansion.
-  - Merging Traits into the Features sheet list.
-  - Canonical feature-source provenance or storage normalization across general, ancestry, background, class, subclass, and external-provider origins.
-  - Retrospectively linking an already-created custom action to a source.
-  - External compendium lookup from the action workflow or external-provider identity on runtime actions; future provider records must first become character-owned records.
-  - A generic multi-system source registry, automatic per-field bubbling/override masks, append/replace/inherit modes, dice or mechanics automation.
-  - Preserving or migrating `0.0.1`, `char.v1`, `dnd5e-2014.v2`, or `dnd5e-2014.v3` character data into the v0 baseline.
-  - Implementing the durable v1-and-later migration chain before the first real external playtest.
-- **Ambiguities:**
-  - None blocking. The active OpenSpec design routes projected Feature edits with non-persisted ownership metadata and makes local candidate composition synchronous; asynchronous states return only with a concrete provider-backed acquisition workflow.
-- **Success:**
-  - The application reads and writes one strict `dnd5e-2014.schema.v0` pre-playtest shape, rejects earlier experimental layouts without overwriting them, and carries no obsolete historical schemas, migrations, or frozen legacy fixtures.
-  - All on-sheet spells, general features, class/subclass features, and ancestry traits have stable current identities and can be distinguished and linked without dangling references.
-  - A user can search or filter across inventory, spells, Features, and Traits; create either a linked snapshot or a custom unlinked action; and review the draft before committing.
-  - Features and Traits remain separate sheet collections while both participate in the same action-source lifecycle.
-  - A user can navigate, resync with an overwrite warning, and safely unlink spell-, feature-, or trait-derived snapshots with source-appropriate field replacement.
-  - Source deletion preserves the action snapshot and removes its link in the same committed edit.
-  - Current persistence and import/export round trips preserve the widened source union, while runtime actions remain linked only to character-owned 5e records.
 
 ### Scale dense collection rendering and discovery
 
@@ -364,7 +316,7 @@ ID:
 
 Sequencing context:
 
-- Execute immediately after p1-061 and before the first real external playtest. The v0 baseline deliberately postpones durable compatibility, so the playtest/v1 starting line must be explicit before outside users depend on it.
+- Execute next, before the first real external playtest. The completed v0 baseline deliberately postpones durable compatibility, so the playtest/v1 starting line must be explicit before outside users depend on it.
 
 Refinement outputs:
 
@@ -414,20 +366,20 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
   - _Refinement trigger_: Explore before expanding direct per-item controls across collections or standardizing new `GridContent` row-action APIs; coordinate sequencing with the accessibility/mobile review so that review evaluates the intended interaction model.
 - Explore source-backed runtime actions as source content plus explicit player overrides rather than fully materialized snapshots.
   - _Why_: Under the current snapshot contract, ordinary edits change the same `name` and `notes` fields that explicit resync later replaces, so resync can erase intentional player detail even though the action remains linked.
-  - _Playtest decision (2026-07-25)_: Retain snapshot-and-explicit-resync semantics for `p1-061`, with a required overwrite warning before resync. An override-aware persisted model remains a future refactor and no longer blocks spell/feature source expansion.
+  - _Playtest decision (2026-07-25)_: Retain snapshot-and-explicit-resync semantics for the multi-source expansion, with a required overwrite warning before resync. An override-aware persisted model remains a future refactor.
   - _Explore_: Separate source-derived base values from player overrides; per-field modes such as inherit, replace, or append; a resync review that lets the user choose which base or effective fields may be replaced; and a deliberately shallow link that computes effective display content without weakening offline ownership.
   - _Constraints_: Never discard player-authored content silently, preserve deterministic data evolution and source-deletion fallback, keep current 5e behavior usable offline, and avoid a generic cross-system override framework until concrete spell/feature cases justify one.
   - _Open questions_: Which fields are source-owned, how normal editing creates or clears an override, whether annotations are always action-owned, how source deletion materializes the effective action, and whether the persisted model stores base values, override operations, or both.
-  - _Refinement trigger_: Revisit after inventory, spell, and feature snapshots have broader playtest evidence, or before a schema change that needs per-field source provenance; do not reopen solely to begin `p1-061`.
+  - _Refinement trigger_: Revisit after inventory, spell, and feature snapshots have broader playtest evidence, or before a schema change that needs per-field source provenance.
 - Explore retrospectively linking an existing custom runtime action to an on-sheet source.
   - _Why_: Quick custom entry is useful when the player knows the action before organizing its source record, but requiring deletion and recreation later would discard action identity and authored detail.
   - _Current direction_: Attaching a source should preserve the existing action snapshot by default. Explicit resync remains the operation that replaces source-owned fields, with its normal overwrite warning.
   - _Explore_: A source-selection command on custom actions; whether linking should offer an optional reviewed "Use source text now" choice; how field differences are previewed; and whether changing an existing link belongs in the same interaction.
   - _Constraints_: Preserve action identity and authored fields, validate the source at commit time, never link directly to external-provider records, and do not blur linking with silent resync.
-  - _Refinement trigger_: Revisit after `p1-061` has established and playtested the multi-source picker and source-specific resync behavior.
+  - _Refinement trigger_: Revisit after the completed multi-source picker and source-specific resync behavior have playtest evidence.
 - Reconcile canonical feature storage and explicit feature provenance before external compendium integration.
-  - _Why_: General features have richer top-level records while ancestry, background, class, and subclass features currently live as nested lightweight references. `p1-061` can project the selected collections coherently, but long-term provider enrichment and provenance-aware editing need a deliberate canonical model.
-  - _Current direction_: For `p1-061`, keep Traits visually separate, present general/manual plus class/subclass entries through Features, preserve current storage locations, and derive available source context from those locations.
+  - _Why_: General features have richer top-level records while ancestry, background, class, and subclass features currently live as nested lightweight references. The completed source expansion projects the selected collections coherently, but long-term provider enrichment and provenance-aware editing need a deliberate canonical model.
+  - _Current direction_: Keep Traits visually separate, present general/manual plus class/subclass entries through Features, preserve current storage locations, and derive available source context from those locations.
   - _Explore_: Canonical feature content versus feature grants/references; explicit manual, ancestry, background, class, subclass, and external-provider provenance; duplicate grants; source deletion; and migration from existing top-level and nested records.
   - _Constraints_: Preserve stable identities and annotations, avoid duplicating editable content across canonical records and grants, retain offline ownership, and do not add provider-specific fields to generic core records prematurely.
   - _Refinement trigger_: Refine before background features become action sources or before an external compendium begins adding or enriching character-owned features.
@@ -436,8 +388,8 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 
 ## Done Recently
 
+- `2026-07-26` completed `p1-061`: rebased 5e characters to the strict pre-playtest `dnd5e-2014.schema.v0` layout and expanded the guided runtime-action workflow across inventory, spells, Features, Traits, and custom entry with stable source identity, source-pronounced runtime rows, navigation, confirmed source-owned resync, deletion fallback, and mixed-source automated coverage
 - `2026-07-26` completed `BL-065`: added a global pre-release warning banner to manage data preservation expectations before the v0 schema baseline reset
 - `2026-07-25` completed `p1-062`: added a guided, searchable inventory-action templating dialog with final draft review; extracted focused card-action and dialog molecules; and preserved the existing bulk Edit/Notes workflows
-- `2026-07-25` completed `p1-005`: advanced 5e characters to `dnd5e-2014.v3`, added persisted item-source links for independently editable runtime-action snapshots, and delivered equipped-item suggestions, single-entry playable action rows with authored notes, compact source navigation/resync menus, deletion fallback, retained card-level Edit/Notes workflows, Storybook states, and end-to-end coverage while retaining `p1-061` for spell and feature sources
+- `2026-07-25` completed `p1-005`: advanced 5e characters to `dnd5e-2014.v3`, added persisted item-source links for independently editable runtime-action snapshots, and delivered equipped-item suggestions, single-entry playable action rows with authored notes, compact source navigation/resync menus, deletion fallback, retained card-level Edit/Notes workflows, Storybook states, and end-to-end coverage while leaving spell and feature sources to a follow-up
 - `2026-07-19` completed `p1-012`: added a local SvelteKit Storybook catalog with typed BaseButton, Heading, and ValidatedInputField stories; isolated browser-backed interaction and automated accessibility checks now run through the Storybook Vitest project
-- `2026-07-18` completed `p1-060`: introduced `dnd5e-2014.v2` character hydration/serialization, migrated supported action aliases, tagged currency, titled roleplay fields, split proficiency provenance, and movement strings into one canonical model, rewired storage/import/export and 5e sheet code, and retained cross-system core flexibility with migration, round-trip, and browser smoke coverage

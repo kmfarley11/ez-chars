@@ -134,7 +134,11 @@ export const seedChars: CharacterWithSystemData[] = [
 				subrace: 'High Elf',
 				size: 'Medium',
 				speed: 30,
-				traits: [{ name: 'Darkvision' }, { name: 'Fey Ancestry' }, { name: 'Trance' }]
+				traits: [
+					{ featureId: 'trait-darkvision', name: 'Darkvision' },
+					{ featureId: 'trait-fey-ancestry', name: 'Fey Ancestry' },
+					{ featureId: 'trait-trance', name: 'Trance' }
+				]
 			},
 
 			background: {
@@ -149,14 +153,20 @@ export const seedChars: CharacterWithSystemData[] = [
 					name: 'Fighter',
 					level: 1,
 					hitDie: 'd10',
-					features: [{ name: 'Fighting Style (Defense)' }, { name: 'Second Wind' }]
+					features: [
+						{ featureId: 'fighter-defense', name: 'Fighting Style (Defense)' },
+						{ featureId: 'fighter-second-wind', name: 'Second Wind' }
+					]
 				},
 				{
 					name: 'Wizard',
 					level: 1,
 					hitDie: 'd6',
 					subclass: 'Evocation',
-					features: [{ name: 'Spellcasting' }, { name: 'Arcane Recovery' }],
+					features: [
+						{ featureId: 'wizard-spellcasting', name: 'Spellcasting' },
+						{ featureId: 'wizard-arcane-recovery', name: 'Arcane Recovery' }
+					],
 					spellcasting: {
 						ability: 'int'
 					}
@@ -199,9 +209,9 @@ export const seedChars: CharacterWithSystemData[] = [
 					'1': { max: 2, used: 0 }
 				},
 				spells: [
-					{ name: 'Magic Missile', level: 1, prepared: true },
-					{ name: 'Shield', level: 1, prepared: true },
-					{ name: 'Fire Bolt', level: 0 }
+					{ spellId: 'spell-magic-missile', name: 'Magic Missile', level: 1, prepared: true },
+					{ spellId: 'spell-shield', name: 'Shield', level: 1, prepared: true },
+					{ spellId: 'spell-fire-bolt', name: 'Fire Bolt', level: 0 }
 				]
 			}
 		}
@@ -271,7 +281,7 @@ export const seedChars: CharacterWithSystemData[] = [
 					name: 'Warrior (Sidekick)',
 					level: 1,
 					hitDie: 'd8',
-					features: [{ name: 'Second Wind (Sidekick)' }]
+					features: [{ featureId: 'sidekick-second-wind', name: 'Second Wind (Sidekick)' }]
 				}
 			],
 

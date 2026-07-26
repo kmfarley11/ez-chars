@@ -2,57 +2,78 @@
 
 ## Purpose
 
-Define inventory-based runtime-action suggestions, independently editable linked snapshots, concise action presentation, explicit source management, safe deletion fallback, and versioned persistence.
+Define text-first runtime-action creation from eligible character-owned sources, independently editable linked snapshots, concise source-pronounced presentation, explicit source management, safe deletion fallback, and versioned persistence.
 
 ## Requirements
 
-### Requirement: Inventory Action Suggestions
+### Requirement: On-sheet source eligibility and text mapping
 
-The system SHALL offer one action suggestion for any inventory item and SHALL seed the suggestion from that item's current name and notes. Equipped items SHALL be presented first in the default view.
+The system SHALL offer text-first runtime-action sources from all character inventory items, all on-sheet spells, all general features, all class and subclass features, and all ancestry Traits.
 
-#### Scenario: Viewing suggestions for inventory items
+#### Scenario: Viewing spell sources
 
-- **WHEN** a user requests inventory-based action suggestions
-- **THEN** the system SHALL present suggestions for all inventory items
-- **AND** equipped items SHALL be sorted before unequipped items, while preserving the underlying inventory order within each group
-- **AND** each suggestion SHALL contain the source item's current name and notes
+- **WHEN** the character has prepared and unprepared spells at one or more levels
+- **THEN** every recorded spell SHALL be eligible as an action source
+- **AND** spell level and any recorded prepared state SHALL be available as distinguishing context rather than eligibility rules
 
-#### Scenario: No inventory items are available
+#### Scenario: Viewing Feature and Trait sources
 
-- **WHEN** a user requests suggestions and no inventory items exist
-- **THEN** the system SHALL display an empty state explaining that inventory is empty
-- **AND** manual custom-action creation SHALL remain available
+- **WHEN** the character has general, class, subclass, or ancestry-trait records
+- **THEN** each of those records SHALL be eligible as an action source
+- **AND** Features and Traits SHALL remain distinguishable source categories
+
+#### Scenario: Seeding source-owned text
+
+- **WHEN** a user selects an eligible source
+- **THEN** inventory items and spells SHALL seed name and notes
+- **AND** general features SHALL seed name plus the first available summary or description text
+- **AND** class features, subclass features, and ancestry Traits SHALL seed name without claiming ownership of action notes
+
+#### Scenario: Background feature is present
+
+- **WHEN** the character has a background feature
+- **THEN** that background feature SHALL NOT be offered as an action source in this capability
 
 ### Requirement: Action Snapshot Creation
 
-When a user accepts an inventory-based suggestion, the system SHALL create an independently editable action snapshot linked to that character-owned source item. Source changes SHALL NOT automatically update accepted snapshots.
+When a user confirms an action draft based on an eligible character-owned source, the system SHALL create an independently editable action snapshot linked to that source. Source changes SHALL NOT automatically update accepted snapshots.
 
-#### Scenario: Adding a suggested action
+#### Scenario: Adding a source-based action
 
-- **WHEN** a user accepts a suggestion for an equipped "Longsword" item
-- **THEN** a new action SHALL be added to the runtime list with the "Longsword" name and notes from the accepted suggestion
-- **AND** the action SHALL retain a stable identity distinct from the source item's identity
-- **AND** the action SHALL remain linked to that source item
+- **WHEN** a user confirms a reviewed draft based on an eligible inventory item, spell, Feature, or Trait
+- **THEN** a new action SHALL be added with the reviewed draft values
+- **AND** the action SHALL retain a stable identity distinct from the source identity
+- **AND** the action SHALL remain linked to that character-owned source
 
 #### Scenario: Editing the source after acceptance
 
-- **WHEN** a user changes the linked "Longsword" item's name or notes
+- **WHEN** a user changes a linked source's name or source-owned text
 - **THEN** the accepted action snapshot SHALL remain unchanged until the user explicitly resyncs it
 
 #### Scenario: Accepting the same source more than once
 
-- **WHEN** a user accepts more than one suggestion derived from the same source item
+- **WHEN** a user accepts more than one draft derived from the same source
 - **THEN** each accepted action SHALL have its own stable identity
-- **AND** the system SHALL allow all accepted actions to remain linked to that same source item
+- **AND** the system SHALL allow all accepted actions to remain linked to that source
+
+#### Scenario: Source disappears before confirmation
+
+- **WHEN** the selected source no longer exists when the user confirms the draft
+- **THEN** the system SHALL reject the action creation without committing a partial or dangling link
 
 ### Requirement: Custom Action Preservation
 
-The system SHALL preserve the ability to create and edit manual, unlinked actions regardless of suggestion availability.
+The system SHALL allow users to create and edit manual, unlinked actions regardless of source availability.
 
-#### Scenario: Creating a custom action
+#### Scenario: Creating a custom action through the guided workflow
 
-- **WHEN** a user chooses to add a manual custom action
-- **THEN** a new action SHALL be added without a source link
+- **WHEN** a user chooses custom action creation, completes the focused draft, and confirms it
+- **THEN** exactly one new action SHALL be added without a source link
+
+#### Scenario: Using bulk custom-action editing
+
+- **WHEN** a user needs to add, remove, or edit multiple runtime actions together
+- **THEN** the existing card-level bulk Edit workflow SHALL remain available
 
 ### Requirement: Runtime Action Summary and Bulk Editing
 
@@ -78,78 +99,98 @@ The system SHALL present each runtime action as one concise entry that prioritiz
 
 ### Requirement: Explicit Action Resync
 
-The system SHALL allow users to explicitly refresh a linked action's name and notes from its source item without replacing the action or its other user-edited fields.
+The system SHALL allow users to explicitly refresh a linked action's source-owned text after confirming that direct action edits to those fields may be overwritten, without replacing the action or its action-owned fields.
 
-#### Scenario: Resyncing an action
+#### Scenario: Confirming resync
 
-- **WHEN** a user triggers the "Resync from source" command on a linked action
-- **THEN** the action's name and notes SHALL be overwritten with the source item's latest name and notes
+- **WHEN** a user confirms "Resync from source" on a linked action
+- **THEN** the action SHALL receive the source's latest source-owned text
 - **AND** the action's identity, source link, timing, category, target, and annotations SHALL be preserved
 
-#### Scenario: Source notes were removed
+#### Scenario: Canceling resync
 
-- **WHEN** the linked source item's notes have been removed and the user resyncs the action
-- **THEN** stale notes from the previous action snapshot SHALL no longer be present
+- **WHEN** a user declines or dismisses the resync confirmation
+- **THEN** the action SHALL remain unchanged
+
+#### Scenario: Source-owned notes were removed
+
+- **WHEN** an inventory item, spell, or general feature no longer contains source-owned notes and the user confirms resync
+- **THEN** stale source-owned notes from the previous action snapshot SHALL no longer be present
+
+#### Scenario: Name-only source is resynced
+
+- **WHEN** a class feature, subclass feature, or ancestry Trait is linked to an action with action-authored notes and the user confirms resync
+- **THEN** the action name SHALL refresh from the source
+- **AND** the action-authored notes SHALL remain unchanged
+
+#### Scenario: Source is missing at resync commit
+
+- **WHEN** the linked source no longer resolves when confirmed resync is committed
+- **THEN** the system SHALL reject the resync without partially changing the action
 
 ### Requirement: Source Commands and Navigation
 
-The system SHALL keep source-specific commands attached to the linked action they affect and SHALL provide a keyboard-accessible way to navigate from that action to its source item without adding a separate source-status list.
+The system SHALL keep source-specific commands attached to the linked action they affect and SHALL provide a keyboard-accessible way to navigate from that action to its current containing sheet card without adding a separate source-status list.
 
 #### Scenario: Viewing a linked action
 
-- **WHEN** the user views a runtime action linked to an inventory item
+- **WHEN** the user views a runtime action linked to an inventory item, spell, Feature, or Trait
 - **THEN** that action's entry SHALL expose a concise source control or menu containing source navigation and resync commands
-- **AND** the source item name SHALL be available within those commands
+- **AND** its runtime-list metadata SHALL display a passive Inventory, Spell, Feature, or Trait label matching the resolved source category
+- **AND** the source name and kind context SHALL be available within those commands
 - **AND** the action SHALL NOT appear in a second source-management list
 
 #### Scenario: Viewing a custom action
 
 - **WHEN** the user views a runtime action without a source link
 - **THEN** its entry SHALL NOT expose source navigation or resync commands
-- **AND** it SHALL NOT require a persistent custom-action label
+- **AND** its runtime-list metadata SHALL display a passive Custom label
 
-#### Scenario: Navigating to a source item
+#### Scenario: Navigating to an inventory source
 
-- **WHEN** the user activates a linked action's source-navigation control
-- **THEN** the inventory card containing the source item SHALL be scrolled into view
-- **AND** keyboard focus SHALL move to that containing inventory card
+- **WHEN** the user activates source navigation for an inventory-linked action
+- **THEN** the inventory card containing the item SHALL be scrolled into view
+- **AND** keyboard focus SHALL move to that containing card
+
+#### Scenario: Navigating to a spell source
+
+- **WHEN** the user activates source navigation for a spell-linked action
+- **THEN** the spell-level card containing the spell SHALL be scrolled into view
+- **AND** keyboard focus SHALL move to that containing card
+
+#### Scenario: Navigating to a Feature or Trait source
+
+- **WHEN** the user activates source navigation for a Feature- or Trait-linked action
+- **THEN** the separate Features or Traits card containing that source SHALL be scrolled into view
+- **AND** keyboard focus SHALL move to that containing card
 
 ### Requirement: Source Deletion Fallback
 
-The system SHALL preserve an action snapshot if its linked source item is deleted and SHALL convert the action to a custom, unlinked action in the same committed edit.
+The system SHALL preserve action snapshots whose linked character-owned sources are deleted and SHALL remove their source links in the same committed edit.
 
-#### Scenario: Deleting the source item
+#### Scenario: Deleting a linked source
 
-- **WHEN** a user deletes the "Longsword" item from inventory
-- **THEN** every runtime action linked to that item SHALL remain in the runtime list with its snapshot fields unchanged
+- **WHEN** a user deletes an inventory item, spell, general feature, class feature, subclass feature, or ancestry Trait
+- **THEN** every runtime action linked to that source SHALL remain in the runtime list with its snapshot fields, identity, annotations, and order unchanged
 - **AND** those actions' source links SHALL be permanently removed
 - **AND** source-navigation and resync controls SHALL no longer be shown for those actions
 
-### Requirement: Suggestion Request States
+#### Scenario: Deleting one source among several
 
-The system SHALL communicate pending and failed suggestion requests without blocking manual action creation.
-
-#### Scenario: Suggestions are loading
-
-- **WHEN** an inventory suggestion request has not yet resolved
-- **THEN** the UI SHALL display a loading state until the request completes
-
-#### Scenario: Suggestion request fails
-
-- **WHEN** an inventory suggestion request fails
-- **THEN** the UI SHALL display a non-destructive error state
-- **AND** manual custom-action creation SHALL remain available
+- **WHEN** a structured edit removes one source while retaining other source records
+- **THEN** only actions linked to the removed source SHALL be unlinked
+- **AND** links to retained sources SHALL remain unchanged
 
 ### Requirement: Versioned Source-Link Persistence
 
-The system SHALL migrate supported older 5e character documents to the new current layout without inventing source links, and SHALL preserve valid source links through current save and import/export round trips.
+The system SHALL preserve valid item, spell, and feature source links through current v0 save and import/export round trips.
 
-#### Scenario: Existing character without source links is loaded
+#### Scenario: Custom actions round-trip
 
-- **WHEN** a supported older character document contains runtime actions without source links
-- **THEN** migration SHALL preserve those actions as custom actions with their existing identities and authored fields
+- **WHEN** a current character containing custom actions without source links is saved, exported, and imported
+- **THEN** those actions SHALL retain their identities and authored fields without gaining source links
 
-#### Scenario: Linked action round-trips
+#### Scenario: Widened source links round-trip
 
-- **WHEN** a current character containing a linked action is saved, exported, and imported
-- **THEN** the action and its valid source link SHALL remain semantically equivalent
+- **WHEN** a current character containing valid item-, spell-, feature-, or trait-derived action links is saved, exported, and imported
+- **THEN** the actions and their character-owned source links SHALL remain semantically equivalent

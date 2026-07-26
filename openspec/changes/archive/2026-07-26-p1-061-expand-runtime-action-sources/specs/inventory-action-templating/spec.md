@@ -110,7 +110,7 @@ The system SHALL display sufficient source-specific context to distinguish simil
 #### Scenario: Viewing spell options
 
 - **WHEN** a user views spell candidates
-- **THEN** each option SHALL display its name, spell level, prepared state, and concise notes when present
+- **THEN** each option SHALL display its name, spell level, prepared state when recorded, and concise notes when present
 
 #### Scenario: Viewing Feature and Trait options
 

@@ -8,15 +8,22 @@
 	import { immutableJSONPatch, type JSONPatchDocument } from 'immutable-json-patch';
 	import '../../../app.css';
 	import { charsArray, emptyChar } from '$storage/store.js';
-	import { parse5e2014CharacterDocument, type CharacterDocument5e2014 } from '../../../schema';
-	import type { RuntimeActionSuggestion } from '$lib/compendium/dnd5e2014/suggestInventoryRuntimeActions';
+	import {
+		parse5e2014CharacterDocument,
+		type CharacterDocument5e2014,
+		type RuntimeActionSource
+	} from '../../../schema';
+	import {
+		resolve5eRuntimeActionSource,
+		type RuntimeActionDraft
+	} from '$lib/dnd5e2014/runtimeActionSources';
 	import { decode5eGridPatches } from './sheetEditDecoder';
 	import {
 		reduce5eSheetEditIntents,
 		type SheetEditIntent,
 		type SheetEditIssue
 	} from './sheetEditIntents';
-	import { getInventoryGroupForItem, type InventoryGroup } from './sheetConstants';
+	import type { InventoryGroup } from './sheetConstants';
 	import { project5eSheet } from './sheetProjections';
 
 	interface Props {
@@ -52,6 +59,9 @@
 	let isRuntimeRegionCollapsed = $state(false);
 	let isOrganizationalRegionCollapsed = $state(false);
 	let inventoryCardElements = $state<Partial<Record<InventoryGroup, HTMLElement>>>({});
+	let spellCardElements = $state<Partial<Record<string, HTMLElement>>>({});
+	let featuresCardElement = $state<HTMLElement>();
+	let traitsCardElement = $state<HTMLElement>();
 	const inventoryGroupLabels: Record<InventoryGroup, string> = {
 		weapons: 'Weapons inventory',
 		armorShields: 'Armor and shields inventory',
@@ -72,7 +82,7 @@
 		traitRuntimeData,
 		proficiencyLanguagesRuntimeData,
 		proficiencyToolsRuntimeData,
-		classFeaturesRuntimeData,
+		featuresRuntimeData,
 		inventoryCurrencyRuntimeData,
 		inventoryRuntimeCards,
 		organizationalBackgroundData,
@@ -137,18 +147,26 @@
 		});
 	};
 
-	const handleAcceptActionSuggestion = (suggestion: RuntimeActionSuggestion) => {
-		handleSheetIntents([{ type: 'accept-runtime-action-suggestion', suggestion }]);
+	const handleCreateRuntimeAction = (draft: RuntimeActionDraft) => {
+		handleSheetIntents([{ type: 'create-runtime-action', draft }]);
 	};
 
 	const handleResyncRuntimeAction = (actionId: string) => {
 		handleSheetIntents([{ type: 'resync-runtime-action', actionId }]);
 	};
 
-	const handleNavigateToInventorySource = (itemId: string) => {
-		const sourceItem = char.inventory.find((item) => item.id === itemId);
-		if (!sourceItem) return;
-		const cardElement = inventoryCardElements[getInventoryGroupForItem(sourceItem)];
+	const handleNavigateToSource = (source: RuntimeActionSource) => {
+		const resolvedSource = resolve5eRuntimeActionSource(char, source);
+		if (!resolvedSource) return;
+		const destination = resolvedSource.destination;
+		const cardElement =
+			destination.kind === 'inventory'
+				? inventoryCardElements[destination.group]
+				: destination.kind === 'spell'
+					? spellCardElements[String(destination.level)]
+					: destination.kind === 'features'
+						? featuresCardElement
+						: traitsCardElement;
 		cardElement?.scrollIntoView({ block: 'center' });
 		cardElement?.focus({ preventScroll: true });
 	};
@@ -158,6 +176,29 @@
 
 		return () => {
 			if (inventoryCardElements[group] === element) delete inventoryCardElements[group];
+		};
+	};
+
+	const registerSpellCard = (level: number) => (element: HTMLElement) => {
+		spellCardElements[String(level)] = element;
+		return () => {
+			if (spellCardElements[String(level)] === element) {
+				delete spellCardElements[String(level)];
+			}
+		};
+	};
+
+	const registerFeaturesCard = (element: HTMLElement) => {
+		featuresCardElement = element;
+		return () => {
+			if (featuresCardElement === element) featuresCardElement = undefined;
+		};
+	};
+
+	const registerTraitsCard = (element: HTMLElement) => {
+		traitsCardElement = element;
+		return () => {
+			if (traitsCardElement === element) traitsCardElement = undefined;
 		};
 	};
 
@@ -317,13 +358,12 @@
 					<GridContainer border={true} pad={true} classes="rounded-md">
 						<RuntimeActionsCard
 							data={runtimeActionData}
-							actions={char.systemData.runtimeActions}
-							inventory={char.inventory}
+							character={char}
 							{annotationEditorConfig}
 							handleEditSavePatches={handleGridPatchesSave}
-							onAcceptSuggestion={handleAcceptActionSuggestion}
+							onCreateAction={handleCreateRuntimeAction}
 							onResyncAction={handleResyncRuntimeAction}
-							onNavigateToSource={handleNavigateToInventorySource}
+							onNavigateToSource={handleNavigateToSource}
 						/>
 					</GridContainer>
 				</GridContainer>
@@ -375,24 +415,38 @@
 								data={proficiencyToolsRuntimeData}
 							/>
 						</GridContainer>
-						<GridContainer border={true} pad={true} classes="rounded-md">
-							<GridContent
-								handleEditSavePatches={handleGridPatchesSave}
-								{annotationEditorConfig}
-								displayArrayMode="stack"
-								displayMaxCols={1}
-								data={classFeaturesRuntimeData}
-							/>
-						</GridContainer>
-						<GridContainer border={true} pad={true} classes="rounded-md">
-							<GridContent
-								handleEditSavePatches={handleGridPatchesSave}
-								{annotationEditorConfig}
-								displayArrayMode="stack"
-								displayMaxCols={1}
-								data={traitRuntimeData}
-							/>
-						</GridContainer>
+						<section
+							{@attach registerFeaturesCard}
+							tabindex="-1"
+							aria-label="Features"
+							class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
+						>
+							<GridContainer border={true} pad={true} classes="rounded-md">
+								<GridContent
+									handleEditSavePatches={handleGridPatchesSave}
+									{annotationEditorConfig}
+									displayArrayMode="stack"
+									displayMaxCols={1}
+									data={featuresRuntimeData}
+								/>
+							</GridContainer>
+						</section>
+						<section
+							{@attach registerTraitsCard}
+							tabindex="-1"
+							aria-label="Traits"
+							class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
+						>
+							<GridContainer border={true} pad={true} classes="rounded-md">
+								<GridContent
+									handleEditSavePatches={handleGridPatchesSave}
+									{annotationEditorConfig}
+									displayArrayMode="stack"
+									displayMaxCols={1}
+									data={traitRuntimeData}
+								/>
+							</GridContainer>
+						</section>
 					</GridContainer>
 				</GridContainer>
 				<GridContainer
@@ -413,16 +467,24 @@
 					</GridContainer>
 					<GridContainer flow="row" count={1} countMd={3} countLg={5} classes="gap-3">
 						{#each spellSlotRuntimeCards as slotCard (slotCard.key)}
-							<GridContainer border={true} pad={true} classes="rounded-md">
-								<GridContent
-									handleFieldSavePatch={handleFieldPatchSave}
-									handleEditSavePatches={handleGridPatchesSave}
-									{annotationEditorConfig}
-									displayArrayMode="stack"
-									displayMaxCols={1}
-									data={slotCard.data}
-								/>
-							</GridContainer>
+							{@const spellLevel = slotCard.key === 'cantrips' ? 0 : Number(slotCard.key)}
+							<section
+								{@attach registerSpellCard(spellLevel)}
+								tabindex="-1"
+								aria-label={`${slotCard.label} spells`}
+								class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
+							>
+								<GridContainer border={true} pad={true} classes="rounded-md">
+									<GridContent
+										handleFieldSavePatch={handleFieldPatchSave}
+										handleEditSavePatches={handleGridPatchesSave}
+										{annotationEditorConfig}
+										displayArrayMode="stack"
+										displayMaxCols={1}
+										data={slotCard.data}
+									/>
+								</GridContainer>
+							</section>
 						{/each}
 					</GridContainer>
 				</GridContainer>

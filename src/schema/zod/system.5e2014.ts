@@ -7,11 +7,7 @@ import {
 	metaSchema,
 	noteBlockSchema
 } from './core';
-import {
-	CHARACTER_DATA_VERSION_5E2014,
-	CHARACTER_DATA_VERSION_5E2014_V2,
-	SYSTEM_ID_5E2014
-} from '../versions.5e2014';
+import { CHARACTER_DATA_VERSION_5E2014, SYSTEM_ID_5E2014 } from '../versions.5e2014';
 
 const abilityKeys = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const;
 export const abilityKeySchema = z.enum(abilityKeys);
@@ -135,18 +131,9 @@ export const combatBlockSchema = z
 	})
 	.strict();
 
-const legacyMovementNumberSchema = z.union([movementNumberSchema, z.string()]);
-
-export const legacyCombatBlockSchema = combatBlockSchema.extend({
-	speed: legacyMovementNumberSchema.optional(),
-	speedFly: legacyMovementNumberSchema.optional(),
-	speedSwim: legacyMovementNumberSchema.optional(),
-	speedClimb: legacyMovementNumberSchema.optional()
-});
-
 export const featureRefSchema = z
 	.object({
-		featureId: z.string().optional(),
+		featureId: z.string().min(1),
 		name: z.string().min(1),
 		annotations: z.array(annotationSchema).optional()
 	})
@@ -166,10 +153,6 @@ export const raceChoiceSchema = z
 	})
 	.strict();
 
-export const legacyRaceChoiceSchema = raceChoiceSchema.extend({
-	languages: z.array(z.string()).optional()
-});
-
 export const backgroundChoiceSchema = z
 	.object({
 		name: z.string().min(1),
@@ -183,17 +166,6 @@ export const backgroundChoiceSchema = z
 		annotations: z.array(annotationSchema).optional()
 	})
 	.strict();
-
-export const legacyBackgroundChoiceSchema = backgroundChoiceSchema.extend({
-	proficiencies: z
-		.object({
-			skills: z.array(dnd5eSkillNameSchema).optional(),
-			tools: z.array(z.string()).optional(),
-			languages: z.array(z.string()).optional()
-		})
-		.strict()
-		.optional()
-});
 
 export const classLevelSchema = z
 	.object({
@@ -212,7 +184,7 @@ export const classLevelSchema = z
 	})
 	.strict();
 
-export const runtimeActionV2Schema = z
+const runtimeActionBaseSchema = z
 	.object({
 		id: z.string().min(1),
 		name: z.string().min(1),
@@ -226,12 +198,12 @@ export const runtimeActionV2Schema = z
 
 export const runtimeActionSourceSchema = z
 	.object({
-		kind: z.literal('item'),
+		kind: z.enum(['item', 'spell', 'feature']),
 		id: z.string().min(1)
 	})
 	.strict();
 
-export const runtimeActionSchema = runtimeActionV2Schema.extend({
+export const runtimeActionSchema = runtimeActionBaseSchema.extend({
 	source: runtimeActionSourceSchema.optional()
 });
 
@@ -325,7 +297,7 @@ export const spellSlotsSchema = z
 
 export const spellRefSchema = z
 	.object({
-		spellId: z.string().optional(),
+		spellId: z.string().min(1),
 		name: z.string().min(1),
 		level: spellLevelSchema.optional(),
 		prepared: z.boolean().optional(),
@@ -435,34 +407,9 @@ const dnd5e2014SystemDataBaseSchema = z
 	})
 	.strict();
 
-export const dnd5e2014SystemDataV2Schema = dnd5e2014SystemDataBaseSchema.extend({
-	runtimeActions: z.array(runtimeActionV2Schema)
-});
-
 export const dnd5e2014SystemDataSchema = dnd5e2014SystemDataBaseSchema.extend({
 	runtimeActions: z.array(runtimeActionSchema)
 });
-
-export const legacyDnd5e2014SystemDataSchema = dnd5e2014SystemDataV2Schema
-	.omit({
-		combat: true,
-		race: true,
-		background: true,
-		runtimeActions: true,
-		currency: true,
-		roleplay: true,
-		proficiencies: true
-	})
-	.extend({
-		combat: legacyCombatBlockSchema,
-		race: legacyRaceChoiceSchema.optional(),
-		background: legacyBackgroundChoiceSchema.optional(),
-		runtimeActions: z.array(runtimeActionV2Schema).optional(),
-		attacks: z.array(runtimeActionV2Schema).optional(),
-		currency: currencySchema.optional(),
-		roleplay: roleplaySchema.optional(),
-		proficiencies: proficienciesSchema.optional()
-	});
 
 const systemRefSchema = z
 	.object({
@@ -484,30 +431,88 @@ export const characterDocument5e2014Schema = z
 		systemData: dnd5e2014SystemDataSchema,
 		annotations: z.array(annotationSchema).optional()
 	})
-	.strict();
+	.strict()
+	.superRefine((character, context) => {
+		const reportDuplicateIds = (
+			entries: Array<{ id: string; path: Array<string | number> }>,
+			label: string
+		) => {
+			const counts = new Map<string, number>();
+			for (const entry of entries) counts.set(entry.id, (counts.get(entry.id) ?? 0) + 1);
+			for (const entry of entries) {
+				if ((counts.get(entry.id) ?? 0) < 2) continue;
+				context.addIssue({
+					code: 'custom',
+					message: `${label} identity "${entry.id}" must be unique.`,
+					path: entry.path
+				});
+			}
+		};
 
-export const characterDocument5e2014V2Schema = z
-	.object({
-		meta: metaSchema.extend({ schemaVersion: z.literal(CHARACTER_DATA_VERSION_5E2014_V2) }),
-		system: systemRefSchema,
-		identity: identitySchema,
-		features: z.array(featureSchema),
-		inventory: z.array(itemSchema),
-		notes: z.array(noteBlockSchema),
-		systemData: dnd5e2014SystemDataV2Schema,
-		annotations: z.array(annotationSchema).optional()
-	})
-	.strict();
+		const spellIdentities = (character.systemData.spellcasting?.spells ?? []).map(
+			(spell, index) => ({
+				id: spell.spellId,
+				path: ['systemData', 'spellcasting', 'spells', index, 'spellId']
+			})
+		);
+		const itemIdentities = character.inventory.map((item, index) => ({
+			id: item.id,
+			path: ['inventory', index, 'id']
+		}));
+		reportDuplicateIds(itemIdentities, 'Inventory item');
+		reportDuplicateIds(spellIdentities, 'Spell');
 
-export const legacyCharacterDocument5e2014Schema = z
-	.object({
-		meta: metaSchema,
-		system: systemRefSchema,
-		identity: identitySchema,
-		features: z.array(featureSchema).optional(),
-		inventory: z.array(itemSchema).optional(),
-		notes: z.array(noteBlockSchema).optional(),
-		systemData: legacyDnd5e2014SystemDataSchema,
-		annotations: z.array(annotationSchema).optional()
-	})
-	.strict();
+		const generalFeatureIdentities = character.features.map((feature, index) => ({
+			id: feature.id,
+			path: ['features', index, 'id']
+		}));
+		const traitIdentities = (character.systemData.race?.traits ?? []).map((feature, index) => ({
+			id: feature.featureId,
+			path: ['systemData', 'race', 'traits', index, 'featureId']
+		}));
+		const backgroundFeatureIdentities = (character.systemData.background?.features ?? []).map(
+			(feature, index) => ({
+				id: feature.featureId,
+				path: ['systemData', 'background', 'features', index, 'featureId']
+			})
+		);
+		const classFeatureIdentities = character.systemData.classes.flatMap((classLevel, classIndex) =>
+			(classLevel.features ?? []).map((feature, featureIndex) => ({
+				id: feature.featureId,
+				path: ['systemData', 'classes', classIndex, 'features', featureIndex, 'featureId']
+			}))
+		);
+		const featureIdentities = [
+			...generalFeatureIdentities,
+			...traitIdentities,
+			...backgroundFeatureIdentities,
+			...classFeatureIdentities
+		];
+		reportDuplicateIds(featureIdentities, 'Feature');
+
+		const countIdentities = (identities: Array<string>) => {
+			const counts = new Map<string, number>();
+			for (const identity of identities) counts.set(identity, (counts.get(identity) ?? 0) + 1);
+			return counts;
+		};
+		const sourceIdCounts = {
+			item: countIdentities(itemIdentities.map((entry) => entry.id)),
+			spell: countIdentities(spellIdentities.map((entry) => entry.id)),
+			feature: countIdentities(
+				[...generalFeatureIdentities, ...traitIdentities, ...classFeatureIdentities].map(
+					(entry) => entry.id
+				)
+			)
+		};
+
+		for (const [actionIndex, action] of character.systemData.runtimeActions.entries()) {
+			if (!action.source || sourceIdCounts[action.source.kind].get(action.source.id) === 1) {
+				continue;
+			}
+			context.addIssue({
+				code: 'custom',
+				message: `Runtime action source "${action.source.kind}:${action.source.id}" does not resolve to one eligible character record.`,
+				path: ['systemData', 'runtimeActions', actionIndex, 'source']
+			});
+		}
+	});

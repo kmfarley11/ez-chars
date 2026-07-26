@@ -1,6 +1,5 @@
 import { applyGridPatches } from '$utils/characterGridHelpers';
 import type { GridContentBindPath } from '$utils/gridContentTypes';
-import type { RuntimeActionSuggestion } from '$lib/compendium/dnd5e2014/suggestInventoryRuntimeActions';
 import { z } from 'zod';
 import { createId as createProductionId } from '../../../schema/helpers';
 import {
@@ -9,6 +8,7 @@ import {
 	type AbilityKey,
 	type Annotation,
 	type CharacterDocument5e2014,
+	type Feature,
 	type FeatureRef,
 	type Item,
 	type NamedProficiency,
@@ -17,6 +17,12 @@ import {
 	type RuntimeAction,
 	type SpellRef
 } from '../../../schema';
+import {
+	apply5eSourceOwnedText,
+	reconcile5eRuntimeActionSourceLinks,
+	resolve5eRuntimeActionSource,
+	type RuntimeActionDraft
+} from '$lib/dnd5e2014/runtimeActionSources';
 import {
 	getInventoryGroupForItem,
 	inventoryCurrencyMetadata,
@@ -65,12 +71,31 @@ export const proficiencyEditorPayloadSchema = z.array(
 		.strict()
 );
 
-export const classFeatureEditorPayloadSchema = z.array(
+export const featureEditorPayloadSchema = z.array(
+	z.discriminatedUnion('owner', [
+		z
+			.object({
+				featureId: z.string().optional(),
+				name: z.string(),
+				owner: z.literal('general')
+			})
+			.strict(),
+		z
+			.object({
+				featureId: z.string().optional(),
+				name: z.string(),
+				owner: z.literal('class'),
+				classIndex: z.number().int().min(0)
+			})
+			.strict()
+	])
+);
+
+export const traitEditorPayloadSchema = z.array(
 	z
 		.object({
 			featureId: z.string().optional(),
-			name: z.string(),
-			classIndex: z.number().int().min(0)
+			name: z.string()
 		})
 		.strict()
 );
@@ -108,18 +133,20 @@ export const annotationEditorPayloadSchema = z.array(annotationSchema);
 export type SpellEditorPayload = z.infer<typeof spellEditorPayloadSchema>;
 export type RuntimeActionEditorPayload = z.infer<typeof runtimeActionEditorPayloadSchema>;
 export type ProficiencyEditorPayload = z.infer<typeof proficiencyEditorPayloadSchema>;
-export type ClassFeatureEditorPayload = z.infer<typeof classFeatureEditorPayloadSchema>;
+export type FeatureEditorPayload = z.infer<typeof featureEditorPayloadSchema>;
+export type TraitEditorPayload = z.infer<typeof traitEditorPayloadSchema>;
 export type InventoryEditorPayload = z.infer<typeof inventoryEditorPayloadSchema>;
 export type ScratchpadEditorPayload = z.infer<typeof scratchpadEditorPayloadSchema>;
 
 export type SheetEditIntent =
 	| { type: 'replace-spell-level'; level: SpellListLevel; spells: SpellEditorPayload }
 	| { type: 'replace-runtime-actions'; actions: RuntimeActionEditorPayload }
-	| { type: 'accept-runtime-action-suggestion'; suggestion: RuntimeActionSuggestion }
+	| { type: 'create-runtime-action'; draft: RuntimeActionDraft }
 	| { type: 'resync-runtime-action'; actionId: string }
 	| { type: 'replace-proficiency-languages'; languages: ProficiencyEditorPayload }
 	| { type: 'replace-proficiency-tools'; tools: ProficiencyEditorPayload }
-	| { type: 'replace-class-features'; features: ClassFeatureEditorPayload }
+	| { type: 'replace-features'; features: FeatureEditorPayload }
+	| { type: 'replace-traits'; traits: TraitEditorPayload }
 	| { type: 'replace-inventory-group'; group: InventoryGroup; items: InventoryEditorPayload }
 	| {
 			type: 'update-currency';
@@ -196,6 +223,7 @@ export const reduce5eSheetEditIntents = (
 ): SheetEditResult => {
 	const createId = options.createId ?? createProductionId;
 	let candidate = structuredClone(character);
+	let shouldReconcileSourceLinks = false;
 
 	for (const intent of intents) {
 		switch (intent.type) {
@@ -230,6 +258,7 @@ export const reduce5eSheetEditIntents = (
 						...nextLevelSpells
 					].sort((left, right) => (left.level ?? 0) - (right.level ?? 0))
 				};
+				shouldReconcileSourceLinks = true;
 				break;
 			}
 
@@ -257,24 +286,21 @@ export const reduce5eSheetEditIntents = (
 				break;
 			}
 
-			case 'accept-runtime-action-suggestion': {
-				const sourceItem = candidate.inventory.find(
-					(item) => item.id === intent.suggestion.source.id
-				);
-				if (!sourceItem) {
+			case 'create-runtime-action': {
+				if (intent.draft.source && !resolve5eRuntimeActionSource(candidate, intent.draft.source)) {
 					return {
 						ok: false,
 						issues: [
 							{
 								code: 'invalid-intent-target',
-								message: `Action suggestion source item ${intent.suggestion.source.id} is missing.`
+								message: `Runtime action source ${intent.draft.source.kind}:${intent.draft.source.id} is missing, ambiguous, or ineligible.`
 							}
 						]
 					};
 				}
 				candidate.systemData.runtimeActions = [
 					...candidate.systemData.runtimeActions,
-					{ ...intent.suggestion, id: createId() } satisfies RuntimeAction
+					{ ...intent.draft, id: createId() } satisfies RuntimeAction
 				];
 				break;
 			}
@@ -295,24 +321,22 @@ export const reduce5eSheetEditIntents = (
 						]
 					};
 				}
-				const sourceItem = candidate.inventory.find((item) => item.id === action.source?.id);
-				if (!sourceItem) {
+				const resolvedSource = resolve5eRuntimeActionSource(candidate, action.source);
+				if (!resolvedSource) {
 					return {
 						ok: false,
 						issues: [
 							{
 								code: 'invalid-intent-target',
-								message: `Runtime action ${intent.actionId} references missing item ${action.source.id}.`
+								message: `Runtime action ${intent.actionId} references a missing, ambiguous, or ineligible source.`
 							}
 						]
 					};
 				}
-				const { notes: _notes, ...actionWithoutNotes } = action;
-				candidate.systemData.runtimeActions[actionIndex] = {
-					...actionWithoutNotes,
-					name: sourceItem.name,
-					...(sourceItem.notes !== undefined ? { notes: sourceItem.notes } : {})
-				};
+				candidate.systemData.runtimeActions[actionIndex] = apply5eSourceOwnedText(
+					action,
+					resolvedSource
+				);
 				break;
 			}
 
@@ -332,27 +356,39 @@ export const reduce5eSheetEditIntents = (
 				break;
 			}
 
-			case 'replace-class-features': {
-				const invalidEntry = intent.features.find(
-					(entry) => entry.classIndex >= candidate.systemData.classes.length
-				);
-				if (invalidEntry) {
+			case 'replace-features': {
+				const invalidClassIndex = intent.features.flatMap((entry) =>
+					entry.owner === 'class' && entry.classIndex >= candidate.systemData.classes.length
+						? [entry.classIndex]
+						: []
+				)[0];
+				if (invalidClassIndex !== undefined) {
 					return {
 						ok: false,
 						issues: [
 							{
 								code: 'invalid-intent-target',
-								message: `Class feature targets missing class index ${invalidEntry.classIndex}.`
+								message: `Feature targets missing class index ${invalidClassIndex}.`
 							}
 						]
 					};
 				}
+				const currentGeneralById = new Map(
+					candidate.features.map((feature) => [feature.id, feature])
+				);
 				const nextFeaturesByClass = new Map<number, Array<FeatureRef>>();
+				const nextGeneralFeatures: Array<Feature> = [];
 				for (const entry of intent.features) {
 					const name = entry.name.trim();
 					if (!name) continue;
-					const currentFeatures = candidate.systemData.classes[entry.classIndex]?.features ?? [];
 					const suppliedId = entry.featureId?.trim();
+					if (entry.owner === 'general') {
+						const id = suppliedId || createId();
+						const currentFeature = suppliedId ? currentGeneralById.get(suppliedId) : undefined;
+						nextGeneralFeatures.push({ ...currentFeature, id, name });
+						continue;
+					}
+					const currentFeatures = candidate.systemData.classes[entry.classIndex]?.features ?? [];
 					const currentFeature = suppliedId
 						? currentFeatures.find((feature) => feature.featureId === suppliedId)
 						: undefined;
@@ -361,21 +397,48 @@ export const reduce5eSheetEditIntents = (
 					nextEntries.push({ ...currentFeature, featureId, name });
 					nextFeaturesByClass.set(entry.classIndex, nextEntries);
 				}
+				candidate.features = nextGeneralFeatures;
 				candidate.systemData.classes = candidate.systemData.classes.map((entry, classIndex) => {
 					const nextFeatures = nextFeaturesByClass.get(classIndex) ?? [];
 					if (nextFeatures.length === 0 && entry.features === undefined) return entry;
 					return { ...entry, features: nextFeatures };
 				});
+				shouldReconcileSourceLinks = true;
+				break;
+			}
+
+			case 'replace-traits': {
+				const currentTraits = candidate.systemData.race?.traits ?? [];
+				const currentTraitsById = new Map(currentTraits.map((trait) => [trait.featureId, trait]));
+				const nextTraits = intent.traits.flatMap((entry) => {
+					const name = entry.name.trim();
+					if (!name) return [];
+					const featureId = trimmedIdOrNew(entry.featureId, createId);
+					return [
+						{
+							...currentTraitsById.get(featureId),
+							featureId,
+							name
+						} satisfies FeatureRef
+					];
+				});
+				if (candidate.systemData.race) {
+					candidate.systemData.race = {
+						...candidate.systemData.race,
+						traits: nextTraits
+					};
+				} else if (nextTraits.length > 0) {
+					candidate.systemData.race = {
+						name: candidate.identity.ancestryLineage?.trim() || 'Ancestry',
+						traits: nextTraits
+					};
+				}
+				shouldReconcileSourceLinks = true;
 				break;
 			}
 
 			case 'replace-inventory-group': {
 				const currentInventory = candidate.inventory;
-				const currentGroupItemIds = new Set(
-					currentInventory
-						.filter((item) => getInventoryGroupForItem(item) === intent.group)
-						.map((item) => item.id)
-				);
 				const currentItemsById = new Map(currentInventory.map((item) => [item.id, item]));
 				const nextItems = intent.items.flatMap((entry) => {
 					const name = entry.name.trim();
@@ -408,21 +471,7 @@ export const reduce5eSheetEditIntents = (
 					...(intent.group === 'armorShields' ? nextItems : stableGroups.armorShields),
 					...(intent.group === 'other' ? nextItems : stableGroups.other)
 				];
-				const nextItemIds = new Set(nextItems.map((item) => item.id));
-				const removedItemIds = new Set(
-					[...currentGroupItemIds].filter((itemId) => !nextItemIds.has(itemId))
-				);
-				if (removedItemIds.size > 0) {
-					candidate.systemData.runtimeActions = candidate.systemData.runtimeActions.map(
-						(action) => {
-							if (action.source?.kind !== 'item' || !removedItemIds.has(action.source.id)) {
-								return action;
-							}
-							const { source: _source, ...unlinkedAction } = action;
-							return unlinkedAction;
-						}
-					);
-				}
+				shouldReconcileSourceLinks = true;
 				break;
 			}
 
@@ -492,6 +541,10 @@ export const reduce5eSheetEditIntents = (
 			default:
 				assertNever(intent);
 		}
+	}
+
+	if (shouldReconcileSourceLinks) {
+		candidate = reconcile5eRuntimeActionSourceLinks(candidate);
 	}
 
 	const parsed = safeParse5e2014CharacterDocument(candidate);

@@ -2,20 +2,21 @@ import type { GridContentBindPath, GridContentPatch } from '$utils/gridContentTy
 import { spellLevelSchema } from '../../../schema';
 import {
 	annotationEditorPayloadSchema,
-	classFeatureEditorPayloadSchema,
 	currencyAmountEditorPayloadSchema,
+	featureEditorPayloadSchema,
 	inventoryEditorPayloadSchema,
 	proficiencyEditorPayloadSchema,
 	roleplayFieldEditorPayloadSchema,
 	runtimeActionEditorPayloadSchema,
 	scratchpadEditorPayloadSchema,
 	spellEditorPayloadSchema,
+	traitEditorPayloadSchema,
 	type SheetEditIntent,
 	type SheetEditIssue
 } from './sheetEditIntents';
 import {
-	classFeatureListPathPrefix,
 	currencyPathPrefix,
+	featureListPathPrefix,
 	inventoryListPathPrefix,
 	isCurrencyDenomination,
 	proficiencyLanguagesPathPrefix,
@@ -25,6 +26,7 @@ import {
 	runtimeActionListPathPrefix,
 	scratchpadNotesPathPrefix,
 	spellListLevelPathPrefix,
+	traitListPathPrefix,
 	type CurrencyDenomination,
 	type InventoryGroup,
 	type RoleplayFieldKey,
@@ -166,10 +168,17 @@ export const decode5eGridPatches = (
 			continue;
 		}
 
-		if (root === classFeatureListPathPrefix && patch.path.length === 1) {
-			const parsed = classFeatureEditorPayloadSchema.safeParse(patch.value);
-			if (parsed.success) intents.push({ type: 'replace-class-features', features: parsed.data });
-			else issues.push(payloadIssue(patch, 'class feature', formatParseIssue(parsed.error.issues)));
+		if (root === featureListPathPrefix && patch.path.length === 1) {
+			const parsed = featureEditorPayloadSchema.safeParse(patch.value);
+			if (parsed.success) intents.push({ type: 'replace-features', features: parsed.data });
+			else issues.push(payloadIssue(patch, 'feature', formatParseIssue(parsed.error.issues)));
+			continue;
+		}
+
+		if (root === traitListPathPrefix && patch.path.length === 1) {
+			const parsed = traitEditorPayloadSchema.safeParse(patch.value);
+			if (parsed.success) intents.push({ type: 'replace-traits', traits: parsed.data });
+			else issues.push(payloadIssue(patch, 'trait', formatParseIssue(parsed.error.issues)));
 			continue;
 		}
 

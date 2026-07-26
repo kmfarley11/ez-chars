@@ -12,6 +12,13 @@ const createProjectionCharacter = (): CharacterDocument5e2014 =>
 			appearance: 'Blue cloak',
 			description: 'A careful adventurer.'
 		},
+		features: [
+			{
+				id: 'general-feature',
+				name: 'Keen Mind',
+				summary: 'Recall details accurately.'
+			}
+		],
 		inventory: [
 			{ id: 'weapon-1', name: 'Longsword', equipped: true },
 			{ id: 'armor-1', name: 'Chain mail', equipped: true },
@@ -30,7 +37,7 @@ const createProjectionCharacter = (): CharacterDocument5e2014 =>
 			},
 			race: {
 				name: 'Elf',
-				traits: [{ name: 'Darkvision' }]
+				traits: [{ featureId: 'trait-darkvision', name: 'Darkvision' }]
 			},
 			background: { name: 'Sage' },
 			currency: { gp: { amount: 12 } },
@@ -65,8 +72,8 @@ const createProjectionCharacter = (): CharacterDocument5e2014 =>
 				spellAttackBonus: 4,
 				slots: { '1': { max: 3, used: 1 } },
 				spells: [
-					{ name: 'Fire Bolt', level: 0 },
-					{ name: 'Magic Missile', level: 1, prepared: true }
+					{ spellId: 'fire-bolt', name: 'Fire Bolt', level: 0 },
+					{ spellId: 'magic-missile', name: 'Magic Missile', level: 1, prepared: true }
 				]
 			},
 			annotations: {
@@ -103,7 +110,11 @@ describe('5e sheet projections', () => {
 		expect(projection.abilityRuntimeColumns).toHaveLength(6);
 		expect(projection.runtimeActionData.actions.value).toHaveLength(1);
 		expect(projection.proficiencyLanguagesRuntimeData.languages.value).toHaveLength(3);
-		expect(projection.classFeaturesRuntimeData.features.value).toHaveLength(1);
+		expect(projection.featuresRuntimeData.features.value).toHaveLength(2);
+		expect(projection.featuresRuntimeData.features).toMatchObject({
+			fieldName: 'Features',
+			bindPath: ['__features']
+		});
 		expect(projection.traitRuntimeData.traits.value).toHaveLength(1);
 		expect(projection.spellSlotRuntimeCards).toHaveLength(10);
 		expect(projection.inventoryRuntimeCards.map((card) => card.key)).toEqual([

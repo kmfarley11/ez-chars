@@ -2,8 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { expectNoBrowserErrors, installBrowserErrorGuard } from './browserTestGuards';
 import {
 	e2eCharacter,
-	e2eLegacyCharacter,
-	e2eLegacyStoredCharacters,
+	e2eOutdatedStoredCharacters,
 	e2eRuntimeActionLinkCharacter,
 	e2eRuntimeActionLinkStoredCharacters,
 	e2eStoredCharacters
@@ -158,17 +157,17 @@ test('links an inventory suggestion through resync and source deletion fallback'
 		.click();
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-runtime-action-link/);
 
-	await page.getByRole('button', { name: 'Add action from inventory' }).click();
-	const dialog = page.getByRole('dialog', { name: 'Select Inventory Item' });
+	await page.getByRole('button', { name: 'Add action' }).click();
+	const dialog = page.getByRole('dialog', { name: 'Add action' });
 	await expect(dialog).toBeVisible();
 
 	// Check filtering and back behavior
 	await dialog.getByRole('searchbox').fill('Unknown');
-	await expect(dialog.getByText('No items match your search')).toBeVisible();
+	await expect(dialog.getByText('No action sources match these filters.')).toBeVisible();
 	await dialog.getByRole('searchbox').clear();
 
 	await dialog.getByRole('button', { name: /Longsword/ }).click();
-	await expect(page.getByRole('dialog', { name: 'Customize Action' })).toBeVisible();
+	await expect(page.getByRole('dialog', { name: 'Review action' })).toBeVisible();
 
 	await page.getByRole('button', { name: 'Back', exact: true }).click();
 	await expect(dialog).toBeVisible();
@@ -207,7 +206,7 @@ test('links an inventory suggestion through resync and source deletion fallback'
 	await expect(runtimeActionList.getByText('Original item notes.')).toBeVisible();
 	const weaponsRegion = page.getByRole('region', { name: 'Weapons inventory' });
 	await runtimeActionList.getByRole('button', { name: 'Source actions for Longsword' }).click();
-	await runtimeActionList.getByRole('menuitem', { name: 'View Longsword' }).click();
+	await runtimeActionList.getByRole('menuitem', { name: 'View Inventory · Longsword' }).click();
 	await expect(weaponsRegion).toBeFocused();
 
 	await weaponsRegion.getByRole('button', { name: 'Card actions' }).click();
@@ -231,6 +230,25 @@ test('links an inventory suggestion through resync and source deletion fallback'
 		.toEqual({ itemNotes: 'Updated item notes.', actionNotes: 'Original item notes.' });
 
 	await runtimeActionList.getByRole('button', { name: 'Source actions for Longsword' }).click();
+	page.once('dialog', async (confirmation) => {
+		expect(confirmation.message()).toContain('Source-owned name and detail may overwrite');
+		await confirmation.dismiss();
+	});
+	await runtimeActionList.getByRole('menuitem', { name: 'Resync from source' }).click();
+	await expect
+		.poll(() =>
+			page.evaluate((key) => {
+				const raw = localStorage.getItem(key);
+				return raw ? JSON.parse(raw).characters[0].systemData.runtimeActions[0].notes : undefined;
+			}, storageKey)
+		)
+		.toBe('Original item notes.');
+
+	await runtimeActionList.getByRole('button', { name: 'Source actions for Longsword' }).click();
+	page.once('dialog', async (confirmation) => {
+		expect(confirmation.message()).toContain('Source-owned name and detail may overwrite');
+		await confirmation.accept();
+	});
 	await runtimeActionList.getByRole('menuitem', { name: 'Resync from source' }).click();
 	await expect
 		.poll(() =>
@@ -279,6 +297,89 @@ test('links an inventory suggestion through resync and source deletion fallback'
 		.toBe(false);
 });
 
+test('creates and navigates spell, feature, trait, and custom runtime actions', async ({
+	page
+}) => {
+	test.setTimeout(20_000);
+	await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), {
+		key: storageKey,
+		value: e2eRuntimeActionLinkStoredCharacters
+	});
+	await page.goto('/');
+	await page
+		.locator('tbody tr')
+		.filter({ hasText: e2eRuntimeActionLinkCharacter.identity.name })
+		.locator('td')
+		.first()
+		.click();
+	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-runtime-action-link/);
+
+	const addLinkedAction = async (
+		category: 'Spells' | 'Features' | 'Traits',
+		sourceName: string
+	) => {
+		await page.getByRole('button', { name: 'Add action' }).click();
+		const selection = page.getByRole('dialog', { name: 'Add action' });
+		await selection.getByRole('button', { name: category }).click();
+		await selection.getByRole('button', { name: new RegExp(sourceName) }).click();
+		const review = page.getByRole('dialog', { name: 'Review action' });
+		await expect(review.getByRole('textbox', { name: 'Name' })).toHaveValue(sourceName);
+		await review.getByRole('button', { name: 'Confirm Action' }).click();
+	};
+
+	await addLinkedAction('Spells', 'Shield');
+	await addLinkedAction('Features', 'Arcane Recovery');
+	await addLinkedAction('Traits', 'Darkvision');
+
+	await page.getByRole('button', { name: 'Add action' }).click();
+	let dialog = page.getByRole('dialog', { name: 'Add action' });
+	await dialog.getByRole('button', { name: /Create custom action/ }).click();
+	dialog = page.getByRole('dialog', { name: 'Review action' });
+	await dialog.getByRole('textbox', { name: 'Name' }).fill('Distract');
+	await dialog.getByRole('button', { name: 'Confirm Action' }).click();
+
+	const actions = page.getByRole('list', { name: 'Runtime actions' });
+	for (const actionName of ['Shield', 'Arcane Recovery', 'Darkvision', 'Distract']) {
+		await expect(actions.getByText(actionName, { exact: true })).toBeVisible();
+	}
+	await expect(actions.getByRole('button', { name: 'Source actions for Distract' })).toHaveCount(0);
+	await expect
+		.poll(() =>
+			page.evaluate((key) => {
+				const raw = localStorage.getItem(key);
+				return raw
+					? JSON.parse(raw).characters[0].systemData.runtimeActions.map(
+							(action: { name: string; source?: { kind: string; id: string } }) => ({
+								name: action.name,
+								source: action.source
+							})
+						)
+					: [];
+			}, storageKey)
+		)
+		.toEqual([
+			{ name: 'Shield', source: { kind: 'spell', id: 'e2e-shield-spell' } },
+			{
+				name: 'Arcane Recovery',
+				source: { kind: 'feature', id: 'e2e-arcane-recovery' }
+			},
+			{ name: 'Darkvision', source: { kind: 'feature', id: 'e2e-darkvision' } },
+			{ name: 'Distract' }
+		]);
+
+	await actions.getByRole('button', { name: 'Source actions for Shield' }).click();
+	await actions.getByRole('menuitem', { name: 'View Spell · Shield' }).click();
+	await expect(page.getByRole('region', { name: '1st spells' })).toBeFocused();
+
+	await actions.getByRole('button', { name: 'Source actions for Arcane Recovery' }).click();
+	await actions.getByRole('menuitem', { name: 'View Feature · Arcane Recovery' }).click();
+	await expect(page.getByRole('region', { name: 'Features' })).toBeFocused();
+
+	await actions.getByRole('button', { name: 'Source actions for Darkvision' }).click();
+	await actions.getByRole('menuitem', { name: 'View Trait · Darkvision' }).click();
+	await expect(page.getByRole('region', { name: 'Traits' })).toBeFocused();
+});
+
 test('dialog interaction behavior: cancellation, filtered selection retention, and focus restoration', async ({
 	page
 }) => {
@@ -304,10 +405,10 @@ test('dialog interaction behavior: cancellation, filtered selection retention, a
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-runtime-action-link/);
 
 	// 1. Focus restoration & Cancellation
-	const triggerButton = page.getByRole('button', { name: 'Add action from inventory' });
+	const triggerButton = page.getByRole('button', { name: 'Add action' });
 	await triggerButton.click();
 
-	const dialog = page.getByRole('dialog', { name: 'Select Inventory Item' });
+	const dialog = page.getByRole('dialog', { name: 'Add action' });
 	await expect(dialog).toBeVisible();
 
 	// Test filtered-selection retention
@@ -316,7 +417,7 @@ test('dialog interaction behavior: cancellation, filtered selection retention, a
 	await expect(dialog.getByRole('button', { name: /Longsword/ })).toBeVisible();
 
 	await dialog.getByRole('button', { name: /Longsword/ }).click();
-	const customizeDialog = page.getByRole('dialog', { name: 'Customize Action' });
+	const customizeDialog = page.getByRole('dialog', { name: 'Review action' });
 	await expect(customizeDialog).toBeVisible();
 
 	// Go back, change the query so the selected item is filtered out, and retain it.
@@ -325,7 +426,7 @@ test('dialog interaction behavior: cancellation, filtered selection retention, a
 	await expect(searchInput).toHaveValue('sword');
 	await searchInput.fill('rope');
 	await expect(dialog.getByRole('button', { name: /Rope/ })).toBeVisible();
-	await expect(dialog.getByText('Selected (Filtered)')).toBeVisible();
+	await expect(dialog.getByText('Selected (filtered)')).toBeVisible();
 	await expect(dialog.getByRole('button', { name: /Longsword/ })).toBeVisible();
 
 	// Proceed and cancel to verify no mutation and focus restoration
@@ -362,55 +463,30 @@ test('exports and imports the seeded character backup', async ({ page }, testInf
 	await page.getByRole('button', { name: 'Replace All' }).click();
 	const seededRow = page.locator('tbody tr').filter({ hasText: e2eCharacter.identity.name });
 	await expect(seededRow).toHaveCount(1);
-});
-
-test('hydrates legacy local data before opening and persists the canonical character', async ({
-	page
-}) => {
-	await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), {
-		key: storageKey,
-		value: e2eLegacyStoredCharacters
-	});
-	await page.goto('/');
-	await page
-		.locator('tbody tr')
-		.filter({ hasText: e2eLegacyCharacter.identity.name })
-		.locator('td')
-		.first()
-		.click();
-
-	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-legacy-character/);
-	await expect(
-		page.getByRole('list', { name: 'Runtime actions' }).getByText('Legacy Dash', { exact: true })
-	).toBeVisible();
-	await expect(page.getByText(/Motives:\s*Protect the migrated party\./)).toBeVisible();
 	await expect
 		.poll(() =>
 			page.evaluate((key) => {
 				const raw = localStorage.getItem(key);
-				if (!raw) return undefined;
-				const character = JSON.parse(raw).characters[0];
-				return {
-					version: character.meta.schemaVersion,
-					hasAttacks: 'attacks' in character.systemData,
-					inventoryIds: character.inventory.map((item: { id: string }) => item.id),
-					gp: character.systemData.currency.gp?.amount,
-					motives: character.systemData.roleplay.motives?.body,
-					languages: character.systemData.proficiencies.languages,
-					speed: character.systemData.combat.speed
-				};
+				return raw ? JSON.parse(raw).characters[0].meta.schemaVersion : undefined;
 			}, storageKey)
 		)
-		.toEqual({
-			version: 'dnd5e-2014.v3',
-			hasAttacks: false,
-			inventoryIds: ['legacy-rope'],
-			gp: 4,
-			motives: 'Protect the migrated party.',
-			languages: [
-				{ name: 'Common', source: { kind: 'ancestry' } },
-				{ name: 'Elvish', source: { kind: 'ancestry' } }
-			],
-			speed: 30
-		});
+		.toBe('dnd5e-2014.schema.v0');
+});
+
+test('preserves rejected outdated local data and offers non-destructive recovery', async ({
+	page
+}) => {
+	await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), {
+		key: storageKey,
+		value: e2eOutdatedStoredCharacters
+	});
+	const originalStoredValue = JSON.stringify(e2eOutdatedStoredCharacters);
+	await page.goto('/');
+	await expect(
+		page.getByRole('alert').filter({ hasText: 'Stored character data could not be loaded' })
+	).toBeVisible();
+	await expect(page.locator('tbody tr').filter({ hasText: 'Theren Vael' })).toHaveCount(1);
+	expect(await page.evaluate((key) => localStorage.getItem(key), storageKey)).toBe(
+		originalStoredValue
+	);
 });

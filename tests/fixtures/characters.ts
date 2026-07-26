@@ -1,7 +1,7 @@
 export const e2eCharacter = {
 	meta: {
 		id: 'e2e-character',
-		schemaVersion: 'dnd5e-2014.v3',
+		schemaVersion: 'dnd5e-2014.schema.v0',
 		createdAt: '2026-07-17T00:00:00.000Z',
 		updatedAt: '2026-07-17T00:00:00.000Z'
 	},
@@ -78,6 +78,13 @@ export const e2eRuntimeActionLinkCharacter = {
 		id: 'e2e-runtime-action-link'
 	},
 	identity: { name: 'E2E Runtime Action Link' },
+	features: [
+		{
+			id: 'e2e-general-shield',
+			name: 'Shield',
+			summary: 'A general feature with a duplicate name.'
+		}
+	],
 	inventory: [
 		{
 			id: 'e2e-longsword',
@@ -96,6 +103,30 @@ export const e2eRuntimeActionLinkCharacter = {
 	],
 	systemData: {
 		...e2eCharacter.systemData,
+		race: {
+			name: 'Elf',
+			traits: [{ featureId: 'e2e-darkvision', name: 'Darkvision' }]
+		},
+		classes: [
+			{
+				name: 'Wizard',
+				level: 2,
+				features: [{ featureId: 'e2e-arcane-recovery', name: 'Arcane Recovery' }]
+			}
+		],
+		spellcasting: {
+			ability: 'int',
+			spells: [
+				{
+					spellId: 'e2e-shield-spell',
+					name: 'Shield',
+					level: 1,
+					prepared: true,
+					notes: '+5 AC until your next turn.'
+				},
+				{ spellId: 'e2e-fire-bolt', name: 'Fire Bolt', level: 0 }
+			]
+		},
 		runtimeActions: []
 	}
 };
@@ -105,31 +136,16 @@ export const e2eRuntimeActionLinkStoredCharacters = {
 	characters: [e2eRuntimeActionLinkCharacter]
 };
 
-export const e2eLegacyCharacter = {
-	meta: { ...e2eCharacter.meta, id: 'e2e-legacy-character', schemaVersion: 'char.v1' },
-	system: e2eCharacter.system,
-	identity: { ...e2eCharacter.identity, name: 'E2E Legacy Adventurer', ancestryLineage: 'Elf' },
-	inventory: [
-		{ id: 'legacy-rope', name: 'Rope', quantity: 1 },
-		{ id: 'legacy-gp', name: 'GP', quantity: 4, tags: ['inventory:currency:gp'] }
-	],
-	notes: [
-		{ id: 'legacy-motives', title: 'Motives', body: 'Protect the migrated party.', kind: 'lore' }
-	],
-	systemData: {
-		level: e2eCharacter.systemData.level,
-		proficiencyBonus: e2eCharacter.systemData.proficiencyBonus,
-		abilities: e2eCharacter.systemData.abilities,
-		saves: e2eCharacter.systemData.saves,
-		skills: e2eCharacter.systemData.skills,
-		combat: { ...e2eCharacter.systemData.combat, speed: '30' },
-		classes: [],
-		race: { name: 'Elf', languages: ['Common', 'Elvish'] },
-		attacks: [{ id: 'legacy-action', name: 'Legacy Dash', timing: 'action' }]
-	}
-};
-
-export const e2eLegacyStoredCharacters = {
+export const e2eOutdatedStoredCharacters = {
 	version: 1,
-	characters: [e2eLegacyCharacter]
+	characters: [
+		{
+			...e2eCharacter,
+			meta: {
+				...e2eCharacter.meta,
+				id: 'e2e-outdated-character',
+				schemaVersion: 'dnd5e-2014.v3'
+			}
+		}
+	]
 };

@@ -1,18 +1,18 @@
 ## ADDED Requirements
 
-### Requirement: Linkable spell and feature identities are stable
+### Requirement: Linkable source identities are stable
 
-The current 5e character representation SHALL require every spell and feature reference to have a stable non-empty identity, spell identities to be unique within the spell collection, and feature identities to be unique across general and nested feature collections.
+The current 5e character representation SHALL require every inventory item, spell, and feature reference to have a stable non-empty identity, inventory identities to be unique within the inventory collection, spell identities to be unique within the spell collection, and feature identities to be unique across general and nested feature collections.
 
 #### Scenario: Complete source identities are accepted
 
-- **WHEN** a current character gives every spell, class feature, subclass feature, ancestry trait, and background feature a non-empty identity
+- **WHEN** a current character gives every inventory item, spell, class feature, subclass feature, ancestry trait, and background feature a non-empty identity
 - **AND** those identities are unique within their required namespaces
 - **THEN** current-character validation SHALL preserve those identities unchanged
 
 #### Scenario: Missing or colliding source identities are rejected
 
-- **WHEN** current character data omits a required spell or feature identity or contains a collision in either identity namespace
+- **WHEN** current character data omits a required inventory, spell, or feature identity or contains a collision in any identity namespace
 - **THEN** validation SHALL reject the character without inventing, repairing, removing, or merging records
 
 ### Requirement: Current runtime-action source references resolve locally

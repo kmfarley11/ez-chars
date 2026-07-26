@@ -2,8 +2,11 @@
 	import { untrack } from 'svelte';
 	import { applyGridPatches } from '$utils/characterGridHelpers';
 	import type { GridContentPatch } from '$utils/gridContentTypes';
-	import type { RuntimeActionSuggestion } from '$lib/compendium/dnd5e2014/suggestInventoryRuntimeActions';
-	import type { CharacterDocument5e2014, Item } from '../../../../schema';
+	import {
+		resolve5eRuntimeActionSource,
+		type RuntimeActionDraft
+	} from '$lib/dnd5e2014/runtimeActionSources';
+	import type { CharacterDocument5e2014, RuntimeActionSource } from '../../../../schema';
 	import { decode5eGridPatches } from '../sheetEditDecoder';
 	import {
 		reduce5eSheetEditIntents,
@@ -15,27 +18,25 @@
 
 	interface Props {
 		initialCharacter: CharacterDocument5e2014;
-		loadSuggestions?: (
-			// eslint-disable-next-line no-unused-vars
-			items: ReadonlyArray<Item>
-		) => Promise<RuntimeActionSuggestion[]>;
 		// eslint-disable-next-line no-unused-vars
 		onEditSavePatches?: (_patches: Array<GridContentPatch>) => void;
 		// eslint-disable-next-line no-unused-vars
-		onAcceptSuggestion?: (_suggestion: RuntimeActionSuggestion) => void;
+		onCreateAction?: (_draft: RuntimeActionDraft) => void;
 		// eslint-disable-next-line no-unused-vars
 		onResyncAction?: (_actionId: string) => void;
 		// eslint-disable-next-line no-unused-vars
-		onNavigateToSource?: (_itemId: string) => void;
+		onNavigateToSource?: (_source: RuntimeActionSource) => void;
+		// eslint-disable-next-line no-unused-vars
+		confirmResync?: (_actionName: string, _sourceLabel: string) => boolean;
 	}
 
 	let {
 		initialCharacter,
-		loadSuggestions = undefined,
 		onEditSavePatches = undefined,
-		onAcceptSuggestion = undefined,
+		onCreateAction = undefined,
 		onResyncAction = undefined,
-		onNavigateToSource = undefined
+		onNavigateToSource = undefined,
+		confirmResync = () => true
 	}: Props = $props();
 
 	let character = $state.raw<CharacterDocument5e2014>(
@@ -84,22 +85,23 @@
 		onEditSavePatches?.(patches);
 	};
 
-	const handleAcceptSuggestion = (suggestion: RuntimeActionSuggestion) => {
-		if (!commitIntents([{ type: 'accept-runtime-action-suggestion', suggestion }])) return;
-		feedback = `Added ${suggestion.name}.`;
-		onAcceptSuggestion?.(suggestion);
+	const handleCreateAction = (draft: RuntimeActionDraft) => {
+		if (!commitIntents([{ type: 'create-runtime-action', draft }])) return;
+		feedback = `Added ${draft.name}.`;
+		onCreateAction?.(draft);
 	};
 
 	const handleResyncAction = (actionId: string) => {
 		if (!commitIntents([{ type: 'resync-runtime-action', actionId }])) return;
-		feedback = 'Resynced action from its inventory source.';
+		feedback = 'Resynced action from its source.';
 		onResyncAction?.(actionId);
 	};
 
-	const handleNavigateToSource = (itemId: string) => {
-		const sourceName = character.inventory.find((item) => item.id === itemId)?.name ?? itemId;
-		feedback = `Source navigation requested for ${sourceName}.`;
-		onNavigateToSource?.(itemId);
+	const handleNavigateToSource = (source: RuntimeActionSource) => {
+		const sourceLabel =
+			resolve5eRuntimeActionSource(character, source)?.sourceLabel ?? `${source.kind}:${source.id}`;
+		feedback = `Source navigation requested for ${sourceLabel}.`;
+		onNavigateToSource?.(source);
 	};
 </script>
 
@@ -111,12 +113,11 @@
 
 <RuntimeActionsCard
 	data={projection.runtimeActionData}
-	actions={character.systemData.runtimeActions}
-	inventory={character.inventory}
+	{character}
 	annotationEditorConfig={projection.annotationEditorConfig}
 	handleEditSavePatches={handleGridPatchesSave}
-	{loadSuggestions}
-	onAcceptSuggestion={handleAcceptSuggestion}
+	onCreateAction={handleCreateAction}
 	onResyncAction={handleResyncAction}
 	onNavigateToSource={handleNavigateToSource}
+	{confirmResync}
 />

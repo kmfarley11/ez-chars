@@ -63,3 +63,9 @@ The decoder also returns unchanged canonical card patches that do not require 5e
 The feature-local projection and typed reducer now receive only hydrated `dnd5e-2014.v3` characters. Historical action aliases, currency inventory tags, fixed-roleplay note titles, and ancestry/background proficiency ownership are confined to character migration. The steady-state 5e modules read and write explicit semantic groups.
 
 The shared core document intentionally remains less prescriptive: its root collections are still optional, while the current 5e schema requires the structural empty groups supported by this sheet. This preserves the registry direction without treating one system's proven runtime defaults as a universal contract.
+
+### 2026-07-26: v0 and local runtime-action source domain
+
+The feature-local modules now receive only strict `dnd5e-2014.schema.v0` characters; retired experimental layouts are rejected at hydration instead of transformed. A pure 5e runtime-action source module composes inventory, spells, Features, and Traits into one normalized local candidate model and resolves navigation and source-owned text. Inventory grouping was extracted from the route to support that composition.
+
+This remains evidence for a future registry rather than a universal source-provider API. External compendium results must first become character-owned records, and a second system must still demonstrate which projection, identity, and source-lifecycle boundaries genuinely repeat before the repository defines a shared adapter contract.

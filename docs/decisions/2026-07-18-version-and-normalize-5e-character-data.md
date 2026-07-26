@@ -102,3 +102,9 @@ From v1 onward, schema evolution follows this contract:
 - Supported v1-or-later versions remain supported by default. Pruning them requires a separately approved compatibility reset, advance user communication, an ADR, and a recovery or export strategy appropriate to the product's maturity.
 
 This contract intentionally avoids a generic migration framework before it is needed. Explicit historical schemas and small sequential functions remain preferable because they keep each transformation auditable and prevent one large oldest-to-current converter from becoming brittle.
+
+### 2026-07-26: Pre-playtest v0 implementation outcome
+
+The p1-061 implementation established `dnd5e-2014.schema.v0` as the sole executable 5e character layout. Hydration now distinguishes a valid current document, an outdated or otherwise unsupported document, and a well-formed future `.schema.vN` declaration. It does not carry historical schemas, transformation functions, or frozen legacy fixtures for retired experimental layouts.
+
+The strict current schema requires unique inventory, spell, and feature identities and validates linked runtime-action sources against character-owned records. Inventory identity uniqueness is enforced even before a record is linked because the atomic item source and keyed source picker cannot distinguish colliding IDs. Storage and import preserve rejected source data and surface recovery rather than rewriting it. Current serialization, storage, and export round trips all emit the same validated v0 shape. This is the intentionally small pre-playtest implementation of the migration boundary; the sequential historical-schema contract above does not become executable until an immutable v1-or-later layout exists.

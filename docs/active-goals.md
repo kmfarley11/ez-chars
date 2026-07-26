@@ -54,10 +54,11 @@ The product is currently pre-release and has not begun real external playtesting
 - field-level editing and annotation UX for surfaced runtime/state fields: high-frequency runtime values have persistent direct edit controls, reference/profile cards keep quieter menu-driven fallback editing, and Notes dialogs support annotation review/add/edit flows
 - consolidated field/card API for surfaced runtime/state proof surfaces: migrated runtime primitive fields render through descriptor-driven `GridContent` cards, inline affordances act as prioritized shortcuts, and card-wide Edit remains comprehensive for card values and structure
 - feature-local 5e sheet metadata, projection, schema-backed edit decoder, and exhaustive typed intent reducer; structured card edits commit atomically while the route retains reactive selection, layout, direct RFC 6902 editing, and persistence dispatch
-- versioned `dnd5e-2014.v3` character hydration and serialization: supported legacy local/imported data migrates into one canonical 5e model with explicit runtime actions, optional character-owned item source links, currency, roleplay, and source-aware language/tool proficiencies, while the shared core schema remains flexible for future systems
-- any inventory item can seed an independently editable runtime-action snapshot through a guided, searchable two-step review workflow, with equipped items prioritized by default; each runtime action appears once with its playable summary and authored notes, linked rows expose compact source navigation and explicit name/notes resync, card-level Edit/Notes workflows remain available, and source deletion falls back to a preserved custom action
+- strict `dnd5e-2014.schema.v0` character validation and serialization: the explicitly unstable pre-playtest layout is the only accepted 5e character shape, retired experimental and unknown future layouts are rejected non-destructively, and the shared core schema remains flexible for future systems
+- any on-sheet inventory item, spell, general/class/subclass feature, or ancestry trait can seed an independently editable runtime-action snapshot through one searchable, categorized two-step review workflow, alongside direct custom-action creation; runtime rows pronounce Inventory, Spell, Feature, Trait, or Custom ownership, linked rows expose source-specific navigation and confirmed resync of only source-owned text, and source deletion preserves the snapshot as a custom action
+- general/manual plus class/subclass entries appear through one editable Features list while Traits remain separate; persisted owners remain unchanged, stable identities distinguish duplicate names, and background features stay outside the action-source workflow pending provenance refinement
 - JSON import/export with a versioned backup envelope, file download, file validation, replace behavior, and merge-new behavior that skips duplicate character IDs
-- local automated verification with Vitest contract tests, coverage reporting, schema/import-export/storage/migration coverage, and current plus migrated-data browser smoke paths
+- local automated verification with Vitest contract tests, coverage reporting, current-schema/import-export/storage/version-rejection coverage, and current plus outdated-data browser smoke paths
 - refactored repo structure to separate $components, $storage, and $utils from the page-specific routing, significantly improving module ownership and file navigability
 - local Storybook catalog for reusable components: typed BaseButton, Heading, and ValidatedInputField examples load the application styles and aliases, hot-reload locally, and run browser-backed interaction plus automated accessibility checks separately from unit tests
 
@@ -69,8 +70,6 @@ The product is currently pre-release and has not begun real external playtesting
 ### Missing
 
 - polished empty states
-- a visible pre-release data-preservation warning before the pre-playtest schema reset
-- the clean `dnd5e-2014.schema.v0` baseline that removes obsolete experimental compatibility before outside playtesting
 
 ### Deferred
 

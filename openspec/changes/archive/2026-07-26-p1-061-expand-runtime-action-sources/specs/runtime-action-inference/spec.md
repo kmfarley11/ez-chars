@@ -8,7 +8,7 @@ The system SHALL offer text-first runtime-action sources from all character inve
 
 - **WHEN** the character has prepared and unprepared spells at one or more levels
 - **THEN** every recorded spell SHALL be eligible as an action source
-- **AND** spell level and prepared state SHALL be available as distinguishing context rather than eligibility rules
+- **AND** spell level and any recorded prepared state SHALL be available as distinguishing context rather than eligibility rules
 
 #### Scenario: Viewing Feature and Trait sources
 
@@ -110,6 +110,7 @@ The system SHALL keep source-specific commands attached to the linked action the
 
 - **WHEN** the user views a runtime action linked to an inventory item, spell, Feature, or Trait
 - **THEN** that action's entry SHALL expose a concise source control or menu containing source navigation and resync commands
+- **AND** its runtime-list metadata SHALL display a passive Inventory, Spell, Feature, or Trait label matching the resolved source category
 - **AND** the source name and kind context SHALL be available within those commands
 - **AND** the action SHALL NOT appear in a second source-management list
 
@@ -117,7 +118,7 @@ The system SHALL keep source-specific commands attached to the linked action the
 
 - **WHEN** the user views a runtime action without a source link
 - **THEN** its entry SHALL NOT expose source navigation or resync commands
-- **AND** it SHALL NOT require a persistent custom-action label
+- **AND** its runtime-list metadata SHALL display a passive Custom label
 
 #### Scenario: Navigating to an inventory source
 
@@ -169,6 +170,12 @@ The system SHALL preserve valid item, spell, and feature source links through cu
 - **THEN** the actions and their character-owned source links SHALL remain semantically equivalent
 
 ## REMOVED Requirements
+
+### Requirement: Inventory Action Suggestions
+
+**Reason**: The combined source workflow supersedes the inventory-only suggestion surface. Inventory items remain eligible and equipped items remain ordered first, but inventory absence no longer produces a dedicated empty state when other on-sheet sources or custom entry remain available.
+
+**Migration**: Use the on-sheet source eligibility and searchable multi-source selection requirements for inventory, spell, Feature, and Trait candidates.
 
 ### Requirement: Suggestion Request States
 

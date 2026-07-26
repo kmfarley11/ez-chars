@@ -5,6 +5,16 @@ export const createSheetEditCharacter = (): CharacterDocument5e2014 =>
 		name: 'Edit Tester',
 		meta: { id: 'edit-tester' },
 		identity: { ancestryLineage: 'Elf', background: 'Sage' },
+		features: [
+			{
+				id: 'general-feature',
+				name: 'Keen Mind',
+				summary: 'Recall details accurately.',
+				annotations: [
+					{ id: 'general-feature-note', origin: 'user', kind: 'note', text: 'Manual feature' }
+				]
+			}
+		],
 		inventory: [
 			{
 				id: 'weapon-1',
@@ -18,7 +28,18 @@ export const createSheetEditCharacter = (): CharacterDocument5e2014 =>
 		],
 		notes: [{ id: 'scratch-1', title: 'Scratch', body: 'Old scratch', kind: 'quick' }],
 		systemData: {
-			race: { name: 'Elf' },
+			race: {
+				name: 'Elf',
+				traits: [
+					{
+						featureId: 'darkvision',
+						name: 'Darkvision',
+						annotations: [
+							{ id: 'trait-note', origin: 'source', kind: 'summary', text: 'See in darkness' }
+						]
+					}
+				]
+			},
 			background: { name: 'Sage' },
 			currency: { gp: { amount: 5 } },
 			roleplay: {

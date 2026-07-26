@@ -96,14 +96,16 @@ describe('5e 2014 character schema', () => {
 		expect(() => parse5e2014CharacterDocument(malformedCharacter)).toThrow();
 	});
 
-	it('accepts strict item links while preserving unlinked runtime actions', () => {
-		expect(
-			runtimeActionSchema.safeParse({
-				id: 'linked-action',
-				name: 'Longsword',
-				source: { kind: 'item', id: 'item-1' }
-			}).success
-		).toBe(true);
+	it('accepts strict local source shapes while preserving unlinked runtime actions', () => {
+		for (const source of [
+			{ kind: 'item', id: 'item-1' },
+			{ kind: 'spell', id: 'spell-1' },
+			{ kind: 'feature', id: 'feature-1' }
+		]) {
+			expect(
+				runtimeActionSchema.safeParse({ id: 'linked-action', name: 'Action', source }).success
+			).toBe(true);
+		}
 		expect(runtimeActionSchema.safeParse({ id: 'custom-action', name: 'Improvise' }).success).toBe(
 			true
 		);
@@ -111,7 +113,7 @@ describe('5e 2014 character schema', () => {
 
 	it('rejects malformed and unsupported runtime-action source links', () => {
 		for (const source of [
-			{ kind: 'spell', id: 'spell-1' },
+			{ kind: 'trait', id: 'trait-1' },
 			{ kind: 'item' },
 			{ kind: 'item', id: '' },
 			{ kind: 'item', id: 'item-1', provider: 'external' }
@@ -120,5 +122,150 @@ describe('5e 2014 character schema', () => {
 				runtimeActionSchema.safeParse({ id: 'linked-action', name: 'Longsword', source }).success
 			).toBe(false);
 		}
+	});
+
+	it('requires stable spell and nested feature identities', () => {
+		const character = create5e2014Character({
+			systemData: {
+				race: {
+					name: 'Elf',
+					traits: [{ featureId: 'trait-1', name: 'Darkvision' }]
+				},
+				classes: [
+					{
+						name: 'Wizard',
+						level: 1,
+						features: [{ featureId: 'feature-1', name: 'Arcane Recovery' }]
+					}
+				],
+				spellcasting: {
+					ability: 'int',
+					spells: [{ spellId: 'spell-1', name: 'Shield' }]
+				}
+			}
+		});
+
+		for (const invalid of [
+			{
+				...structuredClone(character),
+				systemData: {
+					...character.systemData,
+					spellcasting: {
+						...character.systemData.spellcasting,
+						spells: [{ name: 'Shield' }]
+					}
+				}
+			},
+			{
+				...structuredClone(character),
+				systemData: {
+					...character.systemData,
+					race: { name: 'Elf', traits: [{ name: 'Darkvision' }] }
+				}
+			}
+		]) {
+			expect(safeParse5e2014CharacterDocument(invalid).success).toBe(false);
+		}
+	});
+
+	it('rejects duplicate inventory, spell, and character-wide feature identities', () => {
+		const valid = create5e2014Character({
+			features: [{ id: 'general-1', name: 'General' }],
+			inventory: [
+				{ id: 'item-1', name: 'Longsword' },
+				{ id: 'item-2', name: 'Shield' }
+			],
+			systemData: {
+				race: {
+					name: 'Elf',
+					traits: [{ featureId: 'trait-1', name: 'Darkvision' }]
+				},
+				background: {
+					name: 'Sage',
+					features: [{ featureId: 'background-1', name: 'Researcher' }]
+				},
+				classes: [
+					{
+						name: 'Wizard',
+						level: 1,
+						features: [{ featureId: 'class-1', name: 'Arcane Recovery' }]
+					}
+				],
+				spellcasting: {
+					ability: 'int',
+					spells: [
+						{ spellId: 'spell-1', name: 'Shield' },
+						{ spellId: 'spell-2', name: 'Magic Missile' }
+					]
+				}
+			}
+		});
+		const duplicateItem = structuredClone(valid);
+		duplicateItem.inventory[1].id = 'item-1';
+		const duplicateSpell = structuredClone(valid);
+		duplicateSpell.systemData.spellcasting!.spells![1].spellId = 'spell-1';
+		const duplicateFeature = structuredClone(valid);
+		duplicateFeature.systemData.background!.features![0].featureId = 'general-1';
+
+		expect(safeParse5e2014CharacterDocument(duplicateItem).success).toBe(false);
+		expect(safeParse5e2014CharacterDocument(duplicateSpell).success).toBe(false);
+		expect(safeParse5e2014CharacterDocument(duplicateFeature).success).toBe(false);
+	});
+
+	it('accepts exactly resolved eligible links and rejects missing, ambiguous, or background links', () => {
+		const character = create5e2014Character({
+			features: [{ id: 'general-1', name: 'General' }],
+			inventory: [{ id: 'item-1', name: 'Longsword' }],
+			systemData: {
+				race: {
+					name: 'Elf',
+					traits: [{ featureId: 'trait-1', name: 'Darkvision' }]
+				},
+				background: {
+					name: 'Sage',
+					features: [{ featureId: 'background-1', name: 'Researcher' }]
+				},
+				classes: [
+					{
+						name: 'Wizard',
+						level: 1,
+						features: [{ featureId: 'class-1', name: 'Arcane Recovery' }]
+					}
+				],
+				spellcasting: {
+					ability: 'int',
+					spells: [{ spellId: 'spell-1', name: 'Shield' }]
+				},
+				runtimeActions: [
+					{ id: 'item-action', name: 'Longsword', source: { kind: 'item', id: 'item-1' } },
+					{ id: 'spell-action', name: 'Shield', source: { kind: 'spell', id: 'spell-1' } },
+					{
+						id: 'feature-action',
+						name: 'Arcane Recovery',
+						source: { kind: 'feature', id: 'class-1' }
+					},
+					{
+						id: 'trait-action',
+						name: 'Darkvision',
+						source: { kind: 'feature', id: 'trait-1' }
+					}
+				]
+			}
+		});
+		expect(safeParse5e2014CharacterDocument(character).success).toBe(true);
+
+		for (const source of [
+			{ kind: 'item' as const, id: 'missing' },
+			{ kind: 'spell' as const, id: 'missing' },
+			{ kind: 'feature' as const, id: 'background-1' }
+		]) {
+			const invalid = structuredClone(character);
+			invalid.systemData.runtimeActions[0].source = source;
+			expect(safeParse5e2014CharacterDocument(invalid).success).toBe(false);
+		}
+
+		const ambiguous = structuredClone(character);
+		ambiguous.inventory.push({ id: 'item-1', name: 'Duplicate Longsword' });
+		expect(safeParse5e2014CharacterDocument(ambiguous).success).toBe(false);
 	});
 });

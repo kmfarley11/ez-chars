@@ -7,10 +7,11 @@ Runtime actions can currently link only to inventory items, which forces players
 - Allow every spell recorded on the character sheet to seed and link an independently editable runtime-action snapshot, regardless of prepared state.
 - Allow general, class, and subclass Features plus ancestry Traits to seed and link runtime-action snapshots while keeping Features and Traits visually separate on the sheet.
 - **BREAKING:** Rebase the pre-playtest character layout to `dnd5e-2014.schema.v0`, prune compatibility with earlier experimental layouts, and clearly reject outdated local or imported data instead of migrating it.
-- Require stable, collision-free identities for every current spell, feature, and trait record before widening persisted action links.
+- Require stable, collision-free identities for every current inventory item, spell, feature, and trait record before widening persisted action links.
 - Expand the guided action-creation workflow so users can search and filter inventory, spells, Features, and Traits, review one focused draft, or create an unlinked custom action directly.
 - Derive action-source candidates synchronously from character-owned records and remove obsolete loading and failure states from the local action-selection workflow.
 - Preserve character-owned snapshot semantics across all source kinds, including commit-time source validation, explicit source navigation, warned resync, multiple actions per source, and safe unlinking when a source is deleted.
+- Pronounce every runtime-action row as Inventory, Spell, Feature, Trait, or Custom while retaining the existing source-command menu for linked actions.
 - Present general/manual and class/subclass entries through the Features sheet collection without prematurely normalizing their provenance or storage.
 
 ## Non-Goals
@@ -30,7 +31,7 @@ Runtime actions can currently link only to inventory items, which forces players
 
 ### Modified Capabilities
 
-- `character-data-evolution`: Pre-playtest hydration and serialization will use one strict v0 baseline, reject earlier experimental layouts, and provide stable, unambiguous identities for all eligible on-sheet spell, feature, and trait sources.
+- `character-data-evolution`: Pre-playtest hydration and serialization will use one strict v0 baseline, reject earlier experimental layouts, and provide stable, unambiguous identities for all eligible on-sheet inventory, spell, feature, and trait sources.
 - `character-sheet-editing`: The Features sheet collection will coherently edit general/manual and class/subclass entries while preserving their identities and current storage ownership; Traits remain separate.
 - `runtime-action-inference`: Linked snapshot creation, presentation, navigation, resync, deletion fallback, and persistence will support spell and feature sources in addition to inventory items.
 - `inventory-action-templating`: The inventory-only guided workflow will become a searchable multi-source action-creation workflow that also supports direct custom-action creation.

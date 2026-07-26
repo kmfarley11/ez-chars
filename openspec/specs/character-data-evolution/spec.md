@@ -2,66 +2,67 @@
 
 ## Purpose
 
-Define how supported character documents migrate, validate, and serialize into one canonical, versioned 5e model without losing authored data or meaningful absence.
+Define how current character documents validate and serialize through the pre-playtest compatibility epoch while preserving meaningful absence and establishing the source-identity and future-version boundaries required for safe evolution.
 
 ## Requirements
 
+### Requirement: Linkable source identities are stable
+
+The current 5e character representation SHALL require every inventory item, spell, and feature reference to have a stable non-empty identity, inventory identities to be unique within the inventory collection, spell identities to be unique within the spell collection, and feature identities to be unique across general and nested feature collections.
+
+#### Scenario: Complete source identities are accepted
+
+- **WHEN** a current character gives every inventory item, spell, class feature, subclass feature, ancestry trait, and background feature a non-empty identity
+- **AND** those identities are unique within their required namespaces
+- **THEN** current-character validation SHALL preserve those identities unchanged
+
+#### Scenario: Missing or colliding source identities are rejected
+
+- **WHEN** current character data omits a required inventory, spell, or feature identity or contains a collision in any identity namespace
+- **THEN** validation SHALL reject the character without inventing, repairing, removing, or merging records
+
+### Requirement: Current runtime-action source references resolve locally
+
+The current character representation SHALL accept a runtime-action source link only when its kind and identity resolve to exactly one eligible character-owned record.
+
+#### Scenario: Current source link resolves
+
+- **WHEN** a current character contains an item-, spell-, or feature-linked runtime action
+- **THEN** that source identity SHALL resolve to exactly one eligible record of the declared kind on the same character
+
+#### Scenario: Invalid current source link is imported
+
+- **WHEN** current-version character data contains a source link that is missing, ambiguous, or ineligible
+- **THEN** validation SHALL reject that current character data without guessing a target
+
 ### Requirement: Supported character data hydrates to one current model
 
-The system SHALL convert supported D&D 5e 2014 character data into one current, validated character representation before exposing it to application features.
+The system SHALL validate D&D 5e 2014 character data against the current pre-playtest v0 representation before exposing it to application features and SHALL reject data outside that compatibility epoch without rewriting it.
 
-#### Scenario: Current character is loaded
+#### Scenario: Current v0 character is loaded
 
-- **WHEN** a character already uses the current supported schema version
-- **THEN** the system SHALL validate and hydrate it without changing its semantic content
+- **WHEN** a character declares the current pre-playtest v0 schema version and satisfies its strict shape
+- **THEN** the system SHALL hydrate it without changing its semantic content
 
-#### Scenario: Supported legacy character is loaded
+#### Scenario: Earlier experimental character is loaded
 
-- **WHEN** a character uses a recognized older or repository-supported legacy shape
-- **THEN** the system SHALL migrate it sequentially into the current validated representation
+- **WHEN** a local or imported character declares an experimental schema identifier that predates the current v0 baseline
+- **THEN** the system SHALL reject it as outdated without attempting a compatibility migration
+- **AND** the source data SHALL NOT be overwritten
 
 #### Scenario: Future character version is encountered
 
 - **WHEN** a character declares an unsupported future schema version
 - **THEN** the system SHALL reject it without guessing a migration or overwriting the source data
 
-### Requirement: Migration preserves authored character information
-
-The system MUST preserve supported authored values, annotations, and unrelated records while replacing legacy storage conventions with canonical 5e domain properties.
-
-#### Scenario: Legacy actions are migrated
-
-- **WHEN** a legacy character stores actions through the supported action alias
-- **THEN** those actions SHALL remain available through the canonical runtime action collection without alias drift
-
-#### Scenario: Tagged currency is migrated
-
-- **WHEN** a legacy character stores currency as recognized tagged inventory records
-- **THEN** the represented denomination amounts and valid annotations SHALL move to canonical currency data while non-currency inventory remains unchanged
-
-#### Scenario: Roleplay notes are migrated
-
-- **WHEN** legacy notes use recognized roleplay titles
-- **THEN** the matching roleplay content and valid annotations SHALL move to semantic roleplay fields while additional title collisions and general notes remain available
-
-#### Scenario: Proficiency provenance is migrated
-
-- **WHEN** legacy language or tool proficiencies are owned by ancestry or background records
-- **THEN** the current representation SHALL retain each proficiency and its known provenance without requiring it to remain mutable through that source record
-
-#### Scenario: Identity-addressable records are preserved
-
-- **WHEN** an inventory item, general note, runtime action, feature, or annotation remains an identity-addressable record after migration
-- **THEN** its existing identifier SHALL be preserved
-
 ### Requirement: Current serialization is versioned and repeatable
 
-The system SHALL save and export only current validated character data, and hydrating serialized current data MUST be idempotent.
+The system SHALL save and export only current validated v0 character data, and hydrating serialized current data MUST be idempotent.
 
-#### Scenario: Migrated character is saved
+#### Scenario: Current character is saved
 
-- **WHEN** a supported legacy character has been hydrated and persisted
-- **THEN** the saved character SHALL declare the current schema version and use only current canonical properties
+- **WHEN** a valid current character is persisted or exported
+- **THEN** the saved character SHALL declare `dnd5e-2014.schema.v0` and use only current canonical properties
 
 #### Scenario: Current character round-trips
 
@@ -71,7 +72,7 @@ The system SHALL save and export only current validated character data, and hydr
 #### Scenario: Current hydration is repeated
 
 - **WHEN** current serialized character data is hydrated more than once
-- **THEN** subsequent hydration SHALL not duplicate records, currency, roleplay fields, or proficiencies
+- **THEN** subsequent hydration SHALL not duplicate or rewrite records
 
 ### Requirement: Structural defaults do not erase meaningful absence
 

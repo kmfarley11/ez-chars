@@ -46,6 +46,7 @@ The current schema will require:
 
 - a non-empty `spellId` on every current spell reference;
 - a non-empty `featureId` on every current nested feature reference, including ancestry, background, class, and subclass-owned references;
+- inventory item IDs that are unique within the character's inventory collection;
 - feature IDs that are unique across the character's general features and all nested feature-reference collections;
 - spell IDs that are unique within the character's spell collection; and
 - runtime-action sources discriminated as `item`, `spell`, or `feature`.
@@ -116,7 +117,7 @@ A pure 5e domain module will own the discriminated switch for:
 - producing source-owned draft text; and
 - determining whether an existing link remains valid.
 
-The UI candidate model contains a compound key derived from `kind` and `id`, the atomic persisted source, a user-facing category (`inventory`, `spell`, `feature`, or `trait`), label/detail/context, inventory or spell badges where applicable, and a source-owned text snapshot. Raw inventory, spell, and feature arrays do not enter the reusable picker API.
+The UI candidate model contains a compound key derived from `kind` and `id`, the atomic persisted source, a user-facing category (`inventory`, `spell`, `feature`, or `trait`), label/detail/context, a discrete source-kind badge plus applicable secondary badges, and a source-owned text snapshot. Raw inventory, spell, and feature arrays do not enter the reusable picker API.
 
 The candidate projection is synchronous. All inputs are already character-owned and local, while future external lookup is required to create or enrich a character-owned record before it can become an action source. The existing action-dialog loading/error seam will therefore be removed rather than retained as speculative provider infrastructure.
 
@@ -162,7 +163,9 @@ Action acceptance and resync re-resolve the source at commit time rather than tr
 
 Structured edits that can remove inventory items, spells, general/class features, or Traits mark the affected source namespace for reconciliation. After the candidate character has applied the complete edit batch, one shared reconciliation pass removes links that no longer resolve while preserving action identity, order, snapshot fields, and annotations. This avoids duplicating unlink logic across each collection reducer without running speculative cleanup after unrelated primitive edits.
 
-The runtime-action row projection uses the same resolver to produce source label and destination context. The route receives the atomic source reference for navigation, resolves its current containing card, scrolls that card into view, and moves focus to it:
+The runtime-action row projection uses the same resolver and source-category label projection as the candidate picker. Each valid linked row receives one passive Inventory, Spell, Feature, or Trait label, while an unlinked row receives Custom; picker-only state such as Equipped, Prepared, Class, or Ancestry does not enter runtime-list metadata. A small badge atom supplies the shared visual treatment without coupling runtime rows to candidate-specific badge arrays.
+
+The route receives the atomic source reference for navigation, resolves its current containing card, scrolls that card into view, and moves focus to it:
 
 - inventory source → current inventory group card;
 - spell source → current spell-level card;
@@ -199,3 +202,17 @@ Rollback consists of reverting the application change and restoring repository-o
 ## Open Questions
 
 No product-scope questions block implementation. During apply, implementation may choose exact internal type and component names provided the persisted identity rules, source ownership, feature/trait separation, and observable workflow remain unchanged.
+
+## Implementation Fallout (2026-07-26)
+
+- Inventory grouping moved from route-owned sheet constants into a reusable 5e domain module so normalized source projection does not depend on page composition. The route-facing constants re-export the existing inventory API, preserving its current consumers.
+- Candidate ordering is deterministic: equipped inventory items precede unequipped items, followed by spells, general then class/subclass Features, and Traits in their sheet order. Search filtering preserves that order.
+- Adding the first Trait to a character without an ancestry record initializes the minimal ancestry owner from the character's identity data. This lets the existing Traits surface honor its add contract without normalizing feature provenance or changing source eligibility.
+- Source-link cleanup runs once after a complete structured edit batch. Create and resync intents still validate their selected source at commit time, keeping stale selections atomic while avoiding collection-specific unlink branches.
+- The browser confirmation used by resync is injectable at the component boundary, making cancellation and acceptance deterministic in component and browser coverage without changing the persisted or observable contract.
+- Strategic review made the existing item-identity assumption explicit: strict v0 validation rejects duplicate inventory IDs even before an action links to them, preventing ambiguous source keys from reaching the keyed picker.
+- Every candidate carries a discrete Inventory, Spell, Feature, or Trait badge so duplicate names and cantrips remain source-identifiable independent of optional metadata. Cantrip/level, preparation, feature/trait provenance, equipped state, and inventory quantity remain concise secondary context; badges and quantity also remain visible in the selected-filtered row.
+- Runtime-action rows reuse the durable source-category labels but not the complete candidate badge set. Linked rows display only Inventory, Spell, Feature, or Trait beside their action metadata; unlinked rows display Custom, and the existing source menu remains the sole interaction point for navigation and resync.
+- Pre-archive review made the optional spell-preparation contract explicit and removed the superseded inventory-only suggestion requirement. Prepared state is distinguishing context when the character record contains it; cantrips or records without that optional value remain valid candidates.
+
+The inventory-identity refinement is reflected in the proposal and character-data specification because it tightens the observable v0 validation boundary. Runtime-list source pronunciation is reflected in the proposal and runtime-action specification because it changes observable row presentation. The remaining fallout stays within the approved capability boundaries.

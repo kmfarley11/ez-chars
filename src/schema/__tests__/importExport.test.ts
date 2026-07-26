@@ -12,7 +12,6 @@ import {
 	create5e2014Character,
 	parse5e2014CharacterDocument
 } from '../system.5e2014';
-import { legacyComprehensive5eCharacter } from './fixtures/legacy5eCharacters';
 
 describe('character import/export envelope', () => {
 	it('creates a parseable versioned backup envelope for character documents', () => {
@@ -60,26 +59,20 @@ describe('character import/export envelope', () => {
 		expect(safeParseCharacterExportEnvelope(envelope).success).toBe(false);
 	});
 
-	it('hydrates legacy imported characters and re-exports only current data', () => {
+	it('rejects envelopes containing retired experimental character data', () => {
+		const current = create5e2014Character();
+		const retired = {
+			...current,
+			meta: { ...current.meta, schemaVersion: 'dnd5e-2014.v3' }
+		};
 		const imported = safeParseCharacterExportEnvelope({
 			kind: CHARACTER_EXPORT_KIND,
 			version: CHARACTER_EXPORT_VERSION,
 			exportedAt: '2026-07-18T12:00:00Z',
-			characters: [legacyComprehensive5eCharacter]
+			characters: [retired]
 		});
 
-		expect(imported.success).toBe(true);
-		if (!imported.success) return;
-		const migrated = imported.data.characters[0];
-		expect(migrated.meta.schemaVersion).toBe(CHARACTER_DATA_VERSION_5E2014);
-		if (migrated.system.id === 'dnd5e-2014') {
-			const migrated5e = parse5e2014CharacterDocument(migrated);
-			expect(migrated5e.systemData).not.toHaveProperty('attacks');
-			expect(migrated5e.systemData.currency.gp?.amount).toBe(12);
-		}
-
-		const reExported = createCharacterExportEnvelope(imported.data.characters);
-		expect(reExported.characters).toEqual(imported.data.characters);
+		expect(imported.success).toBe(false);
 	});
 
 	it('round-trips current item-linked runtime actions', () => {
@@ -101,6 +94,8 @@ describe('character import/export envelope', () => {
 		const envelope = createCharacterExportEnvelope([linkedCharacter]);
 		const imported = safeParseCharacterExportEnvelope(envelope);
 
+		expect(linkedCharacter.meta.schemaVersion).toBe(CHARACTER_DATA_VERSION_5E2014);
+		expect(parse5e2014CharacterDocument(linkedCharacter)).toEqual(linkedCharacter);
 		expect(imported).toMatchObject({
 			success: true,
 			data: {

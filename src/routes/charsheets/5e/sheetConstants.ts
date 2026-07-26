@@ -1,11 +1,15 @@
 import type { GridAnnotationEditorConfig, GridContentBindPath } from '$utils/gridContentTypes';
+export {
+	getInventoryGroupForItem,
+	withInventoryGroupTags,
+	type InventoryGroup
+} from '$lib/dnd5e2014/inventory';
 import {
 	DND_BEYOND_BASIC_RULES_REF_5E_2014,
 	SRD_REF_5E_2014,
 	type AbilityKey,
 	type CurrencyDenomination as CharacterCurrencyDenomination,
 	type Dnd5eSkillName,
-	type Item,
 	type ProficiencySourceKind,
 	type RoleplayFieldKey as CharacterRoleplayFieldKey,
 	type SpellLevel
@@ -13,7 +17,6 @@ import {
 
 export type SpellListLevel = SpellLevel;
 export type ProficiencyEditorSource = ProficiencySourceKind;
-export type InventoryGroup = 'weapons' | 'armorShields' | 'other';
 export type CurrencyDenomination = CharacterCurrencyDenomination;
 
 export const abilityMetadata: Array<{ key: AbilityKey; label: string; shortLabel: string }> = [
@@ -65,61 +68,12 @@ export const spellListLevelPathPrefix = '__spellLevelList';
 export const runtimeActionListPathPrefix = '__runtimeActions';
 export const proficiencyLanguagesPathPrefix = '__proficiencyLanguages';
 export const proficiencyToolsPathPrefix = '__proficiencyTools';
-export const classFeatureListPathPrefix = '__classFeatures';
+export const featureListPathPrefix = '__features';
+export const traitListPathPrefix = '__traits';
 export const inventoryListPathPrefix = '__inventory';
 export const currencyPathPrefix = '__currency';
 export const roleplayFieldPathPrefix = '__roleplayField';
 export const scratchpadNotesPathPrefix = '__scratchpadNotes';
-
-const inventoryWeaponTag = 'inventory:weapon';
-const inventoryArmorShieldTag = 'inventory:armor-shield';
-const inventoryWeaponKeywords = [
-	'axe',
-	'bow',
-	'club',
-	'crossbow',
-	'dagger',
-	'dart',
-	'flail',
-	'halberd',
-	'hammer',
-	'javelin',
-	'lance',
-	'mace',
-	'maul',
-	'morningstar',
-	'pike',
-	'quarterstaff',
-	'rapier',
-	'scimitar',
-	'shortbow',
-	'shortsword',
-	'sling',
-	'spear',
-	'staff',
-	'sword',
-	'trident',
-	'war pick',
-	'warhammer',
-	'whip'
-] as const;
-
-const inventoryArmorShieldKeywords = [
-	'armor',
-	'breastplate',
-	'chain',
-	'helm',
-	'hide',
-	'leather',
-	'mail',
-	'padded',
-	'plate',
-	'ring',
-	'scale',
-	'shield',
-	'splint',
-	'studded'
-] as const;
 
 export const inventoryCurrencyMetadata: Array<{
 	key: CurrencyDenomination;
@@ -180,35 +134,3 @@ export const toSystemDataAnnotationPath = (
 
 export const isCurrencyDenomination = (value: string): value is CurrencyDenomination =>
 	inventoryCurrencyMetadata.some((entry) => entry.key === value);
-
-const inferLegacyInventoryGroup = (item: Item): InventoryGroup => {
-	const normalizedName = item.name.trim().toLowerCase();
-	if (inventoryWeaponKeywords.some((keyword) => normalizedName.includes(keyword))) {
-		return 'weapons';
-	}
-	if (inventoryArmorShieldKeywords.some((keyword) => normalizedName.includes(keyword))) {
-		return 'armorShields';
-	}
-	return 'other';
-};
-
-export const getInventoryGroupForItem = (item: Item): InventoryGroup => {
-	if (item.tags?.includes(inventoryWeaponTag) === true) return 'weapons';
-	if (item.tags?.includes(inventoryArmorShieldTag) === true) return 'armorShields';
-	return inferLegacyInventoryGroup(item);
-};
-
-export const withInventoryGroupTags = (
-	tags: Array<string> | undefined,
-	group: InventoryGroup
-): Array<string> | undefined => {
-	const preservedTags = (tags ?? []).filter(
-		(tag) => tag !== inventoryWeaponTag && tag !== inventoryArmorShieldTag
-	);
-	if (group === 'weapons') {
-		preservedTags.push(inventoryWeaponTag);
-	} else if (group === 'armorShields') {
-		preservedTags.push(inventoryArmorShieldTag);
-	}
-	return preservedTags.length > 0 ? preservedTags : undefined;
-};
