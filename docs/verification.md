@@ -80,9 +80,10 @@ Runs the canonical Playwright smoke suite in Chromium. The config reuses a dev s
 npm run test:e2e:all
 npx playwright test --project=firefox
 npx playwright test --project=webkit
+npx playwright test --project="Mobile Chrome"
 ```
 
-Use the all-browser command or an individual project when a change needs cross-browser confirmation. The default local gate is Chromium so routine feedback remains fast.
+Use the all-browser command or an individual project when a change needs cross-browser or mobile confirmation. The default local gate is Chromium so routine feedback remains fast.
 
 ```bash
 npm run test:perf

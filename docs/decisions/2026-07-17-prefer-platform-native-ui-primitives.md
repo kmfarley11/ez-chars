@@ -51,3 +51,7 @@ For newer features such as CSS Anchor Positioning, retain a visually usable non-
 ### 2026-07-17 — Initial application
 
 `MenuButton.svelte` is the first selected replacement candidate. The completed `p1-025` diagnostic informed the current approach; `p1-027` owns the future grid-model replacement, with profiling guidance in [docs/verification.md](../verification.md).
+
+### 2026-07-30 — WebKit Escape Focus Fallback
+
+Cross-browser Playwright verification found that WebKit correctly dismisses native popovers on Escape, but does not consistently restore invoker focus natively upon dismissal. To preserve keyboard usability without replacing the native popover behavior, `MenuButton.svelte` retains a narrowly scoped post-dismissal focus fallback using an animation frame listener, while native popover dismissal remains authoritative.

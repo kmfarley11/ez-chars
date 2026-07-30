@@ -99,7 +99,7 @@ export const MixedLinkedAndCustom: Story = {
 		await userEvent.click(
 			actions.getByRole('button', { name: 'Source actions for Shield reaction' })
 		);
-		await userEvent.click(actions.getByRole('menuitem', { name: 'View Spell · Shield' }));
+		await userEvent.click(actions.getByRole('button', { name: 'View Spell · Shield' }));
 		await expect(canvas.getByRole('status')).toHaveTextContent(
 			'Source navigation requested for Spell · Shield'
 		);
@@ -166,7 +166,7 @@ export const ResyncConfirmationCancelled: Story = {
 		await userEvent.click(
 			actions.getByRole('button', { name: 'Source actions for Longsword attack' })
 		);
-		await userEvent.click(actions.getByRole('menuitem', { name: 'Resync from source' }));
+		await userEvent.click(actions.getByRole('button', { name: 'Resync from source' }));
 		await expect(args.confirmResync).toHaveBeenCalledWith(
 			'Longsword attack',
 			'Inventory · Longsword'

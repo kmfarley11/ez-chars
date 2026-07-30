@@ -28,6 +28,11 @@
 	}: Props = $props();
 
 	let dialogEl: HTMLDialogElement | undefined = $state();
+	let headingEl: HTMLHeadingElement | undefined = $state();
+
+	export const focusHeading = () => {
+		headingEl?.focus();
+	};
 
 	$effect(() => {
 		if (open && !dialogEl?.open) {
@@ -77,7 +82,13 @@
 					</button>
 				{/if}
 				{#if title}
-					<h2 class="text-lg font-semibold m-0 flex-1">{title}</h2>
+					<h2
+						bind:this={headingEl}
+						tabindex="-1"
+						class="text-lg font-semibold m-0 flex-1 focus:outline-none"
+					>
+						{title}
+					</h2>
 				{/if}
 			</div>
 		{/if}

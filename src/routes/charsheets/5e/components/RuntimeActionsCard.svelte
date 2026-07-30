@@ -92,7 +92,9 @@
 		<div class="flex flex-wrap items-center justify-between gap-2">
 			<h3 id={`${uid}-actions-heading`} class="text-sm font-semibold">Runtime actions</h3>
 			<div class="flex items-center gap-2">
-				<BaseButton size="sm" onclick={requestSuggestions} bind:buttonEl={addActionTriggerEl}>Add action</BaseButton>
+				<BaseButton size="sm" onclick={requestSuggestions} bind:buttonEl={addActionTriggerEl}
+					>Add action</BaseButton
+				>
 				<GridContentActionMenu
 					canEdit={true}
 					onEdit={() => (isEditDialogOpen = true)}

@@ -93,11 +93,18 @@ export const SourceReviewAndBack: Story = {
 		const canvas = within(canvasElement.parentElement!);
 		await userEvent.click(canvas.getByRole('button', { name: /Arcane Recovery/ }));
 		await expect(canvas.getByRole('dialog', { name: 'Review action' })).toBeVisible();
+		// Assert the heading received programmatic focus for screen readers
+		await expect(canvas.getByRole('heading', { name: 'Review action' })).toHaveFocus();
+
 		const name = canvas.getByRole('textbox', { name: 'Name' });
 		await userEvent.clear(name);
 		await userEvent.type(name, 'Arcane Recovery Override');
+
 		await userEvent.click(canvas.getByRole('button', { name: 'Back' }));
 		await expect(canvas.getByRole('dialog', { name: 'Add action' })).toBeVisible();
+		// Assert the heading received focus when navigating back
+		await expect(canvas.getByRole('heading', { name: 'Add action' })).toHaveFocus();
+
 		await userEvent.click(canvas.getByRole('button', { name: /Arcane Recovery/ }));
 		await expect(canvas.getByRole('textbox', { name: 'Name' })).toHaveValue(
 			'Arcane Recovery Override'

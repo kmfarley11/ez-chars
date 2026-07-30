@@ -176,6 +176,8 @@ Refinement outputs:
   - Evaluate whether modal interactions should lock document scrolling or contain touch overscroll; preserve background scrolling only when it does not move the user’s sheet context unexpectedly.
   - Add descriptive aria-labels to all icon-only buttons.
   - Document review guidelines in `docs/theme-visual-checklist.md`.
+- **Progress:**
+  - _2026-07-30_: Completed the initial focus, menu popover, E2E scroll-lock, and aria-label slice; E2E coverage for mobile/coarse pointer added. 44x44px touch targets and full sheet audit pending.
 - **Excluded behavior:**
   - Major sheet section restructuring or changing colors/themes.
 - **Ambiguities:** None.
@@ -184,8 +186,6 @@ Refinement outputs:
   - Opening, interacting with, and closing a dialog does not unexpectedly change the user’s background sheet position; the chosen scroll behavior is documented and consistent.
   - Screen reader navigation reads all action buttons logically.
   - Touch interaction feels fluid and behaves correctly on phone screens.
-
-
 
 ### Support official character sheet PDF import and export
 

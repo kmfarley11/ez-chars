@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import DialogShell from '$components/DialogShell.svelte';
 	import RuntimeActionSourcePicker from '$components/RuntimeActionSourcePicker.svelte';
 	import ActionDraftForm, { type ActionDraft } from '$components/ActionDraftForm.svelte';
@@ -18,6 +19,7 @@
 
 	let { open = $bindable(false), candidates, onConfirm, onClose }: Props = $props();
 
+	let dialogShellEl = $state<ReturnType<typeof DialogShell>>();
 	let step = $state<1 | 2>(1);
 	let selectionKind = $state<'source' | 'custom' | undefined>();
 	let selectedKey = $state<string | undefined>();
@@ -57,6 +59,7 @@
 		selectedKey = key;
 		nameError = undefined;
 		step = 2;
+		tick().then(() => dialogShellEl?.focusHeading());
 	};
 
 	const handleCustomSelect = () => {
@@ -71,10 +74,12 @@
 		selectedKey = undefined;
 		nameError = undefined;
 		step = 2;
+		tick().then(() => dialogShellEl?.focusHeading());
 	};
 
 	const handleBack = () => {
 		step = 1;
+		tick().then(() => dialogShellEl?.focusHeading());
 	};
 
 	const handleConfirm = () => {
@@ -111,6 +116,7 @@
 </script>
 
 <DialogShell
+	bind:this={dialogShellEl}
 	bind:open
 	title={step === 1 ? 'Add action' : 'Review action'}
 	showBack={step === 2}

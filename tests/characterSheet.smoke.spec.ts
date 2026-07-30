@@ -101,7 +101,7 @@ test('adds a structured runtime action and preserves it after reload', async ({ 
 		.locator('../..');
 	const cardActions = actionsGroup.getByRole('button', { name: 'Card actions' });
 	await cardActions.click();
-	await page.getByRole('menuitem', { name: 'Edit' }).click();
+	await page.getByRole('button', { name: 'Edit', exact: true }).click();
 
 	const dialog = page.getByRole('dialog').filter({ hasText: 'Runtime Actions' });
 	await dialog.getByRole('button', { name: 'Add Action' }).click();
@@ -112,7 +112,7 @@ test('adds a structured runtime action and preserves it after reload', async ({ 
 	await expect(cardActions).toBeFocused();
 
 	await cardActions.click();
-	await page.getByRole('menuitem', { name: 'Notes' }).click();
+	await page.getByRole('button', { name: 'Notes', exact: true }).click();
 	const notesDialog = page.getByRole('dialog', { name: 'Notes' });
 	await notesDialog.getByRole('button', { name: 'Close' }).click();
 	await expect(cardActions).toBeFocused();
@@ -197,7 +197,7 @@ test('links an inventory suggestion through resync and source deletion fallback'
 		.getByRole('button', { name: 'Collapse Actions / Runtime Summary' })
 		.locator('../..');
 	await actionsGroup.getByRole('button', { name: 'Card actions' }).click();
-	await page.getByRole('menuitem', { name: 'Notes' }).click();
+	await page.getByRole('button', { name: 'Notes', exact: true }).click();
 	const notesDialog = page.getByRole('dialog').filter({ hasText: 'Notes' });
 	await expect(notesDialog).toBeVisible();
 	await notesDialog.getByRole('button', { name: 'Close' }).click();
@@ -206,11 +206,11 @@ test('links an inventory suggestion through resync and source deletion fallback'
 	await expect(runtimeActionList.getByText('Original item notes.')).toBeVisible();
 	const weaponsRegion = page.getByRole('region', { name: 'Weapons inventory' });
 	await runtimeActionList.getByRole('button', { name: 'Source actions for Longsword' }).click();
-	await runtimeActionList.getByRole('menuitem', { name: 'View Inventory · Longsword' }).click();
+	await runtimeActionList.getByRole('button', { name: 'View Inventory · Longsword' }).click();
 	await expect(weaponsRegion).toBeFocused();
 
 	await weaponsRegion.getByRole('button', { name: 'Card actions' }).click();
-	await page.getByRole('menuitem', { name: 'Edit' }).click();
+	await page.getByRole('button', { name: 'Edit', exact: true }).click();
 	let inventoryDialog = page.getByRole('dialog');
 	await inventoryDialog.getByLabel('Weapons Detail').first().fill('Updated item notes.');
 	await inventoryDialog.getByRole('button', { name: 'Save', exact: true }).click();
@@ -234,7 +234,7 @@ test('links an inventory suggestion through resync and source deletion fallback'
 		expect(confirmation.message()).toContain('Source-owned name and detail may overwrite');
 		await confirmation.dismiss();
 	});
-	await runtimeActionList.getByRole('menuitem', { name: 'Resync from source' }).click();
+	await runtimeActionList.getByRole('button', { name: 'Resync from source' }).click();
 	await expect
 		.poll(() =>
 			page.evaluate((key) => {
@@ -249,7 +249,7 @@ test('links an inventory suggestion through resync and source deletion fallback'
 		expect(confirmation.message()).toContain('Source-owned name and detail may overwrite');
 		await confirmation.accept();
 	});
-	await runtimeActionList.getByRole('menuitem', { name: 'Resync from source' }).click();
+	await runtimeActionList.getByRole('button', { name: 'Resync from source' }).click();
 	await expect
 		.poll(() =>
 			page.evaluate((key) => {
@@ -260,7 +260,7 @@ test('links an inventory suggestion through resync and source deletion fallback'
 		.toBe('Updated item notes.');
 
 	await weaponsRegion.getByRole('button', { name: 'Card actions' }).click();
-	await page.getByRole('menuitem', { name: 'Edit' }).click();
+	await page.getByRole('button', { name: 'Edit', exact: true }).click();
 	inventoryDialog = page.getByRole('dialog');
 	await inventoryDialog.getByRole('button', { name: 'Remove' }).first().click();
 	await inventoryDialog.getByRole('button', { name: 'Save', exact: true }).click();
@@ -368,15 +368,15 @@ test('creates and navigates spell, feature, trait, and custom runtime actions', 
 		]);
 
 	await actions.getByRole('button', { name: 'Source actions for Shield' }).click();
-	await actions.getByRole('menuitem', { name: 'View Spell · Shield' }).click();
+	await actions.getByRole('button', { name: 'View Spell · Shield' }).click();
 	await expect(page.getByRole('region', { name: '1st spells' })).toBeFocused();
 
 	await actions.getByRole('button', { name: 'Source actions for Arcane Recovery' }).click();
-	await actions.getByRole('menuitem', { name: 'View Feature · Arcane Recovery' }).click();
+	await actions.getByRole('button', { name: 'View Feature · Arcane Recovery' }).click();
 	await expect(page.getByRole('region', { name: 'Features' })).toBeFocused();
 
 	await actions.getByRole('button', { name: 'Source actions for Darkvision' }).click();
-	await actions.getByRole('menuitem', { name: 'View Trait · Darkvision' }).click();
+	await actions.getByRole('button', { name: 'View Trait · Darkvision' }).click();
 	await expect(page.getByRole('region', { name: 'Traits' })).toBeFocused();
 });
 
@@ -404,12 +404,20 @@ test('dialog interaction behavior: cancellation, filtered selection retention, a
 		.click();
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-runtime-action-link/);
 
-	// 1. Focus restoration & Cancellation
 	const triggerButton = page.getByRole('button', { name: 'Add action' });
 	await triggerButton.click();
 
+	// Record scroll position after Playwright scrolls the button into view
+	const initialScrollY = await page.evaluate(() => window.scrollY);
+
 	const dialog = page.getByRole('dialog', { name: 'Add action' });
 	await expect(dialog).toBeVisible();
+
+	// Assert scroll locking and position preservation
+	await expect(page.locator('body')).toHaveCSS('overflow', 'hidden');
+	await page.mouse.wheel(0, 500); // Attempt to scroll via wheel
+	await page.waitForTimeout(100);
+	expect(await page.evaluate(() => window.scrollY)).toBe(initialScrollY);
 
 	// Test filtered-selection retention
 	const searchInput = dialog.getByRole('searchbox');
@@ -420,9 +428,15 @@ test('dialog interaction behavior: cancellation, filtered selection retention, a
 	const customizeDialog = page.getByRole('dialog', { name: 'Review action' });
 	await expect(customizeDialog).toBeVisible();
 
+	// Assert focus shifted to the heading
+	await expect(customizeDialog.getByRole('heading', { name: 'Review action' })).toBeFocused();
+
 	// Go back, change the query so the selected item is filtered out, and retain it.
 	await page.getByRole('button', { name: 'Back', exact: true }).click();
 	await expect(dialog).toBeVisible();
+
+	// Assert focus shifted back to the heading
+	await expect(dialog.getByRole('heading', { name: 'Add action' })).toBeFocused();
 	await expect(searchInput).toHaveValue('sword');
 	await searchInput.fill('rope');
 	await expect(dialog.getByRole('button', { name: /Rope/ })).toBeVisible();
@@ -441,6 +455,15 @@ test('dialog interaction behavior: cancellation, filtered selection retention, a
 	await expect(customizeDialog).not.toBeVisible();
 
 	await expect(triggerButton).toBeFocused();
+
+	// Verify scroll is restored and position is initially preserved
+	await expect(page.locator('body')).not.toHaveCSS('overflow', 'hidden');
+	expect(await page.evaluate(() => window.scrollY)).toBe(initialScrollY);
+
+	// Verify scrolling is permitted again
+	await page.mouse.wheel(0, 500);
+	await page.waitForTimeout(100);
+	expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(initialScrollY);
 
 	// Verify no action was added
 	const runtimeActionList = page.getByRole('list', { name: 'Runtime actions' });

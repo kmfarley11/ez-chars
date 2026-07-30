@@ -35,13 +35,14 @@
 				<GitButton shadingVariant="dark" />
 			</div>
 			<div class="block sm:hidden">
-				<MenuButton shadingVariant="dark" align="left" iconVariant="hamburger">
-					<li>
-						<MenuItemButton onclick={goHome} shadingVariant="dark">Home</MenuItemButton>
-					</li>
-					<li>
-						<MenuItemButton onclick={goGit} shadingVariant="dark">GitHub</MenuItemButton>
-					</li>
+				<MenuButton
+					shadingVariant="dark"
+					align="left"
+					iconVariant="hamburger"
+					ariaLabel="Main menu"
+				>
+					<MenuItemButton onclick={goHome} shadingVariant="dark">Home</MenuItemButton>
+					<MenuItemButton onclick={goGit} shadingVariant="dark">GitHub</MenuItemButton>
 				</MenuButton>
 			</div>
 		</div>
@@ -57,11 +58,9 @@
 				<li>
 					<MenuButton shadingVariant="dark" text="Theme" align="right" iconVariant="chevron">
 						{#each THEME_OPTIONS as option (option.id)}
-							<li>
-								<MenuItemButton onclick={() => setTheme(option.id)} shadingVariant="dark">
-									{option.label}{$theme === option.id ? ' (active)' : ''}
-								</MenuItemButton>
-							</li>
+							<MenuItemButton onclick={() => setTheme(option.id)} shadingVariant="dark">
+								{option.label}{$theme === option.id ? ' (active)' : ''}
+							</MenuItemButton>
 						{/each}
 					</MenuButton>
 				</li>
@@ -73,16 +72,12 @@
 			</ul>
 		</div>
 		<div class="block sm:hidden" id="navbar-menu">
-			<MenuButton shadingVariant="dark" align="right" iconVariant="kebab">
-				<li>
-					<MenuItemButton onclick={showAbout} shadingVariant="dark">About</MenuItemButton>
-				</li>
+			<MenuButton shadingVariant="dark" align="right" iconVariant="kebab" ariaLabel="More options">
+				<MenuItemButton onclick={showAbout} shadingVariant="dark">About</MenuItemButton>
 				{#each THEME_OPTIONS as option (option.id)}
-					<li>
-						<MenuItemButton onclick={() => setTheme(option.id)} shadingVariant="dark">
-							Theme: {option.label}{$theme === option.id ? ' (active)' : ''}
-						</MenuItemButton>
-					</li>
+					<MenuItemButton onclick={() => setTheme(option.id)} shadingVariant="dark">
+						Theme: {option.label}{$theme === option.id ? ' (active)' : ''}
+					</MenuItemButton>
 				{/each}
 			</MenuButton>
 		</div>

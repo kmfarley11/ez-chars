@@ -8,11 +8,10 @@
 	let colors = $derived(shadingVariant === 'dark' ? 'theme-btn-dark' : 'theme-btn-light');
 </script>
 
-<li role="none">
+<li>
 	<button
 		type="button"
 		class="btn {colors} block w-full rounded-md border px-2 py-2 text-left"
-		role="menuitem"
 		{onclick}
 	>
 		{@render children?.()}

@@ -40,3 +40,9 @@ Run this quick check before deploy when touching theme or UI colors.
 - Reference/profile field text, spell names, feature names, item names, and note text remain selectable and copyable without entering edit mode.
 - Runtime/state primitive fields render inside their cards rather than as separate adjacent controls, while preserving the same keyboard and touch edit behavior.
 - Card-wide `Edit` remains available as a value/structure fallback for card fields, while annotation add/edit flows live in note dialogs where equivalent annotation paths exist.
+
+## 6) Accessibility & Mobile
+
+- Touch targets on phone screens meet the 44x44px minimum standard using explicit, non-overlapping sizing or padding rather than blanket pseudo-elements.
+- Opening dialogs correctly locks background document scrolling to prevent accidental sheet navigation.
+- Multi-step dialog transitions explicitly restore focus (e.g., to the dialog heading) so keyboard and screen reader users maintain their place.

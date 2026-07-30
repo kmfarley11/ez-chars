@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
+	import type { Action } from 'svelte/action';
 	import OpenCloseToggleButton from '$components/OpenCloseToggleButton.svelte';
 	import type { ButtonIconVariant, ButtonShadingVariant, ButtonSize } from '$utils/buttonTypes';
 
@@ -43,6 +44,29 @@
 	};
 
 	let colors = $derived(shadingVariant === 'dark' ? 'theme-btn-dark' : 'theme-btn-light');
+
+	const webkitFocusFallback: Action<HTMLElement> = (node) => {
+		let rafId: number;
+
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') {
+				rafId = requestAnimationFrame(() => {
+					if (!node.matches(':popover-open')) {
+						triggerEl?.focus();
+					}
+				});
+			}
+		};
+
+		node.addEventListener('keydown', handleKeyDown);
+
+		return {
+			destroy() {
+				node.removeEventListener('keydown', handleKeyDown);
+				if (rafId) cancelAnimationFrame(rafId);
+			}
+		};
+	};
 </script>
 
 <div class="flex {align === 'right' ? 'justify-end' : 'justify-start'} text-left">
@@ -59,7 +83,7 @@
 		{ariaLabel}
 		{title}
 		ariaControls={menuId}
-		ariaHaspopup="menu"
+		ariaHaspopup={true}
 		popoverTarget={menuId}
 		{anchorName}
 	/>
@@ -71,8 +95,9 @@
 			: ''} min-w-36 divide-y rounded-lg p-1 {colors} shadow-sm ring-1"
 		style={`--menu-anchor: ${anchorName}`}
 		ontoggle={handlePopoverToggle}
+		use:webkitFocusFallback
 	>
-		<ul class="w-full" role="menu" aria-orientation="vertical" aria-labelledby={menuButtonId}>
+		<ul class="w-full">
 			{@render children?.()}
 		</ul>
 	</div>
