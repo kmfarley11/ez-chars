@@ -39,8 +39,7 @@ export type Decoded5eSheetEdits = {
 };
 
 export type Decode5eSheetEditsResult =
-	| { ok: true; edits: Decoded5eSheetEdits }
-	| { ok: false; issues: ReadonlyArray<SheetEditIssue> };
+	{ ok: true; edits: Decoded5eSheetEdits } | { ok: false; issues: ReadonlyArray<SheetEditIssue> };
 
 const isSystemDataAnnotationPath = (path: GridContentBindPath): boolean =>
 	path.length >= 3 &&

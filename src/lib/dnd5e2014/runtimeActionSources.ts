@@ -22,8 +22,7 @@ export type RuntimeActionSourceDestination =
 	| { kind: 'traits' };
 
 type SourceOwnedActionText =
-	| { name: string; ownsNotes: false }
-	| { name: string; ownsNotes: true; notes?: string };
+	{ name: string; ownsNotes: false } | { name: string; ownsNotes: true; notes?: string };
 
 type ResolvedSourceBase = {
 	source: RuntimeActionSource;

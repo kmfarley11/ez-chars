@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import Badge from '$components/Badge.svelte';
 	import BaseButton from '$components/BaseButton.svelte';
 	import GridContentActionMenu from '$components/GridContentActionMenu.svelte';
@@ -54,6 +55,7 @@
 	let isEditDialogOpen = $state(false);
 	let isNotesDialogOpen = $state(false);
 	let cardActionsTriggerEl = $state<HTMLButtonElement>();
+	let addActionTriggerEl = $state<HTMLButtonElement>();
 	const actionRows = $derived(
 		projectRuntimeActionRows(character.systemData.runtimeActions, character)
 	);
@@ -63,8 +65,10 @@
 		isSuggestionPanelOpen = true;
 	};
 
-	const closeSuggestions = () => {
+	const closeSuggestions = async () => {
 		isSuggestionPanelOpen = false;
+		await tick();
+		addActionTriggerEl?.focus();
 	};
 
 	const restoreCardActionsFocus = () => {
@@ -88,7 +92,7 @@
 		<div class="flex flex-wrap items-center justify-between gap-2">
 			<h3 id={`${uid}-actions-heading`} class="text-sm font-semibold">Runtime actions</h3>
 			<div class="flex items-center gap-2">
-				<BaseButton size="sm" onclick={requestSuggestions}>Add action</BaseButton>
+				<BaseButton size="sm" onclick={requestSuggestions} bind:buttonEl={addActionTriggerEl}>Add action</BaseButton>
 				<GridContentActionMenu
 					canEdit={true}
 					onEdit={() => (isEditDialogOpen = true)}

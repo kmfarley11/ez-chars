@@ -43,11 +43,7 @@ export type GridAnnotationEditorConfig = {
 };
 
 export type GridContentFieldValue =
-	| string
-	| number
-	| boolean
-	| GridContentNestedFields
-	| Array<GridContentField>;
+	string | number | boolean | GridContentNestedFields | Array<GridContentField>;
 export type GridContentNestedFields = Record<string, GridContentField>;
 
 export type GridContentField = {

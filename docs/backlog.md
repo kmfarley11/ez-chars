@@ -56,7 +56,6 @@ No active P0 items.
 
 - [`BL-067` — Schedule PRD v1 and active-goals refinement](#schedule-prd-v1-and-active-goals-refinement)
 - [`BL-064` — Scale dense collection rendering and discovery](#scale-dense-collection-rendering-and-discovery)
-- [`p1-027` — Replace custom grid auto-measurement with native CSS Container Queries](#replace-custom-grid-auto-measurement-with-native-css-container-queries)
 - [`p1-020` — Improve accessibility and mobile review of menus, dialogs, and sheet sections](#improve-accessibility-and-mobile-review-of-menus-dialogs-and-sheet-sections)
 - [`p1-010` — Add GitHub Actions for quality gates](#add-github-actions-for-quality-gates) _(trigger-deferred and omitted from the recommended sequence until CI needs justify it)_
 
@@ -70,8 +69,7 @@ _Goal: UX Polish & Playtest Prep_
 
 1. `BL-067`: Define the first-playtest/v1 milestone and its durable compatibility promise
 2. `BL-064`: Scale dense collection rendering and discovery
-3. `p1-027`: Replace custom grid auto-measurement with native CSS Container Queries
-4. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
+3. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
 
 ## Refined Backlog Catalog
 
@@ -112,54 +110,30 @@ Refinement outputs:
   - Search and filtering behavior is deterministic, responsive, and scoped to proven collection needs.
   - Any reusable boundary is extracted from at least two compatible consumers rather than anticipated similarity.
 
-### Add GitHub Actions for quality gates
+### Add GitHub Actions for quality gates and release orchestration
 
 ID:
 
 - `p1-010`
 
-Size:
-
-- small; deferred until contributors, release cadence, or branch-protection needs justify CI
-
-Scope:
-
-- add a GitHub Actions workflow for the existing repo quality gates
-- keep local verification in [docs/verification.md](verification.md) as the current source of truth until CI becomes worthwhile
-- do not add CI just to replace the current explicit local verification plus manual `npm run deploy` release workflow
-
-Defer rationale:
-
-- Current development is primarily local and manually verified between the developer and AI agents.
-- Releases are explicit through `npm run deploy`, so there is no automatic release path that CI needs to guard yet.
-- GitHub Actions would catch forgotten local checks, but it can also add noise, queue time, and possible minute/quota consumption before the product and contributor workflow are stable.
-
-Suggested implementation slices:
-
-1. Add a workflow that runs `npm run check`, `npm run lint`, and `npm run build` on pull requests and pushes.
-2. Confirm the workflow uses the project’s expected Node and install steps.
-
-Definition of done:
-
-- GitHub Actions runs `check`, `lint`, and `build` on pushes or pull requests
-- the workflow is committed in `.github/workflows/`
-- a failing quality gate produces a failing CI run
-
 Refinement outputs:
 
-- **Purpose:** Automatically run tests, formatting checks, and Svelte diagnostics in the cloud on every pull request or push to prevent regressions and keep main branches stable.
+- **Purpose:** Provide a cloud-backed CI verification safety net specifically for release milestones, avoiding redundant compute waste on routine daily commits, while providing a local script to orchestrate release tagging and CI triggering.
 - **Included behavior:**
   - Create a `.github/workflows/verify.yml` workflow file.
-  - Triggers on pushes and pull requests to the `main` branch.
-  - Uses standard Node setup and cached `node_modules` for speed.
-  - Executes `npm run check`, `npm run lint`, and `npm run test` in sequence.
+  - Trigger the CI workflow ONLY on specific release branch prefixes (e.g., `release/*`) or explicit git tags (e.g., `v*`).
+  - The workflow executes `npm run check`, `npm run lint`, and `npm run test` in sequence.
+  - Add an `npm run release` script to `package.json` that facilitates standard versioning, tagging, and branch creation to seamlessly trigger the CI pipeline.
 - **Excluded behavior:**
-  - Automated deployment steps or CD pipelines.
-  - Multi-node version matrix testing (testing on the project Node version is enough).
-- **Ambiguities:** None.
+  - Running CI on every push to `main` or arbitrary feature branches.
+  - Automated CD deployment steps (we continue to use local `npm run deploy` to GitHub Pages when ready).
+- **Ambiguities:**
+  - What versioning/tagging scheme should `npm run release` follow? (e.g. semantic versioning, standard-version)
+  - Does the release script push the tag automatically, or just create it locally for manual push?
 - **Success:**
-  - Merging code with a broken test or type warning triggers a failing status check in GitHub.
-  - Clean pushes trigger a green passing check.
+  - Pushing routine commits to `main` does not trigger CI.
+  - Running `npm run release` creates a tagged release commit/branch.
+  - Pushing that release tag/branch triggers the GitHub Action which correctly runs the quality gates in the cloud.
 
 ### Improve accessibility and mobile review of menus, dialogs, and sheet sections
 
@@ -211,43 +185,7 @@ Refinement outputs:
   - Screen reader navigation reads all action buttons logically.
   - Touch interaction feels fluid and behaves correctly on phone screens.
 
-### Replace custom grid auto-measurement with native CSS Container Queries
 
-ID:
-
-- `p1-027`
-
-Size:
-
-- large; research spike after Svelte route extraction settles
-
-Scope:
-
-- replace javascript-driven `GridContainerAuto.svelte` measurements with native CSS Grid container query selectors (`@container`)
-- configure card components as container contexts (`container-type: inline-size`)
-- preserve the visual layout rules for intermediate split-screen widths
-- delete `GridContainerAuto.svelte` and its associated ResizeObservers entirely
-
-Baseline evidence (2026-07-17):
-
-- The new headless Chromium scroll-frame probe met the 55 FPS average threshold while 36.7% of intervals landed just above 16.7 ms. The probe now reports that VSync-budget rate diagnostically and gates on dropped-frame intervals above 33.3 ms, which is the stable missed-frame signal. A diagnostic Firefox run also passed (57.1 FPS, 3.3% dropped frames), so headless automation does not reproduce the subjective Firefox jank; retain headed Firefox Profiler traces for that investigation. Re-run the probe after this structural replacement and compare the full statistics before changing its threshold.
-
-Refinement outputs:
-
-- **Purpose:** Eliminate JS ResizeObserver rendering overhead entirely by utilizing modern native CSS Container Queries to handle layout column adjustments based on card width.
-- **Included behavior:**
-  - Add GridCard stories to Storybook to prove the new Container Queries work in isolation before replacing the active grid.
-  - Refactor layout elements to declare inline-size container contexts.
-  - Implement CSS `@container` rules on child grid configurations to toggle column layouts natively.
-  - Remove all ResizeObservers and the custom measurement Svelte component.
-- **Excluded behavior:**
-  - Modifying visual design tokens or card margins.
-- **Ambiguities:** None.
-- **Success:**
-  - `GridContainerAuto.svelte` is deleted.
-  - The character sheet resizes fluidly with zero Javascript-driven layout recalculations.
-
-  - The character sheet resizes fluidly with zero Javascript-driven layout recalculations.
 
 ### Support official character sheet PDF import and export
 
@@ -354,8 +292,8 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 
 ## Done Recently
 
+- `2026-07-30` completed `p1-027`: replaced JavaScript ResizeObserver grid measurement with native CSS Container Queries, maintaining layout fidelity while eliminating overhead
 - `2026-07-26` completed `BL-063`: moved character import review and confirmation into a focused dialog flow, removing inline home-page clutter while preserving Merge New and Replace All semantics
 - `2026-07-26` completed `p1-061`: rebased 5e characters to the strict pre-playtest `dnd5e-2014.schema.v0` layout and expanded the guided runtime-action workflow across inventory, spells, Features, Traits, and custom entry with stable source identity, source-pronounced runtime rows, navigation, confirmed source-owned resync, deletion fallback, and mixed-source automated coverage
 - `2026-07-26` completed `BL-065`: added a global pre-release warning banner to manage data preservation expectations before the v0 schema baseline reset
 - `2026-07-25` completed `p1-062`: added a guided, searchable inventory-action templating dialog with final draft review; extracted focused card-action and dialog molecules; and preserved the existing bulk Edit/Notes workflows
-- `2026-07-25` completed `p1-005`: advanced 5e characters to `dnd5e-2014.v3`, added persisted item-source links for independently editable runtime-action snapshots, and delivered equipped-item suggestions, single-entry playable action rows with authored notes, compact source navigation/resync menus, deletion fallback, retained card-level Edit/Notes workflows, Storybook states, and end-to-end coverage while leaving spell and feature sources to a follow-up

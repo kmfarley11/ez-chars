@@ -164,10 +164,7 @@ export type SheetEditIntent =
 	  };
 
 export type SheetEditIssueCode =
-	| 'unsupported-target'
-	| 'malformed-payload'
-	| 'invalid-intent-target'
-	| 'invalid-character';
+	'unsupported-target' | 'malformed-payload' | 'invalid-intent-target' | 'invalid-character';
 
 export type SheetEditIssue = {
 	code: SheetEditIssueCode;

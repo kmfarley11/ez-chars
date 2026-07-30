@@ -4,7 +4,6 @@
 	import GridContentEditDialog from '$components/GridContentEditDialog.svelte';
 	import GridContentNotesDialog from '$components/GridContentNotesDialog.svelte';
 	import FieldAnnotationControl from '$components/FieldAnnotationControl.svelte';
-	import GridContainerAuto from '$components/GridContainerAuto.svelte';
 	import GridPrimitiveField from '$components/GridPrimitiveField.svelte';
 	import {
 		formatFieldValue,
@@ -152,88 +151,96 @@
 			</div>
 		{/if}
 		{#if gridEntries.length > 0}
-			<GridContainerAuto maxCols={displayMaxCols} classes="gap-2">
-				{#each gridEntries as [fieldKey, field] (fieldKey)}
-					{@const labeledParts = getLabeledDisplayParts(field)}
-					{@const fieldLabel = field.fieldName ?? fieldKey}
-					<GridContainer
-						classes={displayAlign === 'center' ? 'flex min-w-0 justify-center' : 'min-w-0'}
-					>
-						<div class={displayAlign === 'center' ? 'min-w-0 text-center' : 'min-w-0'}>
-							<span data-grid-auto-item class={displayItemClass}>
-								{#if isDirectEditablePrimitiveField(field)}
-									<GridPrimitiveField
-										{fieldKey}
-										{field}
-										{annotationEditorConfig}
-										onSavePatch={savePrimitiveFieldPatch}
-										onSaveAnnotations={savePrimitiveFieldAnnotations}
-									/>
-								{:else if typeof field.value === 'boolean'}
-									<span class="inline-flex items-center gap-2 align-middle">
-										<input
-											class="theme-input theme-checkbox-readonly h-4 w-4 cursor-not-allowed rounded border"
-											type="checkbox"
-											checked={field.value}
-											aria-label={`${field.fieldName}: ${field.value ? 'enabled' : 'disabled'}`}
-											disabled
-										/>
-										<span class="font-semibold">{field.fieldName}</span>
-									</span>
-								{:else if labeledParts}
-									<span class="inline-flex flex-nowrap items-baseline gap-1 whitespace-nowrap">
-										<span class="font-semibold">{field.fieldName}:</span>
-										{#each labeledParts as part, idx (`${fieldKey}-${idx}`)}
-											{#if idx > 0}
-												<span aria-hidden="true">/</span>
-											{/if}
-											<span>
-												{part.value}
-												{#if part.label}
-													<span class="theme-text-muted text-xs italic">&nbsp;{part.label}</span>
-												{/if}
-											</span>
-										{/each}
-									</span>
-								{:else if displayArrayMode === 'stack' && isGridFieldArray(field.value)}
-									{@const arrayValue = field.value as GridContentField[]}
-									<span class="font-semibold">{field.fieldName}:</span>
-									<span class="mt-1 block">
-										{#if arrayValue.length === 0}
-											<span class="theme-text-muted text-sm italic">No entries yet.</span>
-										{:else}
-											<ul class="mt-1 list-disc space-y-1 pl-5">
-												{#each arrayValue as arrayEntry, arrayIdx (`${fieldKey}-${arrayIdx}`)}
-													<li>{formatFieldValue(arrayEntry, '___', ' ')}</li>
-												{/each}
-											</ul>
-										{/if}
-									</span>
-								{:else}
-									<span class="font-semibold">{field.fieldName}:</span>
-									{formatFieldValue(field)}
-								{/if}
-								{#if field.label}
-									<span class="theme-text-muted text-xs italic"> ({field.label}) </span>
-								{/if}
-								{#if field.annotationBindPath}
-									<span class="ml-1 inline-flex align-middle">
-										<FieldAnnotationControl
-											{fieldLabel}
-											annotations={field.annotations ?? []}
-											annotationAffordance="badge"
+			<div class="@container/gridcontent">
+				<div
+					class={displayMaxCols === 1
+						? 'grid grid-cols-1 gap-2'
+						: displayMaxCols === 2
+							? 'grid grid-cols-1 @[400px]/gridcontent:grid-cols-2 gap-2'
+							: 'grid grid-cols-1 @[400px]/gridcontent:grid-cols-2 @[600px]/gridcontent:grid-cols-3 gap-2'}
+				>
+					{#each gridEntries as [fieldKey, field] (fieldKey)}
+						{@const labeledParts = getLabeledDisplayParts(field)}
+						{@const fieldLabel = field.fieldName ?? fieldKey}
+						<GridContainer
+							classes={displayAlign === 'center' ? 'flex min-w-0 justify-center' : 'min-w-0'}
+						>
+							<div class={displayAlign === 'center' ? 'min-w-0 text-center' : 'min-w-0'}>
+								<span data-grid-auto-item class={displayItemClass}>
+									{#if isDirectEditablePrimitiveField(field)}
+										<GridPrimitiveField
+											{fieldKey}
+											{field}
 											{annotationEditorConfig}
-											onSaveAnnotations={(nextAnnotations) => {
-												saveFieldAnnotations(field, nextAnnotations);
-											}}
+											onSavePatch={savePrimitiveFieldPatch}
+											onSaveAnnotations={savePrimitiveFieldAnnotations}
 										/>
-									</span>
-								{/if}
-							</span>
-						</div>
-					</GridContainer>
-				{/each}
-			</GridContainerAuto>
+									{:else if typeof field.value === 'boolean'}
+										<span class="inline-flex items-center gap-2 align-middle">
+											<input
+												class="theme-input theme-checkbox-readonly h-4 w-4 cursor-not-allowed rounded border"
+												type="checkbox"
+												checked={field.value}
+												aria-label={`${field.fieldName}: ${field.value ? 'enabled' : 'disabled'}`}
+												disabled
+											/>
+											<span class="font-semibold">{field.fieldName}</span>
+										</span>
+									{:else if labeledParts}
+										<span class="inline-flex flex-nowrap items-baseline gap-1 whitespace-nowrap">
+											<span class="font-semibold">{field.fieldName}:</span>
+											{#each labeledParts as part, idx (`${fieldKey}-${idx}`)}
+												{#if idx > 0}
+													<span aria-hidden="true">/</span>
+												{/if}
+												<span>
+													{part.value}
+													{#if part.label}
+														<span class="theme-text-muted text-xs italic">&nbsp;{part.label}</span>
+													{/if}
+												</span>
+											{/each}
+										</span>
+									{:else if displayArrayMode === 'stack' && isGridFieldArray(field.value)}
+										{@const arrayValue = field.value as GridContentField[]}
+										<span class="font-semibold">{field.fieldName}:</span>
+										<span class="mt-1 block">
+											{#if arrayValue.length === 0}
+												<span class="theme-text-muted text-sm italic">No entries yet.</span>
+											{:else}
+												<ul class="mt-1 list-disc space-y-1 pl-5">
+													{#each arrayValue as arrayEntry, arrayIdx (`${fieldKey}-${arrayIdx}`)}
+														<li>{formatFieldValue(arrayEntry, '___', ' ')}</li>
+													{/each}
+												</ul>
+											{/if}
+										</span>
+									{:else}
+										<span class="font-semibold">{field.fieldName}:</span>
+										{formatFieldValue(field)}
+									{/if}
+									{#if field.label}
+										<span class="theme-text-muted text-xs italic"> ({field.label}) </span>
+									{/if}
+									{#if field.annotationBindPath}
+										<span class="ml-1 inline-flex align-middle">
+											<FieldAnnotationControl
+												{fieldLabel}
+												annotations={field.annotations ?? []}
+												annotationAffordance="badge"
+												{annotationEditorConfig}
+												onSaveAnnotations={(nextAnnotations) => {
+													saveFieldAnnotations(field, nextAnnotations);
+												}}
+											/>
+										</span>
+									{/if}
+								</span>
+							</div>
+						</GridContainer>
+					{/each}
+				</div>
+			</div>
 		{/if}
 	</div>
 </div>
