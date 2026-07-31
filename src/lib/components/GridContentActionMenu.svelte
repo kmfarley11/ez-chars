@@ -12,7 +12,7 @@
 	let { canEdit, onEdit, onNotes, triggerEl = $bindable() }: Props = $props();
 </script>
 
-<div class="relative h-7 w-7 shrink-0">
+<div class="touch-target relative h-7 w-7 shrink-0">
 	<MenuButton
 		iconVariant="ellipsis"
 		buttonSize="sm"

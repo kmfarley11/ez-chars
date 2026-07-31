@@ -37,7 +37,7 @@
 				</div>
 				<button
 					type="button"
-					class="theme-btn-light btn shrink-0 rounded-md border px-3 py-1"
+					class="theme-btn-light touch-target btn shrink-0 rounded-md border px-3 py-1"
 					onclick={clearRejectedStoredCharacters}
 				>
 					Clear Stored Data

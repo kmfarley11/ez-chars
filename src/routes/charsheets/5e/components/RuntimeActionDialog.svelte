@@ -129,7 +129,7 @@
 		<div class="flex flex-col gap-4">
 			<button
 				type="button"
-				class="theme-btn-light w-full rounded-md border px-3 py-3 text-left"
+				class="theme-btn-light touch-target w-full rounded-md border px-3 py-3 text-left"
 				aria-pressed={selectionKind === 'custom'}
 				onclick={handleCustomSelect}
 			>
@@ -160,7 +160,7 @@
 		{#if step === 2}
 			<button
 				type="button"
-				class="theme-btn-dark btn cursor-pointer rounded-md border px-3 py-1"
+				class="theme-btn-dark touch-target btn cursor-pointer rounded-md border px-3 py-1"
 				onclick={handleConfirm}
 			>
 				Confirm Action

@@ -61,6 +61,7 @@ The product is currently pre-release and has not begun real external playtesting
 - local automated verification with Vitest contract tests, coverage reporting, current-schema/import-export/storage/version-rejection coverage, and current plus outdated-data browser smoke paths
 - refactored repo structure to separate $components, $storage, and $utils from the page-specific routing, significantly improving module ownership and file navigability
 - local Storybook catalog for reusable components: typed BaseButton, Heading, and ValidatedInputField examples load the application styles and aliases, hot-reload locally, and run browser-backed interaction plus automated accessibility checks separately from unit tests
+- bounded home-to-sheet accessibility baseline: phone/coarse-pointer controls expose explicit 44-by-44 CSS-pixel targets or documented exceptions, responsive keyboard order skips collapsed content, modal and popover context is preserved, and representative Mobile Chrome plus cross-browser checks protect the interaction contract
 
 ### Partial
 
@@ -75,4 +76,4 @@ The product is currently pre-release and has not begun real external playtesting
 
 - durable character-data migration support begins with the first external-playtest `dnd5e-2014.schema.v1` baseline; BL-067 owns the exact playtest trigger, optional final-v0 transition, and v1 release criteria
 - CI; local verification in [docs/verification.md](verification.md) remains the current source of truth until contributor count, release cadence, or branch-protection needs justify GitHub Actions.
-- Firefox-specific dense-sheet scroll optimization; the representative profile did not implicate application layout work. Use the repeatable profiling workflow in [docs/verification.md](verification.md) for regressions; `p1-027` owns the future grid-model replacement.
+- Firefox-specific dense-sheet scroll optimization; the completed CSS container-query replacement and representative profile did not implicate additional application layout work. Use the repeatable profiling workflow in [docs/verification.md](verification.md) for regressions and route structural collection scaling through `BL-064`.

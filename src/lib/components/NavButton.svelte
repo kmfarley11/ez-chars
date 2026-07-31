@@ -17,7 +17,7 @@
 	{#if href && !href.startsWith('/')}
 		<a
 			{href}
-			class="btn inline-flex h-10 w-10 items-center justify-center rounded-md border p-1 leading-none {colors}"
+			class="touch-target btn inline-flex h-10 w-10 items-center justify-center rounded-md border p-1 leading-none {colors}"
 			aria-label={ariaLabel ?? title ?? text ?? href}
 			title={title ?? text ?? href ?? 'Click to go to the home page of the app.'}
 			rel="external noreferrer"
@@ -33,7 +33,7 @@
 	{:else}
 		<a
 			href={resolve(href ?? '/')}
-			class="btn inline-flex h-10 w-10 items-center justify-center rounded-md border p-1 leading-none {colors}"
+			class="touch-target btn inline-flex h-10 w-10 items-center justify-center rounded-md border p-1 leading-none {colors}"
 			aria-label={ariaLabel ?? title ?? text ?? href}
 			title={title ?? text ?? href ?? 'Click to go to the home page of the app.'}
 			{target}

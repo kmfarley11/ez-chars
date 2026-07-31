@@ -13,6 +13,7 @@ Use these docs for near-term implementation work:
 - [field-interaction-model.md](field-interaction-model.md): target MVP model for field editing and annotations
 - [field-binding-contract.md](field-binding-contract.md): field-scoped read, mutation, patch, and save contract for grid editing
 - [field-rendering-api.md](field-rendering-api.md): current direction for consolidating grid rendering, primitive editing, annotations, and binding APIs
+- [accessibility-control-audit.md](accessibility-control-audit.md): bounded home-to-sheet control-family audit and verification evidence
 - [verification.md](verification.md): local test/check/lint/build command guide
 
 ## Maintenance And Reference
@@ -30,6 +31,7 @@ Use these docs for near-term implementation work:
 - [decisions/2026-07-17-sheet-architecture-adapter-vs-registry.md](decisions/2026-07-17-sheet-architecture-adapter-vs-registry.md): ADR keeping current sheet helpers feature-local while preserving the long-term registry direction
 - [decisions/2026-07-19-runtime-action-templating-architecture.md](decisions/2026-07-19-runtime-action-templating-architecture.md): ADR designing local inference and asynchronous boundaries for deriving 5e actions from character source records
 - [decisions/2026-07-25-classify-ui-component-composition.md](decisions/2026-07-25-classify-ui-component-composition.md): ADR defining atoms, molecules, and organisms for component composition and Storybook organization
+- [decisions/2026-07-31-require-coarse-pointer-touch-targets.md](decisions/2026-07-31-require-coarse-pointer-touch-targets.md): ADR requiring explicit coarse-pointer touch targets and bounded exceptions
 
 ## Long-Term Vision
 

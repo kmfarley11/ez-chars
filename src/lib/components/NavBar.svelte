@@ -49,7 +49,7 @@
 		<div class="min-w-0 px-1 text-center">
 			<a
 				href={homeHref}
-				class="block truncate text-2xl font-bold leading-none tracking-tight md:text-3xl"
+				class="touch-target flex items-center justify-center truncate text-2xl font-bold leading-none tracking-tight md:text-3xl"
 				>ez-chars</a
 			>
 		</div>

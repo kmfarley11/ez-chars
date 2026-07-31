@@ -236,7 +236,7 @@
 					<p class="theme-text-muted">{missingOrInvalidIdDescription}</p>
 				</div>
 				<div class="flex justify-start">
-					<a class="theme-btn-light btn rounded-md border px-3 py-1" href={homeHref}>
+					<a class="theme-btn-light touch-target btn rounded-md border px-3 py-1" href={homeHref}>
 						Back to Characters
 					</a>
 				</div>
@@ -249,7 +249,7 @@
 			<button
 				id="sheet-overview-heading"
 				type="button"
-				class="sheet-region-toggle"
+				class="sheet-region-toggle touch-target"
 				aria-expanded={!isOverviewRegionCollapsed}
 				onclick={() => {
 					isOverviewRegionCollapsed = !isOverviewRegionCollapsed;
@@ -299,7 +299,7 @@
 			<button
 				id="sheet-runtime-heading"
 				type="button"
-				class="sheet-region-toggle"
+				class="sheet-region-toggle touch-target"
 				aria-expanded={!isRuntimeRegionCollapsed}
 				onclick={() => {
 					isRuntimeRegionCollapsed = !isRuntimeRegionCollapsed;
@@ -537,7 +537,7 @@
 			<button
 				id="sheet-organizational-heading"
 				type="button"
-				class="sheet-region-toggle"
+				class="sheet-region-toggle touch-target"
 				aria-expanded={!isOrganizationalRegionCollapsed}
 				onclick={() => {
 					isOrganizationalRegionCollapsed = !isOrganizationalRegionCollapsed;

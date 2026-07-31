@@ -41,7 +41,7 @@
 		<span class="text-sm font-semibold">Name</span>
 		<input
 			type="text"
-			class="theme-input rounded-md border px-3 py-1.5 {error
+			class="theme-input touch-target rounded-md border px-3 py-1.5 {error
 				? 'border-red-500 outline-red-500'
 				: ''}"
 			value={draft.name}
@@ -63,7 +63,7 @@
 		<label class="flex flex-1 flex-col gap-1">
 			<span class="text-sm font-semibold">Timing</span>
 			<select
-				class="theme-input rounded-md border px-3 py-1.5"
+				class="theme-input touch-target rounded-md border px-3 py-1.5"
 				value={draft.timing ?? ''}
 				onchange={(e) =>
 					updateField(
@@ -81,7 +81,7 @@
 		<label class="flex flex-1 flex-col gap-1">
 			<span class="text-sm font-semibold">Category</span>
 			<select
-				class="theme-input rounded-md border px-3 py-1.5"
+				class="theme-input touch-target rounded-md border px-3 py-1.5"
 				value={draft.category ?? ''}
 				onchange={(e) =>
 					updateField(
@@ -101,7 +101,7 @@
 		<span class="text-sm font-semibold">Target</span>
 		<input
 			type="text"
-			class="theme-input rounded-md border px-3 py-1.5"
+			class="theme-input touch-target rounded-md border px-3 py-1.5"
 			value={draft.target ?? ''}
 			oninput={(e) => updateField('target', e.currentTarget.value || undefined)}
 			placeholder="e.g., 1 creature, Self, etc."
@@ -111,7 +111,7 @@
 	<label class="flex flex-col gap-1">
 		<span class="text-sm font-semibold">Notes</span>
 		<textarea
-			class="theme-input rounded-md border px-3 py-1.5 font-mono text-sm"
+			class="theme-input touch-target rounded-md border px-3 py-1.5 font-mono text-sm"
 			rows="3"
 			value={draft.notes ?? ''}
 			oninput={(e) => updateField('notes', e.currentTarget.value || undefined)}

@@ -194,7 +194,7 @@
 		<div class="mb-2 flex justify-center">
 			<button
 				type="button"
-				class="theme-btn-light btn inline-flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-center text-lg font-semibold"
+				class="theme-btn-light touch-target btn inline-flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-center text-lg font-semibold"
 				aria-expanded={!isCollapsed}
 				aria-label={isCollapsed ? `Expand ${headingText}` : `Collapse ${headingText}`}
 				onclick={onToggleCollapse}

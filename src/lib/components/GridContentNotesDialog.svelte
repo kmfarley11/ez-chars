@@ -125,7 +125,7 @@
 							{#if group.annotationBindPath && handleEditSavePatches && editingHelpAnnotationKey !== group.key}
 								<button
 									type="button"
-									class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
+									class="theme-btn-light touch-target btn rounded-md border px-2 py-0.5 text-xs"
 									onclick={() => beginHelpAnnotationEdit(group)}
 								>
 									{group.annotations.length > 0 ? 'Edit' : 'Add'}
@@ -145,14 +145,14 @@
 							<div class="mt-2 flex justify-end gap-2">
 								<button
 									type="button"
-									class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
+									class="theme-btn-light touch-target btn rounded-md border px-2 py-0.5 text-xs"
 									onclick={cancelHelpAnnotationEdit}
 								>
 									Cancel
 								</button>
 								<button
 									type="button"
-									class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs font-semibold"
+									class="theme-btn-light touch-target btn rounded-md border px-2 py-0.5 text-xs font-semibold"
 									onclick={() => saveHelpAnnotations(group)}
 								>
 									Save
@@ -168,7 +168,7 @@
 		<div class="mt-1 flex justify-end">
 			<button
 				type="button"
-				class="theme-btn-light btn rounded-md border px-3 py-1"
+				class="theme-btn-light touch-target btn rounded-md border px-3 py-1"
 				onclick={onHelpCancel}
 			>
 				Close

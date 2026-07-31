@@ -43,7 +43,7 @@
 <div class={triggerWrapperClass}>
 	<button
 		type="button"
-		class="{triggerButtonClass} cursor-pointer {colors}"
+		class="touch-target {triggerButtonClass} cursor-pointer {colors}"
 		aria-label={ariaLabel ?? title}
 		{title}
 		onclick={openDialog}

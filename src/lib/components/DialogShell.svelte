@@ -74,7 +74,7 @@
 				{#if showBack}
 					<button
 						type="button"
-						class="theme-btn-light btn cursor-pointer rounded-md border px-2 py-1 text-sm flex items-center justify-center leading-none"
+						class="theme-btn-light touch-target btn cursor-pointer rounded-md border px-2 py-1 text-sm flex items-center justify-center leading-none"
 						onclick={onBack}
 						aria-label="Back"
 					>
@@ -98,7 +98,7 @@
 		<div class="flex justify-end gap-2 shrink-0">
 			<button
 				type="button"
-				class="theme-btn-light btn cursor-pointer rounded-md border px-3 py-1"
+				class="theme-btn-light touch-target btn cursor-pointer rounded-md border px-3 py-1"
 				onclick={handleClose}
 			>
 				{closeText}

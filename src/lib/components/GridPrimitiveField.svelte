@@ -161,7 +161,7 @@
 			<span class="font-semibold">{fieldLabel}:</span>
 			<input
 				bind:this={inputEl}
-				class="theme-input w-20 rounded-md border px-2 py-1 text-sm"
+				class="theme-input touch-target w-20 rounded-md border px-2 py-1 text-sm"
 				type={inputKind}
 				value={draftValue}
 				aria-label={fieldLabel}
@@ -175,14 +175,14 @@
 		<button
 			bind:this={editButtonEl}
 			type="button"
-			class="theme-btn-light btn rounded-md border px-2 py-1 text-xs font-semibold"
+			class="theme-btn-light touch-target btn rounded-md border px-2 py-1 text-xs font-semibold"
 			onclick={saveEdit}
 		>
 			Save
 		</button>
 		<button
 			type="button"
-			class="theme-btn-light btn rounded-md border px-2 py-1 text-xs"
+			class="theme-btn-light touch-target btn rounded-md border px-2 py-1 text-xs"
 			onclick={cancelEdit}
 		>
 			Cancel
@@ -198,7 +198,7 @@
 		<button
 			bind:this={editButtonEl}
 			type="button"
-			class="theme-btn-light btn edit-trigger rounded-md border px-2 py-1 text-xs"
+			class="theme-btn-light touch-target btn edit-trigger rounded-md border px-2 py-1 text-xs"
 			aria-label={`Edit ${fieldLabel}`}
 			onclick={beginEdit}
 		>

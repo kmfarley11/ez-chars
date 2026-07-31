@@ -57,14 +57,14 @@
 		{#if state === 'ready'}
 			<button
 				type="button"
-				class="theme-btn btn cursor-pointer rounded-md px-3 py-1 bg-blue-600 text-white"
+				class="theme-btn touch-target btn cursor-pointer rounded-md px-3 py-1 bg-blue-600 text-white"
 				onclick={onmerge}
 			>
 				Merge New
 			</button>
 			<button
 				type="button"
-				class="theme-btn btn cursor-pointer rounded-md px-3 py-1 bg-red-600 text-white"
+				class="theme-btn touch-target btn cursor-pointer rounded-md px-3 py-1 bg-red-600 text-white"
 				onclick={onreplace}
 			>
 				Replace All

@@ -238,3 +238,11 @@ html:has(dialog[open]),
 body:has(dialog[open]) {
 	overflow: hidden;
 }
+
+@media (pointer: coarse) {
+	.touch-target,
+	.theme-input:not([type='checkbox']):not([type='radio']):not([type='file']) {
+		min-inline-size: 44px;
+		min-block-size: 44px;
+	}
+}

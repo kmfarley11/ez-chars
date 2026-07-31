@@ -56,7 +56,6 @@ No active P0 items.
 
 - [`BL-067` — Schedule PRD v1 and active-goals refinement](#schedule-prd-v1-and-active-goals-refinement)
 - [`BL-064` — Scale dense collection rendering and discovery](#scale-dense-collection-rendering-and-discovery)
-- [`p1-020` — Improve accessibility and mobile review of menus, dialogs, and sheet sections](#improve-accessibility-and-mobile-review-of-menus-dialogs-and-sheet-sections)
 - [`p1-010` — Add GitHub Actions for quality gates](#add-github-actions-for-quality-gates) _(trigger-deferred and omitted from the recommended sequence until CI needs justify it)_
 
 ### P2 — Future Feature Work
@@ -69,7 +68,6 @@ _Goal: UX Polish & Playtest Prep_
 
 1. `BL-067`: Define the first-playtest/v1 milestone and its durable compatibility promise
 2. `BL-064`: Scale dense collection rendering and discovery
-3. `p1-020`: Improve accessibility and mobile review of menus, dialogs, and sheet sections
 
 ## Refined Backlog Catalog
 
@@ -95,7 +93,7 @@ Refinement outputs:
   - Search primary labels plus useful authored details where that behavior is predictable for the selected collection.
   - Use realistic cluttered Storybook fixtures and main-flow browser coverage to test large collections on desktop and phone-sized viewports.
   - Reuse the inventory picker’s filtering concepts only where a second concrete collection demonstrates the same contract; do not force collection rendering through the source-picker API.
-  - Coordinate with `p1-020` on nested scrolling and mobile accessibility, and with the collection-row interaction sandbox idea on row controls.
+  - Build on the completed `p1-020` touch-target and keyboard baseline when evaluating nested scrolling, and coordinate with the collection-row interaction sandbox idea on row controls.
 - **Excluded behavior:**
   - Changing collection-row edit or annotation affordances.
   - Remote search, fuzzy ranking, indexing, virtualization, or a universal list framework without measured need.
@@ -134,58 +132,6 @@ Refinement outputs:
   - Pushing routine commits to `main` does not trigger CI.
   - Running `npm run release` creates a tagged release commit/branch.
   - Pushing that release tag/branch triggers the GitHub Action which correctly runs the quality gates in the cloud.
-
-### Improve accessibility and mobile review of menus, dialogs, and sheet sections
-
-ID:
-
-- `p1-020`
-
-Size:
-
-- medium-to-large; scope to one surface before implementation if possible
-
-Scope:
-
-- review the MVP flow for mobile usability and obvious accessibility gaps
-- prioritize menus, dialogs, and sheet-section interaction surfaces
-
-Suggested implementation slices:
-
-1. Review and fix nav/menu behavior on phone-sized screens.
-2. Review and fix dialog accessibility and keyboard behavior.
-3. Review and fix sheet-section readability and interaction on mobile.
-4. Update the UI checklist to reflect any new review expectations.
-5. Re-check mobile sheet interaction after any sheet-performance follow-up lands; use the profiling guidance in [docs/verification.md](verification.md) for performance diagnosis and keep structural grid replacement in `p1-027`.
-
-Definition of done:
-
-- critical menus and dialogs remain usable on phone-sized screens
-- obvious focus, keyboard, or labeling issues in the main MVP flow are corrected
-- the review is reflected in the theme or UI checklist where useful
-
-Refinement outputs:
-
-- **Purpose:** Ensure the D&D character sheet is fully accessible and comfortable to use on mobile phones at active game tables.
-- **Included behavior:**
-  - Scaffold and run Storybook accessibility checks (`addon-a11y`) for MenuButton and Dialog components to drive accessibility fixes.
-  - Audit all sheet interactive nodes to ensure touch targets meet the 44x44px minimum standard.
-  - Maintain correct keyboard navigation order across grid layouts.
-  - Verify native `<dialog>` modals correctly trap and release focus.
-  - Implement explicit between-step focus restoration for multi-step dialogs to improve keyboard and screen-reader orientation (e.g., focusing the heading or first field).
-  - Evaluate whether modal interactions should lock document scrolling or contain touch overscroll; preserve background scrolling only when it does not move the user’s sheet context unexpectedly.
-  - Add descriptive aria-labels to all icon-only buttons.
-  - Document review guidelines in `docs/theme-visual-checklist.md`.
-- **Progress:**
-  - _2026-07-30_: Completed the initial focus, menu popover, E2E scroll-lock, and aria-label slice; E2E coverage for mobile/coarse pointer added. 44x44px touch targets and full sheet audit pending.
-- **Excluded behavior:**
-  - Major sheet section restructuring or changing colors/themes.
-- **Ambiguities:** None.
-- **Success:**
-  - Dialog focus trap operates correctly (focus stays inside the modal until dismissed).
-  - Opening, interacting with, and closing a dialog does not unexpectedly change the user’s background sheet position; the chosen scroll behavior is documented and consistent.
-  - Screen reader navigation reads all action buttons logically.
-  - Touch interaction feels fluid and behaves correctly on phone screens.
 
 ### Support official character sheet PDF import and export
 
@@ -292,8 +238,8 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 
 ## Done Recently
 
+- `2026-07-31` completed `p1-020`: established explicit 44-by-44 CSS-pixel coarse-pointer targets and bounded exceptions across the home-to-sheet flow, corrected keyboard-accessible character opening and responsive control order, and added durable Mobile Chrome geometry, label-activation, modal-context, and cross-browser evidence
 - `2026-07-30` completed `p1-027`: replaced JavaScript ResizeObserver grid measurement with native CSS Container Queries, maintaining layout fidelity while eliminating overhead
 - `2026-07-26` completed `BL-063`: moved character import review and confirmation into a focused dialog flow, removing inline home-page clutter while preserving Merge New and Replace All semantics
 - `2026-07-26` completed `p1-061`: rebased 5e characters to the strict pre-playtest `dnd5e-2014.schema.v0` layout and expanded the guided runtime-action workflow across inventory, spells, Features, Traits, and custom entry with stable source identity, source-pronounced runtime rows, navigation, confirmed source-owned resync, deletion fallback, and mixed-source automated coverage
 - `2026-07-26` completed `BL-065`: added a global pre-release warning banner to manage data preservation expectations before the v0 schema baseline reset
-- `2026-07-25` completed `p1-062`: added a guided, searchable inventory-action templating dialog with final draft review; extracted focused card-action and dialog molecules; and preserved the existing bulk Edit/Notes workflows

@@ -136,7 +136,7 @@
 					{#if isGridFieldArray(field.value) && field.addItemTemplate}
 						<button
 							type="button"
-							class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
+							class="theme-btn-light touch-target btn rounded-md border px-2 py-0.5 text-xs"
 							onclick={() => addArrayItem(fieldKey, field.addItemTemplate!)}
 						>
 							{field.addItemLabel ?? 'Add'}
@@ -164,7 +164,7 @@
 									</p>
 									<button
 										type="button"
-										class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
+										class="theme-btn-light touch-target btn rounded-md border px-2 py-0.5 text-xs"
 										onclick={() => removeArrayItem(fieldKey, itemIdx)}
 									>
 										Remove
@@ -172,7 +172,7 @@
 								</div>
 								{#each visibleItemLeafInputs as leaf, leafIdx (`${fieldKey}-${itemIdx}-${leafIdx}-${leaf.path.join('.')}`)}
 									<div class="space-y-2 rounded-md border px-2 py-2">
-										<label class="space-y-1">
+										<div class="space-y-1">
 											<span class="theme-text-muted text-xs">
 												{leaf.field.fieldName}
 												{#if leaf.joinedLabel}
@@ -182,7 +182,7 @@
 												{/if}
 											</span>
 											{#if typeof leaf.field.value === 'boolean'}
-												<label class="flex items-center gap-2">
+												<label class="touch-target flex cursor-pointer items-center gap-2">
 													<input
 														class="theme-input h-4 w-4 rounded border"
 														type="checkbox"
@@ -240,7 +240,7 @@
 													}}
 												/>
 											{/if}
-										</label>
+										</div>
 									</div>
 								{/each}
 							</div>
@@ -254,7 +254,7 @@
 						{/if}
 						{#each leafInputs.filter((leaf) => !leaf.field.hidden) as leaf, idx (`${fieldKey}-${idx}-${leaf.path.join('.')}`)}
 							<div class="space-y-2 rounded-md border px-2 py-2">
-								<label class="space-y-1">
+								<div class="space-y-1">
 									<span class="theme-text-muted text-xs">
 										{leaf.field.fieldName}
 										{#if leaf.joinedLabel}
@@ -264,7 +264,7 @@
 										{/if}
 									</span>
 									{#if typeof leaf.field.value === 'boolean'}
-										<label class="flex items-center gap-2">
+										<label class="touch-target flex cursor-pointer items-center gap-2">
 											<input
 												class="theme-input h-4 w-4 rounded border"
 												type="checkbox"
@@ -318,7 +318,7 @@
 											}}
 										/>
 									{/if}
-								</label>
+								</div>
 							</div>
 						{/each}
 					</div>
@@ -328,12 +328,14 @@
 		<div class="mt-1 flex justify-end gap-2">
 			<button
 				type="button"
-				class="theme-btn-light btn rounded-md border px-3 py-1"
+				class="theme-btn-light touch-target btn rounded-md border px-3 py-1"
 				onclick={onCancel}
 			>
 				Cancel
 			</button>
-			<button type="submit" class="theme-btn-dark btn rounded-md border px-3 py-1">Save</button>
+			<button type="submit" class="theme-btn-dark touch-target btn rounded-md border px-3 py-1"
+				>Save</button
+			>
 		</div>
 	</form>
 </dialog>

@@ -77,7 +77,7 @@
 	<button
 		bind:this={triggerEl}
 		type="button"
-		class="theme-btn-light btn annotation-trigger inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
+		class="theme-btn-light touch-target btn annotation-trigger inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
 		class:hover-affordance={annotationAffordance === 'hover' && annotationCount === 0}
 		aria-label={`${annotationCount > 0 ? 'View' : 'Add'} annotations for ${fieldLabel}`}
 		title={`${annotationCount > 0 ? 'View' : 'Add'} annotations for ${fieldLabel}`}
@@ -127,7 +127,7 @@
 			<div class="mt-1 flex justify-end gap-2">
 				<button
 					type="button"
-					class="theme-btn-light btn rounded-md border px-3 py-1"
+					class="theme-btn-light touch-target btn rounded-md border px-3 py-1"
 					onclick={onCancel}
 				>
 					{isEditing ? 'Cancel' : 'Close'}
@@ -135,7 +135,7 @@
 				{#if canEditAnnotations && !isEditing}
 					<button
 						type="button"
-						class="theme-btn-light btn rounded-md border px-3 py-1 font-semibold"
+						class="theme-btn-light touch-target btn rounded-md border px-3 py-1 font-semibold"
 						onclick={() => {
 							draftAnnotations = structuredClone(annotations);
 							isEditing = true;
@@ -147,7 +147,7 @@
 				{#if canEditAnnotations && isEditing}
 					<button
 						type="submit"
-						class="theme-btn-light btn rounded-md border px-3 py-1 font-semibold"
+						class="theme-btn-light touch-target btn rounded-md border px-3 py-1 font-semibold"
 					>
 						Save
 					</button>

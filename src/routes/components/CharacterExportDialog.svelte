@@ -20,7 +20,7 @@
 	{#snippet actions()}
 		<button
 			type="button"
-			class="theme-btn btn cursor-pointer rounded-md px-3 py-1 bg-blue-600 text-white"
+			class="theme-btn touch-target btn cursor-pointer rounded-md px-3 py-1 bg-blue-600 text-white"
 			onclick={onconfirm}
 		>
 			Export

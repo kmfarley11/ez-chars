@@ -34,6 +34,7 @@ For current product scope, in/out-of-scope decisions, and success criteria, use 
 - Keep current MVP docs up to date when scope or backlog changes
 - Before adding bespoke UI controls or new component patterns, scan [src/lib/](src/lib/) for existing primitives and reuse or extend them where practical; if a local primitive is not reused, call out why
 - Prefer platform-native interaction primitives where they preserve required behavior, accessibility, and layout; see [the platform-native UI primitives decision](docs/decisions/2026-07-17-prefer-platform-native-ui-primitives.md) for the evaluation and exceptions.
+- For touch-oriented home or character-sheet controls, inherit the explicit coarse-pointer target policy in [the touch-target decision](docs/decisions/2026-07-31-require-coarse-pointer-touch-targets.md); update [the bounded control-family audit](docs/accessibility-control-audit.md) when a new control does not inherit a conforming shared pattern or needs an approved exception.
 - For Svelte 5 work, follow the Svelte 5 Agent Workflow detailed at the bottom of this document when writing Svelte components, routes, or reactivity.
 - If a task touches storage or schema I/O, validate persisted data against the declared compatibility epoch or apply only explicitly supported migrations rather than raw-casting parsed JSON
 - Follow [the character-data versioning decision](docs/decisions/2026-07-18-version-and-normalize-5e-character-data.md) when changing persisted character shapes: pre-playtest `dnd5e-2014.schema.v0` may reject earlier experimental data, while `dnd5e-2014.schema.v1` and later identifiers are immutable and require frozen historical schemas plus explicit sequential migrations; do not restore unsupported legacy shapes merely for compatibility coverage
@@ -46,6 +47,7 @@ For current product scope, in/out-of-scope decisions, and success criteria, use 
 - **CRITICAL:** Do NOT automatically stage (git add) any files, unless explicitly asked to, or unless you are specifically navigating the OpenSpec archive workflow.
 - Modifying files requires changing them on the disk only.
 - Leave staging and committing entirely to human control.
+- **Commit Messages:** When drafting commit messages, avoid using backticks (`) or unescaped quotes, as these cause interpolation or syntax errors when passed to `git commit -m "..."` in Bash.
 
 ## Repo Map
 

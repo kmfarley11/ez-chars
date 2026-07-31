@@ -11,7 +11,7 @@
 <li>
 	<button
 		type="button"
-		class="btn {colors} block w-full rounded-md border px-2 py-2 text-left"
+		class="touch-target btn {colors} block w-full rounded-md border px-2 py-2 text-left"
 		{onclick}
 	>
 		{@render children?.()}

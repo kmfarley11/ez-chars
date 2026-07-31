@@ -180,14 +180,14 @@
 </script>
 
 <details class="space-y-2 rounded-md border px-2 py-2">
-	<summary class="theme-text-muted cursor-pointer text-xs font-semibold">
+	<summary class="theme-text-muted touch-target cursor-pointer text-xs font-semibold">
 		Annotations ({annotations.length})
 	</summary>
 	<div class="mt-2 space-y-2">
 		<div class="flex items-center justify-end">
 			<button
 				type="button"
-				class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
+				class="theme-btn-light touch-target btn rounded-md border px-2 py-0.5 text-xs"
 				onclick={addAnnotation}
 			>
 				Add
@@ -203,14 +203,14 @@
 					id={annotation.id ? toAnnotationEditorDomId(annotation.id) : undefined}
 					class="space-y-2 rounded-md border px-2 py-2"
 				>
-					<summary class="theme-text-muted cursor-pointer text-xs">
+					<summary class="theme-text-muted touch-target cursor-pointer text-xs">
 						{annotation.name ?? `Annotation ${annotationIdx + 1}`}
 					</summary>
 					<div class="mt-2 space-y-2">
 						<label class="space-y-1">
 							<span class="theme-text-muted text-xs">Name (optional)</span>
 							<input
-								class="theme-input w-full rounded-md border px-2 py-1"
+								class="theme-input touch-target w-full rounded-md border px-2 py-1"
 								type="text"
 								data-annotation-name-input
 								value={annotation.name ?? ''}
@@ -227,7 +227,7 @@
 						<label class="space-y-1">
 							<span class="theme-text-muted text-xs">Text (optional)</span>
 							<textarea
-								class="theme-input w-full rounded-md border px-2 py-1"
+								class="theme-input touch-target w-full rounded-md border px-2 py-1"
 								rows="3"
 								oninput={(event) => {
 									const target = event.currentTarget as HTMLTextAreaElement;
@@ -243,7 +243,7 @@
 							<p class="theme-text-muted text-xs">Reference (optional)</p>
 							<div class="mt-2 space-y-1">
 								<div class="flex items-center justify-between gap-2 text-xs">
-									<label class="flex items-center gap-2">
+									<label class="touch-target flex cursor-pointer items-center gap-2">
 										<input
 											type="radio"
 											name={`annotation-ref-template-${annotation.id ?? annotationIdx}`}
@@ -258,7 +258,7 @@
 								{#each referenceTemplates as template (template.key)}
 									{@const templatePreviewHref = getTemplatePreviewHref(annotation, template)}
 									<div class="flex items-center justify-between gap-2 text-xs">
-										<label class="flex items-center gap-2">
+										<label class="touch-target flex cursor-pointer items-center gap-2">
 											<input
 												type="radio"
 												name={`annotation-ref-template-${annotation.id ?? annotationIdx}`}
@@ -284,7 +284,7 @@
 								<label class="mt-2 block space-y-1">
 									<span class="theme-text-muted text-xs">Page (optional)</span>
 									<input
-										class="theme-input w-full rounded-md border px-2 py-1"
+										class="theme-input touch-target w-full rounded-md border px-2 py-1"
 										type="number"
 										step="1"
 										min="1"
@@ -300,7 +300,7 @@
 								<label class="mt-2 block space-y-1">
 									<span class="theme-text-muted text-xs">Anchor (optional)</span>
 									<input
-										class="theme-input w-full rounded-md border px-2 py-1"
+										class="theme-input touch-target w-full rounded-md border px-2 py-1"
 										type="text"
 										value={annotation.ref?.locator.anchor ?? ''}
 										oninput={(event) => {
@@ -315,7 +315,7 @@
 						<div class="flex justify-end">
 							<button
 								type="button"
-								class="theme-btn-light btn rounded-md border px-2 py-0.5 text-xs"
+								class="theme-btn-light touch-target btn rounded-md border px-2 py-0.5 text-xs"
 								onclick={() => {
 									removeAnnotationAtIndex(annotationIdx);
 								}}

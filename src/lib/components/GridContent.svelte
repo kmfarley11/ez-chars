@@ -136,7 +136,7 @@
 			onClosed={restoreCardActionsFocus}
 		/>
 	</div>
-	<div class="pr-9">
+	<div class="grid-content-body">
 		{#if leadFieldEntries.length > 0}
 			<div class={gridEntries.length > 0 ? 'mb-2 grid gap-2 border-b pb-2' : 'grid gap-2'}>
 				{#each leadFieldEntries as [fieldKey, field] (fieldKey)}
@@ -244,3 +244,15 @@
 		{/if}
 	</div>
 </div>
+
+<style>
+	.grid-content-body {
+		padding-inline-end: 2.25rem;
+	}
+
+	@media (pointer: coarse) {
+		.grid-content-body {
+			padding-inline-end: 3rem;
+		}
+	}
+</style>

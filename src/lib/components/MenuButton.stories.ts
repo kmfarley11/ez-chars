@@ -25,6 +25,16 @@ export const IconOnly: Story = {
 	}
 };
 
+export const CompactIconOnly: Story = {
+	args: {
+		text: undefined,
+		buttonIconOnly: true,
+		buttonSize: 'sm',
+		ariaLabel: 'Card actions',
+		iconVariant: 'ellipsis'
+	}
+};
+
 export const Chevron: Story = {
 	args: {
 		iconVariant: 'chevron',

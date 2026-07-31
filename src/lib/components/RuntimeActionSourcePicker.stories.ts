@@ -96,6 +96,10 @@ export const DuplicateNameSelected: Story = {
 	args: { selectedKey: 'spell:shield-spell' }
 };
 
+export const InventoryFilterControls: Story = {
+	args: { category: 'inventory' }
+};
+
 export const InventoryQuantitySelectedFiltered: Story = {
 	args: { selectedKey: 'item:shield-item' },
 	play: async ({ canvasElement }) => {

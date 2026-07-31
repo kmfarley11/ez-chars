@@ -72,7 +72,7 @@
 		{#each categoryOptions as option (option.value)}
 			<button
 				type="button"
-				class="theme-btn-light btn rounded-md border px-2.5 py-1 text-sm"
+				class="theme-btn-light touch-target btn rounded-md border px-2.5 py-1 text-sm"
 				class:font-semibold={category === option.value}
 				aria-pressed={category === option.value}
 				onclick={() => (category = option.value)}
@@ -83,7 +83,7 @@
 	</div>
 
 	{#if category === 'inventory'}
-		<label class="flex cursor-pointer items-center gap-2">
+		<label class="touch-target flex cursor-pointer items-center gap-2">
 			<input
 				type="checkbox"
 				class="theme-input h-4 w-4 rounded border"
@@ -98,7 +98,7 @@
 			<li class="rounded-md border border-blue-500/30 bg-blue-500/5">
 				<button
 					type="button"
-					class="w-full px-3 py-2 text-left"
+					class="touch-target w-full px-3 py-2 text-left"
 					onclick={() => onSelect?.(selectedCandidate.key)}
 					aria-pressed="true"
 				>
@@ -127,7 +127,7 @@
 			>
 				<button
 					type="button"
-					class="w-full px-3 py-2 text-left"
+					class="touch-target w-full px-3 py-2 text-left"
 					onclick={() => onSelect?.(candidate.key)}
 					aria-pressed={isSelected}
 				>

@@ -26,7 +26,7 @@
 		typeof validationMessage === 'string' && validationMessage.trim().length > 0
 	);
 	const resolvedInputClass = $derived(
-		`theme-input w-full rounded-md border px-2 py-1${inputClass ? ` ${inputClass}` : ''}`
+		`theme-input touch-target w-full rounded-md border px-2 py-1${inputClass ? ` ${inputClass}` : ''}`
 	);
 </script>
 

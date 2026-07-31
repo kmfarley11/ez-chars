@@ -1,6 +1,7 @@
 <!-- https://svelte.dev/playground/7b02f45e49744502bf5f03cb61375f9f?version=5.30.2 -->
 <script lang="ts">
 	/* eslint-disable no-unused-vars */
+	import BaseButton from '$components/BaseButton.svelte';
 	import DialogButton from '$components/DialogButton.svelte';
 	import type { CharacterWithSystemData, Dnd5e2014SystemData } from '../../schema';
 	import { capitalizeFirstLetter, anyToString } from '$utils/stringFormatters';
@@ -45,11 +46,7 @@
 	];
 
 	const showDelete = $derived(typeof onDelete === 'function');
-	const headers = $derived(
-		showDelete
-			? [...columns.map((column) => column.header), 'actions']
-			: columns.map((column) => column.header)
-	);
+	const headers = $derived([...columns.map((column) => column.header), 'actions']);
 </script>
 
 <div class="max-w-full overflow-x-auto p-0">
@@ -65,43 +62,50 @@
 							{column.value(row) ?? ''}
 						</td>
 					{/each}
-					{#if showDelete}
-						<td
-							class="rounded-sm border p-2 text-right align-top"
-							onclick={(event) => event.stopPropagation()}
-						>
-							<DialogButton
-								title="Delete character"
-								ariaLabel={`Delete ${row.identity.name?.trim() || row.meta.id}`}
-								closeText="Cancel"
-								triggerVariant="compact"
+					<td
+						class="rounded-sm border p-2 text-right align-top"
+						onclick={(event) => event.stopPropagation()}
+					>
+						<div class="flex flex-wrap justify-end gap-2">
+							<BaseButton
+								size="sm"
+								ariaLabel={`Open ${row.identity.name?.trim() || row.meta.id}`}
+								onclick={() => onSelect(row)}>Open</BaseButton
 							>
-								Delete
-								{#snippet dialogContent()}
-									<div class="space-y-2 px-1 py-1 text-left text-sm">
-										<h3 class="text-lg leading-none font-semibold">Delete character?</h3>
-										<p class="theme-text-muted">
-											This will permanently remove
-											<strong>{row.identity.name?.trim() || row.meta.id}</strong>
-											from local storage.
-										</p>
-									</div>
-								{/snippet}
-								{#snippet actions(closeDialog: () => void)}
-									<button
-										type="button"
-										class="theme-btn-dark btn cursor-pointer rounded-md border px-3 py-1"
-										onclick={() => {
-											onDelete?.(row);
-											closeDialog();
-										}}
-									>
-										Delete
-									</button>
-								{/snippet}
-							</DialogButton>
-						</td>
-					{/if}
+							{#if showDelete}
+								<DialogButton
+									title="Delete character"
+									ariaLabel={`Delete ${row.identity.name?.trim() || row.meta.id}`}
+									closeText="Cancel"
+									triggerVariant="compact"
+								>
+									Delete
+									{#snippet dialogContent()}
+										<div class="space-y-2 px-1 py-1 text-left text-sm">
+											<h3 class="text-lg leading-none font-semibold">Delete character?</h3>
+											<p class="theme-text-muted">
+												This will permanently remove
+												<strong>{row.identity.name?.trim() || row.meta.id}</strong>
+												from local storage.
+											</p>
+										</div>
+									{/snippet}
+									{#snippet actions(closeDialog: () => void)}
+										<button
+											type="button"
+											class="theme-btn-dark touch-target btn cursor-pointer rounded-md border px-3 py-1"
+											onclick={() => {
+												onDelete?.(row);
+												closeDialog();
+											}}
+										>
+											Delete
+										</button>
+									{/snippet}
+								</DialogButton>
+							{/if}
+						</div>
+					</td>
 				</tr>
 			{/each}
 		</tbody>

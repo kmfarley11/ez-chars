@@ -6,7 +6,9 @@ Use these commands to verify changes before handing work back.
 
 - [Testing strategy decision](decisions/2026-07-17-testing-strategy.md) defines the Vitest and Playwright testing boundaries.
 - [Theme visual checklist](theme-visual-checklist.md) covers manual UI and theme review before deployment.
-- [Platform-native UI primitives decision](decisions/2026-07-17-prefer-platform-native-ui-primitives.md) records the current measured-grid constraint; [p1-027 in the backlog](backlog.md#replace-custom-grid-auto-measurement-with-native-css-container-queries) owns its future replacement.
+- [Character-sheet interaction audit](accessibility-control-audit.md) records the bounded control-family accessibility baseline and evidence.
+- [Coarse-pointer touch-target decision](decisions/2026-07-31-require-coarse-pointer-touch-targets.md) defines the 44 CSS-pixel policy and exceptions.
+- [Platform-native UI primitives decision](decisions/2026-07-17-prefer-platform-native-ui-primitives.md) records the platform-first interaction policy and its narrowly retained compatibility behavior.
 
 This document is the canonical operational guide for verification commands, performance thresholds, and profiling response. Keep decision rationale in the linked records rather than duplicating it here.
 
@@ -84,6 +86,16 @@ npx playwright test --project="Mobile Chrome"
 ```
 
 Use the all-browser command or an individual project when a change needs cross-browser or mobile confirmation. The default local gate is Chromium so routine feedback remains fast.
+
+For the focused phone-sized accessibility regression suite, run:
+
+```bash
+npx playwright test tests/mobileAccessibility.smoke.spec.ts --project="Mobile Chrome"
+```
+
+This suite measures representative touch owners directly in CSS pixels, checks that adjacent source filters do not overlap, follows the keyboard order across collapsed sheet content, and verifies modal focus confinement and invoker restoration. It deliberately does not divide geometry by `devicePixelRatio`.
+
+Automation does not establish physical thumb comfort, screen-reader interpretation, inline-flow exception usability, or whether a native checkbox/radio label feels clear when the visible input remains small. Review those conclusions on a physical or equivalently configured phone and with the relevant assistive technology using [the theme visual checklist](theme-visual-checklist.md); record any newly approved exception in [the control audit](accessibility-control-audit.md).
 
 ```bash
 npm run test:perf

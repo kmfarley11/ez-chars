@@ -43,3 +43,18 @@ export const IconOnly: Story = {
 		ariaLabel: 'Add a character'
 	}
 };
+
+export const Compact: Story = {
+	args: {
+		label: 'Card action',
+		size: 'sm'
+	}
+};
+
+export const CompactIconOnly: Story = {
+	args: {
+		size: 'sm',
+		iconOnly: true,
+		ariaLabel: 'Open card actions'
+	}
+};

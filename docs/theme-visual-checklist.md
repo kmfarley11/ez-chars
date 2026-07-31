@@ -43,6 +43,12 @@ Run this quick check before deploy when touching theme or UI colors.
 
 ## 6) Accessibility & Mobile
 
-- Touch targets on phone screens meet the 44x44px minimum standard using explicit, non-overlapping sizing or padding rather than blanket pseudo-elements.
-- Opening dialogs correctly locks background document scrolling to prevent accidental sheet navigation.
-- Multi-step dialog transitions explicitly restore focus (e.g., to the dialog heading) so keyboard and screen reader users maintain their place.
+- At a phone-sized viewport with a coarse pointer, verify visible navigation, sheet-region, edit, annotation, card-menu, dialog, spell, inventory, runtime-action, and source-picker controls provide comfortable 44x44px targets without overlapping adjacent actions.
+- Confirm compact actions enlarge only their interactive owners: passive rows/cards remain unsized, while dense spell, feature, trait, inventory, and runtime collections wrap without clipped text, obscured controls, or accidental neighboring activation.
+- For every checkbox and radio, tap the associated text and surrounding label area—not only the native input—and confirm the named choice changes. The visible native control may remain smaller than 44px when its label supplies the full hit area.
+- Check inline reference and attribution links remain visibly identifiable, keyboard focusable, and separable from adjacent prose without being forced into block-sized boxes.
+- Traverse the home-to-sheet flow with the keyboard. Confirm visible focus follows the reading/task order, collapsed or responsive-hidden content is skipped, and no positive `tabindex` or visually contradictory order appears.
+- Open card menus and dialogs from several sheet depths. Confirm menu Escape returns focus to the invoker, modal focus does not reach background controls, closing restores the invoker, and background document scrolling remains locked without changing sheet position.
+- In the runtime-action multi-step dialog, move forward and back and confirm each step announces or focuses its contextual heading while preserving the documented draft behavior.
+- Use a screen reader for representative region headings, card actions, annotation controls, source candidates, and associated-label choices; confirm names and reading order communicate the same task order shown visually.
+- Record any below-baseline control only under an approved inline-flow, associated-label, or equivalent-action exception in `docs/accessibility-control-audit.md`; visual density alone is not an exception.
