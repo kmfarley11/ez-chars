@@ -87,6 +87,8 @@ The minimum reference experience is document-oriented, not a normalized rules co
 
 ## Resource and Copyright Policy
 
+The operational classifications, evidence checklist, and adopted/candidate source register live in the [rules-resource policy](../rules-resource-policy.md). The principles below preserve the author's intent.
+
 Every resource should be classified before the application decides how to expose it:
 
 1. **Redistributable:** the project has verified an open license or direct permission, records the required attribution, and may bundle or process the permitted material. Self-hosting is preferred when it improves URL stability, proximity, offline access, or page-level navigation.
@@ -110,13 +112,13 @@ This policy is a product-risk boundary, not legal advice.
 
 ### Horizon A — First external playtest
 
-- [ ] Approve PRD v1 with current-versus-target status and measurable playtest gates.
+- [x] Approve [PRD v1](PRD-v1.md) with current-versus-target status and measurable playtest gates.
 - [ ] Resolve the Shadowdark permission/licensing path.
-- [ ] Audit the current generic core schema and prefer a smaller persisted envelope plus system-owned data and computed views where the three concrete systems support that direction.
+- [x] Audit the current generic core schema and record the preferred smaller-envelope, system-owned-data, and computed-view direction in the [multi-system core audit](../multi-system-core-audit.md); implementation remains part of the 2024/multi-system epic.
 - [ ] Establish the smallest multi-system creation, loading, routing, persistence, and export boundary using concrete systems.
 - [ ] Deliver minimal, sparse-friendly 2014, 2024, and Shadowdark sheets.
 - [ ] Self-host verified redistributable rules PDFs and deliver the rights-classified resource library plus contextual reference path.
-- [ ] Complete an editable-PDF field and rights mapping for the available canonical sheets of all three systems before durable schema v1 decisions; use the result to decide which fillable-PDF import/export slice belongs before playtesting.
+- [x] Complete the [editable-PDF field and rights audit](../fillable-pdf-interoperability-audit.md) for available publisher sheets: retain JSON as canonical, promote `BL-066` to an early P1 export-first proof, and do not make PDF interchange a first-playtest readiness prerequisite.
 - [ ] Establish a heuristic-driven baseline for dense collection discovery, focused row editing, and annotations before external playtesting.
 - [ ] Complete representative player-character and GM sidekick/NPC playtest scenarios on mobile.
 - [ ] If Shadowdark permissions materially constrain the intended resource experience, explicitly decide whether adding a fourth CC-licensed system provides enough evidence to justify the extra scope; do not replace Shadowdark or expand the matrix automatically.
@@ -149,17 +151,16 @@ This policy is a product-risk boundary, not legal advice.
 
 ## Strategic Priority Queue
 
-This is a vision-level dependency order, not a substitute for backlog IDs or an active OpenSpec task list.
+This is a vision-level dependency order, not a substitute for backlog IDs or an active OpenSpec task list. PRD approval plus the core/PDF planning audits are complete; the active delivery sequence is:
 
-1. Define and approve the PRD v1 playtest contract, milestone vocabulary, and success measures (`BL-067`).
-2. Establish the resource-rights policy and resolve the Shadowdark feasibility gate before product work depends on redistributed or processed Shadowdark material.
-3. Audit the current cross-system core and the three systems' available editable character-sheet PDFs before first durable data contracts are frozen.
-4. Address cross-cutting playtest enablers already evidenced by the 2014 sheet, beginning with a heuristic baseline for dense collection discovery (`BL-064`).
-5. Prove self-hosted, rights-safe resource discovery and contextual navigation against the existing 2014 sheet.
-6. Add the minimal multi-system shell and a 2024 5e sheet; support one deliberately adopted current SRD release and treat 5e-family reuse as family evidence, not as a universal system contract.
-7. Add the minimal Shadowdark sheet after its rights gate; use its different shape to validate or revise the shared system boundary.
-8. Decide and deliver the bounded fillable-PDF interoperability required for playtesting, then harden mobile interaction, sparse NPC/sidekick use, backup/restore, and reference lookup across all three systems.
-9. Reconcile evidence before promoting specialized builders, stat-block modes, normalized compendium behavior, more systems, image/OCR import, or connected services.
+1. Resolve resource rights and the Shadowdark feasibility gate before product work depends on redistributed or processed Shadowdark material (`BL-068`).
+2. Address the cross-cutting playtest enabler already evidenced by the 2014 sheet: a heuristic baseline for dense collection discovery, focused row editing, and annotations (`BL-064`).
+3. Prove self-hosted/link-only resource discovery and contextual navigation against the existing 2014 sheet (`BL-069`).
+4. Establish the minimum multi-system lifecycle/computed-view boundary and a 2024 5e sheet; support one deliberately adopted current SRD release and treat 5e-family reuse as family evidence (`BL-070`).
+5. Add the minimal Shadowdark sheet after its rights gate and use its different shape to validate or revise the shared boundary (`BL-071`).
+6. Harden mobile interaction, sparse NPC/sidekick use, backup/restore, resource lookup, and compatibility decisions across the full matrix (`BL-072`).
+7. Run the early P1 fillable-PDF export/import proofs after a target schema and template-delivery basis settle (`BL-066`); they complement but do not gate the first playtest.
+8. Reconcile external evidence before promoting specialized builders, stat-block modes, normalized compendium behavior, more systems, image/OCR import, or connected services.
 
 ## Decision Filter for Future Work
 

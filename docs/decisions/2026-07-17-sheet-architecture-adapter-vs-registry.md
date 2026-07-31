@@ -69,3 +69,13 @@ The shared core document intentionally remains less prescriptive: its root colle
 The feature-local modules now receive only strict `dnd5e-2014.schema.v0` characters; retired experimental layouts are rejected at hydration instead of transformed. A pure 5e runtime-action source module composes inventory, spells, Features, and Traits into one normalized local candidate model and resolves navigation and source-owned text. Inventory grouping was extracted from the route to support that composition.
 
 This remains evidence for a future registry rather than a universal source-provider API. External compendium results must first become character-owned records, and a second system must still demonstrate which projection, identity, and source-lifecycle boundaries genuinely repeat before the repository defines a shared adapter contract.
+
+### 2026-07-31: Concrete second-system trigger and a lighter shared core
+
+PRD v1 makes the earlier trigger concrete: 2024 D&D will be the second system implementation, followed by Shadowdark as the non-5e validation case. The [multi-system core audit](../multi-system-core-audit.md) found that the current shared document persists 5e-shaped identity, feature, inventory, and note concepts in addition to genuinely shared lifecycle data. The current shape is implementation evidence, not the required input to a future registry.
+
+The 2024 proposal must therefore evaluate a smaller validated envelope and system-owned character data before freezing durable versions. Shared application consumers should receive narrow computed views—initially a character-list summary, sheet destination, backup/recovery description, and contextual reference topics—rather than read gameplay fields from the generic root. Reusable annotation, reference, item, feature, and note schemas may remain opt-in primitives without requiring identical root placement.
+
+This refinement does not approve an exact envelope, registry API, route mechanism, component loader, or universal edit/render contract. Those decisions need implementation evidence. The first multi-system slice should extract only creation, dispatch, parsing/serialization, summary, and navigation seams required by both D&D systems; any 5e-family helpers must remain labeled as family-specific. Shadowdark must then validate or revise those seams before they are treated as general TTRPG architecture.
+
+Each playtest system retains an explicit system ID, rules version, validated schema, projections, edit behavior, and layout. Short-term duplication remains acceptable when it supplies evidence more honestly than a guessed universal abstraction.

@@ -21,7 +21,8 @@ For current coding work, use:
 ## Links
 
 - [author-desires.md](author-desires.md): durable product intent, horizons, constraints, and vision-level priority queue
-- [PRD-v0.md](PRD-v0.md): legacy long-form product and roadmap document
+- [PRD-v1.md](PRD-v1.md): target-state first-external-playtest contract; current implementation remains documented in active goals
+- [PRD-v0.md](PRD-v0.md): historical initial-stack and product-direction baseline
 - [system-design-notes.md](system-design-notes.md): preserved cross-system design notes and candidate systems
 - [../index.md](../index.md): docs map
 - [../ext/Readme.md](../ext/Readme.md): third-party reference docs/assets

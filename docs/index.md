@@ -8,7 +8,11 @@ Use these docs for near-term implementation work:
 
 - [../AGENTS.md](../AGENTS.md): shortest current-state guide for coding agents
 - [active-goals.md](active-goals.md): active product scope and success criteria
+- [vision/PRD-v1.md](vision/PRD-v1.md): target-state first-external-playtest contract; not a statement of current behavior
 - [backlog.md](backlog.md): prioritized engineering backlog
+- [rules-resource-policy.md](rules-resource-policy.md): source-rights classifications, reference minimum, and adopted/candidate source register
+- [multi-system-core-audit.md](multi-system-core-audit.md): evidence and decision gates for a lighter core plus system-specific computed views
+- [fillable-pdf-interoperability-audit.md](fillable-pdf-interoperability-audit.md): three-system form inventory, fidelity matrix, and export/import sequencing
 - [import-export-json.md](import-export-json.md): MVP JSON backup envelope and import semantics
 - [field-interaction-model.md](field-interaction-model.md): target MVP model for field editing and annotations
 - [field-binding-contract.md](field-binding-contract.md): field-scoped read, mutation, patch, and save contract for grid editing
@@ -19,7 +23,6 @@ Use these docs for near-term implementation work:
 ## Maintenance And Reference
 
 - [theme-visual-checklist.md](theme-visual-checklist.md): UI and theme smoke checklist
-- [grid-cleanup-backlog.md](grid-cleanup-backlog.md): completed engineering cleanup note for the grid layer
 - [ext/Readme.md](ext/Readme.md): notes for bundled third-party reference docs/assets
 - [../THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md): licensing and attribution for third-party materials
 
@@ -32,6 +35,7 @@ Use these docs for near-term implementation work:
 - [decisions/2026-07-19-runtime-action-templating-architecture.md](decisions/2026-07-19-runtime-action-templating-architecture.md): ADR designing local inference and asynchronous boundaries for deriving 5e actions from character source records
 - [decisions/2026-07-25-classify-ui-component-composition.md](decisions/2026-07-25-classify-ui-component-composition.md): ADR defining atoms, molecules, and organisms for component composition and Storybook organization
 - [decisions/2026-07-31-require-coarse-pointer-touch-targets.md](decisions/2026-07-31-require-coarse-pointer-touch-targets.md): ADR requiring explicit coarse-pointer touch targets and bounded exceptions
+- [decisions/2026-07-31-classify-rules-resources-by-rights.md](decisions/2026-07-31-classify-rules-resources-by-rights.md): ADR selecting a hybrid self-hosted/link-only reference strategy based on verified permitted use
 
 ## Long-Term Vision
 
@@ -39,5 +43,5 @@ Use these docs for future planning, not as the active implementation backlog:
 
 - [vision/index.md](vision/index.md): long-term vision hub
 - [vision/author-desires.md](vision/author-desires.md): durable product intent, product horizons, and vision-level priority queue
-- [vision/PRD-v0.md](vision/PRD-v0.md): legacy long-form product/roadmap document
+- [vision/PRD-v0.md](vision/PRD-v0.md): historical baseline for the initial stack and product direction
 - [vision/system-design-notes.md](vision/system-design-notes.md): preserved cross-system design notes

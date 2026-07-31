@@ -189,6 +189,18 @@ The planning apply phase will:
 - create a lightweight ADR for the rights-classified resource strategy because it is a durable architectural and product-risk trade-off;
 - preserve the existing character-versioning ADR and link PRD milestone terms to it rather than restating migration mechanics inconsistently.
 
+### 10. Apply outcomes on 2026-07-31
+
+The documentation apply resolved the planning questions as follows:
+
+- `docs/vision/PRD-v1.md` defines six rehearsable scenarios, measured runtime/note/reference/mobile/data-safety gates, and separate PRD approval, readiness, external-handoff/schema activation, findings reconciliation, and product-v1.0 milestones.
+- `docs/rules-resource-policy.md` plus the new rights-classification ADR adopt self-hosting for verified redistributable sources and conservative link-only behavior otherwise. The audit records exact official SRD 5.1 and project-adopted SRD 5.2.1 URLs and hashes as CC BY self-hosting candidates; shipped copies must still preserve exact attribution, modification status, and locator provenance. Shadowdark remains link-only and implementation-blocked pending written permission or qualified review.
+- `docs/multi-system-core-audit.md` identifies document/system lifecycle metadata as the leading shared persistence candidate and directs shared consumers toward computed character-list, navigation, recovery, and reference-topic views. It deliberately leaves the exact envelope and dispatch signatures to `BL-070`.
+- `docs/fillable-pdf-interoperability-audit.md` found materially lossy forms, an opaque 411-field 2024 form, and no verified redistribution grant for the sheet templates themselves. JSON remains canonical; no PDF adapter is a first-playtest readiness prerequisite. `BL-066` becomes an early P1 export-first proof after a target schema and template-delivery basis settle.
+- Git history and active/archived artifacts showed no prior use of `BL-068` through `BL-072`. The apply allocated `BL-068` to rights/Shadowdark feasibility, `BL-069` to reference navigation, `BL-070` to the multi-system/2024 boundary, `BL-071` to Shadowdark, and `BL-072` to cross-system hardening. Retained `BL-064` owns the Horizon A dense-collection/focused-row/annotation baseline.
+
+The unresolved questions below are intentionally delegated to their bounded implementation epics rather than blocking this planning change.
+
 ## Risks / Trade-offs
 
 - **[Risk] The three-system target still grows into three full-featured products.** -> Define a minimal system matrix in PRD v1, require sparse-friendly manual entry, and move system-native automation or builders into later epics.
@@ -216,7 +228,5 @@ Rollback consists of reverting these documentation changes. No character data or
 ## Open Questions
 
 - Will The Arcane Library grant permission, or will qualified review identify a sufficiently conservative public Shadowdark sheet/reference scope?
-- Which measurable exit thresholds should PRD v1 use for playtest readiness and the later product-v1.0 decision, beyond completion of the three-system scenario matrix and absence of critical data-loss or table-use blockers?
 - During the reference-navigation epic, does browser/document-native text search satisfy the playtest need, or does licensed SRD material require an app-owned local text index after usability testing?
 - Which fields, if any, remain genuinely universal in the persisted character core after 2024 and Shadowdark comparison, and which shared consumers should instead use computed system views?
-- Which fillable-PDF import/export capabilities, if any, must ship before the first external playtest after the three-system form audit documents fidelity and rights?

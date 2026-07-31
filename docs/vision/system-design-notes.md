@@ -19,19 +19,22 @@ This file preserves earlier broad design notes and cross-system observations. It
 
 ## Long-Term Schema And Rendering Direction
 
-The desired long-term architecture pairs a system/schema registry with dynamic Svelte sheet rendering so additional TTRPG systems can reuse loading, editing, annotation, persistence, and layout infrastructure without duplicating entire character-sheet routes.
+The desired long-term architecture uses an authoritative system catalog or dispatch boundary so additional TTRPG systems can reuse document lifecycle, loading, backup, character-list summaries, and navigation without forcing their gameplay data through one schema or layout.
 
-This is an architectural intent, not a settled adapter API. The registry location, route shape, rendering mechanism, shared TypeScript signatures, and boundary between common and system-specific layout should remain open until at least one additional system supplies concrete requirements. As new schemas and sheet pages are introduced, their designs should identify reusable seams and document intentional deviations so independently implemented systems do not drift by default.
+This is an architectural intent, not a settled adapter API. The catalog location, route shape, rendering mechanism, shared TypeScript signatures, and boundary between common and system-specific layout remain open until the 2024 implementation supplies concrete requirements. As new schemas and sheet pages are introduced, their designs should identify reusable lifecycle and computed-view seams and document intentional deviations so independently implemented systems do not drift by default.
 
-The current D&D 5e 2014 implementation provides one useful boundary example: shared core identity and document concepts remain flexible, while the system schema owns its required empty groups, currency denominations, fixed roleplay fields, proficiency provenance vocabulary, and character-data migration. Future systems should reuse shared shapes where they fit naturally, but they should not inherit 5e structural requirements merely to make a registry uniform.
+The current D&D 5e 2014 implementation provides one useful but incomplete boundary example. Its shared root currently contains identity, features, inventory, and notes in addition to lifecycle data, while the system payload owns other 5e concepts. The [multi-system core audit](../multi-system-core-audit.md) treats those root gameplay fields as 5e-shaped evidence rather than a permanent cross-system contract. Future systems should own their complete gameplay shape and may opt into reusable annotation, reference, item, feature, or note primitives where they fit naturally.
 
 Character data versions are per-character layout discriminators and are separate from rules/source versions and storage/export envelope versions. A future registry should eventually dispatch system-specific hydration and serialization, but the current pre-playtest `dnd5e-2014.schema.v0` boundary does not establish the final registry interface.
 
+Shared list, search, navigation, backup, reference, and future integration needs should prefer computed system views. A common presentation projection is not a requirement that every system persist the same underlying fields. The 2014 and 2024 implementations may demonstrate useful 5e-family helpers, but Shadowdark is the required check against mistaking family similarity for a universal TTRPG contract.
+
 ## Cross-System Observations
 
-### Shared Needs
+### Recurring Needs, Not Necessarily Shared Fields
 
-- record character identity, names, and treasure or currency
+- identify a character for local ownership, listing, and navigation
+- record system-native identity, names, and treasure or currency where applicable
 - store gear and inventory
 - represent stats and combat state
 - allow player-authored notes and annotations
@@ -61,3 +64,5 @@ Character data versions are per-character layout discriminators and are separate
 - expect system-specific regrouping and annotations even when the raw fields overlap
 - prefer simple, flexible field entry first and add guided UX later
 - preserve room for player-authored annotation everywhere it materially helps
+
+These conclusions remain useful experience goals. They do not require the persisted core to contain one generic identity, inventory, feature, or notes model. See the [sheet-architecture decision](../decisions/2026-07-17-sheet-architecture-adapter-vs-registry.md) for the current staged boundary.
