@@ -1,5 +1,10 @@
 # ez-chars — Product Requirements Document (PRD)
 
+> [!WARNING]
+> **Historical Artifact:** This v0 PRD represents the initial repository direction as of February 2026. Its roadmap and horizons have been superseded.
+> 
+> For durable product intent and current horizons, read [author-desires.md](author-desires.md). For the active playtest milestone, read `PRD-v1.md` (when approved).
+
 > This file is intentionally kept separate from the active goals working set. For current implementation work, use [../../AGENTS.md](../../AGENTS.md), [../active-goals.md](../active-goals.md), and [../backlog.md](../backlog.md).
 
 This document was derived from repo contents & local note contents via LLMs as of 2/6/2026. The intent of the document is to succinctly distill the design principles established and desired so far into 1 document for AI ingestion. There may be future versions of this document to help guide AI at varying points in the attempted product.

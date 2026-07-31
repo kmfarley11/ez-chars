@@ -1,5 +1,10 @@
 # System Design Notes
 
+> [!NOTE]
+> **Advisory Context:** This document preserves early cross-system design observations. 
+> 
+> The architectural direction for multi-system support has evolved. The current strategic direction for the core boundary, computed views, and schema auditing is now governed by [author-desires.md](author-desires.md).
+
 This file preserves earlier broad design notes and cross-system observations. It is a long-term planning document, not the active MVP backlog.
 
 ## Candidate Long-Term Systems

@@ -38,5 +38,6 @@ Use these docs for near-term implementation work:
 Use these docs for future planning, not as the active implementation backlog:
 
 - [vision/index.md](vision/index.md): long-term vision hub
+- [vision/author-desires.md](vision/author-desires.md): durable product intent, product horizons, and vision-level priority queue
 - [vision/PRD-v0.md](vision/PRD-v0.md): legacy long-form product/roadmap document
 - [vision/system-design-notes.md](vision/system-design-notes.md): preserved cross-system design notes
