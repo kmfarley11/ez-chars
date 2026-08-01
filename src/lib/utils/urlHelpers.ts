@@ -1,12 +1,8 @@
 import { browser } from '$app/environment';
-import { resolve } from '$app/paths';
+import { asset } from '$app/paths';
 
-export const toBaseHref = (pathSuffix: string) => {
-	const root = resolve('/');
-	return root === '/' ? pathSuffix : `${root}${pathSuffix}`;
-};
-
-export const FULL_2014_SRD_HREF = toBaseHref('docs/ext/5e2014/SRD5.1_-_Bookmarked_Full_-_v2.pdf');
+export const FULL_2014_SRD_PATH = '/docs/ext/5e2014/SRD_CC_v5.1.pdf';
+export const FULL_2014_SRD_HREF = asset(FULL_2014_SRD_PATH);
 export const FULL_2014_SRD_URL = browser
 	? new URL(FULL_2014_SRD_HREF, window.location.origin).href
 	: FULL_2014_SRD_HREF;

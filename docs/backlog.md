@@ -53,7 +53,6 @@ These lightweight queues record priority membership only. Detailed definitions l
 
 ### P0 — Product Prerequisites
 
-- [`BL-068` — Confirm source rights and the Shadowdark baseline](#confirm-source-rights-and-the-shadowdark-baseline)
 - [`BL-064` — Scale dense collection rendering and discovery](#scale-dense-collection-rendering-and-discovery)
 - [`BL-069` — Deliver rights-classified reference navigation](#deliver-rights-classified-reference-navigation)
 - [`BL-070` — Establish the multi-system boundary and 2024 D&D sheet](#establish-the-multi-system-boundary-and-2024-dd-sheet)
@@ -76,12 +75,11 @@ _Goal: First External Playtest_
 
 The queues above record strategic priority membership; this list records the dependency-aware action order and may omit blocked or trigger-deferred items.
 
-1. `BL-068`: Confirm source classifications, official SRD artifacts, and the conservative Shadowdark baseline
-2. `BL-064`: Establish the dense-collection, focused-row, annotation, and saturated-sheet navigation baseline evidenced by the 2014 sheet
-3. `BL-069`: Prove multi-source resource discovery and contextual navigation against the 2014 sheet
-4. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary and add the minimal 2024 D&D sheet
-5. `BL-071`: Add the minimal Shadowdark sheet within the conservative baseline after `BL-070` supplies the dispatch boundary
-6. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix
+1. `BL-064`: Establish the dense-collection, focused-row, annotation, and saturated-sheet navigation baseline evidenced by the 2014 sheet
+2. `BL-069`: Prove multi-source resource discovery and contextual navigation against the 2014 sheet
+3. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary and add the minimal 2024 D&D sheet
+4. `BL-071`: Add the minimal Shadowdark sheet within the conservative baseline after `BL-070` supplies the dispatch boundary
+5. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix
 
 `BL-066` is an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights. It is deliberately not a first-playtest readiness prerequisite. `BL-073` remains outside this sequence until `BL-064` and at least one non-2014 system provide evidence about whether ordinary landmarks and system-native cues are insufficient.
 
@@ -197,39 +195,6 @@ Refinement outputs:
   - Automated fixtures detect field-map or template-signature drift.
 - **Recommended workflow:** Full OpenSpec change because it introduces observable import/export behavior, external-format compatibility, and non-destructive failure requirements. Add or refine an ADR if template delivery, manifest identity, or PDF-library adoption creates a durable architecture/dependency decision.
 
-### Confirm source rights and the Shadowdark baseline
-
-ID:
-
-- `BL-068`
-
-Sequencing context:
-
-- Execute before resource implementation. Shadowdark sheet planning may assume the conservative user-authored/external-locator baseline, but no broader source or form behavior may be inferred.
-
-Refinement outputs:
-
-- **Purpose:** Turn the resource policy into source-specific evidence, confirm the conservative Shadowdark public baseline, and identify the exact behaviors that still require permission or qualified review.
-- **Included behavior:**
-  - Verify the publisher's page/name-reference statement and document the conservative Shadowdark baseline: user-authored sheet data, official acquisition links, and bibliographic locators without bundled or reproduced source content.
-  - Record which expansions still require written permission or qualified review, including bundling, excerpting, full-text processing, official-form interoperability, and restricted brand/assets.
-  - Define the privacy- and terms-bounded local workflow for using an owner-supplied source to draft locator candidates while committing only human-reviewed bibliographic metadata.
-  - Verify and adopt the official D&D SRD 5.1 artifact and the current SRD 5.2.x planning artifact, hashes, attribution text, modification status, self-hosting basis, and release-time recheck rule.
-  - Record the owner's decision that `BL-069` replaces the bookmarked SRD 5.1 derivative with the official PDF and official page map.
-  - Decide whether Cairn v1 adds essential fourth-system evidence only if a concrete gap remains; do not silently expand or substitute the matrix.
-- **Excluded behavior:**
-  - Implementing a resource viewer, Shadowdark sheet, compendium, PDF adapter, or fourth system.
-  - Treating project documentation as legal advice.
-- **Ambiguities:**
-  - How much independently authored topic/section metadata remains conservative enough for the first Shadowdark locator map without copying expressive structure?
-  - Which locally controlled tooling may inspect an owner-supplied source without uploading it to a third party, and how is the reviewed output audited?
-  - Which exact SRD 5.2.x release and attribution requirements are current at public handoff?
-- **Success:**
-  - Every first-playtest source has an authoritative version, hash where applicable, rights evidence, approved exposure modes, attribution instruction, and unresolved constraints.
-  - A future Shadowdark proposal can cite a documented conservative baseline and explicit expansion gates; neither free price nor a general third-party license is used as permission for broader behavior.
-  - Any fourth-system decision is deliberate, justified, and separately backlogged.
-- **Recommended workflow:** Full OpenSpec change because the outcome controls public source behavior, provenance, and the boundary between locator metadata and source processing. Refine the existing rights-classification ADR rather than create parallel doctrine.
-
 ### Deliver rights-classified reference navigation
 
 ID:
@@ -238,7 +203,7 @@ ID:
 
 Sequencing context:
 
-- Prove the document-navigation contract against the implemented 2014 sheet after `BL-068` verifies its adopted source. Reuse the proof for later systems without prebuilding a compendium.
+- Prove the document-navigation contract against the implemented 2014 sheet using the source evidence and conservative Shadowdark baseline established by archived `BL-068`. Reuse the proof for later systems without prebuilding a compendium.
 
 Refinement outputs:
 
@@ -246,7 +211,7 @@ Refinement outputs:
 - **Included behavior:**
   - Register self-hosted or link-only resources through versioned metadata with system/rules identity, source/edition identity, topics, curated section labels, page/anchor/URL locators, attribution, availability/ownership guidance, and authoritative acquisition links.
   - Permit multiple source records and locator maps for one system/topic, while requiring only the free 2014 SRD source in the first proof.
-  - Replace the repository's bookmarked SRD 5.1 derivative with the official PDF, notices, verified hash, and official page-locator basis.
+  - Consume the official SRD 5.1 PDF, notices, and verified hash adopted by `BL-068`, then establish its official page-locator map.
   - Provide searchable resource and curated-section discovery with explicit empty, no-match, unavailable, and changed-source states.
   - Navigate to the lawful document location and preserve an in-progress sheet edit when the user follows and returns from a contextual locator.
   - Prove contextual links from at least character creation/class, equipment, and spells on the 2014 sheet.
@@ -447,8 +412,8 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 
 ## Done Recently
 
+- `2026-08-01` completed `BL-068`: adopted and self-hosted official SRD 5.1 and SRD 5.2.1 with centralized public notices, base-path-safe navigation, and a protected local-only review boundary; fixed the sparse Shadowdark citation baseline, expansion gates, and audited human/agent source-review workflow for downstream resource and sheet work
 - `2026-08-01` completed `BL-067`: approved PRD v1 and the first-external-playtest roadmap for 2014 D&D, one adopted current 2024 D&D SRD release, and Shadowdark; established rights-classified reference, multi-system/core, PDF-interoperability, compatibility, survey-evidence, and scene-aware-navigation boundaries as separately refinable work
 - `2026-07-31` completed `p1-020`: established explicit 44-by-44 CSS-pixel coarse-pointer targets and bounded exceptions across the home-to-sheet flow, corrected keyboard-accessible character opening and responsive control order, and added durable Mobile Chrome geometry, label-activation, modal-context, and cross-browser evidence
 - `2026-07-30` completed `p1-027`: replaced JavaScript ResizeObserver grid measurement with native CSS Container Queries, maintaining layout fidelity while eliminating overhead
 - `2026-07-26` completed `BL-063`: moved character import review and confirmation into a focused dialog flow, removing inline home-page clutter while preserving Merge New and Replace All semantics
-- `2026-07-26` completed `p1-061`: rebased 5e characters to the strict pre-playtest `dnd5e-2014.schema.v0` layout and expanded the guided runtime-action workflow across inventory, spells, Features, Traits, and custom entry with stable source identity, source-pronounced runtime rows, navigation, confirmed source-owned resync, deletion fallback, and mixed-source automated coverage

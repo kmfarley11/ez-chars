@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { asset, resolve } from '$app/paths';
 	import { tick } from 'svelte';
 	import { charsArray, createNew5eCharacter, deleteCharacterById } from '$storage/store.js';
 
@@ -16,7 +16,7 @@
 		type CharacterExportEnvelope,
 		type CharacterWithSystemData
 	} from '../schema/index.js';
-	import { FULL_2014_SRD_HREF, OFFICIAL_2014_CHAR_SHEET_HREF } from '$utils/urlHelpers.js';
+	import { FULL_2014_SRD_PATH, OFFICIAL_2014_CHAR_SHEET_HREF } from '$utils/urlHelpers.js';
 
 	const charsheetHref = resolve('/charsheets/5e');
 	const jsonMimeType = 'application/json';
@@ -183,12 +183,12 @@
 				>.
 			</p>
 			<p class="theme-text-muted text-base">
-				Want the full 2014 5e SRD PDF with bookmarks? View it&nbsp;
+				Want the official 2014 5e SRD PDF?&nbsp;
 				<a
 					class="theme-link underline"
-					href={FULL_2014_SRD_HREF}
+					href={asset(FULL_2014_SRD_PATH)}
 					target="_blank"
-					rel="external noreferrer">here</a
+					rel="noreferrer">View SRD 5.1</a
 				>.
 			</p>
 		</div>

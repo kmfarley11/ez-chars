@@ -63,7 +63,7 @@ The next PRD should define a first external playtest rather than promise the ent
 The playtest target should include:
 
 - D&D 5e 2014, based on the SRD 5.1 rules line;
-- D&D 5e 2024, based on one current project-adopted release from the SRD 5.2 line; the app need not support multiple 2024 SRD releases simultaneously;
+- D&D 5e 2024, based on the explicitly adopted SRD 5.2.1 release; provenance should be rechecked before handoff, but a later release should replace it only through a deliberate owner decision, and the app need not support multiple 2024 SRD releases simultaneously;
 - Shadowdark, using user-authored data and the conservative external-source baseline below;
 - one clearly selectable, system-specific sheet experience for each target system;
 - player-character use in all three systems;
@@ -109,7 +109,7 @@ The author would prefer to self-host every relevant PDF for which the project ha
 
 - Wizards of the Coast publishes [SRD 5.1 and the SRD 5.2 line](https://www.dndbeyond.com/srd) under CC BY 4.0. That license permits sharing copies, so the project may self-host the licensed PDFs while preserving the applicable SRD's exact attribution, license notice, and modification status. The PDF remains identified as third-party CC BY material; including it does not require the separately authored application as a whole to use the same license.
 - The Arcane Library offers the [Shadowdark Quickstart Set](https://www.thearcanelibrary.com/products/shadowdark-rpg-quickstart-set-pdf) free of charge, but free access alone does not establish redistribution rights.
-- The official [Shadowdark third-party-license FAQ](https://www.thearcanelibrary.com/blogs/shadowdark-blog/faq-on-the-shadowdark-rpg-third-party-license) says that character-building apps are outside that license while general page-and-name references are allowed. The conservative product baseline is therefore a system-native sheet containing only user-authored data plus bibliographic/page/name locators and authoritative acquisition links. Written permission or qualified review becomes a gate before the project bundles, excerpts, ingests, transforms, or otherwise expands beyond that baseline; the project does not describe the baseline as an official or licensed Shadowdark character builder.
+- The official [Shadowdark third-party-license FAQ](https://www.thearcanelibrary.com/blogs/shadowdark-blog/faq-on-the-shadowdark-rpg-third-party-license) says that character-building apps are outside that license while general page-and-name references are allowed. The conservative product baseline is therefore a system-native sheet containing only user-authored data plus authoritative acquisition links and the reviewed broad citations for character creation, equipment, and game rules. Public presentation identifies the source factually, says it is not included, and makes ez-chars' unofficial/non-affiliated status clear. Written permission or qualified review becomes a gate before the project bundles, excerpts, ingests, transforms, uses restricted compatibility branding, or otherwise expands beyond that baseline; the project does not describe the baseline as an official or licensed Shadowdark character builder.
 
 This policy is a product-risk boundary, not legal advice. A qualified professional remains the appropriate path if the owner needs legal certainty rather than a conservative implementation policy.
 
@@ -179,7 +179,7 @@ This is a vision-level dependency order, not a substitute for backlog IDs or an 
 1. Confirm source classifications and the conservative Shadowdark baseline before product work depends on redistributed or processed material (`BL-068`).
 2. Address the cross-cutting playtest enabler already evidenced by the 2014 sheet: dense collection discovery, focused row editing, annotations, and saturated-sheet navigation (`BL-064`).
 3. Prove self-hosted/link-only resource discovery and contextual navigation against the existing 2014 sheet (`BL-069`).
-4. Establish the minimum multi-system lifecycle/computed-view boundary and a 2024 5e sheet; support one deliberately adopted current SRD release, audit the existing rough designs, and treat 5e-family reuse as family evidence (`BL-070`).
+4. Establish the minimum multi-system lifecycle/computed-view boundary and a 2024 5e sheet; support the deliberately adopted SRD 5.2.1 release, audit the existing rough designs, and treat 5e-family reuse as family evidence (`BL-070`).
 5. Add the minimal Shadowdark sheet within the conservative source baseline and use its different shape to validate or revise the shared boundary (`BL-071`).
 6. Harden mobile interaction, sparse NPC/sidekick use, saturated-sheet navigation, backup/restore, resource lookup, and compatibility decisions across the full matrix (`BL-072`).
 7. Run the early P1 fillable-PDF export/import proofs after a target schema and template-delivery basis settle (`BL-066`); they complement but do not gate the first playtest.

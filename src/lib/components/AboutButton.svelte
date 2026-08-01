@@ -8,8 +8,7 @@
 	const appVersion = __APP_VERSION__;
 	const gitShortSha = __GIT_SHA__;
 	const aboutText = `ez-chars v${appVersion} (${gitShortSha})`;
-	const noticesHref = 'https://github.com/kmfarley11/ez-chars/blob/main/THIRD_PARTY_NOTICES.md';
-	const extAttributionHref = 'https://github.com/kmfarley11/ez-chars/blob/main/docs/ext/Readme.md';
+	const noticesHref = `https://github.com/kmfarley11/ez-chars/blob/${gitShortSha}/THIRD_PARTY_NOTICES.md`;
 	const ccByHref = 'https://creativecommons.org/licenses/by/4.0/';
 </script>
 
@@ -45,12 +44,6 @@
 				Full notices:
 				<a class="theme-link underline" href={noticesHref} target="_blank" rel="noreferrer"
 					>THIRD_PARTY_NOTICES.md</a
-				>
-			</p>
-			<p>
-				Ext docs attribution:
-				<a class="theme-link underline" href={extAttributionHref} target="_blank" rel="noreferrer"
-					>docs/ext/Readme.md</a
 				>
 			</p>
 		</div>

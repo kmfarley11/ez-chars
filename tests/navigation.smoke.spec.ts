@@ -1,5 +1,38 @@
 import { test, expect } from '@playwright/test';
 
+test('serves adopted SRDs locally without exposing local-only sources', async ({ page }) => {
+	await page.goto('/');
+
+	const srdLink = page.getByRole('link', { name: 'View SRD 5.1' });
+	await expect(srdLink).toHaveAttribute('href', '/ez-chars/docs/ext/5e2014/SRD_CC_v5.1.pdf');
+
+	for (const path of [
+		'/ez-chars/docs/ext/5e2014/SRD_CC_v5.1.pdf',
+		'/ez-chars/docs/ext/5e2024/SRD_CC_v5.2.1.pdf'
+	]) {
+		const response = await page.request.get(path);
+		expect(response.ok()).toBe(true);
+		expect(response.headers()['content-type']).toBe('application/pdf');
+		expect((await response.body()).subarray(0, 4).toString()).toBe('%PDF');
+	}
+
+	const localOnlyResponse = await page.request.get(
+		'/ez-chars/docs/ext/local-only/Shadowdark_Player_Quickstart_-_Digital.pdf'
+	);
+	expect(localOnlyResponse.headers()['content-type']).not.toBe('application/pdf');
+	expect((await localOnlyResponse.body()).subarray(0, 4).toString()).not.toBe('%PDF');
+});
+
+test('links third-party notices to the deployed Git revision', async ({ page }) => {
+	await page.goto('/');
+
+	await page.getByRole('button', { name: 'About ez-chars' }).click();
+	await expect(page.getByRole('link', { name: 'THIRD_PARTY_NOTICES.md' })).toHaveAttribute(
+		'href',
+		/^https:\/\/github\.com\/kmfarley11\/ez-chars\/blob\/[0-9a-f]{7,40}\/THIRD_PARTY_NOTICES\.md$/
+	);
+});
+
 test('native popover escape dismissal and focus restoration', async ({ page }) => {
 	await page.goto('/');
 

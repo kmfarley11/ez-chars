@@ -32,3 +32,6 @@ storybook-static
 prompts/
 PROMPT.md
 PROMPT_RESPONSE.md
+
+# Owner-supplied source material and local processing artifacts
+docs/ext/local-only/

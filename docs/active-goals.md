@@ -13,7 +13,7 @@ Character data created during this phase is experimental and is not guaranteed t
 ## Active Delivery Scope
 
 - preserve and polish the implemented D&D 5e 2014 sheet as the first system proof;
-- add explicit D&D 5e 2024 support for one adopted current SRD 5.2.x release, rechecked and pinned before public handoff;
+- add explicit D&D 5e 2024 support for the adopted SRD 5.2.1 release, with provenance rechecked before public handoff and any later-version upgrade requiring an explicit owner decision;
 - add a system-native Shadowdark sheet using user-authored data and the conservative external-source locator baseline; separately gate any bundled, excerpted, ingested, transformed, branded, or official-form behavior;
 - maintain a local character list with authoritative system selection, creation, opening, deletion, and recovery;
 - keep scene-relevant runtime sections and flexible quick notes useful across exploration, roleplay, and combat for both representative player characters and intentionally sparse sidekick/NPC records;
@@ -58,6 +58,7 @@ This is a capability summary for the completed 2014 baseline, not a chronologica
 - Runtime actions support custom creation plus searchable inventory, spell, feature, and trait snapshots with stable source identity, source navigation, confirmed resync, and source-deletion fallback.
 - Reusable grid, field-binding, dialog, Storybook, storage, and utility boundaries support the implemented sheet without claiming a universal cross-system rendering contract.
 - The home-to-sheet accessibility and verification baseline includes keyboard, touch, modal/popover context, mobile geometry, unit/component coverage, and black-box browser checks.
+- Official SRD 5.1 and SRD 5.2.1 PDFs are self-hosted with centralized attribution and provenance; the conservative Shadowdark citation baseline and protected maintainer review boundary are established for later resource-navigation and system-sheet work.
 
 ### Partial
 

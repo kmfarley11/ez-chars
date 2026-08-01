@@ -6,7 +6,7 @@ import { type Plugin, type ResolvedConfig, type ViteDevServer, defineConfig } fr
 import type { OutputOptions as RollupOutputOptions } from 'rollup';
 import { createReadStream, existsSync, readFileSync } from 'node:fs';
 import { copyFile, mkdir, readdir, stat } from 'node:fs/promises';
-import { extname, join, resolve as pathResolve } from 'node:path';
+import { extname, isAbsolute, join, relative, resolve as pathResolve } from 'node:path';
 import { execSync } from 'node:child_process';
 import type { Dirent, Stats } from 'node:fs';
 import type { NextHandleFunction } from 'connect';
@@ -17,6 +17,7 @@ const packageVersion = JSON.parse(
 
 const docsExtPlugin = (): Plugin => {
 	const sourceRelative = 'docs/ext';
+	const excludedDirectoryNames = new Set(['local-only']);
 	let rootDir = process.cwd();
 	let outDir = 'dist';
 	let shouldCopyOnCloseBundle = false;
@@ -26,17 +27,19 @@ const docsExtPlugin = (): Plugin => {
 		await mkdir(dest, { recursive: true });
 		const entries: Dirent[] = await readdir(src, { withFileTypes: true });
 		await Promise.all(
-			entries.map(async (entry) => {
-				const srcPath = join(src, entry.name);
-				const destPath = join(dest, entry.name);
-				if (entry.isDirectory()) {
-					await copyDirectory(srcPath, destPath);
-					return;
-				}
-				if (entry.isFile()) {
-					await copyFile(srcPath, destPath);
-				}
-			})
+			entries
+				.filter((entry) => !entry.name.startsWith('.') && !excludedDirectoryNames.has(entry.name))
+				.map(async (entry) => {
+					const srcPath = join(src, entry.name);
+					const destPath = join(dest, entry.name);
+					if (entry.isDirectory()) {
+						await copyDirectory(srcPath, destPath);
+						return;
+					}
+					if (entry.isFile()) {
+						await copyFile(srcPath, destPath);
+					}
+				})
 		);
 	};
 
@@ -65,12 +68,24 @@ const docsExtPlugin = (): Plugin => {
 
 			const handler: NextHandleFunction = (req, res, next) => {
 				if (!req.url) return next();
-				const mountPoint = mountPoints.find((point) => req.url?.startsWith(point));
+				let requestPath: string;
+				try {
+					requestPath = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+				} catch {
+					return next();
+				}
+				const mountPoint = mountPoints.find(
+					(point) => requestPath === point || requestPath.startsWith(`${point}/`)
+				);
 				if (!mountPoint) return next();
-				const relativePath = req.url.slice(mountPoint.length);
+				const relativePath = requestPath.slice(mountPoint.length);
 				const sanitized = relativePath.replace(/^\/+/, '');
+				if (sanitized.split('/').some((segment) => excludedDirectoryNames.has(segment))) {
+					return next();
+				}
 				const target = pathResolve(sourceDir, sanitized);
-				if (!target.startsWith(sourceDir)) return next();
+				const targetRelative = relative(sourceDir, target);
+				if (targetRelative.startsWith('..') || isAbsolute(targetRelative)) return next();
 
 				stat(target)
 					.then((fileStat: Stats) => {
