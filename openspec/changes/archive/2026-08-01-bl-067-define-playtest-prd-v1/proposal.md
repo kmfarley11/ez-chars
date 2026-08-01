@@ -14,7 +14,8 @@ The PRD v0 successfully established the stack and first 2014 5e sheet, but the r
 - Define the milestone gates between PRD approval, playtest readiness, first durable schema versions, external playtesting, and a product v1.0 release.
 - Reframe active goals and the backlog around separately approved architectural and implementation epics rather than one broad multi-system effort.
 - Record the author's longer-term product desires and non-goals without moving future-horizon work into active scope.
-- Treat existing rough system-sheet designs and anonymized pre-playtest surveys as explicit planning evidence, with the survey synthesis remaining a pre-archive task.
+- Treat existing rough system-sheet designs and the completed anonymized pre-playtest survey synthesis as explicit planning evidence.
+- Preserve combat as a legitimately prominent runtime surface while recording scene-aware guidance, navigation, or focus as a later evidence-gated design investigation rather than a first-playtest mode requirement.
 - Explicitly retain the pre-release decision that experimental v0 character data has no general migration guarantee.
 
 ## Capabilities
@@ -30,7 +31,7 @@ The PRD v0 successfully established the stack and first 2014 5e sheet, but the r
 ## Impact
 
 - **Documentation:** Adds PRD v1 and author-intent artifacts; updates active goals, vision indexes, architecture decisions, and backlog prioritization.
-- **Planning:** Produces separately refinable work for the core-schema boundary, multi-system foundations, 2024 5e, Shadowdark, rules-resource navigation, editable-PDF interoperability, and cross-system playtest hardening.
+- **Planning:** Produces separately refinable work for the core-schema boundary, multi-system foundations, 2024 5e, Shadowdark, rules-resource navigation, editable-PDF interoperability, cross-system playtest hardening, and an evidence-gated scene-aware guidance/navigation investigation.
 - **Product state:** No application behavior changes in this change; the product remains pre-release and 2014-only until later approved changes are implemented.
 - **Data compatibility:** No schema changes in this change; the v0-to-v1 decision remains tied to the actual first external playtest boundary.
 - **Dependencies:** No package or runtime dependency changes.

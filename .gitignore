@@ -29,5 +29,6 @@ vite.config.ts.timestamp-*
 storybook-static
 
 # local ideation
+prompts/
 PROMPT.md
 PROMPT_RESPONSE.md

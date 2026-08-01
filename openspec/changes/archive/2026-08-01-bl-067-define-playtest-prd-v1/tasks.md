@@ -22,10 +22,10 @@
 - [x] 3.1 Audit the current shared schema's required identity plus root features, inventory, notes, and annotations against 2024 and Shadowdark needs; preserve the analysis in `design.md`, distinguish lifecycle metadata from 5e-shaped persistence, and evaluate a smaller core plus system-specific computed views
 - [x] 3.2 Refine the existing sheet-architecture ADR for the now-concrete second-system trigger: extract only evidenced lifecycle and computed-view seams during 2024 work, evaluate shared interaction/presentation primitives without a universal renderer, treat 5e-family reuse as non-universal, and validate the boundary with Shadowdark
 - [x] 3.3 Document that 2014 5e, 2024 5e, and Shadowdark retain explicit system identities, system-specific schemas, rules versions, projections, edit behavior, and layouts even when shared lifecycle infrastructure emerges
-- [x] 3.4 Scan active, archived, and Git-history backlog identities, then allocate priority-neutral IDs for resource-rights/Shadowdark feasibility, reference navigation, core-boundary plus multi-system/2024 support, Shadowdark support, and cross-system playtest hardening
+- [x] 3.4 Scan active, archived, and Git-history backlog identities, then allocate priority-neutral IDs for resource-rights/Shadowdark feasibility, reference navigation, core-boundary plus multi-system/2024 support, Shadowdark support, cross-system playtest hardening, and the trigger-deferred scene-aware guidance/navigation investigation
 - [x] 3.5 Refine each new epic in `docs/backlog.md` using Purpose, Included behavior, Excluded behavior, Ambiguities, and Success, including its dependency gates and likely OpenSpec/ADR classification
 - [x] 3.6 Keep `BL-064` as the Horizon A heuristic baseline for saturated-sheet navigation, dense-collection discovery, focused row editing, annotations, and repeatable macOS Firefox evidence before external playtesting, then reserve broader standardization for Horizon B without creating a universal list framework
-- [x] 3.7 Sequence the candidate epics so source-provenance and core/PDF evidence arrive early, reference navigation is proven against 2014, 2024 supplies second-system evidence, Shadowdark validates the boundary within its conservative baseline, and cross-system hardening closes the playtest program
+- [x] 3.7 Sequence the candidate epics so source-provenance and core/PDF evidence arrive early, reference navigation is proven against 2014, 2024 supplies second-system evidence, Shadowdark validates the boundary within its conservative baseline, cross-system hardening closes the playtest program, and scene-aware guidance/navigation remains trigger-deferred until saturated-sheet and multi-system evidence exists
 
 ## 4. Fillable-PDF Interoperability and Schema Evidence
 
@@ -47,7 +47,7 @@
 - [x] 6.1 Run `openspec validate bl-067-define-playtest-prd-v1 --strict` and correct all artifact errors
 - [x] 6.2 Run `git diff --check` and verify every new repository link is repo-relative and resolves to an existing or same-change target
 - [x] 6.3 Review official source citations and ensure the repository distinguishes verified facts, project policy, unresolved permission, and non-legal product-risk guidance
-- [ ] 6.4 After survey reconciliation and owner review, perform the final cross-artifact review confirming that no application feature is represented as implemented and every future implementation epic has a bounded next workflow
+- [x] 6.4 After survey reconciliation, perform the final cross-artifact review confirming that no application feature is represented as implemented and every future implementation epic has a bounded next workflow; retain explicit owner approval as the separate archival gate in 8.2
 
 ## 7. Backlog Updates & Reconciliation
 
@@ -57,8 +57,8 @@
 
 ## 8. Remaining Evidence and Owner Approval
 
-- [ ] 8.1 Process anonymized CSV exports of the owner's pre-playtest surveys, record question wording, response count, distributions, free-text themes, limitations, and any resulting priority changes without committing raw identifying data
-- [ ] 8.2 Obtain explicit owner approval of the reconciled PRD v1 and active change before archival
+- [x] 8.1 Process anonymized CSV exports of the owner's pre-playtest surveys, record question themes, response count, distributions, free-text themes, limitations, and resulting priority changes without committing raw identifying data
+- [x] 8.2 Obtain explicit owner approval of the reconciled PRD v1 and active change before archival
 
 ## Executor Recommendation
 

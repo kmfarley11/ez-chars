@@ -44,3 +44,4 @@ Use these docs for future planning, not as the active implementation backlog:
 - [vision/author-desires.md](vision/author-desires.md): durable product intent, product horizons, and vision-level priority queue
 - [vision/PRD-v0.md](vision/PRD-v0.md): historical baseline for the initial stack and product direction
 - [vision/system-design-notes.md](vision/system-design-notes.md): preserved cross-system design notes
+- [vision/evidence/2026-08-01-pre-playtest-surveys.md](vision/evidence/2026-08-01-pre-playtest-surveys.md): anonymous pre-playtest survey evidence and product-direction reconciliation

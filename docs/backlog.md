@@ -24,6 +24,7 @@ We expect to ideate and triage backlog items through the following workflow:
 4. **Triaging to the Backlog**: Assign the refined item a durable priority-neutral ID (e.g., `BL-065`), create its detailed definition once in the refined backlog catalog, and add a link to that definition in the appropriate P0/P1/P2 queue.
 5. **Recommending an Execution Path**: End every exploration or refinement with an explicit recommendation, using [the repository change-classification and ADR thresholds](../AGENTS.md#change-classification--adr-triggers): direct/ad hoc implementation, an ADR-only update, a compact OpenSpec change, or a full OpenSpec change. State separately whether an ADR is triggered, whether a durable spec delta is likely, and whether the coding or architectural scope benefits from OpenSpec's proposal, design, and task artifacts. Include a short rationale and identify any unresolved decision that blocks implementation. Human-authored and agent-assisted direct coding follow the same classification.
 6. **Executing the Chosen Path**: Fast-track work may proceed directly without an OpenSpec change. ADR-only work may create or update the decision record directly. For compact or full OpenSpec classifications, run `/opsx-propose` (or trigger the `/opsx:propose` workflow) to generate the planning artifacts (`proposal.md`, `design.md`, `specs/`, and `tasks.md`) within the change workspace, adding an ADR when separately triggered. The refined backlog item forms the input template for the proposal.
+7. **Post-Apply Human Gate**: Every OpenSpec change must end its apply checklist with a user review and explicit approval task. Agents may finish implementation and verification tasks, but must leave this gate unchecked, present the resulting scope, verification, and material fallout, and wait for approval before treating the change as done or archiving it. A request to start apply work or a passing test suite does not satisfy this gate.
 
 ### Backlog ID Rules
 
@@ -52,7 +53,6 @@ These lightweight queues record priority membership only. Detailed definitions l
 
 ### P0 — Product Prerequisites
 
-- [`BL-067` — Define the first external-playtest PRD and roadmap](#define-the-first-external-playtest-prd-and-roadmap)
 - [`BL-068` — Confirm source rights and the Shadowdark baseline](#confirm-source-rights-and-the-shadowdark-baseline)
 - [`BL-064` — Scale dense collection rendering and discovery](#scale-dense-collection-rendering-and-discovery)
 - [`BL-069` — Deliver rights-classified reference navigation](#deliver-rights-classified-reference-navigation)
@@ -63,6 +63,7 @@ These lightweight queues record priority membership only. Detailed definitions l
 ### P1 — Priority Improvements
 
 - [`BL-066` — Prove bounded fillable-PDF interoperability](#prove-bounded-fillable-pdf-interoperability)
+- [`BL-073` — Investigate scene-aware runtime guidance and navigation](#investigate-scene-aware-runtime-guidance-and-navigation) _(trigger-deferred pending saturated-sheet and multi-system evidence)_
 - [`p1-010` — Add GitHub Actions for quality gates](#add-github-actions-for-quality-gates) _(trigger-deferred and omitted from the recommended sequence until CI needs justify it)_
 
 ### P2 — Future Feature Work
@@ -75,49 +76,18 @@ _Goal: First External Playtest_
 
 The queues above record strategic priority membership; this list records the dependency-aware action order and may omit blocked or trigger-deferred items.
 
-1. `BL-067`: Finish the pre-playtest survey synthesis and final owner review before archival
-2. `BL-068`: Confirm source classifications, official SRD artifacts, and the conservative Shadowdark baseline
-3. `BL-064`: Establish the dense-collection, focused-row, annotation, and saturated-sheet navigation baseline evidenced by the 2014 sheet
-4. `BL-069`: Prove multi-source resource discovery and contextual navigation against the 2014 sheet
-5. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary and add the minimal 2024 D&D sheet
-6. `BL-071`: Add the minimal Shadowdark sheet within the conservative baseline after `BL-070` supplies the dispatch boundary
-7. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix
+1. `BL-068`: Confirm source classifications, official SRD artifacts, and the conservative Shadowdark baseline
+2. `BL-064`: Establish the dense-collection, focused-row, annotation, and saturated-sheet navigation baseline evidenced by the 2014 sheet
+3. `BL-069`: Prove multi-source resource discovery and contextual navigation against the 2014 sheet
+4. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary and add the minimal 2024 D&D sheet
+5. `BL-071`: Add the minimal Shadowdark sheet within the conservative baseline after `BL-070` supplies the dispatch boundary
+6. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix
 
-`BL-066` is an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights. It is deliberately not a first-playtest readiness prerequisite.
+`BL-066` is an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights. It is deliberately not a first-playtest readiness prerequisite. `BL-073` remains outside this sequence until `BL-064` and at least one non-2014 system provide evidence about whether ordinary landmarks and system-native cues are insufficient.
 
 ## Refined Backlog Catalog
 
 Each active refined item has one stable detailed definition in this catalog. Queue entries and the recommended sequence point here; reprioritization must not relocate or duplicate these definitions. When an item is completed and archived, remove its queue link and catalog definition, then retain only the bounded summary required by [Done Recently](#done-recently).
-
-### Define the first external-playtest PRD and roadmap
-
-ID:
-
-- `BL-067`
-
-Sequencing context:
-
-- The OpenSpec change is active and most planning artifacts are drafted. Keep this item active until the owner reviews the remaining evidence and explicitly requests archival.
-
-Refinement outputs:
-
-- **Purpose:** Bound the product milestone between the implemented 2014 baseline and the broader author vision, then decompose it into independently executable epics.
-- **Included behavior:**
-  - Maintain PRD v1, author desires, active goals, architecture/resource policy, and the first-playtest backlog as coherent but separately authoritative artifacts.
-  - Define 2014 D&D, one adopted current 2024 SRD release, and Shadowdark representative-player, sparse-GM, and saturated-sheet readiness evidence.
-  - Preserve the core/PDF/source audits inside durable OpenSpec or ADR context instead of floating analysis documents.
-  - Process anonymized pre-playtest survey exports and reconcile their bounded findings against vision, readiness priorities, and implementation epics.
-- **Excluded behavior:**
-  - Implementing the sheet, resource, PDF, or multi-system epics in this planning change.
-  - Treating small survey samples as statistically representative or embedding a survey system in the product.
-- **Ambiguities:**
-  - What do the owner's anonymized pre-playtest surveys add to or challenge in the drafted priorities?
-  - Does final review approve PRD v1 as written, or require another owner-directed refinement before archive?
-- **Success:**
-  - The owner can distinguish current behavior, the external-playtest contract, long-term intent, and dependency-ordered implementation work.
-  - Survey findings and limitations are traceable to any resulting priority change.
-  - The active OpenSpec change validates strictly and is archived only after explicit owner approval.
-- **Recommended workflow:** Continue the existing full OpenSpec change. Its remaining work is planning/evidence reconciliation, not application implementation; no additional ADR is triggered unless the evidence changes a durable decision.
 
 ### Scale dense collection rendering and discovery
 
@@ -142,6 +112,7 @@ Refinement outputs:
   - On the selected proof surface, evaluate one explicit focused-row edit and annotation path that remains discoverable without placing permanent controls on every dense row.
   - Correct a bulk-only editing path when the proof shows that editing one item is needlessly cumbersome; retain bulk editing as an explicit collection-level option rather than the only row path.
   - Evaluate whether existing visual anchors remain sufficient under saturation or whether local collection search, whole-sheet search, an outline, sticky summaries, tabs, or focused expansion deserves a bounded follow-up.
+  - Test whether non-destructive sheet landmarks can identify system-relevant combat and non-combat destinations without introducing a selected-pillar mode or hiding content.
   - Record a heuristic baseline for persistent versus revealed row actions, annotation-presence indicators, and equivalent mouse, keyboard, and touch entry points; leave feedback-driven standardization to Horizon B.
   - Build on the completed `p1-020` touch-target and keyboard baseline when evaluating nested scrolling and row controls.
   - Recheck the previously observed macOS Firefox scroll jank with the repeatable saturated fixture and profiling workflow; open browser-specific optimization only if the evidence implicates application code.
@@ -150,6 +121,7 @@ Refinement outputs:
   - Making hover, right-click, or long-press the only path to row actions.
   - Remote search, fuzzy ranking, indexing, virtualization, or a universal list framework without measured need.
   - Applying one arbitrary fixed height to every collection regardless of density or viewport.
+  - Implementing a persistent scene mode, automatically inferring the current pillar, or hiding whole sheet regions as part of the first density proof.
 - **Ambiguities:**
   - Which collection should prove the pattern first: weapons/gear, spell lists, or another demonstrably dense surface?
   - On phone-sized screens, should large collections use contained scrolling, progressive disclosure, or an expanded focused view to avoid awkward nested scrolling?
@@ -164,6 +136,7 @@ Refinement outputs:
   - macOS Firefox either behaves acceptably under the repeatable saturated fixture or produces actionable profiling evidence and a bounded follow-up.
   - Horizon A heuristics and unresolved playtest questions are documented for feedback-driven refinement rather than hidden in component APIs.
   - Any reusable boundary is extracted from at least two compatible consumers rather than anticipated similarity.
+- **Recommended workflow:** Full OpenSpec change because this combines observable collection behavior, responsive interaction, accessibility, and cross-sheet navigation questions. Refine an ADR only if the implementation selects a durable collection-navigation or shared-component boundary rather than a bounded proof.
 
 ### Add GitHub Actions for quality gates and release orchestration
 
@@ -385,6 +358,8 @@ Refinement outputs:
   - Record performance and accessibility evidence for the supported browser matrix.
   - Immediately before external handoff, decide each system's durable schema identifier and whether the final 2014 v0 receives one bounded transition; update fixtures, warnings, migration tests, and recovery documentation.
   - Run owner solo-play rehearsals, record findings, and prepare an external feedback checklist plus short external survey mapped to the PRD gates.
+  - Ask whether contextual references, empty states, focused editing, and transparent aids provided enough guidance or whether a bounded creation workflow should be promoted.
+  - Record whether combat prominence obscures exploration, roleplay, or other system-native scene information and whether ordinary landmarks and system-native cues are sufficient before promoting `BL-073`.
   - After external sessions, synthesize survey and qualitative evidence with response count, limitations, decisions, and backlog destinations before a product-v1.0 decision.
 - **Excluded behavior:**
   - Adding another system, a builder, a compendium, cloud storage, OCR, or broad automation to improve the milestone cosmetically.
@@ -399,6 +374,44 @@ Refinement outputs:
   - Each external-playtest schema/version promise and recovery path is explicit and tested.
   - Remaining findings have owners and backlog destinations, and external sessions can begin without relying on undocumented setup.
 - **Recommended workflow:** Full OpenSpec change because it crosses systems, persistence compatibility, accessibility, and release-readiness behavior. Add an ADR only if the compatibility or supported-platform decisions materially change existing approved doctrine.
+
+### Investigate scene-aware runtime guidance and navigation
+
+ID:
+
+- `BL-073`
+
+Sequencing context:
+
+- Treat this as a trigger-deferred Horizon B design investigation. `BL-064` should first test non-destructive landmarks and navigation against the saturated 2014 sheet, and at least one non-2014 system should exist before the product adopts cross-system scene vocabulary. Promote it earlier only if owner rehearsal exposes a critical runtime-navigation failure that simple landmarks cannot address.
+
+Refinement outputs:
+
+- **Purpose:** Determine whether scene-aware guidance, navigation, or focus can keep the most relevant character information close at hand without making overlapping information disappear or turning a character sheet into a collection of surprising modes.
+- **Included behavior:**
+  - Preserve combat as a legitimately prominent, rules-dense runtime surface while evaluating faster access to exploration, roleplay, travel, downtime, or other system-native scene concerns.
+  - Use saturated-sheet, owner-rehearsal, and cross-system evidence to compare a persistent outline, grouped landmarks, jump navigation, small scene-relevant summaries or cues, temporary emphasis, explicit filters, and an optional focused view.
+  - Evaluate runtime-action-like convenience for non-combat concerns through system-native projections or guidance; do not assume exploration, roleplay, travel, or downtime should use action-economy records.
+  - Prefer non-destructive navigation and emphasis before evaluating hiding. If hiding remains a candidate, require an obvious active-state indicator, a one-step reset, continued access to all content, and no silent mutation of character data.
+  - Keep scene categories system-native; do not require every game to use 5e's combat/exploration/roleplay framing.
+  - Evaluate phone and desktop behavior, keyboard order, focus movement, assistive semantics, and the interaction with whole-sheet search or dense collection discovery.
+- **Excluded behavior:**
+  - Automatically inferring the current scene, synchronizing a mode from a GM tool, or changing modes without an explicit user action.
+  - Generalizing the existing runtime-action data model into a universal container for every scene or pillar.
+  - Making combat and non-combat sections consume equal space by policy, hiding information by default, or requiring a selected pillar before the sheet is usable.
+  - Defining a universal scene taxonomy, universal sheet renderer, or persisted scene state before concrete systems demonstrate a shared need.
+- **Ambiguities:**
+  - Do landmarks and an outline solve the retrieval problem without a scene mode?
+  - Is the observed problem navigation, missing scene-relevant synthesis, or both?
+  - Which categories belong to each supported system, and which information legitimately appears in more than one category?
+  - If a focused view is useful, should its selection be ephemeral, remembered per character, or remembered only for the current session?
+  - How should search results, quick notes, and urgent state remain visible when a focus is active?
+- **Success:**
+  - Evidence distinguishes navigation, missing scene-relevant guidance, content organization, and density problems.
+  - The recommended design preserves combat prominence where useful while improving access to non-combat information.
+  - Any proposed focus or hiding behavior is explicit, reversible, accessible, and demonstrably better than a simpler outline or landmark treatment.
+  - The result either closes the investigation with no scene mode or yields one bounded behavioral proposal grounded in at least two system sheets.
+- **Recommended workflow:** Begin with OpenSpec Explore after the evidence trigger, then use a full OpenSpec change if observable navigation or focus behavior is proposed. An ADR is warranted only if the result establishes a durable cross-system scene/navigation contract; a 2014-only outline proof does not trigger one by itself.
 
 ## Ideation Sandbox (Raw / Rough Ideas)
 
@@ -434,6 +447,7 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 
 ## Done Recently
 
+- `2026-08-01` completed `BL-067`: approved PRD v1 and the first-external-playtest roadmap for 2014 D&D, one adopted current 2024 D&D SRD release, and Shadowdark; established rights-classified reference, multi-system/core, PDF-interoperability, compatibility, survey-evidence, and scene-aware-navigation boundaries as separately refinable work
 - `2026-07-31` completed `p1-020`: established explicit 44-by-44 CSS-pixel coarse-pointer targets and bounded exceptions across the home-to-sheet flow, corrected keyboard-accessible character opening and responsive control order, and added durable Mobile Chrome geometry, label-activation, modal-context, and cross-browser evidence
 - `2026-07-30` completed `p1-027`: replaced JavaScript ResizeObserver grid measurement with native CSS Container Queries, maintaining layout fidelity while eliminating overhead
 - `2026-07-26` completed `BL-063`: moved character import review and confirmation into a focused dialog flow, removing inline home-page clutter while preserving Merge New and Replace All semantics

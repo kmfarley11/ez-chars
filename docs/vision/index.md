@@ -24,6 +24,7 @@ For current coding work, use:
 - [PRD-v1.md](PRD-v1.md): target-state first-external-playtest contract; current implementation remains documented in active goals
 - [PRD-v0.md](PRD-v0.md): historical initial-stack and product-direction baseline
 - [system-design-notes.md](system-design-notes.md): preserved cross-system design notes and candidate systems
+- [evidence/2026-08-01-pre-playtest-surveys.md](evidence/2026-08-01-pre-playtest-surveys.md): anonymous directional evidence from the owner's pre-playtest tooling and play-preference surveys
 - [../index.md](../index.md): docs map
 - [../ext/Readme.md](../ext/Readme.md): third-party reference docs/assets
 - [../../README.md](../../README.md): current repo overview

@@ -27,7 +27,9 @@ The author wants quick access to multiple sidekick and NPC records, especially c
 
 ## North-Star Experience
 
-The basic premise of ez-chars is fast access to runtime information combined with low-friction human authorship. Character data is necessarily complicated; managing it does not need to feel complicated.
+The basic premise of ez-chars is fast access to runtime information combined with low-friction human authorship. “Runtime” means the information relevant to the current scene across exploration, roleplay, or combat—not combat statistics alone. Character data is necessarily complicated; managing it does not need to feel complicated.
+
+That broader definition does not require equal visual weight for every kind of play. Combat may remain especially prominent because it is often the most rules-dense and time-sensitive pillar. Scene-aware landmarks, outlines, or temporary emphasis should be tested before modes that hide information; any future focused view should remain explicit, reversible, and system-native rather than impose one universal pillar taxonomy.
 
 The application should help a user shape, find, and annotate their information without forcing every thought into one prescribed field size or workflow. System-native structure may improve organization and guidance, but it should augment the user's work rather than make the user conform to the tool.
 
@@ -38,11 +40,11 @@ The application should help a user shape, find, and annotate their information w
 - [ ] **Sparse by design:** optional or unknown information may remain absent without making the sheet look broken or blocking useful work.
 - [ ] **Saturation stays navigable:** campaign-scale collections, modifiers, and authored notes retain clear homes, visual anchors, and practical discovery rather than recreating paper-sheet or VTT overload.
 - [ ] **Human authorship stays first-class:** users can enter, amend, and annotate information in their own words.
-- [ ] **Guidance is contextual and optional:** relevant free references appear near editing and viewing tasks without becoming a mandatory wizard.
+- [ ] **Guidance is contextual and optional:** relevant free references, understandable empty states, and focused prompts appear near editing and viewing tasks without becoming a mandatory wizard; the first playtest should test whether these lighter aids are sufficient.
 - [ ] **Local-first ownership:** users can use the public baseline without an account and can export their character data.
 - [ ] **System-native shapes:** each rules system may model and present its own concepts; shared infrastructure must not force 5e structure onto other games. Prefer a small cross-system envelope plus computed system views over making generic persisted fields the lowest common denominator.
 - [ ] **A familiar interaction language:** system-native sheets should reuse accessible presentation and editing primitives where concepts fit, so cards, focused edits, annotations, navigation, and feedback feel related without forcing one universal rendering schema.
-- [ ] **Progressive assistance:** manual entry and bibliographic references come before compendium-backed suggestions, automation, or character building.
+- [ ] **Progressive assistance:** manual entry and bibliographic references come before compendium-backed suggestions, automation, or character building. When computed aids are introduced, keep them optional and explainable and preserve access to the user-owned source values.
 - [ ] **Rights-aware by construction:** prefer self-hosting and useful indexing when a verified license or permission allows it; otherwise use the narrowest appropriate reference mode. A free price alone is not evidence of redistribution or processing rights.
 - [ ] **One product, bounded horizons:** future capabilities should fit a coherent character-data companion, but they do not need to be built simultaneously.
 
@@ -121,6 +123,8 @@ The product should be shaped by three evidence loops rather than by implementati
 
 Surveys should remain external to the application unless collecting feedback becomes a product job of its own. Prefer reproducible, anonymized CSV exports for local analysis, with question wording, response count, distributions, free-text themes, and limitations recorded in a committed synthesis. Raw exports and direct identifiers should remain outside Git. Small samples guide priorities and hypotheses; they do not prove broad user behavior.
 
+The [2026-08-01 pre-playtest survey synthesis](evidence/2026-08-01-pre-playtest-surveys.md) is the first evidence snapshot. It supports mobile-first maintenance, contextual guidance, authoritative resource navigation, sparse-to-saturated coverage, flexible authorship across all three play pillars, and optional rather than opaque automation. It does not establish market demand for the selected systems or justify a full builder, dice engine, VTT, or compendium in Horizon A.
+
 The rough 5e, Shadowdark, and Cairn Excalidraw files are existing design evidence, not implementation contracts. System-sheet epics should explicitly audit their runtime priorities and visual anchors before discarding or adopting them.
 
 ## Product Horizons
@@ -136,7 +140,8 @@ The rough 5e, Shadowdark, and Cairn Excalidraw files are existing design evidenc
 - [x] Complete the [editable-PDF field and rights audit](../fillable-pdf-interoperability-audit.md) for available publisher sheets: retain JSON as canonical, promote `BL-066` to an early P1 export-first proof, and do not make PDF interchange a first-playtest readiness prerequisite.
 - [ ] Establish a heuristic-driven baseline for dense collection discovery, focused row editing, annotations, and whole-sheet navigation under saturation before external playtesting.
 - [ ] Complete representative player-character, sparse GM sidekick/NPC, and saturated-sheet owner rehearsals on mobile.
-- [ ] Synthesize anonymized pre-playtest surveys before finalizing readiness priorities, then reconcile external survey evidence after the playtest.
+- [x] Synthesize anonymized pre-playtest surveys and reconcile their directional findings into readiness priorities.
+- [ ] Reconcile external survey and qualitative evidence after the playtest.
 - [ ] If the conservative Shadowdark baseline materially constrains the intended resource evidence, explicitly decide whether adding a fourth CC-licensed system provides enough evidence to justify the extra scope; do not replace Shadowdark or expand the matrix automatically.
 - [ ] Freeze the first durable character-data versions only when the external playtest actually begins.
 - [ ] Reconcile playtest findings before calling the product v1.0.
@@ -144,10 +149,11 @@ The rough 5e, Shadowdark, and Cairn Excalidraw files are existing design evidenc
 ### Horizon B — Better character maintenance
 
 - [ ] Refine the Horizon A dense-collection, focused-row, and annotation baseline using real playtest evidence.
+- [ ] Investigate scene-aware runtime guidance, navigation, or focus after saturated-sheet and multi-system evidence, preferring system-native cues, landmarks, and emphasis before hiding.
 - [ ] Add more system-native inventory, spell, feature, and action assistance without removing manual entry.
 - [ ] Decide whether a dedicated compact NPC/stat-block presentation is warranted.
 - [ ] Improve rules-resource search and source-aware annotations where licenses permit it.
-- [ ] Add lightweight guided creation for the highest-friction sections before attempting a complete builder.
+- [ ] Add lightweight guided creation for the highest-friction sections before attempting a complete builder; pre-playtest survey evidence makes this an early Horizon B candidate if Horizon A references and focused maintenance guidance prove insufficient.
 - [ ] Implement broader fillable-PDF import/export for systems whose audited forms provide reliable mappings, while preserving richer internal data that the forms cannot represent.
 - [ ] If post-v1 evidence calls for a fundamental schema reset, immediately prioritize a reviewed export/recovery bridge—including editable-PDF interoperability where viable—before asking users to cross it; retain JSON and explicit migrations as the lossless contract.
 
@@ -168,17 +174,18 @@ The rough 5e, Shadowdark, and Cairn Excalidraw files are existing design evidenc
 
 ## Strategic Priority Queue
 
-This is a vision-level dependency order, not a substitute for backlog IDs or an active OpenSpec task list. The PRD draft and core/PDF planning audits exist, but `BL-067` remains open pending survey reconciliation and owner approval. The active delivery sequence is:
+This is a vision-level dependency order, not a substitute for backlog IDs or an active OpenSpec task list. PRD v1 is approved, the core/PDF planning audits are complete, and the active delivery sequence is:
 
-1. Finish `BL-067` by incorporating the owner's survey evidence and final review; do not treat its completed planning slices as archival approval.
-2. Confirm source classifications and the conservative Shadowdark baseline before product work depends on redistributed or processed material (`BL-068`).
-3. Address the cross-cutting playtest enabler already evidenced by the 2014 sheet: dense collection discovery, focused row editing, annotations, and saturated-sheet navigation (`BL-064`).
-4. Prove self-hosted/link-only resource discovery and contextual navigation against the existing 2014 sheet (`BL-069`).
-5. Establish the minimum multi-system lifecycle/computed-view boundary and a 2024 5e sheet; support one deliberately adopted current SRD release, audit the existing rough designs, and treat 5e-family reuse as family evidence (`BL-070`).
-6. Add the minimal Shadowdark sheet within the conservative source baseline and use its different shape to validate or revise the shared boundary (`BL-071`).
-7. Harden mobile interaction, sparse NPC/sidekick use, saturated-sheet navigation, backup/restore, resource lookup, and compatibility decisions across the full matrix (`BL-072`).
-8. Run the early P1 fillable-PDF export/import proofs after a target schema and template-delivery basis settle (`BL-066`); they complement but do not gate the first playtest.
-9. Reconcile external evidence before promoting specialized builders, stat-block modes, normalized compendium behavior, more systems, image/OCR import, or connected services.
+1. Confirm source classifications and the conservative Shadowdark baseline before product work depends on redistributed or processed material (`BL-068`).
+2. Address the cross-cutting playtest enabler already evidenced by the 2014 sheet: dense collection discovery, focused row editing, annotations, and saturated-sheet navigation (`BL-064`).
+3. Prove self-hosted/link-only resource discovery and contextual navigation against the existing 2014 sheet (`BL-069`).
+4. Establish the minimum multi-system lifecycle/computed-view boundary and a 2024 5e sheet; support one deliberately adopted current SRD release, audit the existing rough designs, and treat 5e-family reuse as family evidence (`BL-070`).
+5. Add the minimal Shadowdark sheet within the conservative source baseline and use its different shape to validate or revise the shared boundary (`BL-071`).
+6. Harden mobile interaction, sparse NPC/sidekick use, saturated-sheet navigation, backup/restore, resource lookup, and compatibility decisions across the full matrix (`BL-072`).
+7. Run the early P1 fillable-PDF export/import proofs after a target schema and template-delivery basis settle (`BL-066`); they complement but do not gate the first playtest.
+8. Reconcile external evidence before promoting specialized builders, stat-block modes, normalized compendium behavior, more systems, image/OCR import, or connected services.
+
+Scene-aware runtime guidance and navigation (`BL-073`) is a trigger-deferred Horizon B investigation after saturated-sheet and multi-system evidence. It should not delay this sequence unless owner rehearsal demonstrates that ordinary landmarks and system-native cues cannot support a core runtime scenario.
 
 ## Decision Filter for Future Work
 
@@ -203,3 +210,5 @@ The desired ownership boundary is:
 - **Future integration:** intentionally versioned character summaries, stable identifiers, and references rather than a shared database or merged application.
 
 Dungeons and Dashboards is currently even earlier in development than ez-chars, so ez-chars should not take a near-term dependency on its data model. This boundary is enough until duplicated data or a concrete integration scenario appears; at that point, both repositories should record a coordinated interoperability decision.
+
+The pre-playtest surveys reinforce this split: character-sheet mobility, maintenance, and trusted rules navigation are direct ez-chars needs, while VTT positioning, maps, atmosphere, music, portraits, and session-presentation burden belong to the GM/session-tooling side of the boundary.

@@ -201,6 +201,7 @@ BL-067 will produce refined backlog items rather than implementation tasks for t
 5. **Fillable-PDF mapping and bounded interoperability:** audit all three systems before schema freeze, refine `BL-066`, and implement only the playtest-critical adapters justified by the findings.
 6. **Shadowdark minimal sheet:** implement its system-native sparse sheet and permitted references, then reconcile the shared boundary.
 7. **Cross-system playtest hardening:** validate import/export, accessibility, mobile use, saturated sheets, sparse GM records, quick notes, resource finding, and external-feedback capture across the matrix; prepare compatibility decisions.
+8. **Scene-aware runtime guidance and navigation (`BL-073`):** after saturated-sheet and multi-system evidence exists, investigate system-native cues, summaries, landmarks, emphasis, or explicit focus without generalizing action-economy records, presuming a universal pillar taxonomy, or hiding sections by default.
 
 The apply phase for BL-067 allocated durable backlog IDs after checking current and historical IDs. Each implementation epic will receive its own OpenSpec proposal. The sequence may place source-provenance work in parallel with `BL-064`; Shadowdark may proceed within the conservative baseline but cannot silently expand beyond it.
 
@@ -223,9 +224,21 @@ The documentation apply resolved the planning questions as follows:
 - `docs/rules-resource-policy.md` plus the rights-classification ADR adopt self-hosting for verified redistributable sources and useful conservative locators otherwise. The register records official SRD 5.1 and SRD 5.2.1 planning artifacts as CC BY self-hosting candidates; `BL-069` will replace the bookmarked 5.1 derivative, and the current 5.2.x release will be rechecked before public handoff. Shadowdark may proceed within the external-link/page-name baseline and requires permission or qualified review only for expanded source use.
 - The core-audit evidence now lives in this design and identifies document/system lifecycle metadata as the leading shared persistence candidate, directs shared consumers toward computed character-list, navigation, recovery, and reference-topic views, and distinguishes reusable interaction primitives from a universal renderer. It deliberately leaves exact envelope and dispatch signatures to `BL-070`.
 - `docs/fillable-pdf-interoperability-audit.md` found materially lossy forms, an opaque 411-field 2024 form, and no verified redistribution grant for the sheet templates themselves. JSON remains canonical; no PDF adapter is a first-playtest readiness prerequisite. `BL-066` becomes an early P1 export-first proof after a target schema and template-delivery basis settle.
-- Git history and active/archived artifacts showed no prior use of `BL-068` through `BL-072`. The apply allocated `BL-068` to rights/Shadowdark feasibility, `BL-069` to reference navigation, `BL-070` to the multi-system/2024 boundary, `BL-071` to Shadowdark, and `BL-072` to cross-system hardening. Retained `BL-064` owns the Horizon A dense-collection/focused-row/annotation baseline.
+- Git history and active/archived artifacts showed no prior use of `BL-068` through `BL-073`. The apply allocated `BL-068` to rights/Shadowdark feasibility, `BL-069` to reference navigation, `BL-070` to the multi-system/2024 boundary, `BL-071` to Shadowdark, `BL-072` to cross-system hardening, and `BL-073` to the trigger-deferred scene-aware guidance/navigation investigation. Retained `BL-064` owns the Horizon A dense-collection/focused-row/annotation baseline.
 
 The unresolved questions below are intentionally delegated to their bounded implementation epics rather than blocking this planning change.
+
+### 11. Reconcile directional survey evidence on 2026-08-01
+
+The owner supplied two local survey exports: a four-response tooling survey and a seven-response play-preference survey, collected from 2024-10-20 through 2025-03-08. The committed [anonymous synthesis](../../../docs/vision/evidence/2026-08-01-pre-playtest-surveys.md) records aggregate distributions, question themes, limitations, and implications without usernames, exact response timestamps, or attributable quotations. The raw PDFs and CSVs remain ignored local material.
+
+The evidence confirms mobile-first maintenance, contextual guidance, trusted source navigation, sparse-to-saturated data, and flexible authorship across exploration, roleplay, and combat as useful first-playtest hypotheses. It also exposes a real tension between automatic calculations and understanding or controlling the underlying values. Progressive assistance should therefore remain optional and explainable when it arrives.
+
+The evidence does not establish demand for the three selected systems: the sample is small, system interest was dispersed, and Shadowdark received no selections. The matrix remains an owner-directed product and architecture proof rather than a popularity claim. Likewise, interest in guided management does not by itself require a full creation wizard. Horizon A will test contextual references, informative empty states, focused maintenance, and transparent aids; external feedback will determine whether a bounded creation workflow moves forward in Horizon B.
+
+Physical-dice preference and the adjacent interest in maps, music, imagery, and other session presentation do not expand this change. Dice remains a non-goal, while session-level presentation remains on the Dungeons and Dashboards side of the product boundary.
+
+Broadening runtime beyond combat does not require equal visual weighting or a selected-pillar mode. Combat may remain the most prominent rules-dense surface. `BL-064` will first test non-destructive landmarks and whole-sheet navigation, while trigger-deferred `BL-073` preserves the later question of system-native scene cues, summaries, and explicit focus after saturated-sheet and multi-system evidence. Automatic scene inference, default hiding, a universal pillar taxonomy, and treating every scene concern as an action-economy record are not part of PRD v1.
 
 ## Risks / Trade-offs
 
@@ -257,4 +270,3 @@ Rollback consists of reverting these documentation changes. No character data or
 - How conservative should the first Shadowdark topic/section descriptions be beyond the expressly permitted general page/name references, and which locally controlled workflow can draft them without exposing source bytes?
 - During the reference-navigation epic, does browser/document-native text search satisfy the playtest need, or does licensed SRD material require an app-owned local text index after usability testing?
 - Which fields, if any, remain genuinely universal in the persisted character core after 2024 and Shadowdark comparison, and which shared consumers should instead use computed system views?
-- Which pre-playtest survey findings materially alter the drafted readiness priorities once the owner supplies anonymized exports?

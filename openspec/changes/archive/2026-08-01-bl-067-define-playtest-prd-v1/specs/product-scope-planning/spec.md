@@ -41,6 +41,10 @@ The target PRD SHALL require each playtest sheet to remain useful when optional 
 - **WHEN** a user records only the information needed for current play
 - **THEN** the target experience SHALL keep runtime review, editing, and note-taking usable without forcing unrelated fields to be completed
 
+#### Scenario: User needs guidance for one unfamiliar section
+- **WHEN** a user knows one value to enter but is unfamiliar with the rest of that sheet section
+- **THEN** the target experience SHALL provide a reasonable entry point, communicate that unrelated data may remain absent, and expose configured authoritative guidance without forcing a complete creation workflow
+
 #### Scenario: User maintains a saturated character
 - **WHEN** a character accumulates large collections, modifiers, annotations, and authored notes
 - **THEN** the target experience SHALL retain understandable visual and navigation anchors, practical focused editing, and a reasonably clear home for authored information
@@ -51,6 +55,10 @@ The target PRD SHALL prioritize rapid access to runtime information and low-fric
 #### Scenario: User needs to record table information quickly
 - **WHEN** a user needs to find, change, or annotate character information during play
 - **THEN** the target experience SHALL keep the relevant runtime data and quick authoring path immediately available without forcing a broader workflow
+
+#### Scenario: Current play is not combat
+- **WHEN** the current scene centers on exploration, roleplay, or another system-relevant activity
+- **THEN** the target experience SHALL keep applicable character information and flexible notes accessible without treating combat data as the only runtime priority
 
 ### Requirement: Shared persistence does not impose one system's shape
 The planning documentation SHALL audit the current shared character schema before durable multi-system versions freeze and SHALL distinguish genuinely shared document lifecycle metadata from system-native persisted data.
@@ -147,11 +155,12 @@ The planning documentation SHALL distinguish approval of PRD v1, playtest readin
 - **THEN** they SHALL synthesize a short external survey and qualitative observations with response count, limitations, decisions, and backlog destinations before the owner makes the product-v1.0 decision
 
 ### Requirement: Playtest work is decomposed into separately executable epics
-The roadmap SHALL decompose resource feasibility, Horizon A dense-collection usability, reference navigation, shared-core and multi-system evaluation, 2024 support, fillable-PDF interoperability, Shadowdark support, and cross-system hardening into independently refinable backlog items and OpenSpec changes with explicit dependencies.
+The roadmap SHALL decompose resource feasibility, Horizon A dense-collection usability, reference navigation, shared-core and multi-system evaluation, 2024 support, fillable-PDF interoperability, Shadowdark support, cross-system hardening, and evidence-gated scene-aware guidance/navigation into independently refinable backlog items and OpenSpec changes with explicit dependencies.
 
 #### Scenario: Maintainer selects the next implementation slice
-- **WHEN** BL-067 planning is complete
-- **THEN** the backlog SHALL identify the next bounded epic and its prerequisites, and SHALL keep BL-067 active until the owner explicitly approves archival rather than treating completed apply tasks as automatic completion
+- **WHEN** an OpenSpec change has completed implementation, reconciliation, and verification
+- **THEN** the backlog SHALL identify the next bounded epic and its prerequisites
+- **AND** the change SHALL remain active until the owner reviews the resulting work and explicitly approves archival rather than treating completed apply tasks as automatic completion
 
 #### Scenario: Shared system architecture is proposed
 - **WHEN** the second concrete system introduces common creation, parsing, serialization, display, or navigation needs

@@ -1,11 +1,12 @@
 # PRD v1 — First External Playtest Contract
 
-- **Status:** Target-state contract; not yet implemented
+- **Status:** Approved target-state contract; not yet implemented
 - **Owner:** Product author
 - **Date:** 2026-07-31
+- **Approved:** 2026-08-01
 - **Last reviewed:** 2026-08-01 during `BL-067` refinement
 
-This PRD defines the product ez-chars intends to place in its first external playtest. It does not describe the application as shipped today. The [active goals](../active-goals.md) are the authority for current behavior; the [author desires](author-desires.md) explain the longer horizon.
+This PRD defines the product ez-chars intends to place in its first external playtest. It does not describe the application as shipped today. The [active goals](../active-goals.md) are the authority for current behavior; the [author desires](author-desires.md) explain the longer horizon; the [dated survey synthesis](evidence/2026-08-01-pre-playtest-surveys.md) records the directional pre-playtest evidence reconciled into this revision.
 
 Approving this document does not release product v1.0 or freeze character schemas. Those are later, evidence-based milestones defined below.
 
@@ -56,12 +57,15 @@ A user can:
 Every target sheet must:
 
 - surface its most important current state, defenses, actions or abilities, carried equipment, and quick notes without requiring edit mode;
+- surface system-relevant exploration, roleplay, or scene information where the scenario needs it rather than treating runtime as combat-only;
 - permit absent optional data without broken, misleading, or completion-blocking presentation;
 - keep quick user-authored notes no more than two deliberate control activations from the open sheet;
 - provide a clear way to change surfaced runtime values without navigating through an unrelated creation workflow;
 - preserve user-authored language and annotations instead of forcing all detail into fixed rules fields.
 
 The exact fields and organization are system-native. Similar labels across systems do not imply identical stored shapes.
+
+Runtime-first does not require combat, exploration, and roleplay to receive equal visual weight. Combat may remain especially prominent where its rules density and time sensitivity warrant it. This playtest contract does not require a pillar selector or scene mode, and it does not permit required information to become unreachable merely because a focus is active.
 
 Sheets should nevertheless share a recognizable interaction language where the concepts genuinely fit: accessible cards and rows, focused editing, annotations, data bindings, dialogs, navigation landmarks, and predictable feedback should be reused or adapted rather than rebuilt as unrelated page monoliths. This is a presentation and interaction goal, not a universal persisted schema or rendering-description language.
 
@@ -123,6 +127,7 @@ Images, scans, OCR, inferred extraction, arbitrary uploads, and server-side docu
 - premium-content hosting, unlicensed redistribution, or treating free price as processing permission;
 - simultaneous support for every revision in the D&D 2024 SRD line;
 - a mandatory dedicated NPC schema or stat-block mode before the sparse-sheet hypothesis is tested;
+- a mandatory pillar selector, automatically inferred scene mode, or default hiding of sheet sections;
 - image/scanned-sheet import, OCR, semantic indexing, or arbitrary user document uploads;
 - live integration with D&D Beyond, Dungeons and Dashboards, or another external product;
 - systems or horizons beyond the three-system target without a separate scope decision.
@@ -143,6 +148,7 @@ The build is ready to give external testers only when all of the following are t
 
 - **Scenario completeness:** all six matrix scenarios pass an owner solo-play rehearsal on a phone-sized viewport; each of the three player-character scenarios also passes at desktop width.
 - **Sparse-to-saturated navigation:** each system's saturation fixture remains operable at phone and desktop widths; the owner can find declared runtime values, edit a specified collection row, locate an annotation, and add a note without losing context or relying on undocumented duplicate placement.
+- **Guided maintenance:** a tester unfamiliar with part of the sheet can identify a reasonable place to enter one known value, understand that unrelated data may remain absent, and reach the configured authoritative reference without being forced through a creation wizard.
 - **Fast runtime access:** from an open sheet, each scenario's declared current state, primary action/capability, and quick notes are visible or reachable with at most one deliberate control activation. Scrolling within the sheet is not counted as leaving the runtime context.
 - **Flexible quick notes:** a tester can create or amend the scenario's quick note with at most two deliberate control activations from the open sheet, without completing unrelated fields.
 - **Data safety:** every scenario's edits survive reload; its JSON export imports into an isolated local state; identity, runtime values, collections, annotations, and meaningful absence match after restore; invalid or unsupported imports do not overwrite valid local data.
@@ -163,6 +169,7 @@ After external testing, a product-v1.0 decision requires:
 - durable schema identifiers, compatibility promises, recovery behavior, and source versions documented for the released systems;
 - playtest observations reconciled into active goals, prioritized backlog items, specifications, and ADRs where their authority applies;
 - post-playtest feedback, including a short external survey administered outside the application, synthesized with response count, limitations, and resulting decisions;
+- explicit feedback on whether contextual references, empty states, focused editing, and transparent aids provided enough guidance or whether a bounded creation workflow should be promoted;
 - an explicit human-owner approval rather than an inferred release from passing automation.
 
 ## Compatibility Boundary

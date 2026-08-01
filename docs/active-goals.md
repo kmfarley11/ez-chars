@@ -6,7 +6,7 @@ This document defines the active delivery boundary and records what is actually 
 
 Prepare a local-first, mobile-friendly character-data companion for a first external playtest across D&D 5e 2014, D&D 5e 2024, and Shadowdark. A user should be able to create, open, edit, reopen, use at the table, annotate, export, and import system-native characters without needing an account.
 
-The current application is still a D&D 5e 2014-only pre-release baseline and has not begun real external playtesting. PRD v1 approval schedules a target; it does not represent 2024 or Shadowdark behavior as shipped and does not freeze schemas.
+The current application is still a D&D 5e 2014-only pre-release baseline and has not begun real external playtesting. The approved PRD v1 schedules a target; it does not represent 2024 or Shadowdark behavior as shipped and does not freeze schemas.
 
 Character data created during this phase is experimental and is not guaranteed to survive schema changes. The 2014 pre-playtest schema uses an explicitly unstable v0 epoch. Immediately before external handoff, each supported system must receive an explicit durable schema decision; only then does the migration policy in the [character-data versioning decision](decisions/2026-07-18-version-and-normalize-5e-character-data.md) become a product compatibility promise.
 
@@ -16,7 +16,7 @@ Character data created during this phase is experimental and is not guaranteed t
 - add explicit D&D 5e 2024 support for one adopted current SRD 5.2.x release, rechecked and pinned before public handoff;
 - add a system-native Shadowdark sheet using user-authored data and the conservative external-source locator baseline; separately gate any bundled, excerpted, ingested, transformed, branded, or official-form behavior;
 - maintain a local character list with authoritative system selection, creation, opening, deletion, and recovery;
-- keep runtime sections and flexible quick notes useful for both representative player characters and intentionally sparse sidekick/NPC records;
+- keep scene-relevant runtime sections and flexible quick notes useful across exploration, roleplay, and combat for both representative player characters and intentionally sparse sidekick/NPC records;
 - provide system-native schemas and sheets without forcing 5e root fields onto other systems;
 - validate local persistence and JSON backup/restore at system and I/O boundaries;
 - provide rights-classified resource and curated-section discovery, lawful document navigation, and contextual locators without requiring a normalized compendium;
@@ -43,7 +43,7 @@ Character data created during this phase is experimental and is not guaranteed t
 - runtime information and flexible quick notes meet the measured mobile interaction gates;
 - configured rules topics can be found and opened through the rights-approved reference path;
 - critical data-safety, accessibility, table-use, and content-rights blockers are resolved before external handoff;
-- anonymized pre-playtest survey evidence is reconciled into the readiness priorities, and post-playtest feedback is synthesized before a product-v1.0 decision;
+- the dated anonymized pre-playtest survey synthesis remains traceable to readiness priorities, and post-playtest feedback is synthesized before a product-v1.0 decision;
 - local verification passes according to [docs/verification.md](verification.md).
 
 ## Current Status
@@ -70,7 +70,7 @@ This is a capability summary for the completed 2014 baseline, not a chronologica
 - 2024 D&D and Shadowdark system schemas, creation choices, routes, sheets, and fixtures
 - a system-dispatch and computed-summary boundary that does not require the home list to inspect 5e fields
 - a rights-classified resource library, curated-section search, and contextual reference navigation
-- pre-playtest survey synthesis, owner solo-play rehearsals, saturation stress evidence, and external evidence across the PRD matrix
+- owner solo-play rehearsals, saturation stress evidence, and external evidence across the PRD matrix
 
 ### Deferred
 

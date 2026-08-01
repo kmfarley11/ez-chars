@@ -106,8 +106,10 @@ This repository uses OpenSpec as the preferred workflow for all active, non-triv
 - **Backlog Priority Movement**: Apply the P0/P1/P2 meanings in [the backlog priority classes](docs/backlog.md#priority-classes). Reprioritize an item by moving only its ID link between the lightweight queues; do not relocate or duplicate its detailed catalog definition. Treat priority as distinct from readiness and recommended execution order.
 - **Workflow Skill Overrides**: When executing OpenSpec workflows (explore, propose, apply, archive), agents MUST follow these repository-specific rules over the generic skill instructions:
   - **Explore**: If a feature idea is refined but no proposal is started, explicitly offer to capture the "Refined feature idea" into the `docs/backlog.md` priority queue.
-  - **Propose**: When generating `tasks.md`, always ensure the final section includes explicit tasks to prune the completed backlog item from `docs/backlog.md` and re-sequence the "Next recommended sequence" priority queue block.
+  - **Propose**: When generating `tasks.md`, always ensure the final section includes (1) a named post-apply user review and explicit approval task that agents cannot self-complete and (2) explicit archive-time tasks to prune the completed backlog item from `docs/backlog.md` and re-sequence the "Next recommended sequence" priority queue block.
+  - **Apply**: Agents may complete implementation, reconciliation, and verification tasks, but MUST leave the named post-apply user review/approval task unchecked. After presenting the resulting change scope, verification evidence, and material fallout, stop for explicit human approval. A request to begin applying the change, a clean self-review, or passing automation is not approval of the resulting implementation.
   - **Archive**:
+    - Archive only after the human owner has reviewed the post-apply result and explicitly approved it. A direct archive request made after that review may serve as approval; do not require redundant confirmation. Do not infer approval from an earlier request to implement through completion.
     - If the change includes delta specs, ALWAYS sync them to the main specs directory automatically without prompting the user for permission.
     - Preserve the archived change's delta specs as historical artifacts with their operation headings (`## ADDED Requirements`, `## MODIFIED Requirements`, or `## REMOVED Requirements`).
     - Main specs are durable capability documents, not delta artifacts. Merge each delta into the affected main spec and ensure the result uses a capability title, a meaningful non-placeholder `## Purpose`, and `## Requirements`. NEVER copy delta operation headings into `openspec/specs/`.
@@ -238,6 +240,7 @@ After implementation, review material decisions, omissions, deviations, and veri
 - Reconcile technical and workflow fallout into Design, Tasks, and maintainer documentation.
 - Update Proposal or Specifications only when product scope, capability boundaries, or observable behavior changed.
 - Treat ordinary implementation discretion as implementation detail; do not over-specify it retroactively.
+- Keep the final post-apply user review/approval task open until the human has reviewed the resulting implementation and explicitly accepted it; agents may not close this gate through self-review.
 - Do not archive while known material fallout remains undocumented or unresolved.
 - Run `openspec validate` after modifying OpenSpec artifacts.
 - Re-run affected verification after repository or implementation changes.
