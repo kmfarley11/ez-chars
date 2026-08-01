@@ -1,8 +1,10 @@
 # 2026-07-17 Keep sheet adapters feature-local while preserving a registry direction
 
-**Status:** Approved  
-**Author:** Codex with project owner direction  
-**Date:** 2026-07-17
+- **Status:** Approved
+- **Author:** Codex with project owner direction
+- **Date:** 2026-07-17
+- **Last reviewed:** 2026-08-01
+- **Latest refinement:** `BL-067` made the second-system/core audit concrete and distinguished shared interaction primitives from a universal rendering schema; see the final refinement below.
 
 ## Context & Problem Statement
 
@@ -72,10 +74,16 @@ This remains evidence for a future registry rather than a universal source-provi
 
 ### 2026-07-31: Concrete second-system trigger and a lighter shared core
 
-PRD v1 makes the earlier trigger concrete: 2024 D&D will be the second system implementation, followed by Shadowdark as the non-5e validation case. The [multi-system core audit](../multi-system-core-audit.md) found that the current shared document persists 5e-shaped identity, feature, inventory, and note concepts in addition to genuinely shared lifecycle data. The current shape is implementation evidence, not the required input to a future registry.
+PRD v1 makes the earlier trigger concrete: 2024 D&D will be the second system implementation, followed by Shadowdark as the non-5e validation case. The core audit preserved in the active `BL-067` OpenSpec design found that the current shared document persists 5e-shaped identity, feature, inventory, and note concepts in addition to genuinely shared lifecycle data. The current shape is implementation evidence, not the required input to a future registry.
 
 The 2024 proposal must therefore evaluate a smaller validated envelope and system-owned character data before freezing durable versions. Shared application consumers should receive narrow computed views—initially a character-list summary, sheet destination, backup/recovery description, and contextual reference topics—rather than read gameplay fields from the generic root. Reusable annotation, reference, item, feature, and note schemas may remain opt-in primitives without requiring identical root placement.
 
 This refinement does not approve an exact envelope, registry API, route mechanism, component loader, or universal edit/render contract. Those decisions need implementation evidence. The first multi-system slice should extract only creation, dispatch, parsing/serialization, summary, and navigation seams required by both D&D systems; any 5e-family helpers must remain labeled as family-specific. Shadowdark must then validate or revise those seams before they are treated as general TTRPG architecture.
 
 Each playtest system retains an explicit system ID, rules version, validated schema, projections, edit behavior, and layout. Short-term duplication remains acceptable when it supplies evidence more honestly than a guessed universal abstraction.
+
+### 2026-08-01: Shared interaction language without a universal renderer
+
+System-owned layouts do not imply unrelated page monoliths. `BL-070` must audit the existing grid/card, binding, focused-edit, annotation, dialog, and navigation primitives against both D&D systems and the repository's rough system-sheet sketches. Reuse or adapt a primitive when its interaction contract fits; record why a new system-specific presentation is necessary when it does not. Shadowdark then tests whether those presentation mechanisms are genuinely reusable or merely 5e-family conventions.
+
+This does not approve a universal rendering-description schema, generic field registry, or repo-wide component reorganization. A focused atom/molecule/organism and route-composition audit is now timely because the second sheet is concrete, but extraction remains evidence-driven and bounded to the systems being implemented.

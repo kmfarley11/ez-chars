@@ -36,10 +36,12 @@ The application should help a user shape, find, and annotate their information w
 - [ ] **Runtime first—the north star:** the information needed during a turn or scene is visible immediately or one interaction away, and quick notes never require leaving the flow of play.
 - [ ] **Mobile first:** core viewing, editing, note-taking, navigation, and reference lookup work comfortably on a phone.
 - [ ] **Sparse by design:** optional or unknown information may remain absent without making the sheet look broken or blocking useful work.
+- [ ] **Saturation stays navigable:** campaign-scale collections, modifiers, and authored notes retain clear homes, visual anchors, and practical discovery rather than recreating paper-sheet or VTT overload.
 - [ ] **Human authorship stays first-class:** users can enter, amend, and annotate information in their own words.
 - [ ] **Guidance is contextual and optional:** relevant free references appear near editing and viewing tasks without becoming a mandatory wizard.
 - [ ] **Local-first ownership:** users can use the public baseline without an account and can export their character data.
 - [ ] **System-native shapes:** each rules system may model and present its own concepts; shared infrastructure must not force 5e structure onto other games. Prefer a small cross-system envelope plus computed system views over making generic persisted fields the lowest common denominator.
+- [ ] **A familiar interaction language:** system-native sheets should reuse accessible presentation and editing primitives where concepts fit, so cards, focused edits, annotations, navigation, and feedback feel related without forcing one universal rendering schema.
 - [ ] **Progressive assistance:** manual entry and bibliographic references come before compendium-backed suggestions, automation, or character building.
 - [ ] **Rights-aware by construction:** prefer self-hosting and useful indexing when a verified license or permission allows it; otherwise use the narrowest appropriate reference mode. A free price alone is not evidence of redistribution or processing rights.
 - [ ] **One product, bounded horizons:** future capabilities should fit a coherent character-data companion, but they do not need to be built simultaneously.
@@ -60,7 +62,7 @@ The playtest target should include:
 
 - D&D 5e 2014, based on the SRD 5.1 rules line;
 - D&D 5e 2024, based on one current project-adopted release from the SRD 5.2 line; the app need not support multiple 2024 SRD releases simultaneously;
-- Shadowdark, subject to the rights and permission gate below;
+- Shadowdark, using user-authored data and the conservative external-source baseline below;
 - one clearly selectable, system-specific sheet experience for each target system;
 - player-character use in all three systems;
 - a sparse-data scenario in all three systems that first tests whether the regular sheet is practical for a sidekick or NPC; a focused lite/stat-block mode remains acceptable if evidence shows it is needed;
@@ -70,8 +72,9 @@ The playtest target should include:
 - phone-sized, keyboard, touch, and assistive-technology usability;
 - a resource library that can find relevant free rules documents and their indexed sections, then navigate the user to the source, preferring stable self-hosted copies when licensing permits;
 - contextual resource links while editing important sections such as spells, equipment, or system equivalents.
+- conservative page/name/chapter locators for external free or user-owned paid sources when the project cannot host their content, including more than one source map for a system when editions or books place the same topic differently.
 
-The minimum reference experience is document-oriented, not a normalized rules compendium. Searching resource titles and curated section metadata, jumping to a chapter or page, and using the selected document's own search affordance are sufficient first-playtest goals. A navigation index containing document metadata, topics, and locators is explicitly in scope; it does not become a compendium merely because it is searchable. If usability or rights-permitted source processing later demonstrates that structured rules records are necessary, that should be proposed as a deliberate expansion.
+The minimum reference experience is document-oriented, not a normalized rules compendium. Searching resource titles and curated section metadata, jumping to a chapter or page, and using the selected document's own search affordance are sufficient first-playtest goals. A navigation index containing document metadata, topics, and locators is explicitly in scope; it does not become a compendium merely because it is searchable. Its long-term model should allow multiple sources for one system or topic—for example a free quickstart and a user-owned core rulebook—without implying that the app supplies the paid material. If usability or rights-permitted source processing later demonstrates that structured rules records are necessary, that should be proposed as a deliberate expansion.
 
 ## Explicit First-Playtest Non-Goals
 
@@ -92,7 +95,7 @@ The operational classifications, evidence checklist, and adopted/candidate sourc
 Every resource should be classified before the application decides how to expose it:
 
 1. **Redistributable:** the project has verified an open license or direct permission, records the required attribution, and may bundle or process the permitted material. Self-hosting is preferred when it improves URL stability, proximity, offline access, or page-level navigation.
-2. **Link-only:** the material is free to access but redistribution or processing rights are absent or unclear; the app may provide a lawful external link and bibliographic locator but must not host or ingest the document.
+2. **Link-only:** redistribution or processing rights are absent or unclear; the app may provide an authoritative acquisition link and conservative bibliographic locators for free or user-owned paid material but must not host or ingest the document.
 3. **User-local:** a future user may point their own device at material they possess, provided the application can keep that material local and the workflow receives separate product and legal review.
 4. **Unavailable to the public product:** premium, official, or third-party material for which the project lacks appropriate rights.
 
@@ -104,24 +107,37 @@ The author would prefer to self-host every relevant PDF for which the project ha
 
 - Wizards of the Coast publishes [SRD 5.1 and the SRD 5.2 line](https://www.dndbeyond.com/srd) under CC BY 4.0. That license permits sharing copies, so the project may self-host the licensed PDFs while preserving the applicable SRD's exact attribution, license notice, and modification status. The PDF remains identified as third-party CC BY material; including it does not require the separately authored application as a whole to use the same license.
 - The Arcane Library offers the [Shadowdark Quickstart Set](https://www.thearcanelibrary.com/products/shadowdark-rpg-quickstart-set-pdf) free of charge, but free access alone does not establish redistribution rights.
-- The official [Shadowdark third-party-license FAQ](https://www.thearcanelibrary.com/blogs/shadowdark-blog/faq-on-the-shadowdark-rpg-third-party-license) says that character-building apps are outside that license while general page-and-name references are allowed. Before public Shadowdark support is implemented or described as licensed, the project should obtain written permission or qualified legal review for the exact sheet and reference experience. Until then, plans should assume only user-authored data and conservative bibliographic/external-link behavior.
+- The official [Shadowdark third-party-license FAQ](https://www.thearcanelibrary.com/blogs/shadowdark-blog/faq-on-the-shadowdark-rpg-third-party-license) says that character-building apps are outside that license while general page-and-name references are allowed. The conservative product baseline is therefore a system-native sheet containing only user-authored data plus bibliographic/page/name locators and authoritative acquisition links. Written permission or qualified review becomes a gate before the project bundles, excerpts, ingests, transforms, or otherwise expands beyond that baseline; the project does not describe the baseline as an official or licensed Shadowdark character builder.
 
-This policy is a product-risk boundary, not legal advice.
+This policy is a product-risk boundary, not legal advice. A qualified professional remains the appropriate path if the owner needs legal certainty rather than a conservative implementation policy.
+
+## Evidence and Feedback
+
+The product should be shaped by three evidence loops rather than by implementation intuition alone:
+
+1. anonymized pre-playtest survey evidence about new-player and GM friction;
+2. owner-run solo-play rehearsals against sparse, representative, and saturated fixtures;
+3. external sessions followed by a short survey and qualitative notes.
+
+Surveys should remain external to the application unless collecting feedback becomes a product job of its own. Prefer reproducible, anonymized CSV exports for local analysis, with question wording, response count, distributions, free-text themes, and limitations recorded in a committed synthesis. Raw exports and direct identifiers should remain outside Git. Small samples guide priorities and hypotheses; they do not prove broad user behavior.
+
+The rough 5e, Shadowdark, and Cairn Excalidraw files are existing design evidence, not implementation contracts. System-sheet epics should explicitly audit their runtime priorities and visual anchors before discarding or adopting them.
 
 ## Product Horizons
 
 ### Horizon A — First external playtest
 
-- [x] Approve [PRD v1](PRD-v1.md) with current-versus-target status and measurable playtest gates.
-- [ ] Resolve the Shadowdark permission/licensing path.
-- [x] Audit the current generic core schema and record the preferred smaller-envelope, system-owned-data, and computed-view direction in the [multi-system core audit](../multi-system-core-audit.md); implementation remains part of the 2024/multi-system epic.
+- [ ] Finalize and approve [PRD v1](PRD-v1.md) with current-versus-target status and measurable playtest gates after pre-playtest survey reconciliation and owner review.
+- [ ] Confirm and document the conservative Shadowdark external-source baseline; seek permission or qualified review only if a later proposal expands into bundled, excerpted, ingested, transformed, or branded source use.
+- [x] Audit the current generic core schema and record the preferred smaller-envelope, system-owned-data, computed-view, and shared-interaction direction in the active `BL-067` OpenSpec design; implementation remains part of the 2024/multi-system epic.
 - [ ] Establish the smallest multi-system creation, loading, routing, persistence, and export boundary using concrete systems.
 - [ ] Deliver minimal, sparse-friendly 2014, 2024, and Shadowdark sheets.
 - [ ] Self-host verified redistributable rules PDFs and deliver the rights-classified resource library plus contextual reference path.
 - [x] Complete the [editable-PDF field and rights audit](../fillable-pdf-interoperability-audit.md) for available publisher sheets: retain JSON as canonical, promote `BL-066` to an early P1 export-first proof, and do not make PDF interchange a first-playtest readiness prerequisite.
-- [ ] Establish a heuristic-driven baseline for dense collection discovery, focused row editing, and annotations before external playtesting.
-- [ ] Complete representative player-character and GM sidekick/NPC playtest scenarios on mobile.
-- [ ] If Shadowdark permissions materially constrain the intended resource experience, explicitly decide whether adding a fourth CC-licensed system provides enough evidence to justify the extra scope; do not replace Shadowdark or expand the matrix automatically.
+- [ ] Establish a heuristic-driven baseline for dense collection discovery, focused row editing, annotations, and whole-sheet navigation under saturation before external playtesting.
+- [ ] Complete representative player-character, sparse GM sidekick/NPC, and saturated-sheet owner rehearsals on mobile.
+- [ ] Synthesize anonymized pre-playtest surveys before finalizing readiness priorities, then reconcile external survey evidence after the playtest.
+- [ ] If the conservative Shadowdark baseline materially constrains the intended resource evidence, explicitly decide whether adding a fourth CC-licensed system provides enough evidence to justify the extra scope; do not replace Shadowdark or expand the matrix automatically.
 - [ ] Freeze the first durable character-data versions only when the external playtest actually begins.
 - [ ] Reconcile playtest findings before calling the product v1.0.
 
@@ -133,6 +149,7 @@ This policy is a product-risk boundary, not legal advice.
 - [ ] Improve rules-resource search and source-aware annotations where licenses permit it.
 - [ ] Add lightweight guided creation for the highest-friction sections before attempting a complete builder.
 - [ ] Implement broader fillable-PDF import/export for systems whose audited forms provide reliable mappings, while preserving richer internal data that the forms cannot represent.
+- [ ] If post-v1 evidence calls for a fundamental schema reset, immediately prioritize a reviewed export/recovery bridge—including editable-PDF interoperability where viable—before asking users to cross it; retain JSON and explicit migrations as the lossless contract.
 
 ### Horizon C — Character building and broader system support
 
@@ -151,16 +168,17 @@ This policy is a product-risk boundary, not legal advice.
 
 ## Strategic Priority Queue
 
-This is a vision-level dependency order, not a substitute for backlog IDs or an active OpenSpec task list. PRD approval plus the core/PDF planning audits are complete; the active delivery sequence is:
+This is a vision-level dependency order, not a substitute for backlog IDs or an active OpenSpec task list. The PRD draft and core/PDF planning audits exist, but `BL-067` remains open pending survey reconciliation and owner approval. The active delivery sequence is:
 
-1. Resolve resource rights and the Shadowdark feasibility gate before product work depends on redistributed or processed Shadowdark material (`BL-068`).
-2. Address the cross-cutting playtest enabler already evidenced by the 2014 sheet: a heuristic baseline for dense collection discovery, focused row editing, and annotations (`BL-064`).
-3. Prove self-hosted/link-only resource discovery and contextual navigation against the existing 2014 sheet (`BL-069`).
-4. Establish the minimum multi-system lifecycle/computed-view boundary and a 2024 5e sheet; support one deliberately adopted current SRD release and treat 5e-family reuse as family evidence (`BL-070`).
-5. Add the minimal Shadowdark sheet after its rights gate and use its different shape to validate or revise the shared boundary (`BL-071`).
-6. Harden mobile interaction, sparse NPC/sidekick use, backup/restore, resource lookup, and compatibility decisions across the full matrix (`BL-072`).
-7. Run the early P1 fillable-PDF export/import proofs after a target schema and template-delivery basis settle (`BL-066`); they complement but do not gate the first playtest.
-8. Reconcile external evidence before promoting specialized builders, stat-block modes, normalized compendium behavior, more systems, image/OCR import, or connected services.
+1. Finish `BL-067` by incorporating the owner's survey evidence and final review; do not treat its completed planning slices as archival approval.
+2. Confirm source classifications and the conservative Shadowdark baseline before product work depends on redistributed or processed material (`BL-068`).
+3. Address the cross-cutting playtest enabler already evidenced by the 2014 sheet: dense collection discovery, focused row editing, annotations, and saturated-sheet navigation (`BL-064`).
+4. Prove self-hosted/link-only resource discovery and contextual navigation against the existing 2014 sheet (`BL-069`).
+5. Establish the minimum multi-system lifecycle/computed-view boundary and a 2024 5e sheet; support one deliberately adopted current SRD release, audit the existing rough designs, and treat 5e-family reuse as family evidence (`BL-070`).
+6. Add the minimal Shadowdark sheet within the conservative source baseline and use its different shape to validate or revise the shared boundary (`BL-071`).
+7. Harden mobile interaction, sparse NPC/sidekick use, saturated-sheet navigation, backup/restore, resource lookup, and compatibility decisions across the full matrix (`BL-072`).
+8. Run the early P1 fillable-PDF export/import proofs after a target schema and template-delivery basis settle (`BL-066`); they complement but do not gate the first playtest.
+9. Reconcile external evidence before promoting specialized builders, stat-block modes, normalized compendium behavior, more systems, image/OCR import, or connected services.
 
 ## Decision Filter for Future Work
 

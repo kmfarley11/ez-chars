@@ -26,6 +26,10 @@ The target PRD SHALL define a first external playtest that includes D&D 5e 2014,
 - **WHEN** maintainers evaluate whether the target playtest scope covers sidekick and NPC use
 - **THEN** the PRD SHALL test a sparse-data scenario for each required system as the default hypothesis while preserving a focused lite or stat-block mode as an evidence-driven option
 
+#### Scenario: Campaign growth is rehearsed before handoff
+- **WHEN** maintainers evaluate whether a system sheet is ready for external play
+- **THEN** the PRD SHALL require a saturated fixture or stress overlay that exercises campaign-scale collections, modifiers, annotations, and notes without preselecting search, outlines, tabs, or another remedy before evidence demonstrates the need
+
 #### Scenario: 2024 rules source is selected
 - **WHEN** the playtest defines D&D 5e 2024 support
 - **THEN** it SHALL identify one project-adopted current SRD 5.2 release and SHALL NOT require simultaneous support for earlier 2024 SRD releases
@@ -36,6 +40,10 @@ The target PRD SHALL require each playtest sheet to remain useful when optional 
 #### Scenario: User records an incomplete character
 - **WHEN** a user records only the information needed for current play
 - **THEN** the target experience SHALL keep runtime review, editing, and note-taking usable without forcing unrelated fields to be completed
+
+#### Scenario: User maintains a saturated character
+- **WHEN** a character accumulates large collections, modifiers, annotations, and authored notes
+- **THEN** the target experience SHALL retain understandable visual and navigation anchors, practical focused editing, and a reasonably clear home for authored information
 
 ### Requirement: Runtime access and flexible authorship are the north star
 The target PRD SHALL prioritize rapid access to runtime information and low-friction, user-authored notes without requiring all information to fit rigidly sized or exhaustively completed fields.
@@ -55,8 +63,12 @@ The planning documentation SHALL audit the current shared character schema befor
 - **WHEN** the home list, search, navigation, export, or an integration needs a common character representation
 - **THEN** the design SHALL allow a system-specific computed projection instead of requiring the underlying systems to persist identical gameplay fields
 
+#### Scenario: System sheets need a familiar experience
+- **WHEN** more than one concrete system presents compatible viewing, editing, annotation, dialog, or navigation behavior
+- **THEN** the design SHALL evaluate reusable accessible presentation primitives while allowing system-native composition and SHALL NOT require a universal persisted schema or rendering-description language
+
 ### Requirement: Reference scope is document-oriented and contextual
-The target PRD SHALL require a user to find a relevant free rules resource or indexed section, navigate to its lawful source, and access relevant resource guidance from supported editing contexts without requiring structured compendium records.
+The target PRD SHALL require a user to find a relevant registered rules resource or indexed section, navigate to its lawful source, and access relevant resource guidance from supported editing contexts without requiring structured compendium records. The first proof SHALL include a free source, while the planning model SHALL allow future locators for user-owned sources without supplying access to them.
 
 #### Scenario: User looks for a basic rules section
 - **WHEN** a user searches for a supported topic such as spells or equipment
@@ -70,12 +82,20 @@ The target PRD SHALL require a user to find a relevant free rules resource or in
 - **WHEN** planning stores document titles, topics, section labels, pages, anchors, or other locators for search
 - **THEN** it SHALL treat that bounded navigation index as part of the playtest reference capability rather than as a general-purpose normalized rules compendium
 
+#### Scenario: One topic appears in multiple sources
+- **WHEN** a free quickstart, SRD, prior edition, or user-owned book locates the same topic differently
+- **THEN** the planning model SHALL allow distinct source identities and locator maps without reproducing protected source content or implying that paid material is included
+
 ### Requirement: Resource use follows an explicit rights classification
 The planning documentation SHALL classify each rules resource as redistributable, link-only, user-local, or unavailable to the public product before specifying how the application hosts, processes, indexes, or links it.
 
 #### Scenario: Free material has unclear redistribution rights
 - **WHEN** a rules document is free to access but the project lacks verified redistribution or processing rights
-- **THEN** planning SHALL treat the resource as link-only and SHALL NOT assume it may be bundled, ingested, indexed from its full text, or excerpted
+- **THEN** planning SHALL treat the resource as link-only, MAY retain conservative bibliographic page/name/chapter/topic locators, and SHALL NOT assume it may be bundled, ingested, indexed from its full text, or excerpted
+
+#### Scenario: User owns a paid source
+- **WHEN** a source requires purchase and the project lacks redistribution rights
+- **THEN** planning MAY provide conservative bibliographic locators and an authoritative acquisition link while clearly stating that the source is not included
 
 #### Scenario: Openly licensed material is used
 - **WHEN** a resource has a verified open license or direct permission
@@ -85,16 +105,16 @@ The planning documentation SHALL classify each rules resource as redistributable
 - **WHEN** the project self-hosts an SRD PDF licensed under CC BY 4.0
 - **THEN** the source SHALL remain clearly identified as separately licensed third-party material with its required attribution, license notice, and modification status without representing the entire application as CC BY
 
-### Requirement: Shadowdark support has a feasibility gate
-The roadmap SHALL require written permission or qualified legal review for the exact public Shadowdark sheet and reference experience before its implementation proposal is approved.
+### Requirement: Shadowdark support stays within a conservative baseline unless expanded use is cleared
+The roadmap SHALL permit a public Shadowdark sheet containing user-authored data plus authoritative acquisition links and conservative bibliographic page/name locators. It SHALL require written permission or qualified review before bundling, excerpting, full-text processing, official-form interoperability, restricted brand/assets, or other source behavior outside that baseline.
 
 #### Scenario: Shadowdark implementation is proposed
 - **WHEN** maintainers are ready to propose public Shadowdark application behavior
-- **THEN** the change SHALL identify the resolved permission basis and SHALL NOT rely solely on the quickstart's free price or the general third-party license
+- **THEN** the change SHALL identify the conservative baseline it follows, avoid claiming official or character-builder authorization, and SHALL NOT rely on the quickstart's free price or the general third-party license for broader source use
 
-#### Scenario: Permission remains unresolved
-- **WHEN** the Shadowdark feasibility gate cannot be cleared
-- **THEN** maintainers SHALL record the blocker, limit source integration to behavior cleared by review, and explicitly decide playtest timing or whether an additional CC-licensed system is justified rather than silently weakening the rights policy, removing Shadowdark, or substituting another system
+#### Scenario: Broader Shadowdark source use is desired
+- **WHEN** a proposal wants to bundle, excerpt, ingest, transform, interoperate with an official form, or use restricted branding/assets
+- **THEN** maintainers SHALL record written permission or qualified review for that exact behavior or omit it without removing the conservative Shadowdark sheet from the playtest target
 
 ### Requirement: Fillable PDFs inform but do not define canonical persistence
 The planning documentation SHALL keep validated system character data and its JSON representation as the full-fidelity persistence boundary while evaluating fillable character-sheet PDFs as early interoperability adapters and schema evidence.
@@ -122,12 +142,16 @@ The planning documentation SHALL distinguish approval of PRD v1, playtest readin
 - **WHEN** external participants first receive the supported playtest build
 - **THEN** each supported system SHALL have an explicit durable schema-version decision and any optional final-v0 migration SHALL be separately defined
 
+#### Scenario: Product v1.0 is considered after external play
+- **WHEN** maintainers reconcile external playtest evidence
+- **THEN** they SHALL synthesize a short external survey and qualitative observations with response count, limitations, decisions, and backlog destinations before the owner makes the product-v1.0 decision
+
 ### Requirement: Playtest work is decomposed into separately executable epics
 The roadmap SHALL decompose resource feasibility, Horizon A dense-collection usability, reference navigation, shared-core and multi-system evaluation, 2024 support, fillable-PDF interoperability, Shadowdark support, and cross-system hardening into independently refinable backlog items and OpenSpec changes with explicit dependencies.
 
 #### Scenario: Maintainer selects the next implementation slice
 - **WHEN** BL-067 planning is complete
-- **THEN** the backlog SHALL identify the next bounded epic and its prerequisites without using BL-067 as an umbrella implementation checklist
+- **THEN** the backlog SHALL identify the next bounded epic and its prerequisites, and SHALL keep BL-067 active until the owner explicitly approves archival rather than treating completed apply tasks as automatic completion
 
 #### Scenario: Shared system architecture is proposed
 - **WHEN** the second concrete system introduces common creation, parsing, serialization, display, or navigation needs

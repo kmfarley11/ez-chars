@@ -5,6 +5,8 @@
 - **Status:** Approved
 - **Author:** User and Codex
 - **Date:** 2026-07-25
+- **Last reviewed:** 2026-08-01
+- **Latest refinement:** `BL-067` activates the second-system trigger as a focused `BL-070` audit without approving a repo-wide hierarchy rewrite.
 
 ## Context & Problem Statement
 
@@ -101,8 +103,14 @@ In technical artifacts, call navigation units inside a dialog **steps** or **pan
 
 ## Refinements & Follow-Ups
 
-P1-062 is the first implementation proof. Its design must record the concrete molecule and organism APIs, and implementation reconciliation must update this decision if actual composition invalidates any classification. The backlog Ideation Sandbox retains the full-hierarchy audit as a trigger-based follow-up rather than a prioritized change.
+P1-062 is the first implementation proof. Its design must record the concrete molecule and organism APIs, and implementation reconciliation must update this decision if actual composition invalidates any classification.
 
 ### 2026-07-25: Searchable inventory selection
 
 Allowing all inventory items makes search and filtering part of the minimum useful source-selection behavior rather than a later enhancement. P1-062 will prove an inventory-focused picker molecule built from platform-native search and choice controls. A second source-selection consumer is the trigger to compare concrete contracts and either retain source-specific molecules or extract a shared searchable-selection molecule; long-term similarity alone is not sufficient evidence for the generic API.
+
+### 2026-08-01: Second-system trigger activated
+
+PRD v1 makes a second system-specific sheet concrete, so `BL-070` now owns the focused hierarchy and route-composition audit described above. It should evaluate whether repeated sheet landmarks or layouts justify templates/Pages and whether current organisms carry route-level responsibilities. It should also audit the existing grid/card, field-binding, annotation, focused-edit, dialog, and navigation primitives for honest reuse.
+
+The trigger does not predetermine a complete atomic-design hierarchy, repo-wide file move, or generic page template. The audit may conclude that atoms, molecules, organisms, and system-specific route composition remain sufficient for the first two sheets. Shadowdark supplies the stronger non-5e validation before any page-level convention is treated as universal.

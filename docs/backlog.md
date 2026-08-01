@@ -40,9 +40,11 @@ These are roadmap priorities, not permanent properties of an item:
 
 - **P0 — Product prerequisite:** Work necessary to satisfy the current product goals and call the scoped product the product we intend to deliver. Active P0 work takes precedence over improvements and feature expansion.
 - **P1 — Priority improvement:** High-value product, UX, developer-UX, reliability, or maintainability work that should generally be addressed before broadening the product with lower-priority features. The current product may remain usable without it.
-- **P2 — Future feature work:** New or expanded product capability intentionally deferred until the relevant P0 prerequisites and selected P1 improvements are complete.
+- **P2 — Future feature work:** New or expanded product capability generally deferred until the relevant P0 prerequisites and selected P1 improvements are complete.
 
 Priority may change as goals and evidence change. Reprioritize an item by moving only its ID link between the queues below; never rename its ID or cut and paste its detailed definition. Priority is also distinct from readiness: a blocked or trigger-deferred item may retain its strategic priority while being omitted from the next recommended sequence.
+
+The owner may intentionally pull forward a P1, P2, or ad hoc task. Agents should surface dependency, scope, and resequencing consequences, but must not reject work solely because a higher-priority item exists.
 
 ## Current Priority Queues
 
@@ -50,7 +52,8 @@ These lightweight queues record priority membership only. Detailed definitions l
 
 ### P0 — Product Prerequisites
 
-- [`BL-068` — Resolve resource rights and Shadowdark feasibility](#resolve-resource-rights-and-shadowdark-feasibility)
+- [`BL-067` — Define the first external-playtest PRD and roadmap](#define-the-first-external-playtest-prd-and-roadmap)
+- [`BL-068` — Confirm source rights and the Shadowdark baseline](#confirm-source-rights-and-the-shadowdark-baseline)
 - [`BL-064` — Scale dense collection rendering and discovery](#scale-dense-collection-rendering-and-discovery)
 - [`BL-069` — Deliver rights-classified reference navigation](#deliver-rights-classified-reference-navigation)
 - [`BL-070` — Establish the multi-system boundary and 2024 D&D sheet](#establish-the-multi-system-boundary-and-2024-dd-sheet)
@@ -70,18 +73,51 @@ No active P2 items.
 
 _Goal: First External Playtest_
 
-1. `BL-068`: Resolve source classifications and the blocking Shadowdark permission/qualified-review scope
-2. `BL-064`: Establish the dense-collection, focused-row, and annotation baseline already evidenced by the 2014 sheet
-3. `BL-069`: Prove resource discovery and contextual navigation against the 2014 sheet
-4. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary and add the minimal 2024 D&D sheet
-5. `BL-071`: Add the minimal Shadowdark sheet after `BL-068` clears its behavior and `BL-070` supplies the dispatch boundary
-6. `BL-072`: Rehearse and harden the full three-system player-character and sparse-GM matrix
+The queues above record strategic priority membership; this list records the dependency-aware action order and may omit blocked or trigger-deferred items.
+
+1. `BL-067`: Finish the pre-playtest survey synthesis and final owner review before archival
+2. `BL-068`: Confirm source classifications, official SRD artifacts, and the conservative Shadowdark baseline
+3. `BL-064`: Establish the dense-collection, focused-row, annotation, and saturated-sheet navigation baseline evidenced by the 2014 sheet
+4. `BL-069`: Prove multi-source resource discovery and contextual navigation against the 2014 sheet
+5. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary and add the minimal 2024 D&D sheet
+6. `BL-071`: Add the minimal Shadowdark sheet within the conservative baseline after `BL-070` supplies the dispatch boundary
+7. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix
 
 `BL-066` is an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights. It is deliberately not a first-playtest readiness prerequisite.
 
 ## Refined Backlog Catalog
 
 Each active refined item has one stable detailed definition in this catalog. Queue entries and the recommended sequence point here; reprioritization must not relocate or duplicate these definitions. When an item is completed and archived, remove its queue link and catalog definition, then retain only the bounded summary required by [Done Recently](#done-recently).
+
+### Define the first external-playtest PRD and roadmap
+
+ID:
+
+- `BL-067`
+
+Sequencing context:
+
+- The OpenSpec change is active and most planning artifacts are drafted. Keep this item active until the owner reviews the remaining evidence and explicitly requests archival.
+
+Refinement outputs:
+
+- **Purpose:** Bound the product milestone between the implemented 2014 baseline and the broader author vision, then decompose it into independently executable epics.
+- **Included behavior:**
+  - Maintain PRD v1, author desires, active goals, architecture/resource policy, and the first-playtest backlog as coherent but separately authoritative artifacts.
+  - Define 2014 D&D, one adopted current 2024 SRD release, and Shadowdark representative-player, sparse-GM, and saturated-sheet readiness evidence.
+  - Preserve the core/PDF/source audits inside durable OpenSpec or ADR context instead of floating analysis documents.
+  - Process anonymized pre-playtest survey exports and reconcile their bounded findings against vision, readiness priorities, and implementation epics.
+- **Excluded behavior:**
+  - Implementing the sheet, resource, PDF, or multi-system epics in this planning change.
+  - Treating small survey samples as statistically representative or embedding a survey system in the product.
+- **Ambiguities:**
+  - What do the owner's anonymized pre-playtest surveys add to or challenge in the drafted priorities?
+  - Does final review approve PRD v1 as written, or require another owner-directed refinement before archive?
+- **Success:**
+  - The owner can distinguish current behavior, the external-playtest contract, long-term intent, and dependency-ordered implementation work.
+  - Survey findings and limitations are traceable to any resulting priority change.
+  - The active OpenSpec change validates strictly and is archived only after explicit owner approval.
+- **Recommended workflow:** Continue the existing full OpenSpec change. Its remaining work is planning/evidence reconciliation, not application implementation; no additional ADR is triggered unless the evidence changes a durable decision.
 
 ### Scale dense collection rendering and discovery
 
@@ -95,19 +131,22 @@ Sequencing context:
 
 Refinement outputs:
 
-- **Purpose:** Establish a practical first-playtest baseline for finding, reviewing, editing, and annotating large character collections without allowing one inventory, spell, feature, or action list to dominate the sheet.
+- **Purpose:** Establish a practical first-playtest baseline for finding, reviewing, editing, annotating, and navigating a saturated 2014 character without allowing one collection or repeated control pattern to dominate the sheet.
 - **Included behavior:**
-  - Audit representative large weapon, gear, spell, feature, and runtime-action collections before choosing one proof surface.
+  - Audit the whole 2014 sheet with representative large weapon, gear, spell, feature, runtime-action, modifier, annotation, and notes data before choosing one focused proof surface.
   - Evaluate responsive bounded presentation, local scrolling, search, lightweight filtering, result counts, and explicit empty/no-match states.
   - Preserve complete keyboard, touch, and screen-reader access to every item; bounded presentation must not make content undiscoverable.
   - Search primary labels plus useful authored details where that behavior is predictable for the selected collection.
   - Use realistic cluttered Storybook fixtures and main-flow browser coverage to test large collections on desktop and phone-sized viewports.
   - Reuse the inventory picker’s filtering concepts only where a second concrete collection demonstrates the same contract; do not force collection rendering through the source-picker API.
   - On the selected proof surface, evaluate one explicit focused-row edit and annotation path that remains discoverable without placing permanent controls on every dense row.
+  - Correct a bulk-only editing path when the proof shows that editing one item is needlessly cumbersome; retain bulk editing as an explicit collection-level option rather than the only row path.
+  - Evaluate whether existing visual anchors remain sufficient under saturation or whether local collection search, whole-sheet search, an outline, sticky summaries, tabs, or focused expansion deserves a bounded follow-up.
   - Record a heuristic baseline for persistent versus revealed row actions, annotation-presence indicators, and equivalent mouse, keyboard, and touch entry points; leave feedback-driven standardization to Horizon B.
   - Build on the completed `p1-020` touch-target and keyboard baseline when evaluating nested scrolling and row controls.
+  - Recheck the previously observed macOS Firefox scroll jank with the repeatable saturated fixture and profiling workflow; open browser-specific optimization only if the evidence implicates application code.
 - **Excluded behavior:**
-  - Reworking every collection-row edit/annotation affordance in one slice or requiring all consumers to adopt the proof unchanged.
+  - Reworking every collection-row edit/annotation affordance in one slice or requiring all consumers to adopt the proof unchanged; broader standardization remains evidence-driven.
   - Making hover, right-click, or long-press the only path to row actions.
   - Remote search, fuzzy ranking, indexing, virtualization, or a universal list framework without measured need.
   - Applying one arbitrary fixed height to every collection regardless of density or viewport.
@@ -116,11 +155,13 @@ Refinement outputs:
   - On phone-sized screens, should large collections use contained scrolling, progressive disclosure, or an expanded focused view to avoid awkward nested scrolling?
   - Which filters beyond text search are genuinely useful for each concrete collection?
   - Should the proof use one compact row menu, a focused dialog, an expanded row, or another explicit affordance, and when should an annotation indicator remain persistent?
+  - Do navigation failures call for collection-local discovery, a whole-sheet search/outline, changed grouping, sticky landmarks, or a combination—and which remedy is justified before external handoff?
 - **Success:**
-  - A character with realistically large collections remains easy to scan and navigate without excessive page growth.
+  - A saturated 2014 character remains easy to scan and navigate without excessive page growth or ambiguous duplicate homes for authored information.
   - Every item remains reachable by keyboard, touch, and assistive technology.
   - Search and filtering behavior is deterministic, responsive, and scoped to proven collection needs.
   - The proof collection offers an understandable focused edit and annotation path without overwhelming scanning or keyboard order.
+  - macOS Firefox either behaves acceptably under the repeatable saturated fixture or produces actionable profiling evidence and a bounded follow-up.
   - Horizon A heuristics and unresolved playtest questions are documented for feedback-driven refinement rather than hidden in component APIs.
   - Any reusable boundary is extracted from at least two compatible consumers rather than anticipated similarity.
 
@@ -167,7 +208,7 @@ Refinement outputs:
   - Prove export first against one exact form, with a visible fidelity/omission statement, overflow behavior, common-viewer checks, and canonical JSON unchanged.
   - Follow with a reviewed, non-destructive scalar import proof only if the form supplies a reliable map; unknown or changed forms fail without altering local data.
   - Keep mappings system-specific and allocate deterministic test identities for imported records that do not carry stable IDs.
-  - Treat the 2014 form as the simplest initial semantic map; defer 2024's opaque 411-field map until manually verified and Shadowdark until its permission gate covers the exact behavior.
+  - Treat the 2014 form as the simplest initial semantic map; defer 2024's opaque 411-field map until manually verified and Shadowdark until the expansion gate covers exact form interoperability.
 - **Excluded behavior:**
   - Treating PDF as the full-fidelity persistence or backup model.
   - Arbitrary, homebrew, scanned, image-only, or unrecognized PDF layouts; OCR and inferred extraction.
@@ -183,7 +224,7 @@ Refinement outputs:
   - Automated fixtures detect field-map or template-signature drift.
 - **Recommended workflow:** Full OpenSpec change because it introduces observable import/export behavior, external-format compatibility, and non-destructive failure requirements. Add or refine an ADR if template delivery, manifest identity, or PDF-library adoption creates a durable architecture/dependency decision.
 
-### Resolve resource rights and Shadowdark feasibility
+### Confirm source rights and the Shadowdark baseline
 
 ID:
 
@@ -191,29 +232,30 @@ ID:
 
 Sequencing context:
 
-- Execute first. Other 2014/2024 work may proceed, but no Shadowdark implementation proposal may be approved until this gate defines its lawful public behavior.
+- Execute before resource implementation. Shadowdark sheet planning may assume the conservative user-authored/external-locator baseline, but no broader source or form behavior may be inferred.
 
 Refinement outputs:
 
-- **Purpose:** Turn the resource policy into source-specific evidence and determine the exact Shadowdark sheet/reference behavior the public product may offer.
+- **Purpose:** Turn the resource policy into source-specific evidence, confirm the conservative Shadowdark public baseline, and identify the exact behaviors that still require permission or qualified review.
 - **Included behavior:**
-  - Obtain written publisher permission or qualified legal review for the exact public Shadowdark character-data, official-form interoperability, page/name locator, contextual-link, self-hosting, and indexing proposals.
-  - Record the cleared behavior, attribution, source versions, correspondence/review location, and prohibited behavior in the source register.
-  - Verify and adopt the exact D&D SRD 5.1 and 5.2.1 artifacts, hashes, attribution text, modification status, and self-hosting basis.
-  - Decide whether the bookmarked SRD 5.1 derivative or official PDF provides the playtest's authoritative page map.
-  - If Shadowdark remains constrained, explicitly decide playtest timing and whether a fourth CC-licensed system adds essential evidence; do not silently remove or substitute Shadowdark.
+  - Verify the publisher's page/name-reference statement and document the conservative Shadowdark baseline: user-authored sheet data, official acquisition links, and bibliographic locators without bundled or reproduced source content.
+  - Record which expansions still require written permission or qualified review, including bundling, excerpting, full-text processing, official-form interoperability, and restricted brand/assets.
+  - Define the privacy- and terms-bounded local workflow for using an owner-supplied source to draft locator candidates while committing only human-reviewed bibliographic metadata.
+  - Verify and adopt the official D&D SRD 5.1 artifact and the current SRD 5.2.x planning artifact, hashes, attribution text, modification status, self-hosting basis, and release-time recheck rule.
+  - Record the owner's decision that `BL-069` replaces the bookmarked SRD 5.1 derivative with the official PDF and official page map.
+  - Decide whether Cairn v1 adds essential fourth-system evidence only if a concrete gap remains; do not silently expand or substitute the matrix.
 - **Excluded behavior:**
   - Implementing a resource viewer, Shadowdark sheet, compendium, PDF adapter, or fourth system.
   - Treating project documentation as legal advice.
 - **Ambiguities:**
-  - Who supplies the qualified review or publisher contact, and where non-public correspondence is retained without committing sensitive material?
-  - Does cleared Shadowdark behavior cover only bibliographic page/name links, or also curated section metadata, form conversion, and local/self-hosted assets?
-  - Which exact source versions and attribution requirements will the first playtest adopt?
+  - How much independently authored topic/section metadata remains conservative enough for the first Shadowdark locator map without copying expressive structure?
+  - Which locally controlled tooling may inspect an owner-supplied source without uploading it to a third party, and how is the reviewed output audited?
+  - Which exact SRD 5.2.x release and attribution requirements are current at public handoff?
 - **Success:**
   - Every first-playtest source has an authoritative version, hash where applicable, rights evidence, approved exposure modes, attribution instruction, and unresolved constraints.
-  - A future Shadowdark proposal can cite an affirmative reviewed scope or an explicit blocker; neither free price nor a general third-party license is used as permission.
+  - A future Shadowdark proposal can cite a documented conservative baseline and explicit expansion gates; neither free price nor a general third-party license is used as permission for broader behavior.
   - Any fourth-system decision is deliberate, justified, and separately backlogged.
-- **Recommended workflow:** Full OpenSpec change because the outcome controls public source behavior and a blocking product gate. The existing rights-classification ADR should be refined if the reviewed strategy changes; a new ADR is not required merely to record source evidence.
+- **Recommended workflow:** Full OpenSpec change because the outcome controls public source behavior, provenance, and the boundary between locator metadata and source processing. Refine the existing rights-classification ADR rather than create parallel doctrine.
 
 ### Deliver rights-classified reference navigation
 
@@ -227,9 +269,11 @@ Sequencing context:
 
 Refinement outputs:
 
-- **Purpose:** Help a user find the free rules document or section relevant to the character information they are viewing or editing, especially on a phone.
+- **Purpose:** Help a user find the free or user-owned rules document or section relevant to the character information they are viewing or editing, especially on a phone, without implying that the app supplies paid or link-only content.
 - **Included behavior:**
-  - Register self-hosted or link-only resources through versioned metadata with system/rules identity, topics, curated section labels, page/anchor/URL locators, attribution, and availability status.
+  - Register self-hosted or link-only resources through versioned metadata with system/rules identity, source/edition identity, topics, curated section labels, page/anchor/URL locators, attribution, availability/ownership guidance, and authoritative acquisition links.
+  - Permit multiple source records and locator maps for one system/topic, while requiring only the free 2014 SRD source in the first proof.
+  - Replace the repository's bookmarked SRD 5.1 derivative with the official PDF, notices, verified hash, and official page-locator basis.
   - Provide searchable resource and curated-section discovery with explicit empty, no-match, unavailable, and changed-source states.
   - Navigate to the lawful document location and preserve an in-progress sheet edit when the user follows and returns from a contextual locator.
   - Prove contextual links from at least character creation/class, equipment, and spells on the 2014 sheet.
@@ -241,11 +285,12 @@ Refinement outputs:
 - **Ambiguities:**
   - Should the first self-hosted PDF open in an in-app panel/dialog, a dedicated app route, or the browser viewer?
   - Is curated title/topic/section search plus document-native search sufficient for the playtest, or does the licensed 2014 SRD need a bounded app-owned text index?
-  - How should the UI communicate link-only/offline-unavailable sources and stale locators?
+  - How should the UI communicate link-only, user-owned/not-included, offline-unavailable, alternate-source, and stale-locator states without burdening the free-first path?
 - **Success:**
   - A mobile tester finds each configured 2014 topic within the PRD gate and lands at the intended lawful location without losing draft work.
   - Resource version/attribution is visible, broken or unavailable sources fail clearly, and locator tests detect source drift.
   - Stored metadata remains a document-navigation index rather than an accidental normalized compendium.
+  - The data model can represent a future paid-book locator alongside a free source without storing protected source text or granting access to the book.
 - **Recommended workflow:** Full OpenSpec change because it introduces new user behavior, persisted/configured source metadata, and unresolved viewer/search choices. Add an ADR for the durable resource-viewer/indexing boundary selected during design.
 
 ### Establish the multi-system boundary and 2024 D&D sheet
@@ -267,6 +312,8 @@ Refinement outputs:
   - Audit and, if approved, rebase the unstable 2014 v0 core boundary before external testing; reject unknown systems and unsupported versions non-destructively.
   - Deliver the minimal sparse-friendly 2024 sheet required by PRD v1: identity/origin, runtime state and defenses, actions or abilities, equipment, features/mastery, optional spellcasting, and flexible quick notes.
   - Keep system-specific projections, edit intents, layouts, required groups, and migrations feature-local; label any shared 5e-family helper as non-universal.
+  - Audit the rough 5e design and the existing grid/card, field-binding, annotation, focused-edit, dialog, and navigation primitives; reuse or adapt them where the interaction contract fits and document intentional system-specific presentation.
+  - Perform a focused atom/molecule/organism and route-composition audit now that a second sheet is concrete, without requiring a repo-wide taxonomy rewrite or universal page template.
   - Preserve JSON backup/restore and list/search behavior across mixed-system records.
 - **Excluded behavior:**
   - Simultaneous support for older 2024 SRD releases, a complete character builder, automatic rules validation, or full 2014 feature parity where the playtest matrix does not require it.
@@ -277,6 +324,7 @@ Refinement outputs:
   - Does the final 2014 v0 receive a one-time rebase here, and what recovery/export warning accompanies the reset?
   - Which 2024-native fields are necessary for the representative PC and sparse-GM scenarios without recreating a full sheet?
   - Which visual and edit components repeat honestly across the two 5e systems?
+  - Which rough-design runtime priorities and visual anchors survive mobile, accessibility, and saturation evidence?
 - **Success:**
   - Mixed 2014/2024 characters create, list, open, persist, export, and restore through authoritative system dispatch.
   - The 2024 scenarios are usable on mobile and unmistakably use 2024 identity/rules semantics.
@@ -292,7 +340,7 @@ ID:
 
 Sequencing context:
 
-- Blocked until `BL-068` clears the exact public behavior and depends on the minimum dispatch/computed-view boundary from `BL-070`.
+- Depends on `BL-070` for the minimum dispatch/computed-view boundary and on `BL-068` to confirm the conservative locator contract; it does not depend on the owner seeking permission for broader source use.
 
 Refinement outputs:
 
@@ -301,10 +349,11 @@ Refinement outputs:
   - Define an explicit Shadowdark system/rules identity, validated schema, factory, hydration/serialization, list summary, sheet destination, and contextual-reference topics.
   - Deliver the PRD's sparse-friendly core: identity, ability values, HP/armor class, attacks or capabilities, talents/spells where applicable, gear/currency, progression, and flexible quick notes.
   - Support both the representative crawler and intentionally sparse hireling/companion/NPC scenario.
-  - Use only self-hosting, external links, section metadata, form interoperability, and attribution cleared by `BL-068`.
+  - Audit the rough Shadowdark design before finalizing runtime priorities, visual anchors, and responsive grouping.
+  - Stay within user-authored data, authoritative acquisition links, and conservative bibliographic page/name locators confirmed by `BL-068`; exclude self-hosting, excerpts, full-text ingest, official-form interoperability, and restricted branding unless a later gate clears them.
   - Review the 2024-era shared lifecycle/computed-view seams and either validate, narrow, or revise them with tests.
 - **Excluded behavior:**
-  - A full Shadowdark character builder, automated random generation, rules legality, premium content, or source behavior outside the cleared permission.
+  - A full Shadowdark character builder, automated random generation, rules legality, reproduced premium content, or source behavior outside the conservative baseline.
   - Forcing Shadowdark talents/spells, gear, identity, or annotations into 5e root collections for reuse.
 - **Ambiguities:**
   - Which fields from the official form and quickstart are necessary for table use versus useful later detail?
@@ -312,7 +361,7 @@ Refinement outputs:
   - Which shared 5e-family components can be reused without carrying D&D labels or assumptions?
 - **Success:**
   - Both Shadowdark scenarios create, persist, restore, and remain practical at phone width with deliberately omitted data.
-  - The sheet exposes only rights-cleared references and does not claim unsupported licensing.
+  - The sheet exposes only conservative external locators, does not reproduce source expression, and does not claim unsupported licensing or official status.
   - Architectural fallout from the first non-5e system is reconciled into schemas, computed views, tests, and ADRs before hardening.
 - **Recommended workflow:** Full OpenSpec change because it adds a new system, schema, persistence behavior, sheet, and rights-constrained reference experience. Refine existing architecture/rights ADRs when implementation evidence changes them; add a new ADR only for a distinct durable trade-off.
 
@@ -330,21 +379,23 @@ Refinement outputs:
 
 - **Purpose:** Turn three independently implemented system proofs into one reliable external-playtest build and make the durable compatibility decision deliberately.
 - **Included behavior:**
-  - Build deterministic fixtures for all six PRD scenarios and exercise creation/opening, runtime access, focused edits, quick notes, dense collections where applicable, contextual references, reload, JSON export, and isolated restore.
+  - Build deterministic fixtures for all six PRD scenarios plus a saturated fixture or stress overlay for each system, and exercise creation/opening, runtime access, focused edits, quick notes, dense collections, annotations, contextual references, reload, JSON export, and isolated restore.
   - Rehearse at the representative mobile and desktop viewports; verify keyboard order, touch targets/exceptions, focus/modal context, scrolling, assistive semantics, and no document-level mobile overflow.
   - Resolve cross-system import/export, invalid-data recovery, mixed-system list/search, system labeling, and source-unavailable behavior.
   - Record performance and accessibility evidence for the supported browser matrix.
   - Immediately before external handoff, decide each system's durable schema identifier and whether the final 2014 v0 receives one bounded transition; update fixtures, warnings, migration tests, and recovery documentation.
-  - Run owner rehearsals, record findings, and prepare an external feedback checklist mapped to the PRD gates.
+  - Run owner solo-play rehearsals, record findings, and prepare an external feedback checklist plus short external survey mapped to the PRD gates.
+  - After external sessions, synthesize survey and qualitative evidence with response count, limitations, decisions, and backlog destinations before a product-v1.0 decision.
 - **Excluded behavior:**
   - Adding another system, a builder, a compendium, cloud storage, OCR, or broad automation to improve the milestone cosmetically.
   - Declaring product v1.0 solely because automated checks or owner rehearsals pass.
 - **Ambiguities:**
   - Which performance budgets and supported browser versions are appropriate once all three real sheets exist?
   - Does any sparse-GM scenario justify a lite mode before external handoff, or should that remain a playtest question?
+  - Does saturation evidence require a collection search, whole-sheet search, outline, sticky landmarks, tabs, or another navigation aid before handoff?
   - Which optional final-v0 migration, if any, is worth supporting for the owner/test fixtures?
 - **Success:**
-  - All PRD readiness gates and six owner-run scenarios pass with no critical blocker.
+  - All PRD readiness gates, six owner-run scenarios, and three saturation fixtures pass with no critical blocker.
   - Each external-playtest schema/version promise and recovery path is explicit and tested.
   - Remaining findings have owners and backlog destinations, and external sessions can begin without relying on undocumented setup.
 - **Recommended workflow:** Full OpenSpec change because it crosses systems, persistence compatibility, accessibility, and release-readiness behavior. Add an ADR only if the compatibility or supported-platform decisions materially change existing approved doctrine.
@@ -358,26 +409,9 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 - **[Priority 3] evaluate a Svelte-compatible form library such as TanStack Form or Felte after the first field-binding proof surface lands; prefer reuse for draft state, validation display, dirty tracking, and array editor ergonomics if it keeps local source smaller than custom form infrastructure**
   - _Best Guess_: Evaluate if an external library handles card-wide value validation, dirty checking, and array/nested list mutations more concisely and safely than our custom `FieldDraft` implementation.
   - _Critical Question_: Will introducing a third-party form helper conflict with our "platform-native first" preference or cause unnecessary bundle size increases, given we only have local-first state storage?
-- **[Priority 4] re-org the ux: consider meta & quickref being sticky, then tabulate 3 pillars: adventure, combat, roleplay? combat could have sticky header for summary**
-  - _Best Guess_: Redesign the character sheet UI. The character name/level (meta) and active reference panel stay pinned (sticky) to the screen, while the rest of the layout is nested in three tabs: Adventure (stats/skills), Combat (actions/spells/inventory), and Roleplay (bio/notes).
-  - _Critical Question_: Does this imply removing the grid scroll layout entirely for mobile/desktop, or do tabs just act as filters on top of the grids? How will users react to tapping between views during fast-paced table encounters?
-  - _Best Guess on drawer_: Implementing a drawer panel would act as a modal-like quick-reference slide-out for details instead of full-screen overlays, maximizing viewport utility.
 
 ### Raw Human Ideation, Unsorted
 
-- Revisit the complete atomic-design hierarchy when page-level reuse becomes concrete.
-  - _Why_: The repository currently has evidence for atoms, molecules, and emerging organisms, but not enough repeated route-level composition to define templates and Pages without speculative taxonomy or file churn.
-  - _Current direction_: Treat the existing three levels as staged adoption, not rejection of templates and Pages. Do not prioritize a repository-wide audit ahead of current product work.
-  - _Triggers_: A second system-specific sheet; character creation or another substantial route-level workflow; duplicated top-level composition across two or more routes; demand for page-level Storybook examples; route tests blocked by mixed layout and concrete data; or P1-062 reconciliation showing that organisms are carrying page-template responsibilities.
-  - _Constraints_: Audit before reorganizing; preserve SvelteKit route semantics; distinguish atomic-design Pages from dialog steps/panels; do not invent generic templates without at least two concrete consumers.
-  - _Refinement trigger_: When any trigger occurs, perform a focused repository audit, refine the component-composition ADR, and promote implementation work to a numbered backlog item only if the evidence justifies it.
-- Revisit collection-row edit and annotation interaction UX across runtime actions, inventory, spells, features, proficiencies, and other aggregate item renderings.
-  - _Why_: Permanent Edit and Notes buttons on every row could overwhelm dense sheet surfaces and keyboard tab order, while bulk-only dialogs make focused changes cumbersome and hide item-local annotation context.
-  - _Explore_: A consistent row-action model; one compact explicit menu; hover/focus emphasis; persistent indicators when annotations exist; optional right-click or long-press shortcuts that open the same actions; and whether the annotation affordance should be renamed from Notes to Annotations.
-  - _Related boundary_: `BL-064` now owns the Horizon A proof and heuristic baseline for both collection discovery and one focused edit/annotation path. Retain this sandbox idea for broader, feedback-driven Horizon B standardization rather than opening a second pre-playtest item.
-  - _Constraints_: Preserve text selection and copying, provide equivalent mouse/keyboard/touch paths, never require hover or long-press, retain explicit focus behavior, and keep bulk editing as a fallback during migration. Build on [the field interaction model](field-interaction-model.md) and [field rendering API](field-rendering-api.md) rather than adding collection-specific conventions independently.
-  - _Open questions_: Which collection should prove the pattern, whether row selection and editing should remain distinct actions, when controls should be persistent versus revealed, how annotation presence changes affordance priority, and whether context-menu gestures are valuable enough to support as secondary shortcuts.
-  - _Refinement trigger_: Explore before expanding direct per-item controls across collections or standardizing new `GridContent` row-action APIs; coordinate sequencing with the accessibility/mobile review so that review evaluates the intended interaction model.
 - Explore source-backed runtime actions as source content plus explicit player overrides rather than fully materialized snapshots.
   - _Why_: Under the current snapshot contract, ordinary edits change the same `name` and `notes` fields that explicit resync later replaces, so resync can erase intentional player detail even though the action remains linked.
   - _Playtest decision (2026-07-25)_: Retain snapshot-and-explicit-resync semantics for the multi-source expansion, with a required overwrite warning before resync. An override-aware persisted model remains a future refactor.
@@ -397,9 +431,9 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
   - _Explore_: Canonical feature content versus feature grants/references; explicit manual, ancestry, background, class, subclass, and external-provider provenance; duplicate grants; source deletion; and migration from existing top-level and nested records.
   - _Constraints_: Preserve stable identities and annotations, avoid duplicating editable content across canonical records and grants, retain offline ownership, and do not add provider-specific fields to generic core records prematurely.
   - _Refinement trigger_: Refine before background features become action sources or before an external compendium begins adding or enriching character-owned features.
+
 ## Done Recently
 
-- `2026-07-31` completed `BL-067`: approved the target-state PRD v1 playtest contract, rights-classified resource strategy, multi-system core and fillable-PDF audits, active-scope boundary, and independently sequenced Horizon A epics without representing future systems as shipped
 - `2026-07-31` completed `p1-020`: established explicit 44-by-44 CSS-pixel coarse-pointer targets and bounded exceptions across the home-to-sheet flow, corrected keyboard-accessible character opening and responsive control order, and added durable Mobile Chrome geometry, label-activation, modal-context, and cross-browser evidence
 - `2026-07-30` completed `p1-027`: replaced JavaScript ResizeObserver grid measurement with native CSS Container Queries, maintaining layout fidelity while eliminating overhead
 - `2026-07-26` completed `BL-063`: moved character import review and confirmation into a focused dialog flow, removing inline home-page clutter while preserving Merge New and Replace All semantics

@@ -51,7 +51,7 @@ The audit did not test every PDF viewer, appearance-stream behavior, printing pa
 - **Form surface:** 50 text fields
 - **Stable identifiers:** `Name`, `Race`, `Class`, `Level`, `Title`, `Alignment`, `Background`, `Deity`, six `* Total` and six `* Modifier` fields, `Armor Class`, `Hit Points`, `Attacks`, `Talents / Spells`, `XP Current`, `XP Target`, `Gold Pieces`, `Silver Pieces`, `Copper Pieces`, `Gear 1` through `Gear 20`, and `Free To Carry`
 - **Identifier cautions:** Attacks and talents/spells are unstructured text areas; gear has exactly 20 named slots; totals and modifiers duplicate derived information; application-owned IDs and annotations are absent.
-- **Rights/redistribution:** Free and official, but redistribution and application-processing permission remain unresolved under the Shadowdark gate. Treat the form as link-only and do not ship an adapter until the gate explicitly covers the proposed import/export behavior.
+- **Rights/redistribution:** Free and official, but redistribution and application-processing permission remain unresolved. Treat the form as link-only and do not ship an adapter unless written permission or qualified review covers the exact import/export behavior; the conservative user-authored sheet/page-locator baseline does not extend to form processing.
 
 ## Concept Mapping and Fidelity
 
@@ -100,9 +100,11 @@ Promote `BL-066` from P2 to an early P1 improvement, but do not make PDF import/
 Refine implementation into bounded slices:
 
 1. **Template delivery and rights spike:** resolve whether the adapter may bundle, fetch, or require the user to select each exact template; register the artifact hash and attribution.
-2. **Export-first proof:** after the relevant system schema is stable enough, fill one publisher form from a representative fixture, disclose omitted/flattened data, test common viewers, and preserve canonical JSON unchanged. The 2014 form is the simplest initial semantic field map; Shadowdark is technically smaller but permission-blocked.
+2. **Export-first proof:** after the relevant system schema is stable enough, fill one publisher form from a representative fixture, disclose omitted/flattened data, test common viewers, and preserve canonical JSON unchanged. The 2014 form is the simplest initial semantic field map; Shadowdark is technically smaller but its form-processing expansion gate is unresolved.
 3. **Reviewed import proof:** import scalar fields from one exact template into a preview, allocate deterministic test IDs for records that lack them, and reject unknown forms without modifying local data.
-4. **System expansion:** add 2024 only after its opaque field map is manually verified; add Shadowdark only after its gate covers the behavior.
+4. **System expansion:** add 2024 only after its opaque field map is manually verified; add a Shadowdark form adapter only after the expansion gate covers that exact behavior.
 5. **Overflow and round-trip design:** decide continuation sheets, clipping warnings, and export-manifest ideas from actual proof results rather than before them.
 
 The first external playtest may proceed with validated JSON backup/restore and direct official-sheet links. `BL-066` can run after `BL-070` establishes the multi-system/schema boundary or in parallel once a target schema and template-delivery decision are stable. Image, scan, OCR, and inferred extraction remain later proposals with human review and non-destructive failure requirements.
+
+If a fundamental schema reset becomes necessary after durable v1 promises begin, revisit `BL-066` immediately as one possible recovery/interchange bridge before asking users to cross the reset. That trigger does not make PDF canonical or guarantee a lossless round trip; JSON, explicit schema versions, migrations, and recovery remain authoritative.

@@ -3,6 +3,8 @@
 - **Status:** Approved
 - **Author:** Codex with project owner direction
 - **Date:** 2026-07-31
+- **Last reviewed:** 2026-08-01
+- **Latest refinement:** `BL-067` established the conservative Shadowdark baseline, multi-source locator direction, and official SRD replacement policy; see the final refinement below.
 
 ## Context & Problem Statement
 
@@ -39,11 +41,11 @@ Classify every rules resource before implementation as **redistributable**, **li
 
 Prefer a self-hosted, hashed artifact for redistributable PDFs when it improves stability, proximity, offline access, or page-level navigation. Preserve the adopted version, exact required attribution, license notice, and modification status. Treat the bundled resource as separately licensed material; do not represent the whole application as inheriting that content license.
 
-For link-only sources, store only conservative bibliographic and navigation metadata supported by the reviewed scope. Do not ingest or excerpt the full source. User-local processing and private/table deployments require separate product, privacy, security, and rights decisions.
+For link-only sources, store only conservative bibliographic and navigation metadata: source/edition identity, acquisition links, independently authored descriptions, topics, chapter or section labels, page numbers, and other locators. Do not ingest or excerpt the full source. The catalog may register multiple free or user-owned paid sources for the same system/topic without supplying access to paid material. User-local product processing and private/table deployments require separate product, privacy, security, and rights decisions.
 
 The first reference feature is a document-navigation index: resource metadata plus curated topics, sections, and locators. It is not a normalized compendium merely because users can search the index. Full-text ingestion, semantic search, structured rules records, arbitrary uploads, and general-purpose rules APIs require later explicit decisions.
 
-Shadowdark public implementation remains blocked on written permission or qualified legal review for the exact proposed character-sheet and reference behavior. This gate controls permitted source integration; it does not silently remove Shadowdark from the desired product target.
+The conservative Shadowdark public baseline may proceed without a permission request: a system-native sheet containing user-authored data plus authoritative acquisition links and general bibliographic page/name locators. Permission or qualified review remains a gate before bundling, excerpting, ingesting, transforming, official-form interoperability, restricted branding/assets, or other behavior outside that baseline. This product-risk decision does not claim that the application is an official or third-party-license-authorized character builder.
 
 The maintainer-facing operational contract and source register live in [the rules-resource policy](../rules-resource-policy.md).
 
@@ -61,4 +63,12 @@ The maintainer-facing operational contract and source register live in [the rule
 
 The first source register adopts SRD 5.1 for 2014 D&D and SRD 5.2.1 for 2024 D&D, both as CC BY 4.0 redistributable candidates for self-hosting. The exact 2024 artifact and the choice between the repository's bookmarked SRD 5.1 derivative and the official PDF remain implementation-time provenance checks.
 
-The Shadowdark Quickstart and official form-fillable sheet remain link-only until the blocking gate is resolved. A fourth CC-licensed system is not an automatic fallback; it requires an explicit scope decision based on missing evidence.
+The Shadowdark Quickstart and official form-fillable sheet remain link-only. The 2026-08-01 refinement below supersedes the original assumption that every Shadowdark implementation required a permission gate. A fourth CC-licensed system is not an automatic fallback; it requires an explicit scope decision based on missing evidence.
+
+### 2026-08-01: Conservative link-only baseline and source plurality
+
+`BL-067` refined link-only behavior from a generic restriction into a useful product boundary. A source index may record conservative bibliographic facts and page/name/chapter/topic locators for free or user-owned paid sources while linking to an authoritative acquisition location. It must not reproduce source expression, supply paid access, or turn temporary local analysis into committed source text, excerpts, or embeddings. Multiple source records may map the same system topic differently; the first implementation need not expose every source choice.
+
+The official Shadowdark FAQ expressly distinguishes general page/name references from broader app and content rights. The roadmap therefore no longer requires a permission request before the user-authored sheet and conservative locator baseline. The expansion gate above remains in force for materially broader source or brand use. The maintainer policy remains a conservative product-risk rule, not legal advice.
+
+For D&D 2014, the owner selected the official SRD 5.1 PDF to replace the repository's bookmarked derivative during `BL-069`; changing the binary, notices, hash, and locators belongs to that implementation slice. For D&D 2024, SRD 5.2.1 is the planning baseline, but the project will recheck and pin the then-current official 5.2.x release before public handoff rather than support several releases concurrently.

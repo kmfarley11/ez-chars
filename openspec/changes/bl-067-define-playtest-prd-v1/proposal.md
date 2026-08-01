@@ -5,13 +5,16 @@ The PRD v0 successfully established the stack and first 2014 5e sheet, but the r
 ## What Changes
 
 - Define a target-state PRD v1 for the first external playtest, clearly separated from current implemented behavior.
-- Establish D&D 5e 2014, D&D 5e 2024, and Shadowdark as the required playtest systems, with explicit player-character and sparse sidekick/NPC scenarios.
-- Define a rights-classified, document-oriented reference experience that prefers self-hosted PDFs and useful indexes when verified licenses allow them, without assuming that a free price grants those rights.
+- Establish D&D 5e 2014, D&D 5e 2024, and Shadowdark as the required playtest systems, with explicit player-character, sparse sidekick/NPC, and saturated-sheet evidence.
+- Define a rights-classified, document-oriented reference experience that prefers self-hosted PDFs and useful indexes when verified licenses allow them, supports conservative multi-source bibliographic locators otherwise, and does not assume that free access or user ownership grants redistribution rights.
+- Establish a conservative Shadowdark baseline of user-authored data, authoritative acquisition links, and page/name locators without making permission-seeking a prerequisite for that bounded experience.
 - Require an early audit of the current shared character schema so system-native persisted data can remain independent while computed views serve genuinely shared application needs.
+- Preserve a familiar cross-system interaction language through evidenced reusable presentation and editing primitives without defining a universal rendering schema.
 - Evaluate available editable character-sheet PDFs for all three systems before durable schema decisions, treating PDF import/export as interoperability rather than the canonical data store.
 - Define the milestone gates between PRD approval, playtest readiness, first durable schema versions, external playtesting, and a product v1.0 release.
 - Reframe active goals and the backlog around separately approved architectural and implementation epics rather than one broad multi-system effort.
 - Record the author's longer-term product desires and non-goals without moving future-horizon work into active scope.
+- Treat existing rough system-sheet designs and anonymized pre-playtest surveys as explicit planning evidence, with the survey synthesis remaining a pre-archive task.
 - Explicitly retain the pre-release decision that experimental v0 character data has no general migration guarantee.
 
 ## Capabilities

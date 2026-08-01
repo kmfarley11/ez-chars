@@ -1,8 +1,10 @@
 # 2026-07-18 Version and normalize D&D 5e 2014 character data
 
-**Status:** Approved  
-**Author:** Codex with project owner direction  
-**Date:** 2026-07-18
+- **Status:** Approved
+- **Author:** Codex with project owner direction
+- **Date:** 2026-07-18
+- **Last reviewed:** 2026-08-01
+- **Latest refinement:** `BL-067` retained JSON/versioned schemas as canonical while adding an immediate interoperability/recovery review trigger for any post-v1 schema reset.
 
 ## Context & Problem Statement
 
@@ -108,3 +110,9 @@ This contract intentionally avoids a generic migration framework before it is ne
 The p1-061 implementation established `dnd5e-2014.schema.v0` as the sole executable 5e character layout. Hydration now distinguishes a valid current document, an outdated or otherwise unsupported document, and a well-formed future `.schema.vN` declaration. It does not carry historical schemas, transformation functions, or frozen legacy fixtures for retired experimental layouts.
 
 The strict current schema requires unique inventory, spell, and feature identities and validates linked runtime-action sources against character-owned records. Inventory identity uniqueness is enforced even before a record is linked because the atomic item source and keyed source picker cannot distinguish colliding IDs. Storage and import preserve rejected source data and surface recovery rather than rewriting it. Current serialization, storage, and export round trips all emit the same validated v0 shape. This is the intentionally small pre-playtest implementation of the migration boundary; the sequential historical-schema contract above does not become executable until an immutable v1-or-later layout exists.
+
+### 2026-08-01: Post-v1 reset requires an escape-path review
+
+If playtest or later evidence calls for a fundamental schema reset after durable v1 promises begin, the project must immediately prioritize a recovery and interchange review before asking users to cross the reset. That review includes bounded editable-PDF export/import where exact forms, mappings, and rights make it viable, alongside JSON export and explicit migration/recovery options.
+
+This is a prioritization trigger, not a change in canonical storage: external PDF forms are lossy and cannot replace validated JSON, schema identifiers, migrations, or preservation of application-owned identities, annotations, references, and unbounded collections.

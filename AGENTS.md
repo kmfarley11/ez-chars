@@ -146,12 +146,14 @@ If a change results in any of the following, the agent MUST create a lightweight
 ADRs should remain lightweight and action-oriented. Prefer files named `docs/decisions/YYYY-MM-DD-short-title.md` following this structure:
 
 1. **Title**: Short, action-oriented, prefixed with the decision date.
-2. **Metadata**: Status (`Proposed` | `Approved` | `Superseded`), Author, and Date.
+2. **Metadata**: Status (`Proposed` | `Approved` | `Superseded`), Author, original decision Date, and Last reviewed date. When refinements exist, add a concise Latest refinement line naming or linking the change/backlog/implementation context so readers can find the current amendment without scanning the whole file.
 3. **Context & Problem Statement**: The background, goals, and user/engineering problem being addressed.
 4. **Decision Drivers**: Core constraints and qualities we are optimizing for (e.g. mobile performance, bundle size).
 5. **Considered Options**: The alternatives with brief pros and cons for each.
 6. **Decision Outcome**: The chosen option, rationale, and a detailed list of consequences (both positive and negative).
 7. **Refinements & Follow-Ups**: Chronological sections capturing downstream decisions or changes made during implementation/refinement.
+
+When reviewing or amending an ADR, update **Last reviewed**, refresh **Latest refinement**, and append the durable rationale/outcome under **Refinements & Follow-Ups**. Preserve the original decision as history, but do not leave the opening outcome materially misleading: add an explicit supersession note near it when a later refinement changes the operative rule. If the fundamental decision is replaced rather than narrowed, mark the ADR `Superseded` and link the replacement ADR instead of accumulating contradictory amendments.
 
 ## Artifact Responsibility Boundaries
 

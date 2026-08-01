@@ -11,7 +11,6 @@ Use these docs for near-term implementation work:
 - [vision/PRD-v1.md](vision/PRD-v1.md): target-state first-external-playtest contract; not a statement of current behavior
 - [backlog.md](backlog.md): prioritized engineering backlog
 - [rules-resource-policy.md](rules-resource-policy.md): source-rights classifications, reference minimum, and adopted/candidate source register
-- [multi-system-core-audit.md](multi-system-core-audit.md): evidence and decision gates for a lighter core plus system-specific computed views
 - [fillable-pdf-interoperability-audit.md](fillable-pdf-interoperability-audit.md): three-system form inventory, fidelity matrix, and export/import sequencing
 - [import-export-json.md](import-export-json.md): MVP JSON backup envelope and import semantics
 - [field-interaction-model.md](field-interaction-model.md): target MVP model for field editing and annotations
