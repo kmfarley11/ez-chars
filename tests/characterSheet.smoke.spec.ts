@@ -66,6 +66,49 @@ test('navigates to a seeded character, adjusts viewport, collapses a region, and
 		.toBe(9);
 });
 
+test('starts an empty Spells section collapsed and adds a previously absent spell-slot level', async ({
+	page
+}) => {
+	await openSeededCharacter(page);
+
+	const spellsToggle = page.getByRole('button', { name: 'Expand Spells' });
+	await expect(spellsToggle).toHaveAttribute('aria-expanded', 'false');
+	await expect(page.getByRole('region', { name: 'Spell slots' })).toHaveCount(0);
+	await spellsToggle.click();
+
+	await expect(page.getByRole('region', { name: 'Spellcasting' })).toBeVisible();
+	const slots = page.getByRole('region', { name: 'Spell slots' });
+	await expect(slots).toContainText('1st: 0 / 0');
+	await expect(slots).toContainText('9th: 0 / 0');
+
+	await slots.getByRole('button', { name: 'Card actions' }).click();
+	await page.getByRole('button', { name: 'Edit', exact: true }).click();
+	const dialog = page.getByRole('dialog', { name: 'Edit Fields' });
+	await dialog.getByLabel('3rd Max').fill('2');
+	await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+	await expect(slots).toContainText('3rd: 0 / 2');
+
+	await expect
+		.poll(() =>
+			page.evaluate((key) => {
+				const raw = localStorage.getItem(key);
+				const spellcasting = raw
+					? JSON.parse(raw).characters[0].systemData.spellcasting
+					: undefined;
+				return spellcasting
+					? { ability: spellcasting.ability, slots: spellcasting.slots }
+					: undefined;
+			}, storageKey)
+		)
+		.toEqual({ ability: 'int', slots: { '3': { used: 0, max: 2 } } });
+
+	await page.reload();
+	await expect(page.getByRole('button', { name: 'Collapse Spells' })).toHaveAttribute(
+		'aria-expanded',
+		'true'
+	);
+});
+
 test('adds a D&D Beyond note annotation and exposes its reference link', async ({ page }) => {
 	await openSeededCharacter(page);
 
@@ -209,12 +252,16 @@ test('links an inventory suggestion through resync and source deletion fallback'
 	await runtimeActionList.getByRole('button', { name: 'View Inventory · Longsword' }).click();
 	await expect(weaponsRegion).toBeFocused();
 
-	await weaponsRegion.getByRole('button', { name: 'Card actions' }).click();
+	const longswordRow = weaponsRegion.locator('[data-row-key="item:e2e-longsword"]');
+	const longswordRowActions = longswordRow.getByRole('button', {
+		name: /Row actions for Longsword/
+	});
+	await longswordRowActions.click();
 	await page.getByRole('button', { name: 'Edit', exact: true }).click();
-	let inventoryDialog = page.getByRole('dialog');
-	await inventoryDialog.getByLabel('Weapons Detail').first().fill('Updated item notes.');
+	let inventoryDialog = page.getByRole('dialog', { name: 'Edit Longsword' });
+	await inventoryDialog.getByLabel('Detail Detail').fill('Updated item notes.');
 	await inventoryDialog.getByRole('button', { name: 'Save', exact: true }).click();
-	await expect(weaponsRegion.getByRole('button', { name: 'Card actions' })).toBeFocused();
+	await expect(longswordRowActions).toBeFocused();
 	await expect
 		.poll(() =>
 			page.evaluate((key) => {
@@ -259,11 +306,12 @@ test('links an inventory suggestion through resync and source deletion fallback'
 		)
 		.toBe('Updated item notes.');
 
-	await weaponsRegion.getByRole('button', { name: 'Card actions' }).click();
-	await page.getByRole('button', { name: 'Edit', exact: true }).click();
-	inventoryDialog = page.getByRole('dialog');
+	const bulkEditWeapons = weaponsRegion.getByRole('button', { name: 'Bulk Edit Weapons' });
+	await bulkEditWeapons.click();
+	inventoryDialog = page.getByRole('dialog', { name: 'Bulk Edit Weapons' });
 	await inventoryDialog.getByRole('button', { name: 'Remove' }).first().click();
 	await inventoryDialog.getByRole('button', { name: 'Save', exact: true }).click();
+	await expect(bulkEditWeapons).toBeFocused();
 
 	await expect(runtimeActionList.getByText('Updated item notes.')).toBeVisible();
 	await expect(page.getByText('Custom action', { exact: true })).toHaveCount(0);
@@ -369,7 +417,7 @@ test('creates and navigates spell, feature, trait, and custom runtime actions', 
 
 	await actions.getByRole('button', { name: 'Source actions for Shield' }).click();
 	await actions.getByRole('button', { name: 'View Spell · Shield' }).click();
-	await expect(page.getByRole('region', { name: '1st spells' })).toBeFocused();
+	await expect(page.getByRole('region', { name: 'Spells collection' })).toBeFocused();
 
 	await actions.getByRole('button', { name: 'Source actions for Arcane Recovery' }).click();
 	await actions.getByRole('button', { name: 'View Feature · Arcane Recovery' }).click();

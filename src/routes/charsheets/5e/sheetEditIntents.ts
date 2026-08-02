@@ -37,14 +37,25 @@ import {
 const runtimeActionTimingSchema = z.enum(['action', 'bonusAction', 'reaction', 'free', 'other']);
 const runtimeActionCategorySchema = z.enum(['attack', 'effect', 'other']);
 const noteKindSchema = z.enum(['quick', 'session', 'lore', 'rules', 'other']);
+const spellSlotLevelEditorSchema = z.enum(['1', '2', '3', '4', '5', '6', '7', '8', '9']);
 
-export const spellEditorPayloadSchema = z.array(
+export const spellItemEditorPayloadSchema = z
+	.object({
+		spellId: z.string().optional(),
+		name: z.string().optional(),
+		prepared: z.boolean().optional(),
+		notes: z.string().optional()
+	})
+	.strict();
+
+export const spellEditorPayloadSchema = z.array(spellItemEditorPayloadSchema);
+
+export const spellSlotsEditorPayloadSchema = z.partialRecord(
+	spellSlotLevelEditorSchema,
 	z
 		.object({
-			spellId: z.string().optional(),
-			name: z.string().optional(),
-			prepared: z.boolean().optional(),
-			notes: z.string().optional()
+			used: z.number().int().min(0),
+			max: z.number().int().min(0)
 		})
 		.strict()
 );
@@ -100,19 +111,19 @@ export const traitEditorPayloadSchema = z.array(
 		.strict()
 );
 
-export const inventoryEditorPayloadSchema = z.array(
-	z
-		.object({
-			id: z.string().optional(),
-			name: z.string(),
-			notes: z.string().optional(),
-			quantity: z.number().finite().optional(),
-			weight: z.number().finite().optional(),
-			value: z.string().optional(),
-			equipped: z.boolean().optional()
-		})
-		.strict()
-);
+export const inventoryItemEditorPayloadSchema = z
+	.object({
+		id: z.string().optional(),
+		name: z.string(),
+		notes: z.string().optional(),
+		quantity: z.number().finite().optional(),
+		weight: z.number().finite().optional(),
+		value: z.string().optional(),
+		equipped: z.boolean().optional()
+	})
+	.strict();
+
+export const inventoryEditorPayloadSchema = z.array(inventoryItemEditorPayloadSchema);
 
 export const currencyAmountEditorPayloadSchema = z.number().finite();
 export const roleplayFieldEditorPayloadSchema = z.string();
@@ -131,6 +142,7 @@ export const scratchpadEditorPayloadSchema = z.array(
 export const annotationEditorPayloadSchema = z.array(annotationSchema);
 
 export type SpellEditorPayload = z.infer<typeof spellEditorPayloadSchema>;
+export type SpellSlotsEditorPayload = z.infer<typeof spellSlotsEditorPayloadSchema>;
 export type RuntimeActionEditorPayload = z.infer<typeof runtimeActionEditorPayloadSchema>;
 export type ProficiencyEditorPayload = z.infer<typeof proficiencyEditorPayloadSchema>;
 export type FeatureEditorPayload = z.infer<typeof featureEditorPayloadSchema>;
@@ -140,6 +152,19 @@ export type ScratchpadEditorPayload = z.infer<typeof scratchpadEditorPayloadSche
 
 export type SheetEditIntent =
 	| { type: 'replace-spell-level'; level: SpellListLevel; spells: SpellEditorPayload }
+	| { type: 'replace-spell-slots'; slots: SpellSlotsEditorPayload }
+	| {
+			type: 'update-spell';
+			level: SpellListLevel;
+			spellId: string;
+			spell: z.infer<typeof spellItemEditorPayloadSchema>;
+	  }
+	| {
+			type: 'replace-spell-annotations';
+			level: SpellListLevel;
+			spellId: string;
+			annotations: Array<Annotation>;
+	  }
 	| { type: 'replace-runtime-actions'; actions: RuntimeActionEditorPayload }
 	| { type: 'create-runtime-action'; draft: RuntimeActionDraft }
 	| { type: 'resync-runtime-action'; actionId: string }
@@ -148,6 +173,18 @@ export type SheetEditIntent =
 	| { type: 'replace-features'; features: FeatureEditorPayload }
 	| { type: 'replace-traits'; traits: TraitEditorPayload }
 	| { type: 'replace-inventory-group'; group: InventoryGroup; items: InventoryEditorPayload }
+	| {
+			type: 'update-inventory-item';
+			group: InventoryGroup;
+			itemId: string;
+			item: z.infer<typeof inventoryItemEditorPayloadSchema>;
+	  }
+	| {
+			type: 'replace-inventory-item-annotations';
+			group: InventoryGroup;
+			itemId: string;
+			annotations: Array<Annotation>;
+	  }
 	| {
 			type: 'update-currency';
 			amounts: Partial<Record<CurrencyDenomination, number>>;
@@ -187,6 +224,19 @@ const trimmedIdOrNew = (candidate: string | undefined, createId: () => string): 
 
 const normalizedCurrencyAmount = (value: number): number => Math.max(0, Math.floor(value));
 
+const normalizeDirectAnnotations = (
+	annotations: ReadonlyArray<Annotation>,
+	createId: () => string
+): Array<Annotation> => {
+	const seen = new Set<string>();
+	return annotations.flatMap((annotation) => {
+		const id = trimmedIdOrNew(annotation.id, createId);
+		if (seen.has(id)) return [];
+		seen.add(id);
+		return [{ ...annotation, id }];
+	});
+};
+
 const replaceNamedProficiencies = (
 	current: Array<NamedProficiency>,
 	next: ProficiencyEditorPayload
@@ -212,6 +262,12 @@ const replaceNamedProficiencies = (
 const assertNever = (intent: never): never => {
 	throw new Error(`Unhandled 5e sheet edit intent: ${JSON.stringify(intent)}`);
 };
+
+const resolveDefaultSpellcastingAbility = (character: CharacterDocument5e2014): AbilityKey =>
+	character.systemData.spellcasting?.ability ??
+	character.systemData.classes.find((entry) => entry.spellcasting?.ability)?.spellcasting
+		?.ability ??
+	'int';
 
 export const reduce5eSheetEditIntents = (
 	character: CharacterDocument5e2014,
@@ -242,20 +298,100 @@ export const reduce5eSheetEditIntents = (
 						...(entry.notes !== undefined ? { notes: entry.notes } : {})
 					} satisfies SpellRef;
 				});
-				const defaultAbility: AbilityKey =
-					currentSpellcasting?.ability ??
-					candidate.systemData.classes.find((entry) => entry.spellcasting?.ability)?.spellcasting
-						?.ability ??
-					'int';
 				candidate.systemData.spellcasting = {
 					...currentSpellcasting,
-					ability: defaultAbility,
+					ability: resolveDefaultSpellcastingAbility(candidate),
 					spells: [
 						...currentSpells.filter((spell) => (spell.level ?? 0) !== intent.level),
 						...nextLevelSpells
 					].sort((left, right) => (left.level ?? 0) - (right.level ?? 0))
 				};
 				shouldReconcileSourceLinks = true;
+				break;
+			}
+
+			case 'replace-spell-slots': {
+				const currentSpellcasting = candidate.systemData.spellcasting;
+				const nextSlots = Object.fromEntries(
+					Object.entries(intent.slots).flatMap(([level, slot]) => {
+						if (!slot || (slot.used === 0 && slot.max === 0)) return [];
+						const currentSlot = currentSpellcasting?.slots?.[level as keyof typeof intent.slots];
+						return [[level, { ...currentSlot, used: slot.used, max: slot.max }]];
+					})
+				);
+				if (!currentSpellcasting && Object.keys(nextSlots).length === 0) break;
+				const nextSpellcasting = {
+					...currentSpellcasting,
+					ability: resolveDefaultSpellcastingAbility(candidate)
+				};
+				if (Object.keys(nextSlots).length > 0) nextSpellcasting.slots = nextSlots;
+				else delete nextSpellcasting.slots;
+				candidate.systemData.spellcasting = nextSpellcasting;
+				break;
+			}
+
+			case 'update-spell': {
+				const spellIndex =
+					candidate.systemData.spellcasting?.spells?.findIndex(
+						(spell) => spell.spellId === intent.spellId
+					) ?? -1;
+				const currentSpell =
+					spellIndex < 0 ? undefined : candidate.systemData.spellcasting?.spells?.[spellIndex];
+				if (!currentSpell || (currentSpell.level ?? 0) !== intent.level) {
+					return {
+						ok: false,
+						issues: [
+							{
+								code: 'invalid-intent-target',
+								message: `Spell ${intent.spellId} is missing or no longer belongs to level ${intent.level}.`
+							}
+						]
+					};
+				}
+				const name = intent.spell.name?.trim();
+				if (!name) {
+					return {
+						ok: false,
+						issues: [
+							{
+								code: 'malformed-payload',
+								message: `Spell ${intent.spellId} needs a name.`
+							}
+						]
+					};
+				}
+				candidate.systemData.spellcasting!.spells![spellIndex] = {
+					...currentSpell,
+					name,
+					...(intent.spell.prepared !== undefined ? { prepared: intent.spell.prepared } : {}),
+					...(intent.spell.notes !== undefined ? { notes: intent.spell.notes } : {})
+				};
+				break;
+			}
+
+			case 'replace-spell-annotations': {
+				const spellIndex =
+					candidate.systemData.spellcasting?.spells?.findIndex(
+						(spell) => spell.spellId === intent.spellId
+					) ?? -1;
+				const currentSpell =
+					spellIndex < 0 ? undefined : candidate.systemData.spellcasting?.spells?.[spellIndex];
+				if (!currentSpell || (currentSpell.level ?? 0) !== intent.level) {
+					return {
+						ok: false,
+						issues: [
+							{
+								code: 'invalid-intent-target',
+								message: `Spell ${intent.spellId} is missing or no longer belongs to level ${intent.level}.`
+							}
+						]
+					};
+				}
+				const annotations = normalizeDirectAnnotations(intent.annotations, createId);
+				candidate.systemData.spellcasting!.spells![spellIndex] = {
+					...currentSpell,
+					...(annotations.length > 0 ? { annotations } : { annotations: undefined })
+				};
 				break;
 			}
 
@@ -469,6 +605,67 @@ export const reduce5eSheetEditIntents = (
 					...(intent.group === 'other' ? nextItems : stableGroups.other)
 				];
 				shouldReconcileSourceLinks = true;
+				break;
+			}
+
+			case 'update-inventory-item': {
+				const itemIndex = candidate.inventory.findIndex((item) => item.id === intent.itemId);
+				const currentItem = candidate.inventory[itemIndex];
+				if (!currentItem || getInventoryGroupForItem(currentItem) !== intent.group) {
+					return {
+						ok: false,
+						issues: [
+							{
+								code: 'invalid-intent-target',
+								message: `Inventory item ${intent.itemId} is missing or no longer belongs to ${intent.group}.`
+							}
+						]
+					};
+				}
+				const name = intent.item.name.trim();
+				if (!name) {
+					return {
+						ok: false,
+						issues: [
+							{
+								code: 'malformed-payload',
+								message: `Inventory item ${intent.itemId} needs a name.`
+							}
+						]
+					};
+				}
+				candidate.inventory[itemIndex] = {
+					...currentItem,
+					name,
+					tags: withInventoryGroupTags(currentItem.tags, intent.group),
+					...(intent.item.notes !== undefined ? { notes: intent.item.notes } : {}),
+					...(intent.item.quantity !== undefined ? { quantity: intent.item.quantity } : {}),
+					...(intent.item.weight !== undefined ? { weight: intent.item.weight } : {}),
+					...(intent.item.value !== undefined ? { value: intent.item.value } : {}),
+					...(intent.item.equipped !== undefined ? { equipped: intent.item.equipped } : {})
+				};
+				break;
+			}
+
+			case 'replace-inventory-item-annotations': {
+				const itemIndex = candidate.inventory.findIndex((item) => item.id === intent.itemId);
+				const currentItem = candidate.inventory[itemIndex];
+				if (!currentItem || getInventoryGroupForItem(currentItem) !== intent.group) {
+					return {
+						ok: false,
+						issues: [
+							{
+								code: 'invalid-intent-target',
+								message: `Inventory item ${intent.itemId} is missing or no longer belongs to ${intent.group}.`
+							}
+						]
+					};
+				}
+				const annotations = normalizeDirectAnnotations(intent.annotations, createId);
+				candidate.inventory[itemIndex] = {
+					...currentItem,
+					...(annotations.length > 0 ? { annotations } : { annotations: undefined })
+				};
 				break;
 			}
 

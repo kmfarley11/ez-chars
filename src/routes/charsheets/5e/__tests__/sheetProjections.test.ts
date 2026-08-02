@@ -116,7 +116,49 @@ describe('5e sheet projections', () => {
 			bindPath: ['__features']
 		});
 		expect(projection.traitRuntimeData.traits.value).toHaveLength(1);
-		expect(projection.spellSlotRuntimeCards).toHaveLength(10);
+		expect(Object.keys(projection.spellcastingRuntimeData)).toEqual([
+			'ability',
+			'spellSaveDC',
+			'spellAttackBonus'
+		]);
+		expect(Object.keys(projection.spellSlotRuntimeData)).toEqual([
+			'slot1',
+			'slot2',
+			'slot3',
+			'slot4',
+			'slot5',
+			'slot6',
+			'slot7',
+			'slot8',
+			'slot9'
+		]);
+		expect(projection.spellSlotRuntimeData.slot1).toMatchObject({
+			fieldName: '1st',
+			value: {
+				used: { value: 1 },
+				max: { value: 3 }
+			}
+		});
+		expect(projection.spellSlotRuntimeData.slot2).toMatchObject({
+			fieldName: '2nd',
+			value: {
+				used: { value: 0 },
+				max: { value: 0 }
+			}
+		});
+		expect(projection.spellSlotRuntimeData).not.toHaveProperty('slot1Used');
+		expect(Object.keys(projection.spellCollectionBulkEditData)).toEqual([
+			'level-cantrips',
+			'level-1',
+			'level-2',
+			'level-3',
+			'level-4',
+			'level-5',
+			'level-6',
+			'level-7',
+			'level-8',
+			'level-9'
+		]);
 		expect(projection.inventoryRuntimeCards.map((card) => card.key)).toEqual([
 			'weapons',
 			'armorShields',

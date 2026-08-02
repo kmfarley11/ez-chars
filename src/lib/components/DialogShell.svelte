@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { createScrollAffordanceAttachment } from '$components/scrollAffordance';
 
 	interface Props {
 		open?: boolean;
@@ -8,6 +9,7 @@
 		children?: Snippet;
 		closeText?: string;
 		fullHeightMobile?: boolean;
+		scrollAffordance?: boolean;
 
 		// Step navigation
 		title?: string;
@@ -22,6 +24,7 @@
 		children,
 		closeText = 'Close',
 		fullHeightMobile = false,
+		scrollAffordance = false,
 		title,
 		showBack = false,
 		onBack
@@ -29,6 +32,12 @@
 
 	let dialogEl: HTMLDialogElement | undefined = $state();
 	let headingEl: HTMLHeadingElement | undefined = $state();
+	let canScrollUp = $state(false);
+	let canScrollDown = $state(false);
+	const trackScrollAffordance = createScrollAffordanceAttachment((state) => {
+		canScrollUp = state.canScrollUp;
+		canScrollDown = state.canScrollDown;
+	});
 
 	export const focusHeading = () => {
 		headingEl?.focus();
@@ -56,19 +65,22 @@
 
 	let mobileClasses = $derived(
 		fullHeightMobile
-			? 'max-sm:h-full max-sm:max-h-none max-sm:w-full max-sm:rounded-none max-sm:border-0 m-auto max-h-[80vh] w-[min(92vw,34rem)] rounded-md border p-0'
-			: 'm-auto w-[min(92vw,34rem)] max-h-[80vh] rounded-md border p-0'
+			? 'dialog-shell-full-height-mobile max-sm:w-full max-sm:rounded-none max-sm:border-0 m-auto w-[min(92vw,34rem)] rounded-md border p-0'
+			: 'm-auto w-[min(92vw,34rem)] rounded-md border p-0'
 	);
 </script>
 
 <dialog
 	bind:this={dialogEl}
-	class="theme-dialog theme-dialog-backdrop {mobileClasses}"
+	class="dialog-shell theme-dialog theme-dialog-backdrop {mobileClasses}"
 	aria-label={title}
 	onclick={handleBackdropClick}
 	onclose={handleClose}
 >
-	<div class="flex flex-col p-4 h-full min-h-48">
+	<div
+		class="dialog-shell-layout flex min-h-48 flex-col p-4"
+		class:dialog-shell-scroll-layout={scrollAffordance}
+	>
 		{#if title || showBack}
 			<div class="flex items-center gap-2 pb-3 mb-2 border-b">
 				{#if showBack}
@@ -92,10 +104,35 @@
 				{/if}
 			</div>
 		{/if}
-		<div class="flex-1 pb-4 overflow-y-auto">
-			{@render children?.()}
+		<div class="dialog-shell-scroll-region relative min-h-0 flex-1">
+			<div
+				class="dialog-shell-scroll-viewport h-full overflow-y-auto pb-4 {scrollAffordance
+					? 'scroll-affordance-viewport'
+					: ''}"
+				data-scroll-viewport={scrollAffordance ? 'dialog-content' : undefined}
+				{@attach trackScrollAffordance}
+			>
+				{@render children?.()}
+			</div>
+			{#if scrollAffordance && canScrollUp}
+				<div
+					class="scroll-affordance-fade scroll-affordance-fade-top absolute inset-x-0 top-0 h-8"
+					data-scroll-affordance="more-above"
+					aria-hidden="true"
+				></div>
+			{/if}
+			{#if scrollAffordance && canScrollDown}
+				<div
+					class="scroll-affordance-fade scroll-affordance-fade-bottom absolute inset-x-0 bottom-0 h-8"
+					data-scroll-affordance="more-below"
+					aria-hidden="true"
+				></div>
+			{/if}
 		</div>
-		<div class="flex justify-end gap-2 shrink-0">
+		<div
+			class="flex shrink-0 justify-end gap-2"
+			class:dialog-shell-separated-footer={scrollAffordance}
+		>
 			<button
 				type="button"
 				class="theme-btn-light touch-target btn cursor-pointer rounded-md border px-3 py-1"
@@ -107,3 +144,49 @@
 		</div>
 	</div>
 </dialog>
+
+<style>
+	.dialog-shell,
+	.dialog-shell-layout {
+		max-height: 80dvh;
+	}
+
+	.dialog-shell-layout {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.dialog-shell {
+		overflow: hidden;
+	}
+
+	.dialog-shell-scroll-layout {
+		height: 80dvh;
+	}
+
+	.dialog-shell-scroll-region {
+		position: relative;
+		min-height: 0;
+		flex: 1 1 0%;
+	}
+
+	.dialog-shell-scroll-viewport {
+		height: 100%;
+		overflow-y: auto;
+		padding-bottom: 1rem;
+	}
+
+	.dialog-shell-separated-footer {
+		margin-top: 0.5rem;
+		border-top: 1px solid var(--color-surface-border);
+		padding-top: 0.75rem;
+	}
+
+	@media (max-width: 639px) {
+		.dialog-shell-full-height-mobile,
+		.dialog-shell-full-height-mobile > .dialog-shell-layout {
+			height: 100dvh;
+			max-height: 100dvh;
+		}
+	}
+</style>

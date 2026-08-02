@@ -139,6 +139,8 @@ The rough 5e, Shadowdark, and Cairn Excalidraw files are existing design evidenc
 - [ ] Self-host verified redistributable rules PDFs and deliver the rights-classified resource library plus contextual reference path.
 - [x] Complete the [editable-PDF field and rights audit](../fillable-pdf-interoperability-audit.md) for available publisher sheets: retain JSON as canonical, promote `BL-066` to an early P1 export-first proof, and do not make PDF interchange a first-playtest readiness prerequisite.
 - [ ] Establish a heuristic-driven baseline for dense collection discovery, focused row editing, annotations, and whole-sheet navigation under saturation before external playtesting.
+- [ ] Clarify the proven 2014 field, list, form, action, panel, and Storybook boundaries before a second system adopts or rejects them.
+- [ ] Add stable manual ordering for dense inventory and spell collections so compact previews can reflect deliberate user priority before saturated-sheet rehearsal.
 - [ ] Complete representative player-character, sparse GM sidekick/NPC, and saturated-sheet owner rehearsals on mobile.
 - [x] Synthesize anonymized pre-playtest surveys and reconcile their directional findings into readiness priorities.
 - [ ] Reconcile external survey and qualitative evidence after the playtest.
@@ -174,18 +176,19 @@ The rough 5e, Shadowdark, and Cairn Excalidraw files are existing design evidenc
 
 ## Strategic Priority Queue
 
-This is a vision-level dependency order, not a substitute for backlog IDs or an active OpenSpec task list. PRD v1 is approved, the core/PDF planning audits are complete, and the active delivery sequence is:
+This is a vision-level dependency order, not a substitute for backlog IDs or an active OpenSpec task list. PRD v1 is approved, the core/PDF planning audits are complete, and the completed `BL-064` proof establishes the first dense inventory and spell baseline. The active delivery sequence is:
 
-1. Confirm source classifications and the conservative Shadowdark baseline before product work depends on redistributed or processed material (`BL-068`).
-2. Address the cross-cutting playtest enabler already evidenced by the 2014 sheet: dense collection discovery, focused row editing, annotations, and saturated-sheet navigation (`BL-064`).
-3. Prove self-hosted/link-only resource discovery and contextual navigation against the existing 2014 sheet (`BL-069`).
-4. Establish the minimum multi-system lifecycle/computed-view boundary and a 2024 5e sheet; support the deliberately adopted SRD 5.2.1 release, audit the existing rough designs, and treat 5e-family reuse as family evidence (`BL-070`).
-5. Add the minimal Shadowdark sheet within the conservative source baseline and use its different shape to validate or revise the shared boundary (`BL-071`).
-6. Harden mobile interaction, sparse NPC/sidekick use, saturated-sheet navigation, backup/restore, resource lookup, and compatibility decisions across the full matrix (`BL-072`).
-7. Run the early P1 fillable-PDF export/import proofs after a target schema and template-delivery basis settle (`BL-066`); they complement but do not gate the first playtest.
-8. Reconcile external evidence before promoting specialized builders, stat-block modes, normalized compendium behavior, more systems, image/OCR import, or connected services.
+1. Clarify the proven GridContent, list, form, action, panel, and Storybook boundaries before contextual-resource and second-system consumers expand them (`BL-074`).
+2. Scale saturated Runtime Actions with a ten-item compact/searchable treatment and give supporting Runtime collections proportionate bounds without multiplying scroll traps (`BL-076`).
+3. Add stable manual ordering for dense inventory and spell collections so important entries remain at a glance in compact previews (`BL-075`).
+4. Prove self-hosted/link-only resource discovery and contextual navigation against the existing 2014 sheet (`BL-069`).
+5. Establish the minimum multi-system lifecycle/computed-view boundary and a 2024 5e sheet; support the deliberately adopted SRD 5.2.1 release, audit the existing rough designs, and treat 5e-family reuse as family evidence (`BL-070`).
+6. Add the minimal Shadowdark sheet within the conservative source baseline and use its different shape to validate or revise the shared boundary (`BL-071`).
+7. Harden mobile interaction, sparse NPC/sidekick use, saturated-sheet navigation, backup/restore, resource lookup, and compatibility decisions across the full matrix (`BL-072`).
+8. Run the early P1 fillable-PDF export/import proofs after a target schema and template-delivery basis settle (`BL-066`); they complement but do not gate the first playtest.
+9. Reconcile external evidence before promoting specialized builders, stat-block modes, normalized compendium behavior, more systems, image/OCR import, or connected services.
 
-Scene-aware runtime guidance and navigation (`BL-073`) is a trigger-deferred Horizon B investigation after saturated-sheet and multi-system evidence. It should not delay this sequence unless owner rehearsal demonstrates that ordinary landmarks and system-native cues cannot support a core runtime scenario.
+Runtime and supporting collection scaling (`BL-076`) is a Horizon A prerequisite discovered by the first saturated 2014 rehearsal; it follows the component-boundary review so specialized Runtime Action orchestration is not forced into the generic list. Stable manual collection ordering (`BL-075`) remains a separate Horizon A prerequisite after the dense-list surfaces and their reusable ownership are proven. Both must land before external handoff. Scene-aware runtime guidance and navigation (`BL-073`) remains a trigger-deferred Horizon B investigation: saturated 2014 evidence now supports an outline or jump-navigation proof, while cross-system scene vocabulary still awaits a non-2014 sheet. Promote only the bounded navigation proof earlier if ordinary landmarks remain too slow for a core runtime scenario.
 
 ## Decision Filter for Future Work
 

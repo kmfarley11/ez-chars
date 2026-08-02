@@ -27,6 +27,7 @@
 		handleEditSavePatches?: (_patches: Array<GridContentPatch>) => void;
 		handleEditCancel?: () => void;
 		onClosed?: () => void;
+		title?: string;
 	}
 
 	let {
@@ -35,7 +36,8 @@
 		handleEditSave,
 		handleEditSavePatches,
 		handleEditCancel = undefined,
-		onClosed = undefined
+		onClosed = undefined,
+		title = 'Edit Fields'
 	}: Props = $props();
 
 	let dialogEl = $state<HTMLDialogElement>();
@@ -123,7 +125,7 @@
 	onclick={onBackdropClick}
 >
 	<form class="flex flex-col gap-3 p-4" onsubmit={onSubmit}>
-		<h2 id={headingId} class="text-lg leading-none font-semibold">Edit Fields</h2>
+		<h2 id={headingId} class="text-lg leading-none font-semibold">{title}</h2>
 		{#each Object.entries(draftData) as [fieldKey, field] (fieldKey)}
 			<div class="space-y-1">
 				<div class="flex items-center justify-between gap-2">

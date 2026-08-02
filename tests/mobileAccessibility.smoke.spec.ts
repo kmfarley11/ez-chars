@@ -85,6 +85,9 @@ test('representative phone controls expose non-overlapping 44 CSS-pixel targets'
 	await openCharacter.click();
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-character/);
 	await expect(page.getByText('Current HP:', { exact: false })).toBeVisible();
+	const spellsToggle = page.getByRole('button', { name: 'Expand Spells' });
+	await collectTargetFailures([{ name: 'Spells section', locator: spellsToggle }], failures);
+	await spellsToggle.click();
 
 	const runtimeActions = page.getByRole('list', { name: 'Runtime actions' });
 	await collectTargetFailures(
@@ -110,16 +113,16 @@ test('representative phone controls expose non-overlapping 44 CSS-pixel targets'
 				locator: runtimeActions.getByRole('button', { name: 'Source actions for Longsword attack' })
 			},
 			{
-				name: 'Spell card actions',
+				name: 'Spell collection actions',
 				locator: page
-					.getByRole('region', { name: '1st spells' })
-					.getByRole('button', { name: 'Card actions' })
+					.getByRole('region', { name: 'Spells collection' })
+					.getByRole('button', { name: 'Bulk Edit Spells' })
 			},
 			{
-				name: 'Inventory card actions',
+				name: 'Inventory collection actions',
 				locator: page
 					.getByRole('region', { name: 'Weapons inventory' })
-					.getByRole('button', { name: 'Card actions' })
+					.getByRole('button', { name: 'Bulk Edit Weapons' })
 			}
 		],
 		failures

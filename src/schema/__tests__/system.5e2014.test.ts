@@ -64,6 +64,17 @@ describe('5e 2014 character schema', () => {
 		}
 	});
 
+	it('includes one dedicated saturated 2014 seed for sheet-level rehearsal', () => {
+		const saturated = seedChars.find((character) => character.meta.id === 'char-5e-2014-saturated');
+
+		expect(saturated).toBeDefined();
+		if (!saturated || saturated.system.id !== SYSTEM_ID_5E2014) return;
+		const parsed = parse5e2014CharacterDocument(saturated);
+		expect(parsed.inventory.length).toBeGreaterThanOrEqual(40);
+		expect(parsed.systemData.spellcasting?.spells?.length).toBeGreaterThanOrEqual(20);
+		expect(parsed.notes.length).toBeGreaterThanOrEqual(10);
+	});
+
 	it('keeps linked and fully custom runtime actions in representative seed characters', () => {
 		const representativeCharacters = seedChars
 			.filter((character) => ['char-001', 'char-002'].includes(character.meta.id))

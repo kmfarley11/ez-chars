@@ -239,6 +239,42 @@ body:has(dialog[open]) {
 	overflow: hidden;
 }
 
+.scroll-affordance-viewport {
+	scrollbar-color: color-mix(in oklab, var(--color-muted-text) 58%, transparent) transparent;
+	scrollbar-gutter: stable;
+	scrollbar-width: thin;
+}
+
+.scroll-affordance-viewport::-webkit-scrollbar {
+	width: 0.5rem;
+}
+
+.scroll-affordance-viewport::-webkit-scrollbar-thumb {
+	border-radius: 999px;
+	background-color: color-mix(in oklab, var(--color-muted-text) 58%, transparent);
+}
+
+.scroll-affordance-fade {
+	pointer-events: none;
+	z-index: 1;
+}
+
+.scroll-affordance-fade-top {
+	background: linear-gradient(
+		to bottom,
+		color-mix(in oklab, var(--color-surface-text) 18%, transparent),
+		transparent
+	);
+}
+
+.scroll-affordance-fade-bottom {
+	background: linear-gradient(
+		to top,
+		color-mix(in oklab, var(--color-surface-text) 18%, transparent),
+		transparent
+	);
+}
+
 @media (pointer: coarse) {
 	.touch-target,
 	.theme-input:not([type='checkbox']):not([type='radio']):not([type='file']) {

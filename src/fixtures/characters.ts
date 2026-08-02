@@ -3,6 +3,7 @@ import {
 	type CharacterDocument5e2014,
 	create5e2014Character
 } from '../schema';
+import { saturatedCharacter5e2014 } from './saturatedCharacter.5e2014';
 
 const bryltin: CharacterDocument5e2014 = create5e2014Character({
 	name: 'Bryltin Brewhammer',
@@ -310,5 +311,6 @@ export const seedChars: CharacterWithSystemData[] = [
 				}
 			]
 		}
-	})
+	}),
+	saturatedCharacter5e2014
 ];

@@ -9,6 +9,42 @@ const deterministicIds = (...ids: Array<string>) => {
 };
 
 describe('5e sheet edit intent reducer', () => {
+	it('adds previously absent spell-slot levels and prunes untouched zero defaults', () => {
+		const character = createSheetEditCharacter();
+		delete character.systemData.spellcasting;
+
+		const result = reduce5eSheetEditIntents(character, [
+			{
+				type: 'replace-spell-slots',
+				slots: {
+					'1': { used: 0, max: 0 },
+					'3': { used: 1, max: 2 },
+					'9': { used: 0, max: 0 }
+				}
+			}
+		]);
+
+		expect(result).toMatchObject({
+			ok: true,
+			character: {
+				systemData: {
+					spellcasting: {
+						ability: 'int',
+						slots: { '3': { used: 1, max: 2 } }
+					}
+				}
+			}
+		});
+
+		const zeroOnlyCharacter = createSheetEditCharacter();
+		delete zeroOnlyCharacter.systemData.spellcasting;
+		const zeroOnly = reduce5eSheetEditIntents(zeroOnlyCharacter, [
+			{ type: 'replace-spell-slots', slots: { '1': { used: 0, max: 0 } } }
+		]);
+		expect(zeroOnly).toMatchObject({ ok: true });
+		if (zeroOnly.ok) expect(zeroOnly.character.systemData.spellcasting).toBeUndefined();
+	});
+
 	it('reduces spells, actions, languages, and mixed-owner features while preserving identities', () => {
 		const character = createSheetEditCharacter();
 		const original = structuredClone(character);

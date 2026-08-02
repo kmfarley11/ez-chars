@@ -56,6 +56,7 @@ This is a capability summary for the completed 2014 baseline, not a chronologica
 - The substantial D&D 5e 2014 sheet covers runtime and organizational regions, direct and structured editing, annotations, features/traits, spells, inventory, notes, and action-economy summaries.
 - Strict `dnd5e-2014.schema.v0` validation, typed feature-local projections/edit intents, deterministic persistence boundaries, and non-destructive unsupported-data handling protect the intentionally unstable pre-playtest epoch.
 - Runtime actions support custom creation plus searchable inventory, spell, feature, and trait snapshots with stable source identity, source navigation, confirmed resync, and source-deletion fallback.
+- Weapons, Armor & Shields, Other Gear, and Spells provide searchable responsive dense-collection browsing, focused row editing and notes, sparse spell-slot setup, and repeatable saturated-sheet verification without making every short collection adopt the same density controls.
 - Reusable grid, field-binding, dialog, Storybook, storage, and utility boundaries support the implemented sheet without claiming a universal cross-system rendering contract.
 - The home-to-sheet accessibility and verification baseline includes keyboard, touch, modal/popover context, mobile geometry, unit/component coverage, and black-box browser checks.
 - Official SRD 5.1 and SRD 5.2.1 PDFs are self-hosted with centralized attribution and provenance; the conservative Shadowdark citation baseline and protected maintainer review boundary are established for later resource-navigation and system-sheet work.
@@ -64,6 +65,7 @@ This is a capability summary for the completed 2014 baseline, not a chronologica
 
 - 5e sheet route still does not expose every optional schema field or deeper 5e detail
 - the target field interaction model, field binding/mutation contract, and field/card API are documented in [docs/field-interaction-model.md](field-interaction-model.md), [docs/field-binding-contract.md](field-binding-contract.md), and [docs/field-rendering-api.md](field-rendering-api.md); broader feature work can now build on the extracted 5e projection and typed edit boundary
+- `GridContent` and `GridContainer` still concentrate list, dialog/action, responsive layout, panel, heading, and collapse responsibilities; the completed `BL-064` proof establishes bounded inventory and spell behavior, while `BL-074` will clarify the reusable developer contracts, `BL-076` will scale saturated Runtime Actions and supporting collections, and `BL-075` will add stable user-authored priority before external handoff and before contextual-resource and second-system consumers expand them
 
 ### Missing
 
@@ -71,10 +73,10 @@ This is a capability summary for the completed 2014 baseline, not a chronologica
 - 2024 D&D and Shadowdark system schemas, creation choices, routes, sheets, and fixtures
 - a system-dispatch and computed-summary boundary that does not require the home list to inspect 5e fields
 - a rights-classified resource library, curated-section search, and contextual reference navigation
-- owner solo-play rehearsals, saturation stress evidence, and external evidence across the PRD matrix
+- continued owner solo-play rehearsals and external evidence across the PRD matrix; the first saturated 2014 rehearsal now validates the revised spell/inventory surfaces while identifying Runtime Action density and whole-sheet navigation as follow-up evidence
 
 ### Deferred
 
 - durable character-data migration support begins when the first external playtest activates explicit system schema-v1 decisions; no general v0 migration is promised, and the final 2014 v0 receives a one-time transition only if a later approved change defines it before handoff
 - CI; local verification in [docs/verification.md](verification.md) remains the current source of truth until contributor count, release cadence, or branch-protection needs justify GitHub Actions.
-- Firefox-specific dense-sheet scroll optimization; the completed CSS container-query replacement and representative profile did not implicate additional application layout work. `BL-064` will recheck macOS Firefox against saturated fixtures and reopen browser-specific optimization only if repeatable evidence implicates application code. Use the profiling workflow in [docs/verification.md](verification.md) for regressions.
+- Firefox-specific dense-sheet scroll optimization; the completed CSS container-query replacement, representative profile, and `BL-064` saturated-sheet recheck did not implicate additional application layout work. Reopen browser-specific optimization only if repeatable evidence implicates application code, using the profiling workflow in [docs/verification.md](verification.md).

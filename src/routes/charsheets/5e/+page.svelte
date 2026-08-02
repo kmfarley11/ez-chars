@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import RuntimeActionsCard from './components/RuntimeActionsCard.svelte';
+	import Dnd5e2014DenseCollectionCard from './components/Dnd5e2014DenseCollectionCard.svelte';
 	import GridContent from '$components/GridContent.svelte';
 	import GridContainer from '$components/GridContainer.svelte';
 	import { applyGridPatches } from '$utils/characterGridHelpers';
@@ -24,6 +25,10 @@
 		type SheetEditIssue
 	} from './sheetEditIntents';
 	import type { InventoryGroup } from './sheetConstants';
+	import {
+		projectInventoryDenseCollectionRows,
+		projectSpellDenseCollectionRows
+	} from '$lib/dnd5e2014/denseCollectionRows';
 	import { project5eSheet } from './sheetProjections';
 
 	interface Props {
@@ -60,12 +65,23 @@
 	let isOrganizationalRegionCollapsed = $state(false);
 	let inventoryCardElements = $state<Partial<Record<InventoryGroup, HTMLElement>>>({});
 	let spellCardElements = $state<Partial<Record<string, HTMLElement>>>({});
+	let inventoryCollectionQueries = $state<Record<InventoryGroup, string>>({
+		weapons: '',
+		armorShields: '',
+		other: ''
+	});
+	let spellCollectionQuery = $state('');
 	let featuresCardElement = $state<HTMLElement>();
 	let traitsCardElement = $state<HTMLElement>();
 	const inventoryGroupLabels: Record<InventoryGroup, string> = {
 		weapons: 'Weapons inventory',
 		armorShields: 'Armor and shields inventory',
 		other: 'Other inventory'
+	};
+	const inventoryCollectionTitles: Record<InventoryGroup, string> = {
+		weapons: 'Weapons',
+		armorShields: 'Armor & Shields',
+		other: 'Other Gear'
 	};
 
 	const {
@@ -90,8 +106,25 @@
 		roleplaySecondaryData,
 		scratchpadNotesData,
 		spellcastingRuntimeData,
-		spellSlotRuntimeCards
+		spellSlotRuntimeData,
+		spellCollectionBulkEditData
 	} = $derived(project5eSheet(char));
+	const inventoryDenseRows = $derived({
+		weapons: projectInventoryDenseCollectionRows(char.inventory, 'weapons'),
+		armorShields: projectInventoryDenseCollectionRows(char.inventory, 'armorShields'),
+		other: projectInventoryDenseCollectionRows(char.inventory, 'other')
+	});
+	const spellDenseRows = $derived(
+		projectSpellDenseCollectionRows(char.systemData.spellcasting?.spells ?? [])
+	);
+	const hasPersistedSpellSlots = $derived(
+		Object.values(char.systemData.spellcasting?.slots ?? {}).some(
+			(slot) => slot.used > 0 || slot.max > 0
+		)
+	);
+	const shouldInitiallyCollapseSpells = $derived(
+		spellDenseRows.length === 0 && !hasPersistedSpellSlots
+	);
 	const characterUpdaterSignature = (entry: CharacterDocument5e2014): CharacterDocument5e2014 =>
 		entry;
 
@@ -147,6 +180,10 @@
 		});
 	};
 
+	const handleSheetIntent = (intent: SheetEditIntent) => {
+		handleSheetIntents([intent]);
+	};
+
 	const handleCreateRuntimeAction = (draft: RuntimeActionDraft) => {
 		handleSheetIntents([{ type: 'create-runtime-action', draft }]);
 	};
@@ -159,6 +196,11 @@
 		const resolvedSource = resolve5eRuntimeActionSource(char, source);
 		if (!resolvedSource) return;
 		const destination = resolvedSource.destination;
+		if (destination.kind === 'inventory') {
+			inventoryCollectionQueries[destination.group] = '';
+		} else if (destination.kind === 'spell') {
+			spellCollectionQuery = '';
+		}
 		const cardElement =
 			destination.kind === 'inventory'
 				? inventoryCardElements[destination.group]
@@ -179,11 +221,15 @@
 		};
 	};
 
-	const registerSpellCard = (level: number) => (element: HTMLElement) => {
-		spellCardElements[String(level)] = element;
+	const registerSpellCollection = (element: HTMLElement) => {
+		for (let level = 0; level <= 9; level += 1) {
+			spellCardElements[String(level)] = element;
+		}
 		return () => {
-			if (spellCardElements[String(level)] === element) {
-				delete spellCardElements[String(level)];
+			for (let level = 0; level <= 9; level += 1) {
+				if (spellCardElements[String(level)] === element) {
+					delete spellCardElements[String(level)];
+				}
 			}
 		};
 	};
@@ -419,7 +465,7 @@
 							{@attach registerFeaturesCard}
 							tabindex="-1"
 							aria-label="Features"
-							class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
+							class="grid rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
 						>
 							<GridContainer border={true} pad={true} classes="rounded-md">
 								<GridContent
@@ -435,7 +481,7 @@
 							{@attach registerTraitsCard}
 							tabindex="-1"
 							aria-label="Traits"
-							class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
+							class="grid rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
 						>
 							<GridContainer border={true} pad={true} classes="rounded-md">
 								<GridContent
@@ -451,42 +497,53 @@
 				</GridContainer>
 				<GridContainer
 					heading="Spells"
+					initiallyCollapsed={shouldInitiallyCollapseSpells}
 					border={true}
 					pad={true}
 					flow="row"
 					count={1}
 					classes="gap-3"
 				>
-					<GridContainer border={true} pad={true} classes="rounded-md">
-						<GridContent
-							handleEditSavePatches={handleGridPatchesSave}
-							{annotationEditorConfig}
-							displayAlign="center"
-							data={spellcastingRuntimeData}
-						/>
-					</GridContainer>
-					<GridContainer flow="row" count={1} countMd={3} countLg={5} classes="gap-3">
-						{#each spellSlotRuntimeCards as slotCard (slotCard.key)}
-							{@const spellLevel = slotCard.key === 'cantrips' ? 0 : Number(slotCard.key)}
-							<section
-								{@attach registerSpellCard(spellLevel)}
-								tabindex="-1"
-								aria-label={`${slotCard.label} spells`}
-								class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
-							>
-								<GridContainer border={true} pad={true} classes="rounded-md">
-									<GridContent
-										handleFieldSavePatch={handleFieldPatchSave}
-										handleEditSavePatches={handleGridPatchesSave}
-										{annotationEditorConfig}
-										displayArrayMode="stack"
-										displayMaxCols={1}
-										data={slotCard.data}
-									/>
-								</GridContainer>
-							</section>
-						{/each}
-					</GridContainer>
+					<section aria-label="Spellcasting">
+						<GridContainer border={true} pad={true} classes="rounded-md">
+							<GridContent
+								handleEditSavePatches={handleGridPatchesSave}
+								{annotationEditorConfig}
+								displayAlign="center"
+								data={spellcastingRuntimeData}
+							/>
+						</GridContainer>
+					</section>
+					<section aria-label="Spell slots">
+						<GridContainer border={true} pad={true} classes="rounded-md">
+							<GridContent
+								handleEditSavePatches={handleGridPatchesSave}
+								{annotationEditorConfig}
+								displayAlign="center"
+								data={spellSlotRuntimeData}
+							/>
+						</GridContainer>
+					</section>
+					<section
+						{@attach registerSpellCollection}
+						tabindex="-1"
+						aria-label="Spells collection"
+						class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
+					>
+						<GridContainer border={true} pad={true} classes="rounded-md">
+							<Dnd5e2014DenseCollectionCard
+								title="Spells"
+								rows={spellDenseRows}
+								character={char}
+								bulkEditData={spellCollectionBulkEditData}
+								bind:query={spellCollectionQuery}
+								{annotationEditorConfig}
+								emptyText="No spells yet."
+								onIntent={handleSheetIntent}
+								onBulkSave={handleGridPatchesSave}
+							/>
+						</GridContainer>
+					</section>
 				</GridContainer>
 				<GridContainer
 					heading="Inventory / Equipment"
@@ -515,12 +572,16 @@
 								class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
 							>
 								<GridContainer border={true} pad={true} classes="rounded-md">
-									<GridContent
-										handleEditSavePatches={handleGridPatchesSave}
+									<Dnd5e2014DenseCollectionCard
+										title={inventoryCollectionTitles[inventoryCard.key]}
+										rows={inventoryDenseRows[inventoryCard.key]}
+										character={char}
+										bulkEditData={inventoryCard.data}
+										bind:query={inventoryCollectionQueries[inventoryCard.key]}
 										{annotationEditorConfig}
-										displayArrayMode="stack"
-										displayMaxCols={1}
-										data={inventoryCard.data}
+										emptyText={`No ${inventoryCollectionTitles[inventoryCard.key].toLocaleLowerCase()} yet.`}
+										onIntent={handleSheetIntent}
+										onBulkSave={handleGridPatchesSave}
 									/>
 								</GridContainer>
 							</section>

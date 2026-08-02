@@ -10,6 +10,7 @@ import {
 	runtimeActionEditorPayloadSchema,
 	scratchpadEditorPayloadSchema,
 	spellEditorPayloadSchema,
+	spellSlotsEditorPayloadSchema,
 	traitEditorPayloadSchema,
 	type SheetEditIntent,
 	type SheetEditIssue
@@ -19,6 +20,7 @@ import {
 	featureListPathPrefix,
 	inventoryListPathPrefix,
 	isCurrencyDenomination,
+	isSpellSlotLevelKey,
 	proficiencyLanguagesPathPrefix,
 	proficiencyToolsPathPrefix,
 	roleplayFieldMetadata,
@@ -77,12 +79,33 @@ export const decode5eGridPatches = (
 	const issues: Array<SheetEditIssue> = [];
 	const currencyAmounts: Partial<Record<CurrencyDenomination, number>> = {};
 	const roleplayBodies: Partial<Record<RoleplayFieldKey, string>> = {};
+	const spellSlotValues: Record<string, { used?: unknown; max?: unknown }> = {};
 	let sawCurrency = false;
 	let sawOrganizationalNotes = false;
+	let sawSpellSlots = false;
+	let firstSpellSlotPatch: GridContentPatch | undefined;
 	let scratchpad: ReturnType<typeof scratchpadEditorPayloadSchema.parse> | undefined;
 
 	for (const patch of patches) {
 		const [root, target] = patch.path;
+
+		if (root === 'systemData' && target === 'spellcasting' && patch.path[2] === 'slots') {
+			const level = patch.path[3];
+			const field = patch.path[4];
+			if (
+				patch.path.length !== 5 ||
+				!isSpellSlotLevelKey(level) ||
+				(field !== 'used' && field !== 'max')
+			) {
+				issues.push(unsupportedIssue(patch));
+				continue;
+			}
+			sawSpellSlots = true;
+			firstSpellSlotPatch ??= patch;
+			spellSlotValues[level] ??= {};
+			spellSlotValues[level][field] = patch.value;
+			continue;
+		}
 
 		if (
 			root === currencyPathPrefix &&
@@ -218,6 +241,15 @@ export const decode5eGridPatches = (
 	}
 
 	if (sawCurrency) intents.push({ type: 'update-currency', amounts: currencyAmounts });
+	if (sawSpellSlots && firstSpellSlotPatch) {
+		const parsed = spellSlotsEditorPayloadSchema.safeParse(spellSlotValues);
+		if (parsed.success) intents.push({ type: 'replace-spell-slots', slots: parsed.data });
+		else {
+			issues.push(
+				payloadIssue(firstSpellSlotPatch, 'spell slots', formatParseIssue(parsed.error.issues))
+			);
+		}
+	}
 	if (sawOrganizationalNotes) {
 		intents.push({
 			type: 'replace-organizational-notes',

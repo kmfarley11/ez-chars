@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext, setContext, type Snippet } from 'svelte';
+	import { getContext, setContext, untrack, type Snippet } from 'svelte';
 	import { twMerge } from 'tailwind-merge';
 
 	type GridFlow = 'col' | 'row' | 'auto';
@@ -29,6 +29,8 @@
 		classes?: string;
 		// Optional section heading rendered at the top of the container.
 		heading?: string;
+		// Initial state only; subsequent toggling remains locally owned.
+		initiallyCollapsed?: boolean;
 	}
 
 	const GRID_LAYER_DEPTH_KEY = 'ez:grid-layer-depth';
@@ -46,7 +48,8 @@
 		pad = false,
 		border = false,
 		classes = undefined,
-		heading = undefined
+		heading = undefined,
+		initiallyCollapsed = false
 	}: Props = $props();
 
 	// Share current grid nesting depth so nested grid wrappers can render stronger elevation.
@@ -173,8 +176,7 @@
 	// Opinionated collapse model: only heading containers are collapsible.
 	const headingText = $derived(typeof heading === 'string' ? heading.trim() : '');
 	const hasHeading = $derived(headingText.length > 0);
-	// Start expanded; heading clicks toggle this state.
-	let isCollapsed = $state(false);
+	let isCollapsed = $state(untrack(() => initiallyCollapsed));
 
 	const onToggleCollapse = () => {
 		isCollapsed = !isCollapsed;

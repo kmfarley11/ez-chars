@@ -47,13 +47,6 @@ export type InventoryRuntimeCard = {
 	data: GridContentData;
 };
 
-export type SpellSlotRuntimeCard = {
-	key: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'cantrips';
-	label: string;
-	data: GridContentData;
-	slot?: { used: number; max: number };
-};
-
 export type Sheet5eProjection = {
 	annotationEditorConfig: typeof annotationEditorConfig;
 	runtimeActionData: GridContentData;
@@ -76,7 +69,8 @@ export type Sheet5eProjection = {
 	roleplaySecondaryData: GridContentData;
 	scratchpadNotesData: GridContentData;
 	spellcastingRuntimeData: GridContentData;
-	spellSlotRuntimeCards: Array<SpellSlotRuntimeCard>;
+	spellSlotRuntimeData: GridContentData;
+	spellCollectionBulkEditData: GridContentData;
 };
 
 const proficiencySourceOptions: Array<ProficiencyEditorSource> = [
@@ -694,6 +688,29 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 		}
 	};
 
+	const spellSlotRuntimeData: GridContentData = Object.fromEntries(
+		spellSlotLevelMetadata.map(({ key, label }) => {
+			const slot = char.systemData.spellcasting?.slots?.[key];
+			return [
+				`slot${key}`,
+				{
+					fieldName: label,
+					value: {
+						used: withFieldAnnotations(
+							slot?.used ?? 0,
+							['systemData', 'spellcasting', 'slots', key, 'used'],
+							{ fieldName: 'Used', inputKind: 'number' }
+						),
+						max: withFieldAnnotations(
+							slot?.max ?? 0,
+							['systemData', 'spellcasting', 'slots', key, 'max'],
+							{ fieldName: 'Max', inputKind: 'number' }
+						)
+					}
+				}
+			] satisfies [string, GridContentField];
+		})
+	);
 	const spellcastingRuntimeData: GridContentData = {
 		ability: withFieldAnnotations(
 			char.systemData.spellcasting?.ability ?? defaultSpellcastingAbility,
@@ -754,58 +771,22 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 				}
 			}))
 	});
-	const spellSlotRuntimeCards: Array<SpellSlotRuntimeCard> = [
-		{ key: 'cantrips', label: 'Cantrips', data: { spells: createSpellListField(0) } },
-		...spellSlotLevelMetadata.map(({ key, label }) => {
-			const slot = char.systemData.spellcasting?.slots?.[key];
-			return {
-				key,
-				label,
-				slot,
-				data: {
-					...resolveGridFieldDescriptors(
-						char,
-						slot
-							? [
-									{
-										key: `slot${key}Used`,
-										fieldName: `${label} Used`,
-										path: ['systemData', 'spellcasting', 'slots', key, 'used'],
-										defaultValue: 0,
-										valuePatchOperation: slot.used === undefined ? 'add' : 'replace',
-										interaction: {
-											editAffordance: 'persistent',
-											annotationAffordance: 'persistent'
-										}
-									}
-								]
-							: [],
-						{ annotationPathForValuePath: toSystemDataAnnotationPath }
-					),
-					slots: {
-						fieldName: label,
-						value: {
-							used: withFieldAnnotations(slot?.used ?? 0, [
-								'systemData',
-								'spellcasting',
-								'slots',
-								key,
-								'used'
-							]),
-							max: withFieldAnnotations(slot?.max ?? 0, [
-								'systemData',
-								'spellcasting',
-								'slots',
-								key,
-								'max'
-							])
-						}
-					},
-					spells: createSpellListField(Number(key) as SpellListLevel)
-				}
-			};
-		})
+	const spellCollectionLevels: Array<SpellListLevel> = [
+		0,
+		...spellSlotLevelMetadata.map(({ key }) => Number(key) as SpellListLevel)
 	];
+	const spellCollectionBulkEditData: GridContentData = Object.fromEntries(
+		spellCollectionLevels.map((level) => {
+			const label = level === 0 ? 'Cantrips' : spellSlotLevelMetadata[level - 1]?.label;
+			return [
+				`level-${level === 0 ? 'cantrips' : level}`,
+				{
+					...createSpellListField(level),
+					fieldName: level === 0 ? 'Cantrips' : `${label}-level Spells`
+				}
+			];
+		})
+	);
 
 	return {
 		annotationEditorConfig,
@@ -829,6 +810,7 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 		roleplaySecondaryData,
 		scratchpadNotesData,
 		spellcastingRuntimeData,
-		spellSlotRuntimeCards
+		spellSlotRuntimeData,
+		spellCollectionBulkEditData
 	};
 };

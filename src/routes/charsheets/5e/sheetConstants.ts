@@ -49,8 +49,10 @@ export const skillMetadata: Array<{ name: Dnd5eSkillName; abilityKey: AbilityKey
 	{ name: 'Survival', abilityKey: 'wis' }
 ];
 
+export type SpellSlotLevelKey = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
+
 export const spellSlotLevelMetadata: Array<{
-	key: '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
+	key: SpellSlotLevelKey;
 	label: string;
 }> = [
 	{ key: '1', label: '1st' },
@@ -63,6 +65,9 @@ export const spellSlotLevelMetadata: Array<{
 	{ key: '8', label: '8th' },
 	{ key: '9', label: '9th' }
 ];
+
+export const isSpellSlotLevelKey = (value: unknown): value is SpellSlotLevelKey =>
+	typeof value === 'string' && spellSlotLevelMetadata.some(({ key }) => key === value);
 
 export const spellListLevelPathPrefix = '__spellLevelList';
 export const runtimeActionListPathPrefix = '__runtimeActions';

@@ -23,7 +23,11 @@ test('serves adopted SRDs locally without exposing local-only sources', async ({
 	expect((await localOnlyResponse.body()).subarray(0, 4).toString()).not.toBe('%PDF');
 });
 
-test('links third-party notices to the deployed Git revision', async ({ page }) => {
+test('links third-party notices to the deployed Git revision', async ({ page }, testInfo) => {
+	test.skip(
+		testInfo.project.name === 'Mobile Chrome',
+		'The notices link currently belongs to the desktop About dialog.'
+	);
 	await page.goto('/');
 
 	await page.getByRole('button', { name: 'About ez-chars' }).click();

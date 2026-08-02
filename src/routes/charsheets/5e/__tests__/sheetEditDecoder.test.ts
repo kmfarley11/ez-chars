@@ -16,6 +16,7 @@ import { decode5eGridPatches } from '../sheetEditDecoder';
 
 const malformedPayloadCases: Array<[string, GridContentPatch]> = [
 	['spell list', { path: [spellListLevelPathPrefix, 1], value: 'bad' }],
+	['spell slots', { path: ['systemData', 'spellcasting', 'slots', '1', 'used'], value: 1 }],
 	['runtime action', { path: [runtimeActionListPathPrefix], value: [{ name: 12 }] }],
 	[
 		'proficiency language',
@@ -46,6 +47,8 @@ describe('5e sheet edit decoder', () => {
 	it('decodes every structured collection family into explicit intents', () => {
 		const decoded = decode5eGridPatches([
 			{ path: [spellListLevelPathPrefix, 1], value: [{ spellId: 'shield', name: 'Shield' }] },
+			{ path: ['systemData', 'spellcasting', 'slots', '1', 'used'], value: 1 },
+			{ path: ['systemData', 'spellcasting', 'slots', '1', 'max'], value: 3 },
 			{
 				path: [runtimeActionListPathPrefix],
 				value: [{ id: 'action-1', name: 'Longsword', timing: 'action' }]
@@ -90,7 +93,8 @@ describe('5e sheet edit decoder', () => {
 					{ type: 'replace-proficiency-tools' },
 					{ type: 'replace-features' },
 					{ type: 'replace-traits' },
-					{ type: 'replace-inventory-group', group: 'weapons' }
+					{ type: 'replace-inventory-group', group: 'weapons' },
+					{ type: 'replace-spell-slots', slots: { '1': { used: 1, max: 3 } } }
 				]
 			}
 		});
