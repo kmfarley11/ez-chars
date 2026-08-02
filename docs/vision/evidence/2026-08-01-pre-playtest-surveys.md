@@ -70,17 +70,17 @@ Questions covered:
 
 ## Reconciliation with Product Direction
 
-| Evidence | Product implication | Reconciliation |
-| --- | --- | --- |
-| Strong mobile ratings and existing digital-sheet use | Phone usability is central rather than supplementary | Confirms the mobile-first P0 gate and phone-sized scenario matrix |
-| Strong guided-management interest plus low physical-sheet confidence | Users need help knowing what to enter and where to verify it | Keep contextual references, informative empty states, and focused maintenance guidance in Horizon A; test whether they are sufficient before promoting a full builder |
-| Mixed modifier-abstraction preferences | Automation should not conceal or replace user understanding | Refine progressive assistance toward optional, transparent computations while preserving editable source values and manual text |
-| Fragmented lookup and weak trust/discoverability | Source provenance and navigation are part of character ownership | Confirms `BL-069`, visible source/version identity, multi-source locators, and contextual editor links |
-| Physical dice preference and low digital-dice importance | Dice rolling is not required to make the character tool useful | Retain dice engines as an explicit non-goal |
-| Conditional openness to unfamiliar systems | System support needs lightweight orientation without mandatory onboarding | Keep explicit system identity and system-native sheets; measure whether references and sparse editing make unfamiliar systems approachable |
-| Broad campaign-length preferences | Both sparse starts and accumulated records matter | Confirms sparse and saturated fixtures before external handoff |
-| Exploration, roleplay, and combat all matter | Runtime utility cannot mean combat data alone | Ensure system sheets and quick notes support scene-relevant information across all three pillars |
-| Interest in VTT/atmosphere features | Adjacent session tooling has value but a different owner | Preserve the ez-chars / Dungeons and Dashboards boundary |
+| Evidence                                                             | Product implication                                                       | Reconciliation                                                                                                                                                        |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Strong mobile ratings and existing digital-sheet use                 | Phone usability is central rather than supplementary                      | Confirms the mobile-first P0 gate and phone-sized scenario matrix                                                                                                     |
+| Strong guided-management interest plus low physical-sheet confidence | Users need help knowing what to enter and where to verify it              | Keep contextual references, informative empty states, and focused maintenance guidance in Horizon A; test whether they are sufficient before promoting a full builder |
+| Mixed modifier-abstraction preferences                               | Automation should not conceal or replace user understanding               | Refine progressive assistance toward optional, transparent computations while preserving editable source values and manual text                                       |
+| Fragmented lookup and weak trust/discoverability                     | Source provenance and navigation are part of character ownership          | Confirms `BL-069`, visible source/version identity, multi-source locators, and contextual editor links                                                                |
+| Physical dice preference and low digital-dice importance             | Dice rolling is not required to make the character tool useful            | Retain dice engines as an explicit non-goal                                                                                                                           |
+| Conditional openness to unfamiliar systems                           | System support needs lightweight orientation without mandatory onboarding | Keep explicit system identity and system-native sheets; measure whether references and sparse editing make unfamiliar systems approachable                            |
+| Broad campaign-length preferences                                    | Both sparse starts and accumulated records matter                         | Confirms sparse and saturated fixtures before external handoff                                                                                                        |
+| Exploration, roleplay, and combat all matter                         | Runtime utility cannot mean combat data alone                             | Ensure system sheets and quick notes support scene-relevant information across all three pillars                                                                      |
+| Interest in VTT/atmosphere features                                  | Adjacent session tooling has value but a different owner                  | Preserve the ez-chars / Dungeons and Dashboards boundary                                                                                                              |
 
 ## Resulting Decisions
 

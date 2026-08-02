@@ -2,7 +2,7 @@
 
 > [!WARNING]
 > **Historical Artifact:** This v0 PRD represents the initial repository direction as of February 2026. Its roadmap and horizons have been superseded.
-> 
+>
 > For durable product intent and current horizons, read [author-desires.md](author-desires.md). For the approved target-state playtest contract, read [PRD-v1.md](PRD-v1.md).
 
 > This file is intentionally kept separate from the active goals working set. For current implementation work, use [../../AGENTS.md](../../AGENTS.md), [../active-goals.md](../active-goals.md), and [../backlog.md](../backlog.md).

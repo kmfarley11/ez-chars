@@ -227,7 +227,7 @@ When the user asks you to review changes (or proposal artifacts), specifically:
 - Do NOT make any direct edits to the code during the review unless explicitly asked.
 - Summarize the unstaged changes (include staged changes WHEN SPECIFICALLY REQUESTED).
 - **Anticipate Setbacks:** Proactively identify possible execution hiccups. Compare the requested design or vision against the known capabilities and pitfalls of the recommended agent model (e.g., complex Svelte form extractions, scroll-locking, or tricky boundaries), and warn the human of where the agent might struggle.
-- **Top 5 Highlights:** Provide a "Top 5" (or fewer, if there are fewer files) highlight list of the changed files. For each, include a brief explanation of *what* changed and *why*, specifically focusing on files the user may want to review manually.
+- **Top 5 Highlights:** Provide a "Top 5" (or fewer, if there are fewer files) highlight list of the changed files. For each, include a brief explanation of _what_ changed and _why_, specifically focusing on files the user may want to review manually.
 - Suggest commit message text should the user wish to proceed.
 
 Otherwise, adjust your behavior based on the specific phrasing:

@@ -50,13 +50,13 @@ The public product therefore cannot equate free access with permission to bundle
 
 The repository will use this hierarchy:
 
-| Artifact | Question it answers | Authority |
-| --- | --- | --- |
-| `docs/vision/author-desires.md` | Where does the author ultimately want the product to go? | Durable intent and horizon filter; not active scope |
-| `docs/vision/PRD-v1.md` | What target experience earns the first external playtest and later v1.0 consideration? | Approved target-state product contract |
-| `docs/active-goals.md` | What is currently implemented, actively in scope, partial, missing, and deferred? | Current implementation boundary |
-| `docs/backlog.md` | Which independently refinable work is next? | Priority and sequencing |
-| `openspec/changes/<change>/` | Why, what, how, and which tasks deliver one approved slice? | Active execution source |
+| Artifact                        | Question it answers                                                                    | Authority                                           |
+| ------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `docs/vision/author-desires.md` | Where does the author ultimately want the product to go?                               | Durable intent and horizon filter; not active scope |
+| `docs/vision/PRD-v1.md`         | What target experience earns the first external playtest and later v1.0 consideration? | Approved target-state product contract              |
+| `docs/active-goals.md`          | What is currently implemented, actively in scope, partial, missing, and deferred?      | Current implementation boundary                     |
+| `docs/backlog.md`               | Which independently refinable work is next?                                            | Priority and sequencing                             |
+| `openspec/changes/<change>/`    | Why, what, how, and which tasks deliver one approved slice?                            | Active execution source                             |
 
 PRD v1 must label target behavior as target behavior. It must not make the application appear to support three systems before the corresponding epics are complete.
 
@@ -158,15 +158,15 @@ The current `src/schema/zod/core.ts` requires shared `meta`, `system`, and 5e-sh
 
 The three-system audit reached these conclusions:
 
-| Current concept | Direction for `BL-070` |
-| --- | --- |
-| Document ID, character-data version, system ID | Strong shared lifecycle and dispatch candidates |
-| Created/updated timestamps | Likely shared lifecycle metadata; exact requiredness remains open |
-| Rules/source version | Shared lifecycle concept whose values and meaning remain system-owned |
-| Root identity | Keep system-owned; expose a computed list label/summary |
-| Root features, inventory, and notes | Do not require as universal roots; let systems opt into reusable record primitives |
-| Root annotations/references | Share vocabulary where helpful without requiring identical storage locations |
-| Opaque `systemData` under the current core | Directionally system-owned, but the surrounding core is heavier and more 5e-shaped than the target |
+| Current concept                                | Direction for `BL-070`                                                                             |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Document ID, character-data version, system ID | Strong shared lifecycle and dispatch candidates                                                    |
+| Created/updated timestamps                     | Likely shared lifecycle metadata; exact requiredness remains open                                  |
+| Rules/source version                           | Shared lifecycle concept whose values and meaning remain system-owned                              |
+| Root identity                                  | Keep system-owned; expose a computed list label/summary                                            |
+| Root features, inventory, and notes            | Do not require as universal roots; let systems opt into reusable record primitives                 |
+| Root annotations/references                    | Share vocabulary where helpful without requiring identical storage locations                       |
+| Opaque `systemData` under the current core     | Directionally system-owned, but the surrounding core is heavier and more 5e-shaped than the target |
 
 Shared consumers currently assume more than lifecycle metadata: storage parses the generic core before dispatch, and the home list reads 5e-shaped identity/class data. The first computed views should instead cover a character-list summary, sheet destination, backup/recovery description, and contextual reference topics. Future Dungeons and Dashboards or global runtime summaries remain deferred until a concrete consumer defines their contract.
 
