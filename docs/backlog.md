@@ -64,6 +64,7 @@ These lightweight queues record priority membership only. Detailed definitions l
 
 ### P1 — Priority Improvements
 
+- [`BL-077` — Unify focused detail, editing, and annotations](#unify-focused-detail-editing-and-annotations)
 - [`BL-066` — Prove bounded fillable-PDF interoperability](#prove-bounded-fillable-pdf-interoperability)
 - [`BL-073` — Investigate scene-aware runtime guidance and navigation](#investigate-scene-aware-runtime-guidance-and-navigation) _(saturated navigation evidence recorded; cross-system/criticality gate remains)_
 - [`p1-010` — Add GitHub Actions for quality gates](#add-github-actions-for-quality-gates) _(trigger-deferred and omitted from the recommended sequence until CI needs justify it)_
@@ -110,12 +111,15 @@ Refinement outputs:
   - Use the completed `BL-064` list boundary plus existing primitive, annotation, runtime-action, and structured-edit consumers as concrete evidence; do not design from hypothetical systems alone.
   - Review the concrete 2014 dense-collection adapter evidence: selected-row and query ownership, source-navigation query reset, record-shaped form projection, identity-owned intent translation, the Spellcasting/Spell Slots/logical-list boundaries, and bounded-list scroll ownership. Decide which responsibilities stay domain-owned and which merit a smaller reusable seam without turning the adapter into a universal collection framework.
   - Treat the saturated Runtime Actions and supporting-collection findings as immediate downstream evidence: expose a seam that `BL-076` can evaluate without absorbing source navigation, resync, creation, or collection-specific density policy into a generic list component.
-  - Explicitly evaluate the sandbox proposal to replace separate focused Edit and Notes commands with a read-oriented View path plus one Edit path that can modify authored detail and create, change, or remove annotations. Compare collection records with individually editable fields, keep bulk value editing and bulk annotation workflows separate unless contrary evidence emerges, and refine the idea into a bounded follow-up backlog item or close it with recorded rationale.
-  - Separate only the component and projection contracts that materially reduce branching, special-case orchestration, or page-level boilerplate while preserving current 2014 behavior and typed patch ownership.
-  - Decide whether responsive layout and bordered/collapsible panel responsibilities should remain in `GridContainer` or become focused layout and panel-shell components.
+  - Treat field-group display as the cohesive `GridContent` kernel. Separate card actions, dialog and focus orchestration, structured form rendering, annotation presentation/editing, and save-shape adaptation into focused composition boundaries without introducing a universal field, card, or form framework.
+  - Preserve `GridPrimitiveField` as the focused owner of direct primitive display, drafting, validation, patch preparation, and focus behavior; keep projection, character validation, typed structured intents, persistence, and source/navigation behavior in their existing page or domain layers.
+  - Preserve layered identity instead of adding a universal record ID to `GridContentData`: generic list projections own opaque stable row keys, domain adapters own semantic record identity and commit-time resolution, and primitive fields use their binding paths.
+  - Split responsive layout from bordered/collapsible panel behavior using focused components. Keep nested elevation with the panel surface and heading/collapse behavior with the collapsible panel rather than continuing to make one `GridContainer` prop surface represent layout grids, section panels, leaf cards, and field wrappers.
+  - Inventory every `GridContainer` import and use before migration. Once the split is owner-approved, migrate all remaining 2014 consumers, verify no imports or call sites remain, and delete the legacy wrapper in this change. If a concrete consumer disproves the split, stop at the owner gate and revise the design; do not archive with an indefinite or undocumented compatibility layer.
+  - Use the exploration evidence to promote the View/Edit/annotation concept into `BL-077`. BL-074 may provide non-shipping Storybook comparisons that keep future component seams open, but it does not silently change the accepted Edit/Notes behavior.
   - Give reusable molecules and organisms realistic, stateful Storybook coverage for representative display, editing, annotation, empty, error, dense, and responsive states; page-specific composition remains covered through black-box sheet tests rather than artificial stories.
-  - Use a proof-before-propagation checkpoint: present the proposed component boundaries and Storybook evidence for owner review before migrating the remaining 2014 consumers.
-  - Reconcile the field-rendering, field-binding, field-interaction, component-taxonomy, and maintainer guidance so names and ownership match the implemented contracts.
+  - Use a proof-before-propagation checkpoint: present isolated field-group, structured-form, annotation, responsive-layout, panel, and optional View/Edit comparison stories for owner review before migrating the remaining 2014 consumers.
+  - Reconcile the field-rendering, field-binding, field-interaction, component-taxonomy, and maintainer guidance so names and ownership match the implemented contracts. Keep the binding contract current, preserve durable interaction principles while identifying behavior pending `BL-077`, and mark the obsolete field-rendering API inventory as historical rather than authoritative.
   - Leave the resulting boundaries ready for `BL-069` and the focused reuse audit in `BL-070` without claiming that 2014 components are automatically appropriate for 2024 or Shadowdark.
 - **Excluded behavior:**
   - Implementing another game system, changing character schemas, or creating a universal TTRPG field registry, renderer, form engine, page template, or collection framework.
@@ -124,19 +128,18 @@ Refinement outputs:
   - Repository-wide renaming, file movement, or taxonomy churn without a concrete readability, testing, or reuse benefit.
   - Replacing existing platform-native dialogs, menus, or patch semantics where their current contract remains sound.
 - **Ambiguities:**
-  - Which current `GridContent` responsibilities remain cohesive after the list proof, and which deserve focused components or projection types?
-  - Does a unified View/Edit flow belong only to identity-owned collection records, or can individually editable fields share it without forcing simple values into item-shaped detail screens?
-  - Which annotation display and mutation responsibilities belong in read-only detail, focused editing, and the still-separate bulk workflows?
-  - Does stable row identity belong in the general grid projection contract, a list-only contract, or domain adapters?
-  - Is splitting `GridContainer` justified by current 2014 composition, or should that decision remain with the second-sheet audit after a smaller panel-shell extraction?
-  - Which legacy field documents remain authoritative, which need reconciliation, and which can be marked historical without losing useful rationale?
+  - What final names and prop boundaries most clearly distinguish field-group display, structured-form rendering, responsive layout, panel surface, and collapsible panel behavior after the Storybook proof?
+  - Can the existing `DialogShell` support focused forms' native form, validation, cancel, and action-footer semantics through one narrow extension, or should it remain unchanged while a focused form-dialog wrapper composes it?
+  - Should the responsive preview/focused-dialog `GridContentList` be cataloged as an organism while its list view and rows remain molecules, and where should the domain-owned dense-collection card sit in that composition vocabulary?
+  - Which non-shipping bulk-annotation comparison provides the most useful evidence for `BL-077` without expanding BL-074 into a behavioral redesign?
 - **Success:**
   - A maintainer can identify the owner of display, editing, annotation, list, dialog, layout, and persistence responsibilities without tracing one multi-purpose component or route branch.
   - Storybook exercises the reusable contracts with stateful and failure-oriented examples, and the owner approves the proof before route-wide migration.
   - Existing 2014 sheet behavior, accessibility, typed patches, persistence, and black-box flows remain verified.
-  - The View/Edit/annotation sandbox idea is either refined into one explicitly sequenced behavioral backlog item with bounded consumers and success criteria or closed with durable rationale; resulting component seams do not accidentally preclude the selected direction.
+  - After an approved split, repository search confirms that the legacy `GridContainer` has no remaining imports or consumers and the wrapper is deleted before archival; retained components each have an active, documented responsibility rather than a compatibility-only purpose.
+  - `BL-077` captures the separately reviewed View/Edit/annotation behavior, including singular fields and records, direct-runtime exceptions, annotation responsibilities, bulk alternatives, and atomic save expectations; BL-074's seams do not accidentally preclude it.
   - `BL-069` and `BL-070` can consume or reject the resulting boundaries intentionally rather than copying page-specific conditions or treating a 2014 renderer as universal.
-- **Recommended workflow:** Full OpenSpec change because this deliberately changes reusable component and developer API boundaries across several consumers. A durable specification delta is unlikely unless observable behavior changes. Refine the existing component-composition ADR if the result changes the approved atom/molecule/organism or layout ownership model; create no parallel ADR solely for file organization.
+- **Recommended workflow:** Full OpenSpec change because this deliberately changes reusable component and developer API boundaries across several consumers. Use a narrow `sheet-adapter-refactoring` delta to preserve existing behavior and require complete retirement of the superseded boundary; no new user-facing capability is expected. Refine the existing component-composition ADR with the implemented atom/molecule/organism and layout ownership model; create no parallel ADR solely for file organization.
 
 ### Add stable manual collection ordering
 
@@ -211,6 +214,45 @@ Refinement outputs:
   - Desktop and phone users can move through the sheet without accidental scroll traps and can operate every collection path through touch, keyboard, pointer, and assistive technology.
   - Storybook and black-box saturated evidence distinguish reusable presentation from Runtime Action domain orchestration, and the owner explicitly approves the proof before route-wide propagation.
 - **Recommended workflow:** Full OpenSpec change because this adds observable Runtime Action search/browse behavior and responsive density decisions across several supporting collections. Use a mid-apply Storybook owner gate. Refine an ADR only if the work changes the durable component-ownership decision from `BL-074`; no ADR is needed merely for a 2014-specific preview cap.
+
+### Unify focused detail, editing, and annotations
+
+ID:
+
+- `BL-077`
+
+Sequencing context:
+
+- Refined from the `BL-074` component audit and its owner-reviewed Storybook comparisons. This is a separate observable-behavior change rather than part of the component refactor. Keep it P1 and outside the first-external-playtest prerequisite sequence unless BL-074's owner proof or subsequent rehearsal demonstrates that separate Edit and Notes paths materially obstruct core use.
+
+Refinement outputs:
+
+- **Purpose:** Give individual character fields and identity-owned collection records a consistent, read-first interaction language so users can review authored detail and annotations together, then deliberately edit the information owned by that singular target without navigating unrelated bulk workflows.
+- **Included behavior:**
+  - Define a read-oriented View path that presents the complete value or record detail plus its annotations, references, and useful context when that information exceeds the compact on-sheet rendering.
+  - Define one focused Edit path for an individual field or record that can modify its authored value/detail and create, change, or remove its annotations while preserving provenance, references, stable identity, validation, and focus return.
+  - Allow individually editable fields and collection records to share View/Edit semantics without sharing one universal item-shaped projection or dialog body. Domain adapters continue to supply the appropriate field or record draft and translate an accepted save into validated patches or typed intents.
+  - Preserve direct inline editing for frequently changed primitive runtime values when an additional View step would add no useful context. A simple scalar exposes View only when annotations, references, provenance, longer detail, or another meaningful read surface exists.
+  - Treat one singular Edit submission as one intentional save: authored and annotation changes either validate and commit together or leave the target unchanged. Preserve existing local-first persistence and unrelated character data.
+  - Use stateful Storybook proofs to compare bulk values with separate annotations, collapsed per-row annotations, and focused per-row annotation management. Stop at an owner gate before changing bulk behavior; default to keeping bulk value and bulk annotation workflows separate unless the proof supplies clearer contrary evidence.
+  - Verify touch, keyboard, pointer, modal dismissal, cancel-without-save, validation failure, annotation add/edit/remove, stable identity, and focus restoration for representative primitive-field and collection-record consumers.
+- **Excluded behavior:**
+  - Forcing every primitive value through a detail dialog, replacing efficient runtime inline controls, or converting simple fields into identity-owned records.
+  - Creating a universal cross-system field/record schema, generic domain reducer, form engine, or persistence API.
+  - Combining all bulk value and annotation editing by default without the explicit owner-reviewed proof, or replacing independently useful collection-level bulk actions.
+  - Changing annotation storage shapes, record identities, source/resync semantics, or character schemas solely to support the interaction redesign.
+  - Adding record deletion, gesture-only shortcuts, or responsive quick-action policy beyond what is necessary to make View and Edit complete and accessible.
+- **Ambiguities:**
+  - Which current quiet primitive fields have enough hidden annotations, references, or long-form detail to justify a View action, and which should expose only direct or focused Edit?
+  - Should Edit visually present value/detail and annotations as adjacent sections, progressive sections, or another compact composition on phone-sized screens while retaining one atomic save?
+  - Does the owner-reviewed bulk comparison retain fully separate annotation management or promote a focused per-row annotation escape hatch from the bulk form?
+  - When annotations are removed inside a singular Edit draft, what confirmation or undo treatment is proportionate without treating ordinary draft cancellation as persisted deletion?
+- **Success:**
+  - Users can predict where View and Edit lead for both a representative individual field and collection record without being forced through an item-shaped screen for simple values.
+  - View consistently exposes relevant annotations and references; singular Edit can change authored detail and annotations atomically without losing identity, provenance, or unrelated data.
+  - Direct runtime edits remain fast, and bulk editing remains understandable rather than becoming an unbounded annotation form.
+  - Storybook and black-box checks cover read, edit, cancel, invalid, annotated, empty-annotation, touch, keyboard, and responsive states, with explicit owner approval before propagation.
+- **Recommended workflow:** Full OpenSpec change because this changes observable field and collection action behavior, annotation editing responsibilities, and singular-save semantics across multiple consumers. A durable specification delta is expected for character-sheet editing and dense-collection interaction. Refine the component-composition or typed-edit ADR only if implementation changes their existing ownership boundaries; no new ADR is required for labels or dialog composition alone.
 
 ### Add GitHub Actions for quality gates and release orchestration
 
@@ -478,12 +520,6 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
   - _Constraints_: Preserve full item reachability, authored order, stable IDs, annotations, keyboard/touch access, source navigation, and sheet landmarks. Avoid scroll-jacking scripts and do not force every non-target collection into the dense pattern.
   - _Refinement trigger_: Use `BL-074`'s component proof to identify the honest ownership seam, then promote a separate observable-behavior proposal before first external playtest if owner rehearsal still finds desktop scanning disruptive or scratchpad saturation likely.
 
-- Explore unifying focused detail viewing and annotation editing behind View and Edit paths.
-  - _Why_: Once an identity-owned collection row has a focused surface, separate Edit and Notes commands may fragment one record's authored content. A read-oriented View could present complete raw detail plus annotation context, while Edit could modify the record and create, change, or remove its annotations in one coherent draft.
-  - _Current direction_: Keep Bulk Edit and bulk annotation workflows separate. Do not change the accepted `BL-064` Edit/Notes baseline before the broader field and form ownership review establishes whether unification is genuinely clearer.
-  - _Explore_: Whether the pattern applies only to collection items or also to individually editable fields; the minimum read-only detail surface; annotation creation/removal inside an item draft; validation and cancel semantics; destructive confirmation; focus return; and whether simple fields should bypass View entirely.
-  - _Constraints_: Preserve stable record identity, typed patch and validated mutation ownership, annotation provenance/references, keyboard and touch access, and independent bulk workflows. Do not force every primitive field into an item-shaped dialog or turn `BL-074`'s component refactor into an unapproved visible redesign.
-  - _Refinement trigger_: `BL-074` must explicitly evaluate this idea against concrete 2014 collection and field consumers, then refine it into a separately sequenced behavioral backlog item or close it with recorded rationale.
 - Explore responsive collection-row quick actions and optional gestures after the submenu baseline has real use evidence.
   - _Why_: A consistent submenu scales safely across dense rows, but frequently used commands such as focused Edit may eventually merit one-step access on larger screens or optional mobile acceleration.
   - _Current direction_: Keep the complete, discoverable submenu as the canonical path. Consider selectively surfaced desktop actions, mobile compression, or optional gestures only as progressive enhancements after `BL-064` and playtest evidence identify genuinely frequent commands.
