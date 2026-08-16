@@ -4,13 +4,13 @@ The completed dense-collection work provides the first concrete list-oriented al
 
 The current boundaries concentrate several concerns:
 
-| Boundary | Current responsibilities |
-| --- | --- |
-| `GridContent` | Normalizes field projections, classifies direct fields, lays out and formats values, routes primitive editing and annotations, owns card actions, opens Edit and Notes dialogs, restores focus, and adapts three save shapes. |
-| `GridContentEditDialog` | Owns native dialog lifecycle, structured draft cloning, recursive field and array form rendering, value coercion, Save/Cancel, and patch collection. |
-| `GridContentNotesDialog` and `FieldAnnotationControl` | Independently own overlapping dialog, focus, read/edit, annotation-draft, and save behavior for grouped and singular annotations. |
-| `GridContainer` | Acts as a responsive layout grid, grid item, bordered/padded surface, nested-elevation owner, heading, and locally collapsed panel. |
-| `Dnd5e2014DenseCollectionCard` | Owns selected-row and focus state, domain projection, typed identity translation, focused Edit/Notes workflows, and bulk editing. |
+| Boundary                                              | Current responsibilities                                                                                                                                                                                                      |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GridContent`                                         | Normalizes field projections, classifies direct fields, lays out and formats values, routes primitive editing and annotations, owns card actions, opens Edit and Notes dialogs, restores focus, and adapts three save shapes. |
+| `GridContentEditDialog`                               | Owns native dialog lifecycle, structured draft cloning, recursive field and array form rendering, value coercion, Save/Cancel, and patch collection.                                                                          |
+| `GridContentNotesDialog` and `FieldAnnotationControl` | Independently own overlapping dialog, focus, read/edit, annotation-draft, and save behavior for grouped and singular annotations.                                                                                             |
+| `GridContainer`                                       | Acts as a responsive layout grid, grid item, bordered/padded surface, nested-elevation owner, heading, and locally collapsed panel.                                                                                           |
+| `Dnd5e2014DenseCollectionCard`                        | Owns selected-row and focus state, domain projection, typed identity translation, focused Edit/Notes workflows, and bulk editing.                                                                                             |
 
 The 2014 route uses the container boundary for outer collapsible sections, responsive layout-only grids, bordered leaf cards, and field wrappers. The dense-list adapter also proves that generic row selection needs only an opaque stable key while semantic record identity and commit behavior stay domain-owned.
 
@@ -72,13 +72,7 @@ The form body initially consumes the existing projection shape. Domain-specific 
 
 The current singular and grouped workflows may share this surface, but BL-074 will not change the visible Edit/Notes action grammar or combine authored and annotation saves. That behavioral transaction belongs to `BL-077` and requires specification changes.
 
-The Storybook interaction study will compare:
-
-1. bulk values with separate annotation management;
-2. collapsed annotations inside each bulk row; and
-3. bulk values with a focused per-row annotation action.
-
-The study informs BL-077 only. It does not become route behavior during this change.
+The planned three-option Storybook interaction study was deliberately omitted after the component-boundary review. It would have expanded this behavior-preserving refactor into speculative BL-077 interaction design without changing the shipped route. BL-077 retains responsibility for comparing separate bulk annotations, collapsed per-row annotation editors, and focused per-row annotation actions with an explicit owner gate of its own.
 
 ### 5. Layer identity rather than adding a general grid record ID
 
@@ -112,7 +106,7 @@ Pre-gate stories will exercise reusable contracts with realistic state:
 - structured forms with nested fields, add/remove array entries, invalid input, and cancelled drafts;
 - grouped and singular annotations with empty, read, add, edit, remove, cancel, and reference states;
 - responsive layout plus nested, bordered, collapsed, and plain panels;
-- the three non-shipping BL-077 bulk-annotation comparisons;
+- existing dense-list evidence showing that bulk value editing and focused row annotations remain separate pending BL-077;
 - dense-list composition and taxonomy using the existing saturated gear evidence rather than duplicating page-specific stories.
 
 Automated play functions protect deterministic interactions and accessibility. Page-specific composition, persistence, and modal flows remain black-box Playwright responsibilities.
@@ -139,21 +133,56 @@ The apply workflow stops after this proof. Owner approval is required before the
 
 ## Migration Plan
 
-1. Record the current `GridContent`, `GridContainer`, dialog, annotation, list, and 2014 route consumers plus their intended destination.
-2. Establish focused unit and Storybook baselines without changing route behavior.
-3. Extract field-group, structured-form, annotation, responsive-layout, panel-surface, and collapsible-panel proofs; add the BL-077 comparison study.
-4. Stop at the named Storybook owner gate. Record approved names, ownership, taxonomy, and BL-077 study outcome before continuing.
-5. Migrate one representative mixed field card, dense collection, and nested/collapsible panel composition; run focused diagnostics, component checks, and browser checks.
-6. Migrate all remaining 2014 consumers while preserving page/domain mutation and navigation ownership.
-7. Search for every legacy import, render call, compatibility-only helper, and rejected prototype. Delete `GridContainer` and other superseded surfaces once their use count reaches zero.
-8. Reconcile ADRs and field/maintainer documentation, run the repository smoke gate plus relevant cross-browser coverage, and report implementation fallout.
-9. Stop at the final user review gate. Archive only after explicit approval.
+### Baseline Inventory & Destinations
+
+1. **`GridContent`**
+   - _Current:_ Normalizes fields, chooses display, arranges fields, owns card action menu, handles focus restoration, and opens focused Edit/Notes dialogs.
+   - _Destination:_ Split into `FieldGroupView` (pure display kernel) and `GridContentCard` (organism with action menu and workflows).
+2. **`GridContainer`**
+   - _Current:_ Multi-purpose container for CSS grid layout, bordered cards, padded surfaces, nested elevation, section headings, and collapsible panels.
+   - _Destination:_ Deprecated and deleted. Replaced by focused `ResponsiveGrid` (layout), `PanelSurface` (visual border/elevation), and `CollapsiblePanel` (heading/toggle/content).
+3. **`GridContentEditDialog`**
+   - _Current:_ Owns native `<dialog>` lifecycle, structured draft cloning, recursive field/array form rendering, and patch collection.
+   - _Destination:_ Form rendering logic extracted into `StructuredForm`. Dialog component becomes a thin wrapper around `StructuredForm` and `DialogShell`.
+4. **`GridContentNotesDialog` & `FieldAnnotationControl`**
+   - _Current:_ Independently orchestrate grouped and singular annotations, focus return, and draft state.
+   - _Destination:_ Consolidated dialog orchestration using the existing `GridContentAnnotationsDisplay` and `GridContentAnnotationsEditor` bodies.
+5. **`GridContentList` & `Dnd5e2014DenseCollectionCard`**
+   - _Current:_ Dense list presentation and 2014 sheet adapter for Spells/Inventory.
+   - _Destination:_ Remain intact. `GridContentList` uses new form/annotation pieces, but domain orchestration and stable row identity remain with the 2014 adapter.
+6. **`charsheets/5e/+page.svelte`**
+   - _Current:_ Heavily uses `GridContainer` for grid columns and sections, and `GridContent` for leaf cards.
+   - _Destination:_ Will use `ResponsiveGrid` for responsive layout, `CollapsiblePanel` for interactive sections, and `GridContentCard` for domain projections.
+
+7. Record the current `GridContent`, `GridContainer`, dialog, annotation, list, and 2014 route consumers plus their intended destination.
+8. Establish focused unit and Storybook baselines without changing route behavior.
+9. Extract field-group, structured-form, annotation, responsive-layout, panel-surface, and collapsible-panel proofs; record the explicit BL-077 study deferral.
+10. Stop at the named Storybook owner gate. Record approved names, ownership, taxonomy, and the BL-077 deferral before continuing.
+11. Migrate one representative mixed field card, dense collection, and nested/collapsible panel composition; run focused diagnostics, component checks, and browser checks.
+12. Migrate all remaining 2014 consumers while preserving page/domain mutation and navigation ownership.
+13. Search for every legacy import, render call, compatibility-only helper, and rejected prototype. Delete `GridContainer` and other superseded surfaces once their use count reaches zero.
+14. Reconcile ADRs and field/maintainer documentation, run the repository smoke gate plus relevant cross-browser coverage, and report implementation fallout.
+15. Stop at the final user review gate. Archive only after explicit approval.
 
 There is no persisted-data migration or deployment rollback. If the component migration regresses behavior, revert the affected composition to the last verified boundary; character documents remain unchanged.
 
-## Open Questions
+## Resolved Questions (2026-08-13)
 
-- Which final component names and minimal prop APIs are clearest in the isolated proof?
-- Can `DialogShell` remain unchanged by using native form ownership for footer actions, or does the proof justify one narrow form-aware extension?
-- Should the responsive preview/focused-dialog `GridContentList` move from the Storybook molecule category to organism while its view and row components remain molecules?
-- Which bulk-annotation comparison should be recorded as BL-077's preferred starting point?
+- **Which final component names and minimal prop APIs are clearest in the isolated proof?**
+  We standardized on `GridContentCard`, `CollapsiblePanel`, `PanelSurface`, and `ResponsiveGrid`. `GridContentCard` owns save adaptation for forms (`StructuredForm`) and `FieldGroupView`.
+- **Can `DialogShell` remain unchanged by using native form ownership for footer actions, or does the proof justify one narrow form-aware extension?**
+  Native form ownership uses the HTML5 `form={formId}` attribute, keeping the shell decoupled from form submission. Implementation did add one narrow, reusable cancellation-interception callback so annotation editing can discard its current draft and return to read mode before a later dismissal closes the dialog.
+- **Should the responsive preview/focused-dialog `GridContentList` move from the Storybook molecule category to organism while its view and row components remain molecules?**
+  `GridContentList` remained a molecule, while the 2014-specific `Dnd5e2014DenseCollectionCard` orchestrates it as an organism.
+- **Which bulk-annotation comparison should be recorded as BL-077's preferred starting point?**
+  The promised BL-077 three-option study (and its associated tasking) was explicitly omitted from this implementation. The interaction model consolidation has been entirely deferred to BL-077 to prevent scope creep.
+
+### 8. Post-Implementation Decisions (2026-08-13)
+
+- **Atomic Design Adoption:** The `decisions/2026-07-25-classify-ui-component-composition.md` ADR was updated to reflect boundaries established during implementation (e.g. `GridContentCard` as an organism).
+- **Typed Intents vs. Raw Patches:** The `docs/field-binding-contract.md` differentiates direct primitive RFC 6902 documents from complex compound workflows. `GridPrimitiveField` prepares guarded, escaped patches; `FieldGroupView` forwards them unchanged; `GridContentCard` selects the direct handler or compatibility fallback. Generic structured forms emit data for an orchestration boundary to adapt into existing patch or typed-intent paths.
+- **BL-077 Deferral:** `docs/field-interaction-model.md` explicitly defers the unified View/Edit/Annotation model for compound fields to BL-077.
+- **Legacy API Deprecation:** `docs/field-rendering-api.md` was marked historical and superseded by the atomic design ADR.
+- **Storybook Alignments:** Component classifications were aligned in `.stories.ts` files to reflect compositional responsibilities.
+- **Verification Fallout:** The final review caught and corrected a temporary adapter that discarded primitive patch guards and rebuilt unescaped pointers. Focused Storybook coverage now asserts the retained `test` plus `replace` sequence and RFC 6901 escaping. The browser error guard ignores only the exact benign ResizeObserver diagnostic under WebKit rather than suppressing that warning family globally.
+- **Final Owner Review:** The owner approved the completed component map and route-wide migration after one final contrast correction. The shared structured edit dialog now uses the established theme-surface button treatment for Save, removing its hard-coded white text and undefined primary-theme class across focused and bulk edit dialogs.

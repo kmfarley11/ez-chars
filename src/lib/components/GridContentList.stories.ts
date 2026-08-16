@@ -178,7 +178,7 @@ export const DuplicateNameEditSaved: Story = {
 		const editDialog = within(canvasElement.ownerDocument.body).getByRole('dialog', {
 			name: 'Edit Rope'
 		});
-		const nameInput = within(editDialog).getByRole('textbox', { name: 'Name Name' });
+		const nameInput = within(editDialog).getByRole('textbox', { name: 'Name' });
 		await userEvent.clear(nameInput);
 		await userEvent.type(nameInput, 'Climbing rope');
 		await userEvent.click(within(editDialog).getByRole('button', { name: 'Save' }));
@@ -205,7 +205,7 @@ export const FocusedEditCancelled: Story = {
 		const editDialog = within(canvasElement.ownerDocument.body).getByRole('dialog', {
 			name: 'Edit Random rock'
 		});
-		const nameInput = within(editDialog).getByRole('textbox', { name: 'Name Name' });
+		const nameInput = within(editDialog).getByRole('textbox', { name: 'Name' });
 		await userEvent.clear(nameInput);
 		await userEvent.type(nameInput, 'Discarded edit');
 		await userEvent.click(within(editDialog).getByRole('button', { name: 'Cancel' }));

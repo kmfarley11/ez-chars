@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/sveltekit';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { expect, fn, userEvent, within, waitFor } from 'storybook/test';
 import RuntimeActionDialog from './RuntimeActionDialog.svelte';
 import type { RuntimeActionSourceCandidate } from '$lib/dnd5e2014/runtimeActionSources';
 
@@ -153,7 +153,7 @@ export const Cancellation: Story = {
 	play: async ({ canvasElement, args }) => {
 		const canvas = within(canvasElement.parentElement!);
 		await userEvent.click(canvas.getByRole('button', { name: 'Cancel' }));
-		await expect(args.onClose).toHaveBeenCalled();
+		await waitFor(() => expect(args.onClose).toHaveBeenCalled());
 		await expect(args.onConfirm).not.toHaveBeenCalled();
 	}
 };

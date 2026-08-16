@@ -32,13 +32,13 @@ For newer features such as CSS Anchor Positioning, retain a visually usable non-
 
 ## UI Pattern Inventory
 
-| Pattern                   | Current location                                                             | Current approach                                                             | Decision / follow-up                                                                                                                       |
-| ------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Modal overlays            | `DialogButton.svelte`, `FieldAnnotationControl.svelte`, `GridContent.svelte` | Native `<dialog>` with Svelte state for lazy rendering and focus restoration | Retain; `<dialog>` already provides modal focus and Escape behavior.                                                                       |
-| Dropdown menus            | `MenuButton.svelte`                                                          | `$state`, conditional rendering, and `focusout` click-away logic             | Replace with an auto popover and scoped anchor positioning in this change.                                                                 |
-| Collapsible sheet regions | `GridContainer.svelte`, 5e sheet route                                       | Svelte state plus conditional mounting                                       | Retain; unmounting dense collapsed content is a deliberate mobile performance behavior that `<details>` would not necessarily preserve.    |
-| Auto-sizing grids         | `GridContainerAuto.svelte`                                                   | `ResizeObserver`, DOM measurement, and animation-frame scheduling            | Retain; a prior CSS auto-fit attempt regressed the measured layout. Use the profiling workflow before changing; `p1-027` owns replacement. |
-| Tooltips                  | No dedicated tooltip component                                               | Native `title` attributes and label text where needed                        | Do not introduce a bespoke tooltip system without a specific accessibility and interaction need.                                           |
+| Pattern                   | Current location                                                | Current approach                                                               | Decision / follow-up                                                                                                                    |
+| ------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Modal overlays            | `DialogShell.svelte` and its focused consumers                  | Native `<dialog>` with Svelte state for lazy rendering and focus restoration   | Retain; the shell may expose narrow cancellation interception when a focused editor must discard its draft before dismissal.            |
+| Simple popovers           | `MenuButton.svelte`; composed by `GridContentActionMenu.svelte` | Native Popover API with scoped anchor positioning and a narrow WebKit fallback | Retain for simple menus while preserving the documented fallback behavior.                                                              |
+| Collapsible sheet regions | `CollapsiblePanel.svelte`, 5e sheet route                       | Svelte state plus conditional mounting                                         | Retain; unmounting dense collapsed content is a deliberate mobile performance behavior that `<details>` would not necessarily preserve. |
+| Responsive layout grids   | `ResponsiveGrid.svelte`                                         | Standard responsive CSS Grid classes                                           | Retain as the focused layout-only successor to the multi-purpose `GridContainer`; this is separate from the earlier auto-sizing audit.  |
+| Tooltips                  | No dedicated tooltip component                                  | Native `title` attributes and label text where needed                          | Do not introduce a bespoke tooltip system without a specific accessibility and interaction need.                                        |
 
 ## Consequences
 
@@ -55,3 +55,7 @@ For newer features such as CSS Anchor Positioning, retain a visually usable non-
 ### 2026-07-30 — WebKit Escape Focus Fallback
 
 Cross-browser Playwright verification found that WebKit correctly dismisses native popovers on Escape, but does not consistently restore invoker focus natively upon dismissal. To preserve keyboard usability without replacing the native popover behavior, `MenuButton.svelte` retains a narrowly scoped post-dismissal focus fallback using an animation frame listener, while native popover dismissal remains authoritative.
+
+### 2026-08-13 — Focused dialog, panel, and layout boundaries
+
+BL-074 centralized reusable modal lifecycle in `DialogShell.svelte`, including a narrow cancellation hook for editors that must discard a draft before the dialog closes. It also replaced the multi-purpose `GridContainer` with `CollapsiblePanel`, `PanelSurface`, and `ResponsiveGrid`. These are responsibility splits, not new native substitutes: the dialog remains platform-native, collapse remains intentionally stateful, and responsive layout remains CSS-owned.

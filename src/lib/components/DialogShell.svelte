@@ -15,6 +15,10 @@
 		title?: string;
 		showBack?: boolean;
 		onBack?: () => void;
+
+		// Intercept cancellation (Escape, Backdrop, Cancel button)
+		// Return false to prevent the dialog from closing
+		onCancel?: () => boolean | void;
 	}
 
 	let {
@@ -27,7 +31,8 @@
 		scrollAffordance = false,
 		title,
 		showBack = false,
-		onBack
+		onBack,
+		onCancel
 	}: Props = $props();
 
 	let dialogEl: HTMLDialogElement | undefined = $state();
@@ -51,15 +56,26 @@
 		}
 	});
 
-	const handleClose = () => {
-		if (!open) return; // Prevent double-firing
-		open = false;
-		onClose?.();
+	const handleCloseAction = () => {
+		if (onCancel && onCancel() === false) return;
+		dialogEl?.close();
+	};
+
+	const handleNativeClose = () => {
+		if (open) open = false; // Sync state if closed natively (e.g. Esc key)
+		onClose?.(); // Call onClose after the modal is actually closed!
 	};
 
 	const handleBackdropClick = (event: MouseEvent) => {
 		if (event.target === event.currentTarget) {
+			if (onCancel && onCancel() === false) return;
 			dialogEl?.close(); // Let the native onclose handler sync the state
+		}
+	};
+
+	const handleNativeCancel = (event: Event) => {
+		if (onCancel && onCancel() === false) {
+			event.preventDefault();
 		}
 	};
 
@@ -75,7 +91,8 @@
 	class="dialog-shell theme-dialog theme-dialog-backdrop {mobileClasses}"
 	aria-label={title}
 	onclick={handleBackdropClick}
-	onclose={handleClose}
+	onclose={handleNativeClose}
+	oncancel={handleNativeCancel}
 >
 	<div
 		class="dialog-shell-layout flex min-h-48 flex-col p-4"
@@ -136,11 +153,11 @@
 			<button
 				type="button"
 				class="theme-btn-light touch-target btn cursor-pointer rounded-md border px-3 py-1"
-				onclick={handleClose}
+				onclick={handleCloseAction}
 			>
 				{closeText}
 			</button>
-			{@render actions?.(handleClose)}
+			{@render actions?.(handleCloseAction)}
 		</div>
 	</div>
 </dialog>

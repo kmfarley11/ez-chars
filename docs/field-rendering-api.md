@@ -1,5 +1,8 @@
 # Field Rendering API Direction
 
+> [!WARNING]
+> This document is historical and superseded by [2026-07-25-classify-ui-component-composition.md](decisions/2026-07-25-classify-ui-component-composition.md) and the completed BL-074 implementation which replaced the legacy `GridContent` components with atom/molecule/organism primitives. It is retained only as an artifact of the p1-035 slice 1 API shaping.
+
 This document captures the `p1-035` slice 1 inventory and target API shape for consolidating `GridContent` and `InlineFieldDraft`. It should be read with [field-interaction-model.md](field-interaction-model.md) and [field-binding-contract.md](field-binding-contract.md).
 
 ## Problem

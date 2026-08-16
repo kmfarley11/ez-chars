@@ -6,7 +6,7 @@ Define behavior-preserving requirements and testable scenarios for refactoring c
 
 ### Requirement: Preserve the 5e sheet experience during internal decomposition
 
-The system MUST preserve the currently supported D&D 5e 2014 sheet rendering, editing, annotation, and persistence behavior while projection and patch responsibilities are reorganized internally.
+The system MUST preserve the currently supported D&D 5e 2014 sheet rendering, editing, annotation, focus, accessibility, and persistence behavior while projection, patch, field, form, dialog, responsive-layout, and panel responsibilities are reorganized internally.
 
 #### Scenario: Existing character information remains available
 
@@ -27,3 +27,13 @@ The system MUST preserve the currently supported D&D 5e 2014 sheet rendering, ed
 
 - **WHEN** the 5e route receives a missing or unknown character identifier
 - **THEN** the route MUST continue to show its existing user-facing missing-character state without mutating stored characters
+
+#### Scenario: Focused component decomposition preserves interaction behavior
+
+- **WHEN** a user displays, edits, cancels, annotates, expands, collapses, or dismisses a supported sheet surface after its reusable component responsibilities are decomposed
+- **THEN** the same supported result, validation boundary, keyboard and touch path, modal behavior, and focus destination MUST remain available
+
+#### Scenario: Superseded composition boundary is fully retired
+
+- **WHEN** the approved replacement components have been propagated to every current 2014 consumer
+- **THEN** the application MUST no longer depend on the superseded multi-purpose composition boundary or maintain a duplicate compatibility path for the same behavior

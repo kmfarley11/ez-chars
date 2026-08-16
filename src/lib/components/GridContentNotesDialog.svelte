@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tick } from 'svelte';
+	import DialogShell from '$components/DialogShell.svelte';
 	import GridContentAnnotationsDisplay from '$components/GridContentAnnotationsDisplay.svelte';
 	import GridContentAnnotationsEditor from '$components/GridContentAnnotationsEditor.svelte';
 	import {
@@ -24,22 +24,17 @@
 	}
 
 	let {
-		open = $bindable(),
+		open = $bindable(false),
 		data,
 		annotationEditorConfig = undefined,
 		handleEditSavePatches,
 		onClosed = undefined
 	}: Props = $props();
 
-	let helpDialogEl = $state<HTMLDialogElement>();
 	let editingHelpAnnotationKey = $state<string | undefined>(undefined);
 	let draftHelpAnnotations = $state<Array<GridContentAnnotation>>([]);
-	let hasInitialized = $state(false);
-	const dialogId = $props.id();
-	const headingId = `${dialogId}-heading`;
 
-	const closeNativeDialog = () => {
-		if (helpDialogEl?.open) helpDialogEl.close();
+	const onDialogShellClose = () => {
 		onClosed?.();
 	};
 
@@ -51,36 +46,11 @@
 	);
 
 	$effect(() => {
-		if (open && !hasInitialized) {
+		if (open) {
 			editingHelpAnnotationKey = undefined;
 			draftHelpAnnotations = [];
-			hasInitialized = true;
-			tick().then(() => {
-				if (helpDialogEl && !helpDialogEl.open) {
-					helpDialogEl.showModal();
-				}
-			});
-		} else if (!open && hasInitialized) {
-			hasInitialized = false;
-			editingHelpAnnotationKey = undefined;
-			draftHelpAnnotations = [];
-			closeNativeDialog();
 		}
 	});
-
-	const closeHelpDialog = () => {
-		open = false;
-	};
-
-	const onHelpCancel = () => {
-		closeHelpDialog();
-	};
-
-	const onHelpBackdropClick = (event: MouseEvent) => {
-		if (event.target === event.currentTarget) {
-			onHelpCancel();
-		}
-	};
 
 	const beginHelpAnnotationEdit = (group: HelpAnnotationGroup) => {
 		if (!group.annotationBindPath) return;
@@ -100,19 +70,18 @@
 	};
 </script>
 
-<dialog
-	bind:this={helpDialogEl}
-	class="theme-dialog theme-dialog-backdrop z-50 m-auto w-[min(92vw,32rem)] rounded-md border p-0"
-	aria-labelledby={headingId}
-	oncancel={onHelpCancel}
-	onclick={onHelpBackdropClick}
+<DialogShell
+	bind:open
+	title="Notes"
+	onClose={onDialogShellClose}
+	closeText="Close"
+	scrollAffordance={true}
 >
-	<div class="flex flex-col gap-3 p-4">
-		<h2 id={headingId} class="text-lg leading-none font-semibold">Notes</h2>
+	{#if open}
 		{#if helpAnnotationGroups.length === 0}
 			<p class="theme-text-muted text-sm">No field notes available.</p>
 		{:else}
-			<div class="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
+			<div class="space-y-2 pr-1">
 				{#each helpAnnotationGroups as group (group.key)}
 					<div class="space-y-1 rounded-md border px-2 py-2">
 						<div class="flex items-start justify-between gap-2">
@@ -165,14 +134,5 @@
 				{/each}
 			</div>
 		{/if}
-		<div class="mt-1 flex justify-end">
-			<button
-				type="button"
-				class="theme-btn-light touch-target btn rounded-md border px-3 py-1"
-				onclick={onHelpCancel}
-			>
-				Close
-			</button>
-		</div>
-	</div>
-</dialog>
+	{/if}
+</DialogShell>

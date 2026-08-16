@@ -13,7 +13,7 @@ This document defines the target MVP interaction model for field-level editing a
 ## Field Types
 
 - Primitive fields: strings, numbers, booleans, and small enums. These are the first target for direct field editing.
-- Compound fields: lists, rows, grouped objects, long notes, spell groups, inventory groups, and action lists. These may continue to use focused row editors or the existing bulk editor until a narrower editor exists.
+- Compound fields: lists, rows, grouped objects, long notes, spell groups, inventory groups, and action lists. The comprehensive View/Edit/Annotation interaction model for these regions is pending **BL-077**. In the interim, they rely on structured intent dialogs, row-level action menus, or the existing bulk editor.
 - Derived or display-only fields: calculated, roll-up, or source-only values. These should not enter edit mode unless a real bind path exists.
 
 ## Edit Affordance Strategy
@@ -93,7 +93,7 @@ The existing card-wide edit dialog can remain during the migration.
 - It should not be the primary way to edit runtime/state primitives once direct field controls exist for those fields.
 - It may temporarily duplicate editing for a displayed field when a card still needs bulk edit for nearby non-direct fields. Treat that as a migration fallback, not the target component model.
 - New runtime/state primitive work should prefer the field-level patch path first, then leave card-wide editing only where the surrounding surface still needs it.
-- Later cleanup should either fold field-level display/edit/annotation behavior into the shared grid rendering path or explicitly justify any remaining standalone inline editor beside `GridContent`.
+- Field-level display, direct editing, and annotation behavior now compose through `FieldGroupView` and `GridContentCard`; standalone editors should remain only where their surrounding interaction contract is materially different.
 
 ## Patch Semantics
 

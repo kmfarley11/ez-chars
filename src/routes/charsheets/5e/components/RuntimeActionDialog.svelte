@@ -104,12 +104,9 @@
 			...(selectedCandidate ? { source: selectedCandidate.source } : {})
 		});
 		open = false;
-		onClose();
-		resetState();
 	};
 
-	const handleClose = () => {
-		open = false;
+	const onDialogShellClose = () => {
 		onClose();
 		resetState();
 	};
@@ -121,7 +118,7 @@
 	title={step === 1 ? 'Add action' : 'Review action'}
 	showBack={step === 2}
 	onBack={handleBack}
-	onClose={handleClose}
+	onClose={onDialogShellClose}
 	closeText="Cancel"
 	fullHeightMobile={true}
 >

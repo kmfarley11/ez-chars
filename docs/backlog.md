@@ -54,7 +54,6 @@ These lightweight queues record priority membership only. Detailed definitions l
 
 ### P0 — Product Prerequisites
 
-- [`BL-074` — Clarify GridContent composition before multi-system reuse](#clarify-gridcontent-composition-before-multi-system-reuse)
 - [`BL-076` — Scale runtime and supporting sheet collections](#scale-runtime-and-supporting-sheet-collections)
 - [`BL-075` — Add stable manual collection ordering](#add-stable-manual-collection-ordering)
 - [`BL-069` — Deliver rights-classified reference navigation](#deliver-rights-classified-reference-navigation)
@@ -79,67 +78,18 @@ _Goal: First External Playtest_
 
 The queues above record strategic priority membership; this list records the dependency-aware action order and may omit blocked or trigger-deferred items.
 
-1. `BL-074`: Refactor the proven 2014 GridContent and panel composition boundaries before resource navigation and another system depend on them
-2. `BL-076`: Bound and search saturated Runtime Actions, then establish proportionate density behavior for supporting Runtime collections
-3. `BL-075`: Let users deliberately surface their most important inventory and spell entries before saturated-sheet owner rehearsal
-4. `BL-069`: Prove multi-source resource discovery and contextual navigation against the 2014 sheet
-5. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary and add the minimal 2024 D&D sheet
-6. `BL-071`: Add the minimal Shadowdark sheet within the conservative baseline after `BL-070` supplies the dispatch boundary
-7. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix
+1. `BL-076`: Bound and search saturated Runtime Actions, then establish proportionate density behavior for supporting Runtime collections
+2. `BL-075`: Let users deliberately surface their most important inventory and spell entries before saturated-sheet owner rehearsal
+3. `BL-069`: Prove multi-source resource discovery and contextual navigation against the 2014 sheet
+4. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary and add the minimal 2024 D&D sheet
+5. `BL-071`: Add the minimal Shadowdark sheet within the conservative baseline after `BL-070` supplies the dispatch boundary
+6. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix
 
-The completed `BL-064` proof established the inventory and spell baseline. `BL-076` remains a separate Horizon A change: Runtime Actions own source, navigation, resync, and creation behavior that needs an explicit proof after `BL-074` clarifies the reusable list seam. `BL-075` then keeps stable ordering separate so the accepted inventory and spell previews reflect deliberate user priority before owner rehearsal and external handoff. `BL-066` is an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights. It is deliberately not a first-playtest readiness prerequisite. `BL-073` remains outside this sequence: saturated 2014 rehearsal now confirms navigation pressure, but cross-system scene vocabulary and the urgency of anything beyond a bounded outline still need evidence.
+The completed `BL-064` proof established the inventory and spell baseline, and completed `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams. `BL-076` remains a separate Horizon A change because Runtime Actions own source, navigation, resync, and creation behavior that needs its own density proof. `BL-075` then keeps stable ordering separate so the accepted inventory and spell previews reflect deliberate user priority before owner rehearsal and external handoff. `BL-066` is an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights. It is deliberately not a first-playtest readiness prerequisite. `BL-073` remains outside this sequence: saturated 2014 rehearsal now confirms navigation pressure, but cross-system scene vocabulary and the urgency of anything beyond a bounded outline still need evidence.
 
 ## Refined Backlog Catalog
 
 Each active refined item has one stable detailed definition in this catalog. Queue entries and the recommended sequence point here; reprioritization must not relocate or duplicate these definitions. When an item is completed and archived, remove its queue link and catalog definition, then retain only the bounded summary required by [Done Recently](#done-recently).
-
-### Clarify GridContent composition before multi-system reuse
-
-ID:
-
-- `BL-074`
-
-Sequencing context:
-
-- Execute immediately after `BL-064` supplies a concrete dense-list proof and before `BL-076`, `BL-069`, or `BL-070` add runtime-collection, contextual-resource, and second-system consumers. This is a bounded pre-adoption refactor, not a prerequisite for finishing the `BL-064` user behavior.
-
-Refinement outputs:
-
-- **Purpose:** Improve developer comprehension, Storybook isolation, and safe reuse of the current field/card rendering system before another feature family or game system depends on responsibilities that are presently concentrated in `GridContent` and `GridContainer`.
-- **Included behavior:**
-  - Inventory the actual 2014 consumers and document which responsibilities belong to primitive field rendering, list rendering, focused forms, annotations, card actions, dialog orchestration, responsive grid layout, panel styling, headings, collapse state, and nested elevation.
-  - Use the completed `BL-064` list boundary plus existing primitive, annotation, runtime-action, and structured-edit consumers as concrete evidence; do not design from hypothetical systems alone.
-  - Review the concrete 2014 dense-collection adapter evidence: selected-row and query ownership, source-navigation query reset, record-shaped form projection, identity-owned intent translation, the Spellcasting/Spell Slots/logical-list boundaries, and bounded-list scroll ownership. Decide which responsibilities stay domain-owned and which merit a smaller reusable seam without turning the adapter into a universal collection framework.
-  - Treat the saturated Runtime Actions and supporting-collection findings as immediate downstream evidence: expose a seam that `BL-076` can evaluate without absorbing source navigation, resync, creation, or collection-specific density policy into a generic list component.
-  - Treat field-group display as the cohesive `GridContent` kernel. Separate card actions, dialog and focus orchestration, structured form rendering, annotation presentation/editing, and save-shape adaptation into focused composition boundaries without introducing a universal field, card, or form framework.
-  - Preserve `GridPrimitiveField` as the focused owner of direct primitive display, drafting, validation, patch preparation, and focus behavior; keep projection, character validation, typed structured intents, persistence, and source/navigation behavior in their existing page or domain layers.
-  - Preserve layered identity instead of adding a universal record ID to `GridContentData`: generic list projections own opaque stable row keys, domain adapters own semantic record identity and commit-time resolution, and primitive fields use their binding paths.
-  - Split responsive layout from bordered/collapsible panel behavior using focused components. Keep nested elevation with the panel surface and heading/collapse behavior with the collapsible panel rather than continuing to make one `GridContainer` prop surface represent layout grids, section panels, leaf cards, and field wrappers.
-  - Inventory every `GridContainer` import and use before migration. Once the split is owner-approved, migrate all remaining 2014 consumers, verify no imports or call sites remain, and delete the legacy wrapper in this change. If a concrete consumer disproves the split, stop at the owner gate and revise the design; do not archive with an indefinite or undocumented compatibility layer.
-  - Use the exploration evidence to promote the View/Edit/annotation concept into `BL-077`. BL-074 may provide non-shipping Storybook comparisons that keep future component seams open, but it does not silently change the accepted Edit/Notes behavior.
-  - Give reusable molecules and organisms realistic, stateful Storybook coverage for representative display, editing, annotation, empty, error, dense, and responsive states; page-specific composition remains covered through black-box sheet tests rather than artificial stories.
-  - Use a proof-before-propagation checkpoint: present isolated field-group, structured-form, annotation, responsive-layout, panel, and optional View/Edit comparison stories for owner review before migrating the remaining 2014 consumers.
-  - Reconcile the field-rendering, field-binding, field-interaction, component-taxonomy, and maintainer guidance so names and ownership match the implemented contracts. Keep the binding contract current, preserve durable interaction principles while identifying behavior pending `BL-077`, and mark the obsolete field-rendering API inventory as historical rather than authoritative.
-  - Leave the resulting boundaries ready for `BL-069` and the focused reuse audit in `BL-070` without claiming that 2014 components are automatically appropriate for 2024 or Shadowdark.
-- **Excluded behavior:**
-  - Implementing another game system, changing character schemas, or creating a universal TTRPG field registry, renderer, form engine, page template, or collection framework.
-  - Redesigning visible character-sheet behavior merely to make component boundaries look cleaner; user-facing improvements require their own scoped requirement or evidence.
-  - Implementing the View/Edit/annotation workflow redesign without a separately reviewed behavioral proposal; `BL-074` owns its evidence-based refinement, not its silent delivery.
-  - Repository-wide renaming, file movement, or taxonomy churn without a concrete readability, testing, or reuse benefit.
-  - Replacing existing platform-native dialogs, menus, or patch semantics where their current contract remains sound.
-- **Ambiguities:**
-  - What final names and prop boundaries most clearly distinguish field-group display, structured-form rendering, responsive layout, panel surface, and collapsible panel behavior after the Storybook proof?
-  - Can the existing `DialogShell` support focused forms' native form, validation, cancel, and action-footer semantics through one narrow extension, or should it remain unchanged while a focused form-dialog wrapper composes it?
-  - Should the responsive preview/focused-dialog `GridContentList` be cataloged as an organism while its list view and rows remain molecules, and where should the domain-owned dense-collection card sit in that composition vocabulary?
-  - Which non-shipping bulk-annotation comparison provides the most useful evidence for `BL-077` without expanding BL-074 into a behavioral redesign?
-- **Success:**
-  - A maintainer can identify the owner of display, editing, annotation, list, dialog, layout, and persistence responsibilities without tracing one multi-purpose component or route branch.
-  - Storybook exercises the reusable contracts with stateful and failure-oriented examples, and the owner approves the proof before route-wide migration.
-  - Existing 2014 sheet behavior, accessibility, typed patches, persistence, and black-box flows remain verified.
-  - After an approved split, repository search confirms that the legacy `GridContainer` has no remaining imports or consumers and the wrapper is deleted before archival; retained components each have an active, documented responsibility rather than a compatibility-only purpose.
-  - `BL-077` captures the separately reviewed View/Edit/annotation behavior, including singular fields and records, direct-runtime exceptions, annotation responsibilities, bulk alternatives, and atomic save expectations; BL-074's seams do not accidentally preclude it.
-  - `BL-069` and `BL-070` can consume or reject the resulting boundaries intentionally rather than copying page-specific conditions or treating a 2014 renderer as universal.
-- **Recommended workflow:** Full OpenSpec change because this deliberately changes reusable component and developer API boundaries across several consumers. Use a narrow `sheet-adapter-refactoring` delta to preserve existing behavior and require complete retirement of the superseded boundary; no new user-facing capability is expected. Refine the existing component-composition ADR with the implemented atom/molecule/organism and layout ownership model; create no parallel ADR solely for file organization.
 
 ### Add stable manual collection ordering
 
@@ -149,7 +99,7 @@ ID:
 
 Sequencing context:
 
-- Execute after `BL-064` establishes the five-item preview and focused collection surfaces and after `BL-074` clarifies their reusable ownership. Complete it before continued saturated-sheet rehearsal and external handoff because at-a-glance priority is part of the intended first-playtest experience, not a finding the external playtest must first rediscover.
+- Execute after the completed `BL-064` five-item preview/focused collection proof and completed `BL-074` ownership refactor. Complete it before continued saturated-sheet rehearsal and external handoff because at-a-glance priority is part of the intended first-playtest experience, not a finding the external playtest must first rediscover.
 
 Refinement outputs:
 
@@ -183,7 +133,7 @@ ID:
 
 Sequencing context:
 
-- Execute after `BL-074` clarifies the proven list, panel, form, and page-orchestration seams. Complete it before continued saturated-sheet rehearsal and external handoff because the dedicated saturated 2014 fixture now demonstrates that Runtime Actions can dominate the primary play surface and supporting collections can create avoidable height and alignment pressure.
+- Execute against the focused list, panel, form, and page-orchestration seams completed by `BL-074`. Complete it before continued saturated-sheet rehearsal and external handoff because the dedicated saturated 2014 fixture now demonstrates that Runtime Actions can dominate the primary play surface and supporting collections can create avoidable height and alignment pressure.
 
 Refinement outputs:
 
@@ -223,7 +173,7 @@ ID:
 
 Sequencing context:
 
-- Refined from the `BL-074` component audit and its owner-reviewed Storybook comparisons. This is a separate observable-behavior change rather than part of the component refactor. Keep it P1 and outside the first-external-playtest prerequisite sequence unless BL-074's owner proof or subsequent rehearsal demonstrates that separate Edit and Notes paths materially obstruct core use.
+- Refined from the `BL-074` component audit and its owner-approved composition seams; the speculative comparison study was deliberately deferred to this item. This is a separate observable-behavior change rather than part of the component refactor. Keep it P1 and outside the first-external-playtest prerequisite sequence unless subsequent rehearsal demonstrates that separate Edit and Notes paths materially obstruct core use.
 
 Refinement outputs:
 
@@ -321,7 +271,7 @@ ID:
 
 Sequencing context:
 
-- Prove the document-navigation contract after `BL-074` clarifies the implemented 2014 component boundaries, using the source evidence and conservative Shadowdark baseline established by archived `BL-068`. Reuse the proof for later systems without prebuilding a compendium.
+- Prove the document-navigation contract against the focused 2014 component boundaries completed by `BL-074`, using the source evidence and conservative Shadowdark baseline established by archived `BL-068`. Reuse the proof for later systems without prebuilding a compendium.
 
 Refinement outputs:
 
@@ -357,7 +307,7 @@ ID:
 
 Sequencing context:
 
-- Begin after the completed core/PDF audits, `BL-074` clarifies the 2014 component boundaries, and preferably after the 2014 reference proof identifies contextual-topic needs. It supplies the dispatch boundary required by Shadowdark.
+- Begin after the completed core/PDF audits and completed `BL-074` 2014 component-boundary refactor, and preferably after the 2014 reference proof identifies contextual-topic needs. It supplies the dispatch boundary required by Shadowdark.
 
 Refinement outputs:
 
@@ -518,7 +468,7 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
   - _Current direction_: Keep normal scroll chaining at collection boundaries as the narrow `BL-064` mitigation. Do not adopt collapse-by-default yet: hiding collection contents may trade scroll friction for weaker at-a-glance runtime access. Leave Misc. Notes on its existing bulk path until a focused proof confirms that searchable identity-owned rows improve it.
   - _Explore_: Compare bounded inline scrolling, an explicit expand state, focused browsing on every viewport, compact/collapsed previews, and wheel delegation where technically reliable. For notes, evaluate title/body search, stable row Edit/Notes actions, note-kind context, empty behavior, ordering, and whether the complete collection should use the proven dense-list boundary.
   - _Constraints_: Preserve full item reachability, authored order, stable IDs, annotations, keyboard/touch access, source navigation, and sheet landmarks. Avoid scroll-jacking scripts and do not force every non-target collection into the dense pattern.
-  - _Refinement trigger_: Use `BL-074`'s component proof to identify the honest ownership seam, then promote a separate observable-behavior proposal before first external playtest if owner rehearsal still finds desktop scanning disruptive or scratchpad saturation likely.
+  - _Refinement trigger_: Use the ownership seam established by completed `BL-074`, then promote a separate observable-behavior proposal before first external playtest if owner rehearsal still finds desktop scanning disruptive or scratchpad saturation likely.
 
 - Explore responsive collection-row quick actions and optional gestures after the submenu baseline has real use evidence.
   - _Why_: A consistent submenu scales safely across dense rows, but frequently used commands such as focused Edit may eventually merit one-step access on larger screens or optional mobile acceleration.
@@ -547,8 +497,8 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 
 ## Done Recently
 
+- `2026-08-16` completed `BL-074`: decomposed the legacy field/card and grid/container surfaces into focused field-group, structured-form, annotation, responsive-layout, panel, collapsible-panel, and domain-owned organism boundaries; retired the compatibility components, expanded stateful Storybook and browser coverage, and preserved typed patch, focus, accessibility, and persistence behavior
 - `2026-08-02` completed `BL-064`: added searchable, responsive dense collection workflows for Weapons, Armor & Shields, Other Gear, and Spells; introduced focused row editing and notes, mobile previews and full-height browsing, sparse spell-slot setup, and a saturated 2014 fixture; recorded Runtime/supporting collection and whole-sheet navigation follow-ups
 - `2026-08-01` completed `BL-068`: adopted and self-hosted official SRD 5.1 and SRD 5.2.1 with centralized public notices, base-path-safe navigation, and a protected local-only review boundary; fixed the sparse Shadowdark citation baseline, expansion gates, and audited human/agent source-review workflow for downstream resource and sheet work
 - `2026-08-01` completed `BL-067`: approved PRD v1 and the first-external-playtest roadmap for 2014 D&D, one adopted current 2024 D&D SRD release, and Shadowdark; established rights-classified reference, multi-system/core, PDF-interoperability, compatibility, survey-evidence, and scene-aware-navigation boundaries as separately refinable work
 - `2026-07-31` completed `p1-020`: established explicit 44-by-44 CSS-pixel coarse-pointer targets and bounded exceptions across the home-to-sheet flow, corrected keyboard-accessible character opening and responsive control order, and added durable Mobile Chrome geometry, label-activation, modal-context, and cross-browser evidence
-- `2026-07-30` completed `p1-027`: replaced JavaScript ResizeObserver grid measurement with native CSS Container Queries, maintaining layout fidelity while eliminating overhead

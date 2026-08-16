@@ -33,13 +33,11 @@ For annotations, read and patch paths should be explicit even when they can be d
 
 ## Compound And List Bindings
 
-Primitive field bindings should not be forced to carry every list and object use case. Growing character data such as features, spells, inventory, runtime actions, languages, notes, and similar collections should be treated as compound containers that can expose item-level bindings.
+Primitive field bindings use raw JSON Patch operations for direct value editing. However, growing character data such as features, spells, inventory, runtime actions, languages, notes, and similar collections are treated as compound containers.
 
-The preferred scalable model is:
-
-- Container binding: the list or grouped object owns add, remove, reorder, and whole-list fallback behavior.
-- Item binding: each persisted item can become its own addressable editing and annotation surface.
-- Field binding: primitive fields inside an item can use the scalar field contract when they have a safe value patch path.
+- **Direct Patches**: `GridPrimitiveField` prepares a guarded `JSONPatchDocument`, including RFC 6901 escaping and a preceding `test` operation for replacements. `FieldGroupView` forwards that document unchanged. `GridContentCard` sends it to the route's direct-patch handler when available, falling back to the existing `GridContentPatch[]` compatibility shape only for consumers that do not accept RFC 6902 documents.
+- **Structured Intents**: Complex compound workflows (e.g. dense lists, multi-field edits) emit typed domain intents (e.g., `SheetEditIntent`). The page or store layer receives the typed intent, orchestrates necessary validations or contextual lookups, and reduces it to a validated character shape.
+- **Generic Form Adaptation**: Generic data-driven editing views (e.g. `StructuredForm`) emit unopinionated `GridContentData`. Their orchestration boundary (`GridContentCard` or `GridContentEditDialog`) automatically translates these payload objects into generic `GridContentPatch[]` lists. At the system boundary (e.g., the 5e route), `decode5eGridPatches` intercepts these generic patches and cleanly separates them into canonical schema patches and typed `SheetEditIntent`s for final domain resolution.
 
 This avoids both extremes: a permanent one-dialog bulk editor for a large list, and fragile anonymous primitive bindings for every array cell.
 
@@ -219,9 +217,9 @@ The existing grid data still contains useful compatibility pieces:
 - `bindPath` is the current value patch path.
 - `annotationBindPath` is the current annotation patch path.
 - `annotations` is the current annotation display data.
-- `GridContentPatch` is the generic card-wide editor carrier with `{ path, value }`.
+- `GridContentPatch` is a custom legacy array wrapper for `{ path, value }`. It is NOT an RFC 6902 JSON Patch document.
 
-Direct primitive fields use field-scoped bindings and emit RFC 6902 documents. Compound and card-wide editors still emit `GridContentPatch` values because the generic grid API does not yet expose system-neutral semantic operations.
+Direct primitive fields use field-scoped bindings and emit RFC 6902 documents. Compound and card-wide editors still use `handleEditSave` payload structures, or emit structured typed intents.
 
 Slice 5 of `p1-040` split current grid patch projection into separate value and annotation collectors:
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tick } from 'svelte';
+	import DialogShell from '$components/DialogShell.svelte';
 	import GridContentAnnotationsDisplay from '$components/GridContentAnnotationsDisplay.svelte';
 	import GridContentAnnotationsEditor from '$components/GridContentAnnotationsEditor.svelte';
 	import type {
@@ -25,7 +25,6 @@
 		onSaveAnnotations = undefined
 	}: Props = $props();
 
-	let dialogEl = $state<HTMLDialogElement>();
 	let triggerEl = $state<HTMLButtonElement>();
 	let shouldRenderDialog = $state(false);
 	let isEditing = $state(false);
@@ -36,38 +35,27 @@
 	const canEditAnnotations = $derived(onSaveAnnotations !== undefined);
 
 	const closeDialog = () => {
-		dialogEl?.close();
-		if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
 		shouldRenderDialog = false;
+		if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
 		triggerEl?.focus();
 	};
 
 	const openDialog = async () => {
-		draftAnnotations = structuredClone(annotations);
+		draftAnnotations = $state.snapshot(annotations);
 		isEditing = false;
 		shouldRenderDialog = true;
-		await tick();
-		dialogEl?.showModal();
 	};
 
-	const onCancel = (event?: Event) => {
+	const handleCancel = () => {
 		if (isEditing) {
-			event?.preventDefault();
-			draftAnnotations = structuredClone(annotations);
+			draftAnnotations = $state.snapshot(annotations);
 			isEditing = false;
-			return;
+			return false; // Prevent closing the dialog
 		}
-		closeDialog();
+		return true;
 	};
 
-	const onBackdropClick = (event: MouseEvent) => {
-		if (event.target === event.currentTarget) {
-			onCancel();
-		}
-	};
-
-	const onSubmit = (event: SubmitEvent) => {
-		event.preventDefault();
+	const onSubmit = () => {
 		onSaveAnnotations?.(draftAnnotations);
 		isEditing = false;
 	};
@@ -96,65 +84,53 @@
 {/if}
 
 {#if shouldRenderDialog}
-	<dialog
-		bind:this={dialogEl}
-		class="theme-dialog theme-dialog-backdrop m-auto w-[min(92vw,34rem)] rounded-md border p-0"
-		oncancel={onCancel}
-		onclick={onBackdropClick}
+	<DialogShell
+		bind:open={shouldRenderDialog}
+		title="{fieldLabel} Annotations"
+		onCancel={handleCancel}
+		onClose={closeDialog}
+		closeText={isEditing ? 'Cancel' : 'Close'}
+		scrollAffordance={true}
 	>
-		<form class="flex flex-col gap-3 p-4" onsubmit={onSubmit}>
-			<div class="space-y-1">
-				<h3 class="text-lg leading-none font-semibold">Annotations</h3>
-				<p class="theme-text-muted text-xs">{fieldLabel}</p>
-			</div>
+		<p class="theme-text-muted text-xs mb-3">{fieldLabel}</p>
+		{#if isEditing && canEditAnnotations}
+			<GridContentAnnotationsEditor
+				annotations={draftAnnotations}
+				referenceTemplates={annotationEditorConfig?.referenceTemplates}
+				defaultKind={annotationEditorConfig?.defaultKind}
+				defaultOrigin={annotationEditorConfig?.defaultOrigin}
+				onChange={(nextAnnotations) => {
+					draftAnnotations = nextAnnotations;
+				}}
+			/>
+		{:else}
+			<GridContentAnnotationsDisplay {annotations} />
+		{/if}
 
-			<div class="max-h-[60vh] overflow-y-auto pr-1">
-				{#if isEditing && canEditAnnotations}
-					<GridContentAnnotationsEditor
-						annotations={draftAnnotations}
-						referenceTemplates={annotationEditorConfig?.referenceTemplates}
-						defaultKind={annotationEditorConfig?.defaultKind}
-						defaultOrigin={annotationEditorConfig?.defaultOrigin}
-						onChange={(nextAnnotations) => {
-							draftAnnotations = nextAnnotations;
-						}}
-					/>
-				{:else}
-					<GridContentAnnotationsDisplay {annotations} />
-				{/if}
-			</div>
-
-			<div class="mt-1 flex justify-end gap-2">
+		{#snippet actions()}
+			{#if canEditAnnotations && !isEditing}
 				<button
 					type="button"
-					class="theme-btn-light touch-target btn rounded-md border px-3 py-1"
-					onclick={onCancel}
+					class="theme-btn-light touch-target btn rounded-md border px-3 py-1 font-semibold"
+					onclick={() => {
+						draftAnnotations = $state.snapshot(annotations);
+						isEditing = true;
+					}}
 				>
-					{isEditing ? 'Cancel' : 'Close'}
+					{annotationCount > 0 ? 'Edit' : 'Add'}
 				</button>
-				{#if canEditAnnotations && !isEditing}
-					<button
-						type="button"
-						class="theme-btn-light touch-target btn rounded-md border px-3 py-1 font-semibold"
-						onclick={() => {
-							draftAnnotations = structuredClone(annotations);
-							isEditing = true;
-						}}
-					>
-						{annotationCount > 0 ? 'Edit' : 'Add'}
-					</button>
-				{/if}
-				{#if canEditAnnotations && isEditing}
-					<button
-						type="submit"
-						class="theme-btn-light touch-target btn rounded-md border px-3 py-1 font-semibold"
-					>
-						Save
-					</button>
-				{/if}
-			</div>
-		</form>
-	</dialog>
+			{/if}
+			{#if canEditAnnotations && isEditing}
+				<button
+					type="button"
+					class="theme-btn-light touch-target btn rounded-md border px-3 py-1 font-semibold"
+					onclick={onSubmit}
+				>
+					Save
+				</button>
+			{/if}
+		{/snippet}
+	</DialogShell>
 {/if}
 
 <style>

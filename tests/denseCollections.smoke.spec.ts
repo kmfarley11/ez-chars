@@ -73,7 +73,7 @@ test('Other Gear supports bounded search, stable row editing, notes, and bulk ed
 	await secondRopeActions.click();
 	await page.getByRole('button', { name: 'Edit', exact: true }).click();
 	const editDialog = page.getByRole('dialog', { name: 'Edit Rope' });
-	await editDialog.getByLabel('Detail Detail').fill('Priority climbing rope.');
+	await editDialog.getByLabel('Detail', { exact: true }).fill('Priority climbing rope.');
 	await editDialog.getByRole('button', { name: 'Save', exact: true }).click();
 	await expect(secondRopeActions).toBeFocused();
 	await expect(search).toHaveValue('rope');
@@ -210,7 +210,7 @@ test('Weapons, Armor & Shields, and Spells share scoped discovery and focused id
 	await levelOneActions.click();
 	await page.getByRole('button', { name: 'Edit', exact: true }).click();
 	const editDialog = page.getByRole('dialog', { name: 'Edit Shield' });
-	await editDialog.getByLabel('Notes Notes').fill('Priority level-one shield.');
+	await editDialog.getByLabel('Notes', { exact: true }).fill('Priority level-one shield.');
 	await editDialog.getByRole('button', { name: 'Save', exact: true }).click();
 	await expect(levelOneActions).toBeFocused();
 	await expect(spellSearch).toHaveValue('shield');
@@ -299,7 +299,7 @@ test('phone previews expose five records and a modal complete collection with on
 	await rowActions.click();
 	await page.getByRole('button', { name: 'Edit', exact: true }).click();
 	const editDialog = page.getByRole('dialog', { name: 'Edit Random rock' });
-	await editDialog.getByLabel('Detail Detail').fill('Phone rehearsal detail.');
+	await editDialog.getByLabel('Detail').fill('Phone rehearsal detail.');
 	await editDialog.getByRole('button', { name: 'Save', exact: true }).click();
 	await expect(rowActions).toBeFocused();
 	await expect(search).toHaveValue('random rock');

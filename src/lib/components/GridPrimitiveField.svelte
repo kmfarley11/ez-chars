@@ -158,7 +158,7 @@
 >
 	{#if draft}
 		<label class="inline-flex min-w-0 items-center gap-2">
-			<span class="font-semibold">{fieldLabel}:</span>
+			<span class="font-medium">{fieldLabel}:</span>
 			<input
 				bind:this={inputEl}
 				class="theme-input touch-target w-20 rounded-md border px-2 py-1 text-sm"
@@ -189,7 +189,7 @@
 		</button>
 	{:else}
 		<span class="min-w-0">
-			<span class="font-semibold">{fieldLabel}:</span>
+			<span class="font-medium">{fieldLabel}:</span>
 			<span>{displayValue}</span>
 			{#if field.label}
 				<span class="theme-text-muted text-xs italic">({field.label})</span>

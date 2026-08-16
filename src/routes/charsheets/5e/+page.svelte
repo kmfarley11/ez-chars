@@ -2,10 +2,13 @@
 	import { resolve } from '$app/paths';
 	import RuntimeActionsCard from './components/RuntimeActionsCard.svelte';
 	import Dnd5e2014DenseCollectionCard from './components/Dnd5e2014DenseCollectionCard.svelte';
-	import GridContent from '$components/GridContent.svelte';
-	import GridContainer from '$components/GridContainer.svelte';
+	import ResponsiveGrid from '$components/ResponsiveGrid.svelte';
+	import PanelSurface from '$components/PanelSurface.svelte';
+	import CollapsiblePanel from '$components/CollapsiblePanel.svelte';
+	import GridContentCard from '$components/GridContentCard.svelte';
 	import { applyGridPatches } from '$utils/characterGridHelpers';
 	import type { GridContentPatch } from '$utils/gridContentTypes';
+
 	import { immutableJSONPatch, type JSONPatchDocument } from 'immutable-json-patch';
 	import '../../../app.css';
 	import { charsArray, emptyChar } from '$storage/store.js';
@@ -125,10 +128,11 @@
 	const shouldInitiallyCollapseSpells = $derived(
 		spellDenseRows.length === 0 && !hasPersistedSpellSlots
 	);
-	const characterUpdaterSignature = (entry: CharacterDocument5e2014): CharacterDocument5e2014 =>
-		entry;
 
-	const updateCurrent5eCharacter = (updateFn: typeof characterUpdaterSignature) => {
+	const updateCurrent5eCharacter = (
+		// eslint-disable-next-line no-unused-vars
+		updateFn: (entry: CharacterDocument5e2014) => CharacterDocument5e2014
+	) => {
 		charsArray.update((entries) =>
 			entries.map((entry) => {
 				if (entry.meta.id !== requestedCharacterId) return entry;
@@ -136,6 +140,25 @@
 				return updateFn(entry as CharacterDocument5e2014);
 			})
 		);
+	};
+
+	const reportStructuredEditIssues = (issues: ReadonlyArray<SheetEditIssue>) => {
+		console.warn('Could not apply structured 5e sheet edit.', issues);
+	};
+
+	const handleSheetIntents = (intents: ReadonlyArray<SheetEditIntent>) => {
+		updateCurrent5eCharacter((entry) => {
+			const result = reduce5eSheetEditIntents(entry, intents);
+			if (!result.ok) {
+				reportStructuredEditIssues(result.issues);
+				return entry;
+			}
+			return result.character;
+		});
+	};
+
+	const handleSheetIntent = (intent: SheetEditIntent) => {
+		handleSheetIntents([intent]);
 	};
 
 	const applyCharacterJsonPatch = (
@@ -163,25 +186,6 @@
 
 	const handleFieldPatchSave = (patch: JSONPatchDocument) => {
 		updateCurrent5eCharacter((entry) => applyCharacterJsonPatch(entry, patch));
-	};
-
-	const reportStructuredEditIssues = (issues: ReadonlyArray<SheetEditIssue>) => {
-		console.warn('Could not apply structured 5e sheet edit.', issues);
-	};
-
-	const handleSheetIntents = (intents: ReadonlyArray<SheetEditIntent>) => {
-		updateCurrent5eCharacter((entry) => {
-			const result = reduce5eSheetEditIntents(entry, intents);
-			if (!result.ok) {
-				reportStructuredEditIssues(result.issues);
-				return entry;
-			}
-			return result.character;
-		});
-	};
-
-	const handleSheetIntent = (intent: SheetEditIntent) => {
-		handleSheetIntents([intent]);
 	};
 
 	const handleCreateRuntimeAction = (draft: RuntimeActionDraft) => {
@@ -307,37 +311,34 @@
 				</span>
 			</button>
 			{#if !isOverviewRegionCollapsed}
-				<GridContainer
-					heading="Meta / Top-level Info"
-					border={true}
-					pad={true}
-					flow="row"
-					count={1}
-					countMd={3}
-					classes="gap-3"
-				>
-					<GridContainer border={true} pad={true} classes="rounded-md">
-						<GridContent
-							handleEditSavePatches={handleGridPatchesSave}
-							{annotationEditorConfig}
-							data={metaPrimaryData}
-						/>
-					</GridContainer>
-					<GridContainer border={true} pad={true} classes="rounded-md">
-						<GridContent
-							handleEditSavePatches={handleGridPatchesSave}
-							{annotationEditorConfig}
-							data={metaSecondaryData}
-						/>
-					</GridContainer>
-					<GridContainer border={true} pad={true} classes="rounded-md">
-						<GridContent
-							handleEditSavePatches={handleGridPatchesSave}
-							{annotationEditorConfig}
-							data={metaTertiaryData}
-						/>
-					</GridContainer>
-				</GridContainer>
+				<CollapsiblePanel heading="Meta / Top-level Info">
+					<ResponsiveGrid cols={1} colsMd={3} classes="gap-3">
+						<PanelSurface>
+							<GridContentCard
+								handleFieldSavePatch={handleFieldPatchSave}
+								handleEditSavePatches={handleGridPatchesSave}
+								{annotationEditorConfig}
+								data={metaPrimaryData}
+							/>
+						</PanelSurface>
+						<PanelSurface>
+							<GridContentCard
+								handleFieldSavePatch={handleFieldPatchSave}
+								handleEditSavePatches={handleGridPatchesSave}
+								{annotationEditorConfig}
+								data={metaSecondaryData}
+							/>
+						</PanelSurface>
+						<PanelSurface>
+							<GridContentCard
+								handleFieldSavePatch={handleFieldPatchSave}
+								handleEditSavePatches={handleGridPatchesSave}
+								{annotationEditorConfig}
+								data={metaTertiaryData}
+							/>
+						</PanelSurface>
+					</ResponsiveGrid>
+				</CollapsiblePanel>
 			{/if}
 		</section>
 
@@ -357,237 +358,219 @@
 				</span>
 			</button>
 			{#if !isRuntimeRegionCollapsed}
-				<GridContainer
-					heading="Quick Reference"
-					border={true}
-					pad={true}
-					flow="row"
-					count={1}
-					countMd={3}
-					classes="gap-3"
-				>
-					<GridContainer border={true} pad={true} classes="rounded-md">
-						<GridContent
-							handleFieldSavePatch={handleFieldPatchSave}
-							handleEditSavePatches={handleGridPatchesSave}
-							{annotationEditorConfig}
-							displayMaxCols={2}
-							data={quickRefPrimaryData}
-						/>
-					</GridContainer>
-					<GridContainer border={true} pad={true} classes="rounded-md">
-						<GridContent
-							handleFieldSavePatch={handleFieldPatchSave}
-							handleEditSavePatches={handleGridPatchesSave}
-							{annotationEditorConfig}
-							data={quickRefMovementData}
-						/>
-					</GridContainer>
-					<GridContainer border={true} pad={true} classes="rounded-md">
-						<GridContent
-							handleFieldSavePatch={handleFieldPatchSave}
-							handleEditSavePatches={handleGridPatchesSave}
-							{annotationEditorConfig}
-							displayMaxCols={1}
-							data={quickRefSecondaryData}
-						/>
-					</GridContainer>
-				</GridContainer>
-				<GridContainer
-					heading="Actions / Runtime Summary"
-					border={true}
-					pad={true}
-					flow="row"
-					count={1}
-					classes="gap-3"
-				>
-					<GridContainer border={true} pad={true} classes="rounded-md">
-						<RuntimeActionsCard
-							data={runtimeActionData}
-							character={char}
-							{annotationEditorConfig}
-							handleEditSavePatches={handleGridPatchesSave}
-							onCreateAction={handleCreateRuntimeAction}
-							onResyncAction={handleResyncRuntimeAction}
-							onNavigateToSource={handleNavigateToSource}
-						/>
-					</GridContainer>
-				</GridContainer>
-				<GridContainer
-					heading="Abilities & Proficiencies, Features & Traits"
-					border={true}
-					pad={true}
-					flow="row"
-					count={1}
-					classes="gap-3"
-				>
-					<GridContainer border={true} pad={true} classes="rounded-md">
-						<GridContent
-							handleEditSavePatches={handleGridPatchesSave}
-							{annotationEditorConfig}
-							displayMaxCols={1}
-							displayAlign="center"
-							data={proficiencyBonusRuntimeData}
-						/>
-					</GridContainer>
-					<GridContainer flow="row" count={1} countMd={3} countLg={6} classes="gap-3">
-						{#each abilityRuntimeColumns as column (column.key)}
-							<GridContainer border={true} pad={true} classes="rounded-md">
-								<GridContent
-									handleEditSavePatches={handleGridPatchesSave}
-									{annotationEditorConfig}
-									displayMaxCols={1}
-									data={column.data}
-								/>
-							</GridContainer>
-						{/each}
-					</GridContainer>
-					<GridContainer flow="row" count={1} countMd={2} countLg={4} classes="gap-3">
-						<GridContainer border={true} pad={true} classes="rounded-md">
-							<GridContent
+				<CollapsiblePanel heading="Quick Reference">
+					<ResponsiveGrid cols={1} colsMd={3} classes="gap-3">
+						<PanelSurface>
+							<GridContentCard
+								handleFieldSavePatch={handleFieldPatchSave}
 								handleEditSavePatches={handleGridPatchesSave}
 								{annotationEditorConfig}
-								displayArrayMode="stack"
+								displayMaxCols={2}
+								data={quickRefPrimaryData}
+							/>
+						</PanelSurface>
+						<PanelSurface>
+							<GridContentCard
+								handleFieldSavePatch={handleFieldPatchSave}
+								handleEditSavePatches={handleGridPatchesSave}
+								{annotationEditorConfig}
+								data={quickRefMovementData}
+							/>
+						</PanelSurface>
+						<PanelSurface>
+							<GridContentCard
+								handleFieldSavePatch={handleFieldPatchSave}
+								handleEditSavePatches={handleGridPatchesSave}
+								{annotationEditorConfig}
 								displayMaxCols={1}
-								data={proficiencyLanguagesRuntimeData}
+								data={quickRefSecondaryData}
 							/>
-						</GridContainer>
-						<GridContainer border={true} pad={true} classes="rounded-md">
-							<GridContent
-								handleEditSavePatches={handleGridPatchesSave}
-								{annotationEditorConfig}
-								displayArrayMode="stack"
-								displayMaxCols={1}
-								data={proficiencyToolsRuntimeData}
-							/>
-						</GridContainer>
-						<section
-							{@attach registerFeaturesCard}
-							tabindex="-1"
-							aria-label="Features"
-							class="grid rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
-						>
-							<GridContainer border={true} pad={true} classes="rounded-md">
-								<GridContent
-									handleEditSavePatches={handleGridPatchesSave}
-									{annotationEditorConfig}
-									displayArrayMode="stack"
-									displayMaxCols={1}
-									data={featuresRuntimeData}
-								/>
-							</GridContainer>
-						</section>
-						<section
-							{@attach registerTraitsCard}
-							tabindex="-1"
-							aria-label="Traits"
-							class="grid rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
-						>
-							<GridContainer border={true} pad={true} classes="rounded-md">
-								<GridContent
-									handleEditSavePatches={handleGridPatchesSave}
-									{annotationEditorConfig}
-									displayArrayMode="stack"
-									displayMaxCols={1}
-									data={traitRuntimeData}
-								/>
-							</GridContainer>
-						</section>
-					</GridContainer>
-				</GridContainer>
-				<GridContainer
-					heading="Spells"
-					initiallyCollapsed={shouldInitiallyCollapseSpells}
-					border={true}
-					pad={true}
-					flow="row"
-					count={1}
-					classes="gap-3"
-				>
-					<section aria-label="Spellcasting">
-						<GridContainer border={true} pad={true} classes="rounded-md">
-							<GridContent
-								handleEditSavePatches={handleGridPatchesSave}
-								{annotationEditorConfig}
-								displayAlign="center"
-								data={spellcastingRuntimeData}
-							/>
-						</GridContainer>
-					</section>
-					<section aria-label="Spell slots">
-						<GridContainer border={true} pad={true} classes="rounded-md">
-							<GridContent
-								handleEditSavePatches={handleGridPatchesSave}
-								{annotationEditorConfig}
-								displayAlign="center"
-								data={spellSlotRuntimeData}
-							/>
-						</GridContainer>
-					</section>
-					<section
-						{@attach registerSpellCollection}
-						tabindex="-1"
-						aria-label="Spells collection"
-						class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
-					>
-						<GridContainer border={true} pad={true} classes="rounded-md">
-							<Dnd5e2014DenseCollectionCard
-								title="Spells"
-								rows={spellDenseRows}
+						</PanelSurface>
+					</ResponsiveGrid>
+				</CollapsiblePanel>
+				<CollapsiblePanel heading="Actions / Runtime Summary">
+					<ResponsiveGrid cols={1} classes="gap-3">
+						<PanelSurface>
+							<RuntimeActionsCard
+								data={runtimeActionData}
 								character={char}
-								bulkEditData={spellCollectionBulkEditData}
-								bind:query={spellCollectionQuery}
 								{annotationEditorConfig}
-								emptyText="No spells yet."
-								onIntent={handleSheetIntent}
-								onBulkSave={handleGridPatchesSave}
+								handleEditSavePatches={handleGridPatchesSave}
+								onCreateAction={handleCreateRuntimeAction}
+								onResyncAction={handleResyncRuntimeAction}
+								onNavigateToSource={handleNavigateToSource}
 							/>
-						</GridContainer>
-					</section>
-				</GridContainer>
-				<GridContainer
-					heading="Inventory / Equipment"
-					border={true}
-					pad={true}
-					flow="row"
-					count={1}
-					classes="gap-3"
-				>
-					<GridContainer border={true} pad={true} classes="rounded-md">
-						<GridContent
-							handleEditSavePatches={handleGridPatchesSave}
-							{annotationEditorConfig}
-							displayAlign="center"
-							displayMaxCols={5}
-							data={inventoryCurrencyRuntimeData}
-						/>
-					</GridContainer>
-					<GridContainer flow="row" count={1} countMd={3} classes="gap-3">
-						{#each inventoryRuntimeCards as inventoryCard (inventoryCard.key)}
-							<section
-								{@attach registerInventoryCard(inventoryCard.key)}
-								tabindex="-1"
-								aria-label={inventoryGroupLabels[inventoryCard.key]}
-								data-inventory-group={inventoryCard.key}
-								class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
-							>
-								<GridContainer border={true} pad={true} classes="rounded-md">
-									<Dnd5e2014DenseCollectionCard
-										title={inventoryCollectionTitles[inventoryCard.key]}
-										rows={inventoryDenseRows[inventoryCard.key]}
-										character={char}
-										bulkEditData={inventoryCard.data}
-										bind:query={inventoryCollectionQueries[inventoryCard.key]}
+						</PanelSurface>
+					</ResponsiveGrid>
+				</CollapsiblePanel>
+				<CollapsiblePanel heading="Abilities & Proficiencies, Features & Traits">
+					<ResponsiveGrid cols={1} classes="gap-3">
+						<PanelSurface>
+							<GridContentCard
+								handleFieldSavePatch={handleFieldPatchSave}
+								handleEditSavePatches={handleGridPatchesSave}
+								{annotationEditorConfig}
+								displayMaxCols={1}
+								displayAlign="center"
+								data={proficiencyBonusRuntimeData}
+							/>
+						</PanelSurface>
+						<ResponsiveGrid cols={1} colsMd={3} colsLg={6} classes="gap-3">
+							{#each abilityRuntimeColumns as column (column.key)}
+								<PanelSurface>
+									<GridContentCard
+										handleFieldSavePatch={handleFieldPatchSave}
+										handleEditSavePatches={handleGridPatchesSave}
 										{annotationEditorConfig}
-										emptyText={`No ${inventoryCollectionTitles[inventoryCard.key].toLocaleLowerCase()} yet.`}
-										onIntent={handleSheetIntent}
-										onBulkSave={handleGridPatchesSave}
+										displayMaxCols={1}
+										data={column.data}
 									/>
-								</GridContainer>
+								</PanelSurface>
+							{/each}
+						</ResponsiveGrid>
+						<ResponsiveGrid cols={1} colsMd={2} colsLg={4} classes="gap-3">
+							<PanelSurface>
+								<GridContentCard
+									handleFieldSavePatch={handleFieldPatchSave}
+									handleEditSavePatches={handleGridPatchesSave}
+									{annotationEditorConfig}
+									displayArrayMode="stack"
+									displayMaxCols={1}
+									data={proficiencyLanguagesRuntimeData}
+								/>
+							</PanelSurface>
+							<PanelSurface>
+								<GridContentCard
+									handleFieldSavePatch={handleFieldPatchSave}
+									handleEditSavePatches={handleGridPatchesSave}
+									{annotationEditorConfig}
+									displayArrayMode="stack"
+									displayMaxCols={1}
+									data={proficiencyToolsRuntimeData}
+								/>
+							</PanelSurface>
+							<section
+								{@attach registerFeaturesCard}
+								tabindex="-1"
+								aria-label="Features"
+								class="grid rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
+							>
+								<PanelSurface>
+									<GridContentCard
+										handleFieldSavePatch={handleFieldPatchSave}
+										handleEditSavePatches={handleGridPatchesSave}
+										{annotationEditorConfig}
+										displayArrayMode="stack"
+										displayMaxCols={1}
+										data={featuresRuntimeData}
+									/>
+								</PanelSurface>
 							</section>
-						{/each}
-					</GridContainer>
-				</GridContainer>
+							<section
+								{@attach registerTraitsCard}
+								tabindex="-1"
+								aria-label="Traits"
+								class="grid rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
+							>
+								<PanelSurface>
+									<GridContentCard
+										handleFieldSavePatch={handleFieldPatchSave}
+										handleEditSavePatches={handleGridPatchesSave}
+										{annotationEditorConfig}
+										displayArrayMode="stack"
+										displayMaxCols={1}
+										data={traitRuntimeData}
+									/>
+								</PanelSurface>
+							</section>
+						</ResponsiveGrid>
+					</ResponsiveGrid>
+				</CollapsiblePanel>
+				<CollapsiblePanel heading="Spells" startsCollapsed={shouldInitiallyCollapseSpells}>
+					<ResponsiveGrid cols={1} classes="gap-3">
+						<section aria-label="Spellcasting">
+							<PanelSurface>
+								<GridContentCard
+									handleFieldSavePatch={handleFieldPatchSave}
+									handleEditSavePatches={handleGridPatchesSave}
+									{annotationEditorConfig}
+									displayAlign="center"
+									data={spellcastingRuntimeData}
+								/>
+							</PanelSurface>
+						</section>
+						<section aria-label="Spell slots">
+							<PanelSurface>
+								<GridContentCard
+									handleFieldSavePatch={handleFieldPatchSave}
+									handleEditSavePatches={handleGridPatchesSave}
+									{annotationEditorConfig}
+									displayAlign="center"
+									data={spellSlotRuntimeData}
+								/>
+							</PanelSurface>
+						</section>
+						<section
+							{@attach registerSpellCollection}
+							tabindex="-1"
+							aria-label="Spells collection"
+							class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
+						>
+							<PanelSurface>
+								<Dnd5e2014DenseCollectionCard
+									title="Spells"
+									rows={spellDenseRows}
+									character={char}
+									bulkEditData={spellCollectionBulkEditData}
+									bind:query={spellCollectionQuery}
+									{annotationEditorConfig}
+									emptyText="No spells yet."
+									onIntent={handleSheetIntent}
+									onBulkSave={handleGridPatchesSave}
+								/>
+							</PanelSurface>
+						</section>
+					</ResponsiveGrid>
+				</CollapsiblePanel>
+				<CollapsiblePanel heading="Inventory / Equipment">
+					<ResponsiveGrid cols={1} classes="gap-3">
+						<PanelSurface>
+							<GridContentCard
+								handleFieldSavePatch={handleFieldPatchSave}
+								handleEditSavePatches={handleGridPatchesSave}
+								{annotationEditorConfig}
+								displayAlign="center"
+								displayMaxCols={5}
+								data={inventoryCurrencyRuntimeData}
+							/>
+						</PanelSurface>
+						<ResponsiveGrid cols={1} colsMd={3} classes="gap-3">
+							{#each inventoryRuntimeCards as inventoryCard (inventoryCard.key)}
+								<section
+									{@attach registerInventoryCard(inventoryCard.key)}
+									tabindex="-1"
+									aria-label={inventoryGroupLabels[inventoryCard.key]}
+									data-inventory-group={inventoryCard.key}
+									class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
+								>
+									<PanelSurface>
+										<Dnd5e2014DenseCollectionCard
+											title={inventoryCollectionTitles[inventoryCard.key]}
+											rows={inventoryDenseRows[inventoryCard.key]}
+											character={char}
+											bulkEditData={inventoryCard.data}
+											bind:query={inventoryCollectionQueries[inventoryCard.key]}
+											{annotationEditorConfig}
+											emptyText={`No ${inventoryCollectionTitles[inventoryCard.key].toLocaleLowerCase()} yet.`}
+											onIntent={handleSheetIntent}
+											onBulkSave={handleGridPatchesSave}
+										/>
+									</PanelSurface>
+								</section>
+							{/each}
+						</ResponsiveGrid>
+					</ResponsiveGrid>
+				</CollapsiblePanel>
 			{/if}
 		</section>
 
@@ -610,50 +593,49 @@
 				</span>
 			</button>
 			{#if !isOrganizationalRegionCollapsed}
-				<GridContainer
-					heading="Background, Roleplay, & Notes"
-					border={true}
-					pad={true}
-					flow="row"
-					count={1}
-					classes="gap-3"
-				>
-					<GridContainer flow="row" count={1} countMd={3} classes="gap-3">
-						<GridContainer border={true} pad={true} classes="rounded-md">
-							<GridContent
+				<CollapsiblePanel heading="Background, Roleplay, & Notes">
+					<ResponsiveGrid cols={1} classes="gap-3">
+						<ResponsiveGrid cols={1} colsMd={3} classes="gap-3">
+							<PanelSurface>
+								<GridContentCard
+									handleFieldSavePatch={handleFieldPatchSave}
+									handleEditSavePatches={handleGridPatchesSave}
+									{annotationEditorConfig}
+									displayMaxCols={1}
+									data={organizationalBackgroundData}
+								/>
+							</PanelSurface>
+							<PanelSurface>
+								<GridContentCard
+									handleFieldSavePatch={handleFieldPatchSave}
+									handleEditSavePatches={handleGridPatchesSave}
+									{annotationEditorConfig}
+									displayMaxCols={1}
+									data={roleplayPrimaryData}
+								/>
+							</PanelSurface>
+							<PanelSurface>
+								<GridContentCard
+									handleFieldSavePatch={handleFieldPatchSave}
+									handleEditSavePatches={handleGridPatchesSave}
+									{annotationEditorConfig}
+									displayMaxCols={1}
+									data={roleplaySecondaryData}
+								/>
+							</PanelSurface>
+						</ResponsiveGrid>
+						<PanelSurface>
+							<GridContentCard
+								handleFieldSavePatch={handleFieldPatchSave}
 								handleEditSavePatches={handleGridPatchesSave}
 								{annotationEditorConfig}
+								displayArrayMode="stack"
 								displayMaxCols={1}
-								data={organizationalBackgroundData}
+								data={scratchpadNotesData}
 							/>
-						</GridContainer>
-						<GridContainer border={true} pad={true} classes="rounded-md">
-							<GridContent
-								handleEditSavePatches={handleGridPatchesSave}
-								{annotationEditorConfig}
-								displayMaxCols={1}
-								data={roleplayPrimaryData}
-							/>
-						</GridContainer>
-						<GridContainer border={true} pad={true} classes="rounded-md">
-							<GridContent
-								handleEditSavePatches={handleGridPatchesSave}
-								{annotationEditorConfig}
-								displayMaxCols={1}
-								data={roleplaySecondaryData}
-							/>
-						</GridContainer>
-					</GridContainer>
-					<GridContainer border={true} pad={true} classes="rounded-md">
-						<GridContent
-							handleEditSavePatches={handleGridPatchesSave}
-							{annotationEditorConfig}
-							displayArrayMode="stack"
-							displayMaxCols={1}
-							data={scratchpadNotesData}
-						/>
-					</GridContainer>
-				</GridContainer>
+						</PanelSurface>
+					</ResponsiveGrid>
+				</CollapsiblePanel>
 			{/if}
 		</section>
 	</div>

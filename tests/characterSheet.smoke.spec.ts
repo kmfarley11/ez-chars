@@ -259,7 +259,7 @@ test('links an inventory suggestion through resync and source deletion fallback'
 	await longswordRowActions.click();
 	await page.getByRole('button', { name: 'Edit', exact: true }).click();
 	let inventoryDialog = page.getByRole('dialog', { name: 'Edit Longsword' });
-	await inventoryDialog.getByLabel('Detail Detail').fill('Updated item notes.');
+	await inventoryDialog.getByLabel('Detail', { exact: true }).fill('Updated item notes.');
 	await inventoryDialog.getByRole('button', { name: 'Save', exact: true }).click();
 	await expect(longswordRowActions).toBeFocused();
 	await expect
@@ -368,7 +368,7 @@ test('creates and navigates spell, feature, trait, and custom runtime actions', 
 	) => {
 		await page.getByRole('button', { name: 'Add action' }).click();
 		const selection = page.getByRole('dialog', { name: 'Add action' });
-		await selection.getByRole('button', { name: category }).click();
+		await selection.getByRole('button', { name: category, exact: true }).click();
 		await selection.getByRole('button', { name: new RegExp(sourceName) }).click();
 		const review = page.getByRole('dialog', { name: 'Review action' });
 		await expect(review.getByRole('textbox', { name: 'Name' })).toHaveValue(sourceName);

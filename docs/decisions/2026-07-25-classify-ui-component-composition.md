@@ -5,8 +5,8 @@
 - **Status:** Approved
 - **Author:** User and Codex
 - **Date:** 2026-07-25
-- **Last reviewed:** 2026-08-01
-- **Latest refinement:** `BL-067` activates the second-system trigger as a focused `BL-070` audit without approving a repo-wide hierarchy rewrite.
+- **Last reviewed:** 2026-08-16
+- **Latest refinement:** Completed `BL-074` establishes concrete boundaries for field, form, annotation, layout, panel, and organism primitives.
 
 ## Context & Problem Statement
 
@@ -114,3 +114,14 @@ Allowing all inventory items makes search and filtering part of the minimum usef
 PRD v1 makes a second system-specific sheet concrete, so `BL-070` now owns the focused hierarchy and route-composition audit described above. It should evaluate whether repeated sheet landmarks or layouts justify templates/Pages and whether current organisms carry route-level responsibilities. It should also audit the existing grid/card, field-binding, annotation, focused-edit, dialog, and navigation primitives for honest reuse.
 
 The trigger does not predetermine a complete atomic-design hierarchy, repo-wide file move, or generic page template. The audit may conclude that atoms, molecules, organisms, and system-specific route composition remain sufficient for the first two sheets. Shadowdark supplies the stronger non-5e validation before any page-level convention is treated as universal.
+
+### 2026-08-05: BL-074 Implementation Boundaries
+
+BL-074 implemented a cohesive set of boundaries replacing the legacy `GridContent` components:
+
+- **Atoms/Primitives:** Base inputs and structural primitives like `BaseButton` and `Badge` are atoms. They handle display or basic input but don't orchestrate complex forms.
+- **Molecules:** Components like `PanelSurface`, `ResponsiveGrid`, `FieldAnnotationControl`, `FieldGroupView`, `CollapsiblePanel`, and `StructuredForm` compose primitives into one focused reusable UI job.
+- **Organisms:** Cards such as `GridContentCard` compose multiple molecules (field groups, action menus, forms, and dialogs) into cohesive regions. Dense collection cards (e.g., `Dnd5e2014DenseCollectionCard`) are domain-specific organisms.
+- **Focused form boundary:** `StructuredForm` remains a molecule. It performs one reusable form-rendering job and does not own dialog lifecycle, domain decoding, or a product workflow.
+
+The typed-edit-intents architecture remains authoritative for complex mutations; this classification only establishes the structural composition of the UI.
