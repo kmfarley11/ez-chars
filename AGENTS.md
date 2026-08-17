@@ -51,7 +51,7 @@ For current product scope, in/out-of-scope decisions, and success criteria, use 
 - **CRITICAL:** Do NOT automatically stage (git add) any files, unless explicitly asked to, or unless you are specifically navigating the OpenSpec archive workflow.
 - Modifying files requires changing them on the disk only.
 - Leave staging and committing entirely to human control.
-- **Commit Messages:** When drafting commit messages, avoid using backticks (`) or unescaped quotes, as these cause interpolation or syntax errors when passed to `git commit -m "..."` in Bash.
+- **Commit Messages:** When a commit primarily advances, completes, or archives one identified backlog or OpenSpec change, include its stable identifier in the suggested commit subject for historical traceability (prefer the backlog ID, such as `BL-076` or a preserved legacy `p1-*` ID; otherwise use the exact OpenSpec change name). Do not force an identifier onto unrelated maintenance or genuinely multi-item commits. When drafting commit messages, avoid using backticks (\`) or unescaped quotes, as these cause interpolation or syntax errors when passed to `git commit -m "..."` in Bash.
 
 ## Repo Map
 
@@ -226,6 +226,8 @@ When the user asks you to review changes (or proposal artifacts), specifically:
 
 - Do NOT make any direct edits to the code during the review unless explicitly asked.
 - Summarize the unstaged changes (include staged changes WHEN SPECIFICALLY REQUESTED).
+- **Classify Findings:** Label each finding as **Blocking**, **Recommended**, or **Nit**. Base pass/fail only on Blocking findings. Recommended improvements may proceed during implementation or reconciliation, while Nits must not delay apply or archival unless they collectively obscure correctness or violate an explicit repository requirement.
+- **Review Stability:** Batch reasonably foreseeable findings into the first review. On re-review, verify the requested corrections and resulting fallout without moving the goalposts; classify a newly discovered issue as Blocking only when it materially affects correctness, data safety, accessibility, approved scope, durable architecture, or a required workflow gate. When no Blocking findings remain, explicitly report **Pass** or **Pass with recommendations**.
 - **Anticipate Setbacks:** Proactively identify possible execution hiccups. Compare the requested design or vision against the known capabilities and pitfalls of the recommended agent model (e.g., complex Svelte form extractions, scroll-locking, or tricky boundaries), and warn the human of where the agent might struggle.
 - **Top 5 Highlights:** Provide a "Top 5" (or fewer, if there are fewer files) highlight list of the changed files. For each, include a brief explanation of _what_ changed and _why_, specifically focusing on files the user may want to review manually.
 - Suggest commit message text should the user wish to proceed.
