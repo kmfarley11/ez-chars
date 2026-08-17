@@ -152,12 +152,12 @@ Refinement outputs:
   - Automatically applying search, the ten-item cap, or identical commands to every short list solely for visual uniformity.
   - Solving manual priority/order controls, which remain in `BL-075` unless that change is explicitly refined after the Runtime Action surface is approved.
   - Reopening the general component taxonomy or creating a universal collection renderer after `BL-074` has selected bounded ownership seams.
-- **Ambiguities:**
-  - Which Runtime Action text should search cover beyond name—authored notes, source name, timing, category, or selected effective content?
-  - Should the ten-record compact cap apply identically on desktop and phone, or should desktop use a focused-view affordance that avoids nested scrolling while phone uses the established preview/dialog pattern?
-  - Which supporting collection first exceeds a simple bounded display in realistic 2014 use, and at what evidence-based threshold should search become available?
-  - Can supporting collections share one visual-height and overflow treatment without forcing languages, tools, features, and traits into one mutation or row-action model?
-  - Should Runtime Actions become a subsequent `BL-075` ordering consumer, or should explicit favorites/promotion be evaluated as a more appropriate at-a-glance priority mechanism?
+- **Ambiguities (Refined pending proof):**
+  - Search coverage should index the action's current snapshot fields and source context (name, target, notes, timing, category, source label/category, source context) without live-source text.
+  - The desktop presentation for collections over 10 items remains open: the proof will compare an inline focus/height-limit affordance against a focused desktop view to evaluate the multiple-scroll-trap risk. Phone will use the preview/dialog pattern.
+  - "Rule of 10" presentation: Collections of 1-10 items use a simple list. 11+ items trigger bounded/focused presentation and search.
+  - Presentation separation: Ensure the shared presentation seam respects existing heterogeneous structures (Runtime Actions vs. GridContentData) without forcing generic wrappers or row-level actions onto supporting collections.
+  - Defer ordering/favorites integration for Runtime Actions until `BL-075` resolves it for inventory/spells.
 - **Success:**
   - Ten or fewer Runtime Actions remain visible at a glance, larger sets are searchable and completely reachable, and specialized source/resync/create behavior remains understandable and verified.
   - Proficiencies, Features, and Traits no longer create unexplained card-height mismatches or unbounded sheet growth, while simple cases remain lightweight.
