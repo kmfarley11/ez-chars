@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import RuntimeActionsCard from './components/RuntimeActionsCard.svelte';
+	import SupportingCollectionCard from './components/SupportingCollectionCard.svelte';
 	import Dnd5e2014DenseCollectionCard from './components/Dnd5e2014DenseCollectionCard.svelte';
 	import ResponsiveGrid from '$components/ResponsiveGrid.svelte';
 	import PanelSurface from '$components/PanelSurface.svelte';
@@ -33,6 +34,10 @@
 		projectSpellDenseCollectionRows
 	} from '$lib/dnd5e2014/denseCollectionRows';
 	import { project5eSheet } from './sheetProjections';
+	import {
+		projectSupportingCollectionRows,
+		type SupportingCollectionKind
+	} from './components/supportingCollectionRows';
 
 	interface Props {
 		data: {
@@ -74,6 +79,12 @@
 		other: ''
 	});
 	let spellCollectionQuery = $state('');
+	let supportingCollectionQueries = $state<Record<SupportingCollectionKind, string>>({
+		features: '',
+		traits: '',
+		languages: '',
+		tools: ''
+	});
 	let featuresCardElement = $state<HTMLElement>();
 	let traitsCardElement = $state<HTMLElement>();
 	const inventoryGroupLabels: Record<InventoryGroup, string> = {
@@ -120,6 +131,12 @@
 	const spellDenseRows = $derived(
 		projectSpellDenseCollectionRows(char.systemData.spellcasting?.spells ?? [])
 	);
+	const supportingCollectionRows = $derived({
+		features: projectSupportingCollectionRows(char, 'features'),
+		traits: projectSupportingCollectionRows(char, 'traits'),
+		languages: projectSupportingCollectionRows(char, 'languages'),
+		tools: projectSupportingCollectionRows(char, 'tools')
+	});
 	const hasPersistedSpellSlots = $derived(
 		Object.values(char.systemData.spellcasting?.slots ?? {}).some(
 			(slot) => slot.used > 0 || slot.max > 0
@@ -204,6 +221,10 @@
 			inventoryCollectionQueries[destination.group] = '';
 		} else if (destination.kind === 'spell') {
 			spellCollectionQuery = '';
+		} else if (destination.kind === 'features') {
+			supportingCollectionQueries.features = '';
+		} else {
+			supportingCollectionQueries.traits = '';
 		}
 		const cardElement =
 			destination.kind === 'inventory'
@@ -429,26 +450,30 @@
 							{/each}
 						</ResponsiveGrid>
 						<ResponsiveGrid cols={1} colsMd={2} colsLg={4} classes="gap-3">
-							<PanelSurface>
-								<GridContentCard
-									handleFieldSavePatch={handleFieldPatchSave}
-									handleEditSavePatches={handleGridPatchesSave}
-									{annotationEditorConfig}
-									displayArrayMode="stack"
-									displayMaxCols={1}
-									data={proficiencyLanguagesRuntimeData}
-								/>
-							</PanelSurface>
-							<PanelSurface>
-								<GridContentCard
-									handleFieldSavePatch={handleFieldPatchSave}
-									handleEditSavePatches={handleGridPatchesSave}
-									{annotationEditorConfig}
-									displayArrayMode="stack"
-									displayMaxCols={1}
-									data={proficiencyToolsRuntimeData}
-								/>
-							</PanelSurface>
+							<section aria-label="Prof. Languages" class="grid">
+								<PanelSurface>
+									<SupportingCollectionCard
+										title="Prof. Languages"
+										rows={supportingCollectionRows.languages}
+										data={proficiencyLanguagesRuntimeData}
+										{annotationEditorConfig}
+										handleEditSavePatches={handleGridPatchesSave}
+										bind:query={supportingCollectionQueries.languages}
+									/>
+								</PanelSurface>
+							</section>
+							<section aria-label="Prof. Tools" class="grid">
+								<PanelSurface>
+									<SupportingCollectionCard
+										title="Prof. Tools"
+										rows={supportingCollectionRows.tools}
+										data={proficiencyToolsRuntimeData}
+										{annotationEditorConfig}
+										handleEditSavePatches={handleGridPatchesSave}
+										bind:query={supportingCollectionQueries.tools}
+									/>
+								</PanelSurface>
+							</section>
 							<section
 								{@attach registerFeaturesCard}
 								tabindex="-1"
@@ -456,13 +481,13 @@
 								class="grid rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
 							>
 								<PanelSurface>
-									<GridContentCard
-										handleFieldSavePatch={handleFieldPatchSave}
-										handleEditSavePatches={handleGridPatchesSave}
-										{annotationEditorConfig}
-										displayArrayMode="stack"
-										displayMaxCols={1}
+									<SupportingCollectionCard
+										title="Features"
+										rows={supportingCollectionRows.features}
 										data={featuresRuntimeData}
+										{annotationEditorConfig}
+										handleEditSavePatches={handleGridPatchesSave}
+										bind:query={supportingCollectionQueries.features}
 									/>
 								</PanelSurface>
 							</section>
@@ -473,13 +498,13 @@
 								class="grid rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
 							>
 								<PanelSurface>
-									<GridContentCard
-										handleFieldSavePatch={handleFieldPatchSave}
-										handleEditSavePatches={handleGridPatchesSave}
-										{annotationEditorConfig}
-										displayArrayMode="stack"
-										displayMaxCols={1}
+									<SupportingCollectionCard
+										title="Traits"
+										rows={supportingCollectionRows.traits}
 										data={traitRuntimeData}
+										{annotationEditorConfig}
+										handleEditSavePatches={handleGridPatchesSave}
+										bind:query={supportingCollectionQueries.traits}
 									/>
 								</PanelSurface>
 							</section>

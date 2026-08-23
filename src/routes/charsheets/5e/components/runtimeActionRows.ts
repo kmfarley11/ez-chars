@@ -39,6 +39,35 @@ export type RuntimeActionRow = {
 	};
 };
 
+const normalizeSearchText = (value: string): string => value.trim().toLocaleLowerCase();
+
+const getRuntimeActionSearchText = (row: RuntimeActionRow): string =>
+	[
+		row.name,
+		row.target,
+		row.notes,
+		row.timingLabel,
+		row.categoryLabel,
+		row.sourceCategoryLabel,
+		row.source?.label,
+		row.source?.context
+	]
+		.filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+		.join(' ')
+		.toLocaleLowerCase();
+
+export const filterRuntimeActionRows = (
+	rows: ReadonlyArray<RuntimeActionRow>,
+	query: string
+): Array<RuntimeActionRow> => {
+	const tokens = normalizeSearchText(query).split(/\s+/).filter(Boolean);
+	if (tokens.length === 0) return [...rows];
+	return rows.filter((row) => {
+		const searchText = getRuntimeActionSearchText(row);
+		return tokens.every((token) => searchText.includes(token));
+	});
+};
+
 const nonEmptyText = (value: string | undefined): string | undefined => {
 	const normalized = value?.trim();
 	return normalized ? normalized : undefined;

@@ -5,9 +5,8 @@ The saturated 2014 sheet fixture demonstrates that Runtime Actions can dominate 
 ## What Changes
 
 - Introduce search for Runtime Actions indexing the current snapshot and source context (name, target, notes, timing, category, source label/category, source context).
-- Implement a 10-item cap ("Rule of 10") for phone previews/dialogs.
-- Apply the "Rule of 10" threshold across supporting collections (Features, Traits, Languages, Tools).
-- For desktop presentation of 11+ items, explicitly compare an inline scrollable container against a focused view to evaluate scroll-trap risks before committing.
+- Implement a 5-item cap for information-rich Runtime Actions and a 7-item cap for compact supporting collections (Features, Traits, Languages, Tools).
+- Once a collection exceeds its applicable cap, use a hybrid approach (inline scrollable container on desktop, focused dialog on phone) to avoid modal fatigue, validated by macOS/Firefox playtesting.
 - Preserve complete touch, keyboard, pointer, and assistive access to every record and command.
 - Maintain existing mutation and orchestration boundaries without forcing heterogeneous collections into a generic data wrapper.
 - Explicitly defer ordering/favorites mechanisms to `BL-075`.
@@ -22,10 +21,11 @@ The saturated 2014 sheet fixture demonstrates that Runtime Actions can dominate 
 ## Capabilities
 
 ### Modified Capabilities
-- `dense-collection-interaction`: Update to establish the "Rule of 10" density bounds, search thresholds, and the desktop vs phone affordances for large collections.
+
+- `dense-collection-interaction`: Update to establish collection-specific density bounds, search thresholds, and the desktop vs phone affordances for large collections.
 
 ## Impact
 
 - **UI Components:** The presentation layer for Runtime Actions, Features, Traits, Languages, and Tools.
-- **Interactions:** Search states are introduced for collections >10 items. Desktop presentation will adopt an appropriate bounded or focused view based on proof evidence. Phone users retain the dialog preview pattern.
+- **Interactions:** Search states are introduced when Runtime Actions exceed 5 items or supporting collections exceed 7 items. Desktop presentation uses bounded inline scrolling, while phone users retain the focused dialog preview pattern.
 - **Dependencies:** None.

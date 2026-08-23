@@ -54,7 +54,6 @@ These lightweight queues record priority membership only. Detailed definitions l
 
 ### P0 — Product Prerequisites
 
-- [`BL-076` — Scale runtime and supporting sheet collections](#scale-runtime-and-supporting-sheet-collections)
 - [`BL-075` — Add stable manual collection ordering](#add-stable-manual-collection-ordering)
 - [`BL-069` — Deliver rights-classified reference navigation](#deliver-rights-classified-reference-navigation)
 - [`BL-070` — Establish the multi-system boundary and 2024 D&D sheet](#establish-the-multi-system-boundary-and-2024-dd-sheet)
@@ -78,14 +77,13 @@ _Goal: First External Playtest_
 
 The queues above record strategic priority membership; this list records the dependency-aware action order and may omit blocked or trigger-deferred items.
 
-1. `BL-076`: Bound and search saturated Runtime Actions, then establish proportionate density behavior for supporting Runtime collections
-2. `BL-075`: Let users deliberately surface their most important inventory and spell entries before saturated-sheet owner rehearsal
-3. `BL-069`: Prove multi-source resource discovery and contextual navigation against the 2014 sheet
-4. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary and add the minimal 2024 D&D sheet
-5. `BL-071`: Add the minimal Shadowdark sheet within the conservative baseline after `BL-070` supplies the dispatch boundary
-6. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix
+1. `BL-075`: Let users deliberately surface their most important inventory and spell entries before saturated-sheet owner rehearsal
+2. `BL-069`: Prove multi-source resource discovery and contextual navigation against the 2014 sheet
+3. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary and add the minimal 2024 D&D sheet
+4. `BL-071`: Add the minimal Shadowdark sheet within the conservative baseline after `BL-070` supplies the dispatch boundary
+5. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix
 
-The completed `BL-064` proof established the inventory and spell baseline, and completed `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams. `BL-076` remains a separate Horizon A change because Runtime Actions own source, navigation, resync, and creation behavior that needs its own density proof. `BL-075` then keeps stable ordering separate so the accepted inventory and spell previews reflect deliberate user priority before owner rehearsal and external handoff. `BL-066` is an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights. It is deliberately not a first-playtest readiness prerequisite. `BL-073` remains outside this sequence: saturated 2014 rehearsal now confirms navigation pressure, but cross-system scene vocabulary and the urgency of anything beyond a bounded outline still need evidence.
+The completed `BL-064` proof established the inventory and spell baseline, `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams, and `BL-076` added proportionate density behavior for Runtime Actions and supporting collections without flattening their distinct interaction grammars. `BL-075` now keeps stable ordering separate so the accepted collection previews reflect deliberate user priority before owner rehearsal and external handoff. `BL-066` is an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights. It is deliberately not a first-playtest readiness prerequisite. `BL-073` remains outside this sequence: saturated 2014 rehearsal now confirms navigation pressure, but cross-system scene vocabulary and the urgency of anything beyond a bounded outline still need evidence.
 
 ## Refined Backlog Catalog
 
@@ -118,52 +116,12 @@ Refinement outputs:
   - Should the baseline expose Move to top plus Move up/down commands, a dedicated reorder mode, drag-and-drop with equivalent controls, or another compact combination? USER MANUAL ENTRY: perhaps we should consider a "promote"/"favorite" function. Where we un-opinionatedly sort by name alphabetically by default, but otherwise give the user the ability to indicate priority/favoritism for certain objects to be weighed higher than the default sort.
   - Should reorder controls be unavailable while filtered, or should the UI provide an explicit transition back to canonical-order mode?
   - Which non-target collection is the next credible consumer after inventory and spells?
-  - Should Runtime Actions join this ordering scope after `BL-076` defines its compact surface, or retain an independently authored priority model because its source and action-economy semantics differ?
+  - Should Runtime Actions join this ordering scope now that `BL-076` defines their compact surface, or retain an independently authored priority model because their source and action-economy semantics differ?
 - **Success:**
   - Users can deliberately reorder target entries across touch, pointer, and keyboard paths without losing identity or content.
   - The first five preview entries reliably match the first five authored entries after reload and export/restore.
   - Search never silently mutates canonical order, and cross-group or cross-level movement cannot occur accidentally.
 - **Recommended workflow:** Full OpenSpec change because this adds observable collection behavior, ordered-list mutation semantics, stable-identity requirements, and accessibility design. Add or refine an ADR only if implementation establishes a durable cross-system ordering contract rather than a 2014 collection behavior.
-
-### Scale runtime and supporting sheet collections
-
-ID:
-
-- `BL-076`
-
-Sequencing context:
-
-- Execute against the focused list, panel, form, and page-orchestration seams completed by `BL-074`. Complete it before continued saturated-sheet rehearsal and external handoff because the dedicated saturated 2014 fixture now demonstrates that Runtime Actions can dominate the primary play surface and supporting collections can create avoidable height and alignment pressure.
-
-Refinement outputs:
-
-- **Purpose:** Keep saturated Runtime information quickly scannable without flattening specialized Runtime Action behavior into a generic list or forcing search and competing scroll regions onto every supporting collection.
-- **Included behavior:**
-  - Give Runtime Actions a searchable, count-bearing dense presentation that preserves its action timing/category/source context, annotation state, source navigation, explicit resync warning, source-deletion fallback, and custom/source-backed creation paths.
-  - Use a ten-record compact Runtime Action cap before the complete collection path rather than inheriting the five-record inventory/spell preview cap; preserve authored order until a separately approved ordering behavior applies.
-  - Reuse the accepted dense-list presentation and focused browsing pieces only where their contracts fit. Keep Runtime Action orchestration and mutations in the existing domain-owned card/adapter rather than teaching the presentation component about sources or resync.
-  - Evaluate Proficiency Languages, Proficiency Tools, Features, and Traits as supporting collections with a consistent visual height grammar and a proportionate vertical bound, compact preview, or explicit focused expansion. Default to no search unless realistic saturation demonstrates that scrolling or focused browsing is insufficient.
-  - Explicitly test desktop wheel ownership against the existing nested-scroll concern; prefer one obvious scroll owner or explicit focused browsing over adding several small inline scroll traps merely to equalize card height.
-  - Preserve complete touch, keyboard, pointer, and assistive access to every record and command, with stateful Storybook proof plus saturated desktop and phone black-box coverage.
-  - Stop at a mid-apply owner gate after the Runtime Action and supporting-collection presentation proof, before propagating it through the sheet.
-- **Excluded behavior:**
-  - Changing Runtime Action schema, snapshot/resync semantics, source-provider behavior, override modeling, action creation content, or the action-economy taxonomy.
-  - Adding a whole-sheet outline, scene/pillar mode, sticky navigation, or hidden-region behavior; the saturated navigation finding belongs to `BL-073`.
-  - Automatically applying search, the ten-item cap, or identical commands to every short list solely for visual uniformity.
-  - Solving manual priority/order controls, which remain in `BL-075` unless that change is explicitly refined after the Runtime Action surface is approved.
-  - Reopening the general component taxonomy or creating a universal collection renderer after `BL-074` has selected bounded ownership seams.
-- **Ambiguities (Refined pending proof):**
-  - Search coverage should index the action's current snapshot fields and source context (name, target, notes, timing, category, source label/category, source context) without live-source text.
-  - The desktop presentation for collections over 10 items remains open: the proof will compare an inline focus/height-limit affordance against a focused desktop view to evaluate the multiple-scroll-trap risk. Phone will use the preview/dialog pattern.
-  - "Rule of 10" presentation: Collections of 1-10 items use a simple list. 11+ items trigger bounded/focused presentation and search.
-  - Presentation separation: Ensure the shared presentation seam respects existing heterogeneous structures (Runtime Actions vs. GridContentData) without forcing generic wrappers or row-level actions onto supporting collections.
-  - Defer ordering/favorites integration for Runtime Actions until `BL-075` resolves it for inventory/spells.
-- **Success:**
-  - Ten or fewer Runtime Actions remain visible at a glance, larger sets are searchable and completely reachable, and specialized source/resync/create behavior remains understandable and verified.
-  - Proficiencies, Features, and Traits no longer create unexplained card-height mismatches or unbounded sheet growth, while simple cases remain lightweight.
-  - Desktop and phone users can move through the sheet without accidental scroll traps and can operate every collection path through touch, keyboard, pointer, and assistive technology.
-  - Storybook and black-box saturated evidence distinguish reusable presentation from Runtime Action domain orchestration, and the owner explicitly approves the proof before route-wide propagation.
-- **Recommended workflow:** Full OpenSpec change because this adds observable Runtime Action search/browse behavior and responsive density decisions across several supporting collections. Use a mid-apply Storybook owner gate. Refine an ADR only if the work changes the durable component-ownership decision from `BL-074`; no ADR is needed merely for a 2014-specific preview cap.
 
 ### Unify focused detail, editing, and annotations
 
@@ -417,7 +375,7 @@ ID:
 
 Sequencing context:
 
-- Treat this as a trigger-deferred Horizon B design investigation. The BL-064 saturated 2014 rehearsal has now supplied direct navigation-pressure evidence: the owner found an outline or jump-navigation surface increasingly valuable as containers accumulated. Keep cross-system scene vocabulary and any focus/hiding mode deferred until at least one non-2014 sheet exists; a bounded 2014 outline proof may be promoted earlier if `BL-076` still leaves ordinary landmarks too slow for core runtime use.
+- Treat this as a trigger-deferred Horizon B design investigation. The BL-064 saturated 2014 rehearsal supplied direct navigation-pressure evidence: the owner found an outline or jump-navigation surface increasingly valuable as containers accumulated. Completed `BL-076` improves local collection density but does not resolve whole-sheet navigation. Keep cross-system scene vocabulary and any focus/hiding mode deferred until at least one non-2014 sheet exists; a bounded 2014 outline proof may be promoted earlier if ordinary landmarks remain too slow for core runtime use.
 
 Refinement outputs:
 
@@ -497,8 +455,8 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 
 ## Done Recently
 
+- `2026-08-23` completed `BL-076`: added searchable, responsive density handling for Runtime Actions and supporting Features, Traits, Languages, and Tools; adopted five-item and seven-item simple-list limits respectively while preserving domain-specific actions, compact bullet presentation, source workflows, query context, focus restoration, and cross-browser saturated coverage
 - `2026-08-16` completed `BL-074`: decomposed the legacy field/card and grid/container surfaces into focused field-group, structured-form, annotation, responsive-layout, panel, collapsible-panel, and domain-owned organism boundaries; retired the compatibility components, expanded stateful Storybook and browser coverage, and preserved typed patch, focus, accessibility, and persistence behavior
 - `2026-08-02` completed `BL-064`: added searchable, responsive dense collection workflows for Weapons, Armor & Shields, Other Gear, and Spells; introduced focused row editing and notes, mobile previews and full-height browsing, sparse spell-slot setup, and a saturated 2014 fixture; recorded Runtime/supporting collection and whole-sheet navigation follow-ups
 - `2026-08-01` completed `BL-068`: adopted and self-hosted official SRD 5.1 and SRD 5.2.1 with centralized public notices, base-path-safe navigation, and a protected local-only review boundary; fixed the sparse Shadowdark citation baseline, expansion gates, and audited human/agent source-review workflow for downstream resource and sheet work
 - `2026-08-01` completed `BL-067`: approved PRD v1 and the first-external-playtest roadmap for 2014 D&D, one adopted current 2024 D&D SRD release, and Shadowdark; established rights-classified reference, multi-system/core, PDF-interoperability, compatibility, survey-evidence, and scene-aware-navigation boundaries as separately refinable work
-- `2026-07-31` completed `p1-020`: established explicit 44-by-44 CSS-pixel coarse-pointer targets and bounded exceptions across the home-to-sheet flow, corrected keyboard-accessible character opening and responsive control order, and added durable Mobile Chrome geometry, label-activation, modal-context, and cross-browser evidence

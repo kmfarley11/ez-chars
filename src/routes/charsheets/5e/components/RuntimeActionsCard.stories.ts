@@ -78,10 +78,18 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+const getVisibleActions = (canvasElement: HTMLElement) => {
+	const list = within(canvasElement)
+		.getAllByRole('list', { name: 'Runtime actions results' })
+		.find((candidate) => candidate.checkVisibility());
+	if (!list) throw new Error('Expected a visible Runtime actions results list');
+	return within(list);
+};
+
 export const MixedLinkedAndCustom: Story = {
 	play: async ({ canvasElement, args }) => {
 		const canvas = within(canvasElement);
-		const actions = within(canvas.getByRole('list', { name: 'Runtime actions' }));
+		const actions = getVisibleActions(canvasElement);
 		await expect(actions.getByText('Player-authored strike note.')).toBeVisible();
 		const inventoryAction = actions.getByText('Longsword attack').closest('li');
 		const spellAction = actions.getByText('Shield reaction').closest('li');
@@ -161,8 +169,7 @@ export const ResyncConfirmationCancelled: Story = {
 		confirmResync: fn(() => false)
 	},
 	play: async ({ canvasElement, args }) => {
-		const canvas = within(canvasElement);
-		const actions = within(canvas.getByRole('list', { name: 'Runtime actions' }));
+		const actions = getVisibleActions(canvasElement);
 		await userEvent.click(
 			actions.getByRole('button', { name: 'Source actions for Longsword attack' })
 		);

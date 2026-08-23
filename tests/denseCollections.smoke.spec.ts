@@ -246,7 +246,61 @@ test('Weapons, Armor & Shields, and Spells share scoped discovery and focused id
 	await expect(spellSearch).toHaveValue('');
 });
 
-test('phone previews expose five records and a modal complete collection with one scroll owner', async ({
+test('Runtime Actions and supporting collections honor their distinct density limits', async ({
+	page
+}, testInfo) => {
+	test.setTimeout(20_000);
+	test.skip(testInfo.project.name === 'Mobile Chrome', 'Desktop bounded-list behavior.');
+	await openSaturatedSheet(page);
+
+	const runtimeActions = page.getByRole('region', { name: 'Runtime actions', exact: true });
+	const runtimeSearch = runtimeActions.getByRole('searchbox', { name: 'Search Runtime actions' });
+	await expect(runtimeActions.getByText('10 items', { exact: true }).first()).toBeVisible();
+	await expect(runtimeSearch).toBeVisible();
+	await expect(
+		runtimeActions.getByRole('region', { name: 'Runtime actions scrollable results' })
+	).toBeVisible();
+	await runtimeSearch.fill('runtime reminder 8');
+	await expect(runtimeActions.getByText('1 of 10 items', { exact: true }).first()).toBeVisible();
+	await expect(runtimeActions.getByText('Custom runtime action 8', { exact: true })).toBeVisible();
+
+	const features = page.getByRole('region', { name: 'Features', exact: true });
+	const featureSearch = features.getByRole('searchbox', { name: 'Search Features' });
+	await expect(features.getByText('18 items', { exact: true }).first()).toBeVisible();
+	await featureSearch.fill('wizard class feature 10');
+	await expect(features.getByText('1 of 18 items', { exact: true }).first()).toBeVisible();
+	await expect(features.getByText('Class feature 10', { exact: true })).toBeVisible();
+
+	const featureActions = features.getByRole('button', { name: 'Card actions' });
+	await featureActions.click();
+	await page.getByRole('button', { name: 'Edit', exact: true }).click();
+	const editDialog = page.getByRole('dialog', { name: 'Edit Fields' });
+	await expect(editDialog).toBeVisible();
+	await editDialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+	await expect(featureActions).toBeFocused();
+	await expect(featureSearch).toHaveValue('wizard class feature 10');
+
+	await featureActions.click();
+	await page.getByRole('button', { name: 'Notes', exact: true }).click();
+	const notesDialog = page.getByRole('dialog', { name: 'Notes' });
+	await notesDialog.getByRole('button', { name: 'Close', exact: true }).click();
+	await expect(featureActions).toBeFocused();
+
+	for (const collection of [
+		{ name: 'Traits', count: 7 },
+		{ name: 'Prof. Languages', count: 5 },
+		{ name: 'Prof. Tools', count: 7 }
+	]) {
+		const region = page.getByRole('region', { name: collection.name, exact: true });
+		await expect(
+			region.getByText(`${collection.count} items`, { exact: true }).first()
+		).toBeVisible();
+		await expect(region.getByRole('searchbox')).toHaveCount(0);
+		await expect(region.getByRole('button', { name: /Browse all/ })).toHaveCount(0);
+	}
+});
+
+test('phone previews expose domain-specific limits and focused collections with one scroll owner', async ({
 	page
 }, testInfo) => {
 	test.skip(testInfo.project.name !== 'Mobile Chrome', 'Phone-specific dense collection behavior.');
@@ -309,4 +363,53 @@ test('phone previews expose five records and a modal complete collection with on
 	await close.click();
 	await expect(dialog).not.toBeVisible();
 	await expect(browse).toBeFocused();
+
+	const runtimeActions = page.getByRole('region', { name: 'Runtime actions', exact: true });
+	await expect(
+		runtimeActions.getByRole('list', { name: 'Runtime actions preview' }).getByRole('listitem')
+	).toHaveCount(5);
+	const browseRuntimeActions = runtimeActions.getByRole('button', {
+		name: 'Browse all 10 items'
+	});
+	await browseRuntimeActions.click();
+	const runtimeDialog = page.getByRole('dialog', { name: 'Runtime actions' });
+	const runtimeDialogSearch = runtimeDialog.getByRole('searchbox', {
+		name: 'Search Runtime actions'
+	});
+	await expect(runtimeDialog.getByRole('button', { name: 'Add action' })).toBeVisible();
+	await runtimeDialogSearch.fill('runtime reminder 8');
+	await expect(runtimeDialog.getByText('Custom runtime action 8', { exact: true })).toBeVisible();
+	const focusedRuntimeActions = runtimeDialog.getByRole('button', { name: 'Card actions' });
+	await focusedRuntimeActions.click();
+	await page.getByRole('button', { name: 'Notes', exact: true }).click();
+	const runtimeNotes = page.getByRole('dialog', { name: 'Notes' });
+	await runtimeNotes.getByRole('button', { name: 'Close', exact: true }).click();
+	await expect(focusedRuntimeActions).toBeFocused();
+	await expect(runtimeDialogSearch).toHaveValue('runtime reminder 8');
+
+	await runtimeDialogSearch.fill('longsword');
+	await runtimeDialog.getByRole('button', { name: 'Source actions for Longsword attack' }).click();
+	await runtimeDialog.getByRole('button', { name: 'View Inventory · Longsword' }).click();
+	await expect(runtimeDialog).not.toBeVisible();
+	await expect(page.getByRole('region', { name: 'Weapons inventory' })).toBeFocused();
+
+	const features = page.getByRole('region', { name: 'Features', exact: true });
+	await expect(
+		features.getByRole('list', { name: 'Features preview' }).getByRole('listitem')
+	).toHaveCount(7);
+	const browseFeatures = features.getByRole('button', { name: 'Browse all 18 items' });
+	await browseFeatures.click();
+	const featuresDialog = page.getByRole('dialog', { name: 'Features' });
+	const featuresSearch = featuresDialog.getByRole('searchbox', { name: 'Search Features' });
+	await featuresSearch.fill('wizard class feature 10');
+	await expect(featuresDialog.getByText('Class feature 10', { exact: true })).toBeVisible();
+	const focusedFeatureActions = featuresDialog.getByRole('button', { name: 'Card actions' });
+	await focusedFeatureActions.click();
+	await page.getByRole('button', { name: 'Edit', exact: true }).click();
+	const focusedEditDialog = page.getByRole('dialog', { name: 'Edit Fields' });
+	await focusedEditDialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+	await expect(focusedFeatureActions).toBeFocused();
+	await expect(featuresSearch).toHaveValue('wizard class feature 10');
+	await featuresDialog.getByRole('button', { name: 'Close Features' }).click();
+	await expect(browseFeatures).toBeFocused();
 });
