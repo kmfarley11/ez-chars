@@ -74,7 +74,7 @@ This is a capability summary for the completed 2014 baseline, not a chronologica
 - 2024 D&D and Shadowdark system schemas, creation choices, routes, sheets, and fixtures
 - a system-dispatch and computed-summary boundary that does not require the home list to inspect 5e fields
 - a rights-classified resource library, curated-section search, and contextual reference navigation
-- continued owner solo-play rehearsals and external evidence across the PRD matrix; saturated 2014 rehearsal now validates the revised spell, inventory, Runtime Action, and supporting-collection surfaces while identifying manual priority ordering and whole-sheet navigation as follow-up evidence
+- continued owner solo-play rehearsals and external evidence across the PRD matrix; saturated 2014 rehearsal validated the revised spell, inventory, Runtime Action, and supporting-collection surfaces, and the owner has explicitly validated whole-sheet navigation (MVP outline/navbar) as a required P0 prerequisite before playtest.
 
 ### Deferred
 

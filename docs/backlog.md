@@ -59,12 +59,12 @@ These lightweight queues record priority membership only. Detailed definitions l
 - [`BL-070` — Establish the multi-system boundary and 2024 D&D sheet](#establish-the-multi-system-boundary-and-2024-dd-sheet)
 - [`BL-071` — Deliver a minimal system-native Shadowdark sheet](#deliver-a-minimal-system-native-shadowdark-sheet)
 - [`BL-072` — Harden the three-system external-playtest matrix](#harden-the-three-system-external-playtest-matrix)
+- [`BL-073` — Investigate scene-aware runtime guidance and navigation](#investigate-scene-aware-runtime-guidance-and-navigation) _(P0 prerequisite: MVP navigation required before playtest)_
 
 ### P1 — Priority Improvements
 
 - [`BL-077` — Unify focused detail, editing, and annotations](#unify-focused-detail-editing-and-annotations)
 - [`BL-066` — Prove bounded fillable-PDF interoperability](#prove-bounded-fillable-pdf-interoperability)
-- [`BL-073` — Investigate scene-aware runtime guidance and navigation](#investigate-scene-aware-runtime-guidance-and-navigation) _(saturated navigation evidence recorded; cross-system/criticality gate remains)_
 - [`p1-010` — Add GitHub Actions for quality gates](#add-github-actions-for-quality-gates) _(trigger-deferred and omitted from the recommended sequence until CI needs justify it)_
 
 ### P2 — Future Feature Work
@@ -82,8 +82,9 @@ The queues above record strategic priority membership; this list records the dep
 3. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary and add the minimal 2024 D&D sheet
 4. `BL-071`: Add the minimal Shadowdark sheet within the conservative baseline after `BL-070` supplies the dispatch boundary
 5. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix
+6. `BL-073`: Deliver minimum viable navigation (e.g., outline/navbar) before external playtest based on scroll-pressure evidence
 
-The completed `BL-064` proof established the inventory and spell baseline, `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams, and `BL-076` added proportionate density behavior for Runtime Actions and supporting collections without flattening their distinct interaction grammars. `BL-075` now keeps stable ordering separate so the accepted collection previews reflect deliberate user priority before owner rehearsal and external handoff. `BL-066` is an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights. It is deliberately not a first-playtest readiness prerequisite. `BL-073` remains outside this sequence: saturated 2014 rehearsal now confirms navigation pressure, but cross-system scene vocabulary and the urgency of anything beyond a bounded outline still need evidence.
+The completed `BL-064` proof established the inventory and spell baseline, `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams, and `BL-076` added proportionate density behavior for Runtime Actions and supporting collections without flattening their distinct interaction grammars. `BL-075` now keeps stable ordering separate so the accepted collection previews reflect deliberate user priority before owner rehearsal and external handoff. `BL-066` is an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights. It is deliberately not a first-playtest readiness prerequisite. `BL-073` has been pulled into P0 because the owner validated the critical need for a minimum viable navigation aid (like an outline) by observing scroll behavior on saturated character content during feature development.
 
 ## Refined Backlog Catalog
 
@@ -373,9 +374,8 @@ ID:
 
 - `BL-073`
 
-Sequencing context:
-
-- Treat this as a trigger-deferred Horizon B design investigation. The BL-064 saturated 2014 rehearsal supplied direct navigation-pressure evidence: the owner found an outline or jump-navigation surface increasingly valuable as containers accumulated. Completed `BL-076` improves local collection density but does not resolve whole-sheet navigation. Keep cross-system scene vocabulary and any focus/hiding mode deferred until at least one non-2014 sheet exists; a bounded 2014 outline proof may be promoted earlier if ordinary landmarks remain too slow for core runtime use.
+- **Sequencing context:**
+  - This has been promoted to a P0 prerequisite before the official external playtest. While not yet formally playtested, the owner has validated the critical need for a minimum viable navigation aid (such as an outline or jump-navigation surface) by building out features and observing scroll behavior on saturated character content. A preliminary MVP version must be implemented before external handoff.
 
 Refinement outputs:
 
@@ -396,6 +396,7 @@ Refinement outputs:
   - Defining a universal scene taxonomy, universal sheet renderer, or persisted scene state before concrete systems demonstrate a shared need.
 - **Ambiguities:**
   - Do landmarks and an outline solve the retrieval problem without a scene mode?
+  - Should we introduce a navbar/outline (e.g. every titled grid container as an entry) or a tabbing/paging flow (e.g. by pillar of play)? (User strongly advocates for one of these to fix cumbersome scrolling).
   - On the saturated 2014 sheet, is a persistent outline, compact jump menu, sticky section navigation, or another non-destructive landmark treatment the smallest useful response?
   - Is the observed problem navigation, missing scene-relevant synthesis, or both?
   - Which categories belong to each supported system, and which information legitimately appears in more than one category?
