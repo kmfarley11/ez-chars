@@ -1,4 +1,11 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
+	import type {
+		CollectionPrioritySave,
+		CollectionPrioritySaveResult
+	} from '$components/collectionPriority';
+	import { compare5e2014PriorityLabels } from '$lib/dnd5e2014/collectionPriority';
 	import SupportingCollectionView from './SupportingCollectionView.svelte';
 	import type { SupportingCollectionRow } from './supportingCollectionRows';
 
@@ -13,7 +20,9 @@
 		onNotes: ActionCallback;
 		withScrollRunway?: boolean;
 		constrainWidth?: boolean;
-		requiresPhoneViewport?: boolean;
+		priorityProof?: boolean;
+		prioritySaveError?: string;
+		onPrioritySave?: CollectionPrioritySave;
 	}
 
 	let {
@@ -25,24 +34,51 @@
 		onNotes,
 		withScrollRunway = false,
 		constrainWidth = false,
-		requiresPhoneViewport = false
+		priorityProof = false,
+		prioritySaveError = '',
+		onPrioritySave = async () => ({ ok: true })
 	}: Props = $props();
+
+	const pinnedIdentities = new SvelteSet(
+		untrack(() => rows.filter((row) => row.pinned).map((row) => row.identity))
+	);
+	const presentedRows = $derived(
+		rows.map((row) => ({ ...row, pinned: pinnedIdentities.has(row.identity) }))
+	);
+
+	const savePins = async (
+		identities: ReadonlyArray<string>
+	): Promise<CollectionPrioritySaveResult> => {
+		await onPrioritySave(identities);
+		if (prioritySaveError) return { ok: false, message: prioritySaveError };
+		pinnedIdentities.clear();
+		for (const identity of identities) pinnedIdentities.add(identity);
+		return { ok: true };
+	};
 </script>
 
 {#snippet collection()}
 	<div class={['theme-grid-layer rounded-md border p-3', constrainWidth && 'w-72 max-w-full']}>
-		<SupportingCollectionView {title} {rows} bind:query {denseThreshold} {onEdit} {onNotes} />
+		<SupportingCollectionView
+			{title}
+			rows={presentedRows}
+			bind:query
+			{denseThreshold}
+			{onEdit}
+			{onNotes}
+			onSavePins={priorityProof ? savePins : undefined}
+			comparePriorityLabels={priorityProof ? compare5e2014PriorityLabels : undefined}
+		/>
 	</div>
 {/snippet}
 
-{#if requiresPhoneViewport}
+{#if priorityProof}
 	<aside
-		aria-label="Phone viewport review"
+		aria-label="BL-075 owner review notice"
 		class="theme-grid-layer theme-text-muted mb-3 rounded-md border px-3 py-2 text-sm"
 	>
-		<strong class="font-semibold">Phone viewport required.</strong>
-		Use Storybook's viewport toolbar to select a phone preset, or narrow the canvas below 640px, before
-		reviewing this proof.
+		<strong class="font-semibold">BL-075 Supporting Collection priority proof.</strong>
+		This interaction was reviewed in isolation before route, inventory, and spell propagation.
 	</aside>
 {/if}
 

@@ -30,14 +30,17 @@
 	} from './sheetEditIntents';
 	import type { InventoryGroup } from './sheetConstants';
 	import {
-		projectInventoryDenseCollectionRows,
-		projectSpellDenseCollectionRows
+		projectPrioritizedInventoryDenseCollectionRows,
+		projectPrioritizedSpellDenseCollectionRows
 	} from '$lib/dnd5e2014/denseCollectionRows';
+	import { merge5e2014InventoryGroupPins } from '$lib/dnd5e2014/collectionPriority';
 	import { project5eSheet } from './sheetProjections';
 	import {
-		projectSupportingCollectionRows,
+		projectPrioritizedSupportingCollectionRows,
 		type SupportingCollectionKind
 	} from './components/supportingCollectionRows';
+	import type { CollectionPriorityKind5e2014 } from '../../../schema';
+	import type { CollectionPrioritySaveResult } from '$components/collectionPriority';
 
 	interface Props {
 		data: {
@@ -123,19 +126,32 @@
 		spellSlotRuntimeData,
 		spellCollectionBulkEditData
 	} = $derived(project5eSheet(char));
+	const inventoryPins = $derived(new Set(char.systemData.collectionPins?.inventory ?? []));
+	const spellPins = $derived(new Set(char.systemData.collectionPins?.spells ?? []));
 	const inventoryDenseRows = $derived({
-		weapons: projectInventoryDenseCollectionRows(char.inventory, 'weapons'),
-		armorShields: projectInventoryDenseCollectionRows(char.inventory, 'armorShields'),
-		other: projectInventoryDenseCollectionRows(char.inventory, 'other')
+		weapons: projectPrioritizedInventoryDenseCollectionRows(
+			char.inventory,
+			'weapons',
+			inventoryPins
+		),
+		armorShields: projectPrioritizedInventoryDenseCollectionRows(
+			char.inventory,
+			'armorShields',
+			inventoryPins
+		),
+		other: projectPrioritizedInventoryDenseCollectionRows(char.inventory, 'other', inventoryPins)
 	});
 	const spellDenseRows = $derived(
-		projectSpellDenseCollectionRows(char.systemData.spellcasting?.spells ?? [])
+		projectPrioritizedSpellDenseCollectionRows(
+			char.systemData.spellcasting?.spells ?? [],
+			spellPins
+		)
 	);
 	const supportingCollectionRows = $derived({
-		features: projectSupportingCollectionRows(char, 'features'),
-		traits: projectSupportingCollectionRows(char, 'traits'),
-		languages: projectSupportingCollectionRows(char, 'languages'),
-		tools: projectSupportingCollectionRows(char, 'tools')
+		features: projectPrioritizedSupportingCollectionRows(char, 'features'),
+		traits: projectPrioritizedSupportingCollectionRows(char, 'traits'),
+		languages: projectPrioritizedSupportingCollectionRows(char, 'languages'),
+		tools: projectPrioritizedSupportingCollectionRows(char, 'tools')
 	});
 	const hasPersistedSpellSlots = $derived(
 		Object.values(char.systemData.spellcasting?.slots ?? {}).some(
@@ -177,6 +193,46 @@
 	const handleSheetIntent = (intent: SheetEditIntent) => {
 		handleSheetIntents([intent]);
 	};
+
+	const commitPrioritySave = (
+		collection: CollectionPriorityKind5e2014,
+		// eslint-disable-next-line no-unused-vars
+		resolveIdentities: (entry: CharacterDocument5e2014) => ReadonlyArray<string>
+	): CollectionPrioritySaveResult => {
+		let resultIssues: ReadonlyArray<SheetEditIssue> | undefined;
+		updateCurrent5eCharacter((entry) => {
+			const result = reduce5eSheetEditIntents(entry, [
+				{
+					type: 'replace-collection-pins',
+					collection,
+					identities: [...resolveIdentities(entry)]
+				}
+			]);
+			if (!result.ok) {
+				resultIssues = result.issues;
+				console.warn('Priority save failed:', result.issues);
+				return entry;
+			}
+			return result.character;
+		});
+
+		if (resultIssues) {
+			reportStructuredEditIssues(resultIssues);
+			return { ok: false, message: resultIssues[0]?.message ?? 'Failed to save pins.' };
+		}
+		return { ok: true };
+	};
+
+	const handlePrioritySave = (
+		collection: CollectionPriorityKind5e2014,
+		identities: ReadonlyArray<string>
+	): CollectionPrioritySaveResult => commitPrioritySave(collection, () => identities);
+
+	const handleInventoryPrioritySave = (
+		group: InventoryGroup,
+		draft: ReadonlyArray<string>
+	): CollectionPrioritySaveResult =>
+		commitPrioritySave('inventory', (entry) => merge5e2014InventoryGroupPins(entry, group, draft));
 
 	const applyCharacterJsonPatch = (
 		entry: CharacterDocument5e2014,
@@ -459,6 +515,7 @@
 										{annotationEditorConfig}
 										handleEditSavePatches={handleGridPatchesSave}
 										bind:query={supportingCollectionQueries.languages}
+										onSavePins={(draft) => handlePrioritySave('languages', draft)}
 									/>
 								</PanelSurface>
 							</section>
@@ -471,6 +528,7 @@
 										{annotationEditorConfig}
 										handleEditSavePatches={handleGridPatchesSave}
 										bind:query={supportingCollectionQueries.tools}
+										onSavePins={(draft) => handlePrioritySave('tools', draft)}
 									/>
 								</PanelSurface>
 							</section>
@@ -488,6 +546,7 @@
 										{annotationEditorConfig}
 										handleEditSavePatches={handleGridPatchesSave}
 										bind:query={supportingCollectionQueries.features}
+										onSavePins={(draft) => handlePrioritySave('features', draft)}
 									/>
 								</PanelSurface>
 							</section>
@@ -505,6 +564,7 @@
 										{annotationEditorConfig}
 										handleEditSavePatches={handleGridPatchesSave}
 										bind:query={supportingCollectionQueries.traits}
+										onSavePins={(draft) => handlePrioritySave('traits', draft)}
 									/>
 								</PanelSurface>
 							</section>
@@ -552,6 +612,7 @@
 									emptyText="No spells yet."
 									onIntent={handleSheetIntent}
 									onBulkSave={handleGridPatchesSave}
+									onSavePins={(draft) => handlePrioritySave('spells', draft)}
 								/>
 							</PanelSurface>
 						</section>
@@ -589,6 +650,7 @@
 											emptyText={`No ${inventoryCollectionTitles[inventoryCard.key].toLocaleLowerCase()} yet.`}
 											onIntent={handleSheetIntent}
 											onBulkSave={handleGridPatchesSave}
+											onSavePins={(draft) => handleInventoryPrioritySave(inventoryCard.key, draft)}
 										/>
 									</PanelSurface>
 								</section>

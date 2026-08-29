@@ -6,10 +6,11 @@
 		canEdit: boolean;
 		onEdit: () => void;
 		onNotes: () => void;
+		onManagePins?: () => void;
 		triggerEl?: HTMLButtonElement;
 	}
 
-	let { canEdit, onEdit, onNotes, triggerEl = $bindable() }: Props = $props();
+	let { canEdit, onEdit, onNotes, onManagePins, triggerEl = $bindable() }: Props = $props();
 </script>
 
 <div class="touch-target relative h-7 w-7 shrink-0">
@@ -26,5 +27,8 @@
 			<MenuItemButton onclick={onEdit}>Edit</MenuItemButton>
 		{/if}
 		<MenuItemButton onclick={onNotes}>Notes</MenuItemButton>
+		{#if onManagePins}
+			<MenuItemButton onclick={onManagePins}>Manage Pins</MenuItemButton>
+		{/if}
 	</MenuButton>
 </div>

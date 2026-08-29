@@ -43,7 +43,7 @@ The application should help a user shape, find, and annotate their information w
 - [ ] **Guidance is contextual and optional:** relevant free references, understandable empty states, and focused prompts appear near editing and viewing tasks without becoming a mandatory wizard; the first playtest should test whether these lighter aids are sufficient.
 - [ ] **Local-first ownership:** users can use the public baseline without an account and can export their character data.
 - [ ] **System-native shapes:** each rules system may model and present its own concepts; shared infrastructure must not force 5e structure onto other games. Prefer a small cross-system envelope plus computed system views over making generic persisted fields the lowest common denominator.
-- [ ] **A familiar interaction language:** system-native sheets should reuse accessible presentation and editing primitives where concepts fit, so cards, focused edits, annotations, navigation, and feedback feel related without forcing one universal rendering schema.
+- [ ] **A familiar interaction language:** system-native sheets should reuse accessible presentation and editing primitives where concepts fit, so cards, focused edits, annotations, navigation, priority, and feedback feel related without forcing one universal rendering or persistence schema. Shared player-facing interactions should make each system's nuance easier to understand, not normalize radically different games into a bland lowest common denominator.
 - [ ] **Progressive assistance:** manual entry and bibliographic references come before compendium-backed suggestions, automation, or character building. When computed aids are introduced, keep them optional and explainable and preserve access to the user-owned source values.
 - [ ] **Rights-aware by construction:** prefer self-hosting and useful indexing when a verified license or permission allows it; otherwise use the narrowest appropriate reference mode. A free price alone is not evidence of redistribution or processing rights.
 - [ ] **One product, bounded horizons:** future capabilities should fit a coherent character-data companion, but they do not need to be built simultaneously.
@@ -140,7 +140,8 @@ The rough 5e, Shadowdark, and Cairn Excalidraw files are existing design evidenc
 - [x] Complete the [editable-PDF field and rights audit](../fillable-pdf-interoperability-audit.md) for available publisher sheets: retain JSON as canonical, promote `BL-066` to an early P1 export-first proof, and do not make PDF interchange a first-playtest readiness prerequisite.
 - [ ] Establish a heuristic-driven baseline for dense collection discovery, focused row editing, annotations, and whole-sheet navigation under saturation before external playtesting.
 - [ ] Clarify the proven 2014 field, list, form, action, panel, and Storybook boundaries before a second system adopts or rejects them.
-- [ ] Add stable manual ordering for dense inventory and spell collections so compact previews can reflect deliberate user priority before saturated-sheet rehearsal.
+- [x] Add stable Pin/Unpin priority ordering across identity-backed inventory, spell, and supporting collections so compact previews reflect deliberate user priority while system adapters retain their own data shapes.
+- [ ] Add explicit Runtime Action timing navigation so action, bonus-action, reaction, free, and other records do not rely on one homogeneous stream or on users knowing timing labels are searchable.
 - [ ] Complete representative player-character, sparse GM sidekick/NPC, and saturated-sheet owner rehearsals on mobile.
 - [x] Synthesize anonymized pre-playtest surveys and reconcile their directional findings into readiness priorities.
 - [ ] Reconcile external survey and qualitative evidence after the playtest.
@@ -176,18 +177,18 @@ The rough 5e, Shadowdark, and Cairn Excalidraw files are existing design evidenc
 
 ## Strategic Priority Queue
 
-This is a vision-level dependency order, not a substitute for backlog IDs or an active OpenSpec task list. PRD v1 is approved; the core/PDF planning audits, the `BL-064` dense inventory/spell proof, and the `BL-074` component-boundary refactor are complete. The active delivery sequence is:
+This is a vision-level dependency order, not a substitute for backlog IDs or an active OpenSpec task list. PRD v1 is approved; the core/PDF planning audits, the `BL-064` dense inventory/spell proof, the `BL-074` component-boundary refactor, `BL-076` Runtime/supporting collection scaling, and `BL-075` stable collection priority are complete. The active delivery sequence is:
 
-1. Scale saturated Runtime Actions with a ten-item compact/searchable treatment and give supporting Runtime collections proportionate bounds without multiplying scroll traps (`BL-076`).
-2. Add stable manual ordering for dense inventory and spell collections so important entries remain at a glance in compact previews (`BL-075`).
-3. Prove self-hosted/link-only resource discovery and contextual navigation against the existing 2014 sheet (`BL-069`).
-4. Establish the minimum multi-system lifecycle/computed-view boundary and a 2024 5e sheet; support the deliberately adopted SRD 5.2.1 release, audit the existing rough designs, and treat 5e-family reuse as family evidence (`BL-070`).
-5. Add the minimal Shadowdark sheet within the conservative source baseline and use its different shape to validate or revise the shared boundary (`BL-071`).
-6. Harden mobile interaction, sparse NPC/sidekick use, saturated-sheet navigation, backup/restore, resource lookup, and compatibility decisions across the full matrix (`BL-072`).
+1. Prove self-hosted/link-only resource discovery and contextual navigation against the existing 2014 sheet (`BL-069`).
+2. Establish the minimum multi-system lifecycle/computed-view boundary and a 2024 5e sheet; support the deliberately adopted SRD 5.2.1 release, audit the existing rough designs, and treat 5e-family reuse as family evidence (`BL-070`).
+3. Add the minimal Shadowdark sheet within the conservative source baseline and use its different shape to validate or revise the shared boundary (`BL-071`).
+4. Harden mobile interaction, sparse NPC/sidekick use, saturated-sheet navigation, backup/restore, resource lookup, and compatibility decisions across the full matrix (`BL-072`).
+5. Deliver the minimum viable outline or jump-navigation response supported by saturated-sheet scroll evidence (`BL-073`).
+6. Add explicit Runtime Action timing navigation so action-economy categories are evident without relying on free-text search knowledge (`BL-078`).
 7. Run the early P1 fillable-PDF export/import proofs after a target schema and template-delivery basis settle (`BL-066`); they complement but do not gate the first playtest.
 8. Reconcile external evidence before promoting specialized builders, stat-block modes, normalized compendium behavior, more systems, image/OCR import, or connected services.
 
-Runtime and supporting collection scaling (`BL-076`) is the next Horizon A prerequisite discovered by the first saturated 2014 rehearsal; the completed component-boundary review keeps specialized Runtime Action orchestration out of the generic list. Stable manual collection ordering (`BL-075`) remains a separate Horizon A prerequisite after the dense-list surfaces and their reusable ownership were proven. Both must land before external handoff. Scene-aware runtime guidance and navigation (`BL-073`) remains a trigger-deferred Horizon B investigation: saturated 2014 evidence now supports an outline or jump-navigation proof, while cross-system scene vocabulary still awaits a non-2014 sheet. Promote only the bounded navigation proof earlier if ordinary landmarks remain too slow for a core runtime scenario.
+Completed `BL-075` establishes a familiar player-facing Pin/Unpin presentation and draft-management language while keeping stable identity, validation, mutation, and persistence system-owned. `BL-069` is now the next Horizon A prerequisite. Saturated 2014 evidence has promoted a bounded navigation response (`BL-073`) into P0, while broader scene vocabulary still awaits non-2014 evidence. Explicit Runtime Action timing navigation (`BL-078`) remains last in P0 because timing is already searchable, but external handoff should not depend on users discovering that implicit path.
 
 ## Decision Filter for Future Work
 

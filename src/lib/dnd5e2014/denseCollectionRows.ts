@@ -1,12 +1,16 @@
 import type { GridContentListRow } from '$components/gridContentList';
+import type { CollectionPriorityRow } from '$components/collectionPriority';
+import { projectCollectionPriorityRows } from '$components/collectionPriority';
+import { compare5e2014PriorityLabels } from './collectionPriority';
 import { getInventoryGroupForItem, type InventoryGroup } from './inventory';
 import type { Item, SpellLevel, SpellRef } from '../../schema';
 
-export type Dnd5e2014DenseCollectionRow = GridContentListRow & {
-	source:
-		| { kind: 'item'; id: string; group: InventoryGroup }
-		| { kind: 'spell'; id: string; level: SpellLevel };
-};
+export type Dnd5e2014DenseCollectionRow = GridContentListRow &
+	CollectionPriorityRow & {
+		source:
+			| { kind: 'item'; id: string; group: InventoryGroup }
+			| { kind: 'spell'; id: string; level: SpellLevel };
+	};
 
 const inventoryGroupLabels: Record<InventoryGroup, string> = {
 	weapons: 'Weapons',
@@ -22,7 +26,8 @@ const getSpellLevelGroupLabel = (level: SpellLevel): string => {
 
 export const projectInventoryDenseCollectionRows = (
 	items: ReadonlyArray<Item>,
-	group: InventoryGroup
+	group: InventoryGroup,
+	pinnedIdentities: ReadonlySet<string> = new Set()
 ): Array<Dnd5e2014DenseCollectionRow> =>
 	items
 		.filter((item) => getInventoryGroupForItem(item) === group)
@@ -34,7 +39,9 @@ export const projectInventoryDenseCollectionRows = (
 
 			return {
 				key: `item:${item.id}`,
+				identity: item.id,
 				label: item.name,
+				pinned: pinnedIdentities.has(item.id),
 				detail: item.notes,
 				context: contextParts.length > 0 ? contextParts.join(' · ') : undefined,
 				annotations: item.annotations,
@@ -44,7 +51,8 @@ export const projectInventoryDenseCollectionRows = (
 		});
 
 export const projectSpellDenseCollectionRows = (
-	spells: ReadonlyArray<SpellRef>
+	spells: ReadonlyArray<SpellRef>,
+	pinnedIdentities: ReadonlySet<string> = new Set()
 ): Array<Dnd5e2014DenseCollectionRow> =>
 	([0, 1, 2, 3, 4, 5, 6, 7, 8, 9] as const).flatMap((level) =>
 		spells
@@ -58,7 +66,9 @@ export const projectSpellDenseCollectionRows = (
 
 				return {
 					key: `spell:${spell.spellId}`,
+					identity: spell.spellId,
 					label: spell.name,
+					pinned: pinnedIdentities.has(spell.spellId),
 					detail: spell.notes,
 					context,
 					groupLabel: getSpellLevelGroupLabel(level),
@@ -69,3 +79,32 @@ export const projectSpellDenseCollectionRows = (
 				};
 			})
 	);
+export const projectPrioritizedInventoryDenseCollectionRows = (
+	items: ReadonlyArray<Item>,
+	group: InventoryGroup,
+	pinnedIdentities: ReadonlySet<string> = new Set()
+): Array<Dnd5e2014DenseCollectionRow> =>
+	projectCollectionPriorityRows(
+		projectInventoryDenseCollectionRows(items, group, pinnedIdentities),
+		compare5e2014PriorityLabels
+	);
+
+export const projectPrioritizedSpellDenseCollectionRows = (
+	spells: ReadonlyArray<SpellRef>,
+	pinnedIdentities: ReadonlySet<string> = new Set()
+): Array<Dnd5e2014DenseCollectionRow> => {
+	const rows = projectSpellDenseCollectionRows(spells, pinnedIdentities);
+	const pinnedRows = projectCollectionPriorityRows(
+		rows.filter((row) => row.pinned).map((row) => ({ ...row, groupLabel: 'Pinned spells' })),
+		compare5e2014PriorityLabels
+	);
+	const unpinnedRows = ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9] as const).flatMap((level) =>
+		projectCollectionPriorityRows(
+			rows.filter(
+				(row) => row.source.kind === 'spell' && row.source.level === level && !row.pinned
+			),
+			compare5e2014PriorityLabels
+		)
+	);
+	return [...pinnedRows, ...unpinnedRows];
+};

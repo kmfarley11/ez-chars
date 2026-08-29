@@ -6,6 +6,8 @@
 		GridContentData,
 		GridContentPatch
 	} from '$utils/gridContentTypes';
+	import type { CollectionPrioritySave } from '$components/collectionPriority';
+	import { compare5e2014PriorityLabels } from '$lib/dnd5e2014/collectionPriority';
 	import SupportingCollectionView from './SupportingCollectionView.svelte';
 	import type { SupportingCollectionRow } from './supportingCollectionRows';
 
@@ -17,6 +19,7 @@
 		annotationEditorConfig?: GridAnnotationEditorConfig;
 		// eslint-disable-next-line no-unused-vars
 		handleEditSavePatches: (_patches: Array<GridContentPatch>) => void;
+		onSavePins?: CollectionPrioritySave;
 	}
 
 	let {
@@ -25,7 +28,8 @@
 		data,
 		query = $bindable(''),
 		annotationEditorConfig = undefined,
-		handleEditSavePatches
+		handleEditSavePatches,
+		onSavePins = undefined
 	}: Props = $props();
 
 	let isEditDialogOpen = $state(false);
@@ -47,6 +51,8 @@
 	bind:query
 	onEdit={() => (isEditDialogOpen = true)}
 	onNotes={() => (isNotesDialogOpen = true)}
+	{onSavePins}
+	comparePriorityLabels={onSavePins ? compare5e2014PriorityLabels : undefined}
 	bind:cardActionsTriggerEl
 	bind:focusedCardActionsTriggerEl
 />

@@ -274,6 +274,7 @@ export const proficiencySourceSchema = z
 
 export const namedProficiencySchema = z
 	.object({
+		id: z.string().min(1),
 		name: z.string().min(1),
 		source: proficiencySourceSchema.optional(),
 		annotations: z.array(annotationSchema).optional()
@@ -284,6 +285,43 @@ export const proficienciesSchema = z
 	.object({
 		languages: z.array(namedProficiencySchema),
 		tools: z.array(namedProficiencySchema)
+	})
+	.strict();
+
+export const collectionPriorityKindSchema = z.enum([
+	'inventory',
+	'spells',
+	'features',
+	'traits',
+	'languages',
+	'tools'
+]);
+
+const uniquePriorityIdentitiesSchema = z
+	.array(z.string().min(1))
+	.superRefine((identities, context) => {
+		const seen = new Set<string>();
+		for (const [index, identity] of identities.entries()) {
+			if (!seen.has(identity)) {
+				seen.add(identity);
+				continue;
+			}
+			context.addIssue({
+				code: 'custom',
+				message: `Priority identity "${identity}" must not be duplicated.`,
+				path: [index]
+			});
+		}
+	});
+
+export const collectionPinsSchema = z
+	.object({
+		inventory: uniquePriorityIdentitiesSchema.optional(),
+		spells: uniquePriorityIdentitiesSchema.optional(),
+		features: uniquePriorityIdentitiesSchema.optional(),
+		traits: uniquePriorityIdentitiesSchema.optional(),
+		languages: uniquePriorityIdentitiesSchema.optional(),
+		tools: uniquePriorityIdentitiesSchema.optional()
 	})
 	.strict();
 
@@ -402,6 +440,7 @@ const dnd5e2014SystemDataBaseSchema = z
 		currency: currencySchema,
 		roleplay: roleplaySchema,
 		proficiencies: proficienciesSchema,
+		collectionPins: collectionPinsSchema.optional(),
 		spellcasting: spellcastingBlockSchema.optional(),
 		annotations: mirroredSystemDataAnnotationsSchema.optional()
 	})
@@ -461,6 +500,18 @@ export const characterDocument5e2014Schema = z
 		}));
 		reportDuplicateIds(itemIdentities, 'Inventory item');
 		reportDuplicateIds(spellIdentities, 'Spell');
+		const languageIdentities = character.systemData.proficiencies.languages.map(
+			(language, index) => ({
+				id: language.id,
+				path: ['systemData', 'proficiencies', 'languages', index, 'id']
+			})
+		);
+		const toolIdentities = character.systemData.proficiencies.tools.map((tool, index) => ({
+			id: tool.id,
+			path: ['systemData', 'proficiencies', 'tools', index, 'id']
+		}));
+		reportDuplicateIds(languageIdentities, 'Language');
+		reportDuplicateIds(toolIdentities, 'Tool');
 
 		const generalFeatureIdentities = character.features.map((feature, index) => ({
 			id: feature.id,
@@ -489,6 +540,43 @@ export const characterDocument5e2014Schema = z
 			...classFeatureIdentities
 		];
 		reportDuplicateIds(featureIdentities, 'Feature');
+
+		const countPriorityIdentities = (entries: Array<{ id: string }>) => {
+			const counts = new Map<string, number>();
+			for (const entry of entries) counts.set(entry.id, (counts.get(entry.id) ?? 0) + 1);
+			return counts;
+		};
+		const priorityIdentityCounts = {
+			inventory: countPriorityIdentities(itemIdentities),
+			spells: countPriorityIdentities(spellIdentities),
+			features: countPriorityIdentities([...generalFeatureIdentities, ...classFeatureIdentities]),
+			traits: countPriorityIdentities(traitIdentities),
+			languages: countPriorityIdentities(languageIdentities),
+			tools: countPriorityIdentities(toolIdentities)
+		};
+		const priorityKinds = collectionPriorityKindSchema.options;
+		for (const kind of priorityKinds) {
+			for (const [pinIndex, identity] of (
+				character.systemData.collectionPins?.[kind] ?? []
+			).entries()) {
+				const matchCount = priorityIdentityCounts[kind].get(identity) ?? 0;
+				if (matchCount === 1) continue;
+				const existsInAnotherCollection = priorityKinds.some(
+					(otherKind) =>
+						otherKind !== kind && (priorityIdentityCounts[otherKind].get(identity) ?? 0) > 0
+				);
+				context.addIssue({
+					code: 'custom',
+					message:
+						matchCount > 1
+							? `Priority identity "${identity}" is ambiguous in ${kind}.`
+							: existsInAnotherCollection
+								? `Priority identity "${identity}" belongs to a different collection.`
+								: `Priority identity "${identity}" does not resolve to a current ${kind} record.`,
+					path: ['systemData', 'collectionPins', kind, pinIndex]
+				});
+			}
+		}
 
 		const countIdentities = (identities: Array<string>) => {
 			const counts = new Map<string, number>();

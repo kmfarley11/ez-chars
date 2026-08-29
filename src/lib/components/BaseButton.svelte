@@ -68,7 +68,7 @@
 	{id}
 	{type}
 	class={twMerge(
-		'touch-target btn inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border font-semibold leading-none shadow-sm ring-1 ring-black/5 focus:outline-hidden disabled:cursor-not-allowed disabled:opacity-60',
+		'touch-target btn inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border font-semibold leading-none shadow-sm ring-1 ring-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)] disabled:cursor-not-allowed disabled:opacity-60',
 		colors,
 		sizeClasses,
 		classes

@@ -140,14 +140,24 @@ export const saturatedCharacter5e2014: CharacterDocument5e2014 = {
 			}
 		],
 		proficiencies: {
-			languages: ['Common', 'Elvish', 'Draconic', 'Dwarvish', 'Gnomish'].map((name) => ({
+			languages: ['Common', 'Elvish', 'Draconic', 'Dwarvish', 'Gnomish'].map((name, index) => ({
+				id: `saturated-language-${index + 1}`,
 				name,
 				source: { kind: 'other' as const }
 			})),
 			tools: Array.from({ length: 7 }, (_, index) => ({
+				id: `saturated-tool-${index + 1}`,
 				name: `Tool proficiency ${index + 1}`,
 				source: { kind: 'other' as const }
 			}))
+		},
+		collectionPins: {
+			inventory: ['saturated-weapon-1', 'saturated-gear-3'],
+			spells: ['saturated-spell-1', 'saturated-spell-12'],
+			features: ['saturated-feature-1', 'saturated-class-feature-1'],
+			traits: ['saturated-trait-1'],
+			languages: ['saturated-language-1', 'saturated-language-2'],
+			tools: ['saturated-tool-1', 'saturated-tool-2']
 		},
 		currency: { gp: { amount: 127 }, sp: { amount: 8 } },
 		roleplay: {

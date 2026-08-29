@@ -38,6 +38,8 @@ import {
 	proficiencySourceSchema,
 	namedProficiencySchema,
 	proficienciesSchema,
+	collectionPriorityKindSchema,
+	collectionPinsSchema,
 	spellcastingBlockSchema,
 	spellSlotsSchema,
 	spellRefSchema,
@@ -81,6 +83,8 @@ export {
 	proficiencySourceSchema,
 	namedProficiencySchema,
 	proficienciesSchema,
+	collectionPriorityKindSchema,
+	collectionPinsSchema,
 	spellcastingBlockSchema,
 	spellSlotsSchema,
 	spellRefSchema,
@@ -114,6 +118,8 @@ export type ProficiencySourceKind = z.infer<typeof proficiencySourceKindSchema>;
 export type ProficiencySource = z.infer<typeof proficiencySourceSchema>;
 export type NamedProficiency = z.infer<typeof namedProficiencySchema>;
 export type Proficiencies = z.infer<typeof proficienciesSchema>;
+export type CollectionPriorityKind5e2014 = z.infer<typeof collectionPriorityKindSchema>;
+export type CollectionPins5e2014 = z.infer<typeof collectionPinsSchema>;
 export type SpellcastingBlock = z.infer<typeof spellcastingBlockSchema>;
 export type SpellSlots = z.infer<typeof spellSlotsSchema>;
 export type SpellRef = z.infer<typeof spellRefSchema>;

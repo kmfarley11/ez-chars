@@ -176,8 +176,8 @@ export const seedChars: CharacterWithSystemData[] = [
 
 			proficiencies: {
 				languages: [
-					{ name: 'Common', source: { kind: 'ancestry' } },
-					{ name: 'Elvish', source: { kind: 'ancestry' } }
+					{ id: 'char-001-language-common', name: 'Common', source: { kind: 'ancestry' } },
+					{ id: 'char-001-language-elvish', name: 'Elvish', source: { kind: 'ancestry' } }
 				],
 				tools: []
 			},
@@ -287,7 +287,9 @@ export const seedChars: CharacterWithSystemData[] = [
 			],
 
 			proficiencies: {
-				languages: [{ name: 'Common', source: { kind: 'ancestry' } }],
+				languages: [
+					{ id: 'char-002-language-common', name: 'Common', source: { kind: 'ancestry' } }
+				],
 				tools: []
 			},
 

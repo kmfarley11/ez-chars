@@ -44,6 +44,18 @@ describe('5e 2014 character data hydration', () => {
 			features: [{ id: 'general-feature', name: 'General Feature' }],
 			inventory: [{ id: 'item-1', name: 'Longsword' }],
 			systemData: {
+				proficiencies: {
+					languages: [{ id: 'language-1', name: 'Common' }],
+					tools: [{ id: 'tool-1', name: 'Navigator tools' }]
+				},
+				collectionPins: {
+					inventory: ['item-1'],
+					spells: ['spell-1'],
+					features: ['general-feature', 'class-feature-1'],
+					traits: ['trait-1'],
+					languages: ['language-1'],
+					tools: ['tool-1']
+				},
 				race: {
 					name: 'Elf',
 					traits: [{ featureId: 'trait-1', name: 'Darkvision' }]
@@ -83,6 +95,43 @@ describe('5e 2014 character data hydration', () => {
 
 		expect(twice).toEqual(once);
 		expect(serialize5e2014CharacterDocument(once)).toEqual(once);
+	});
+
+	it('omits empty Pin collections only while serializing canonical current data', () => {
+		const character = create5e2014Character();
+		const withEmptyPins = {
+			...character,
+			systemData: {
+				...character.systemData,
+				collectionPins: { languages: [], tools: [] }
+			}
+		};
+
+		expect(hydrateOrThrow(withEmptyPins).systemData.collectionPins).toEqual({
+			languages: [],
+			tools: []
+		});
+		expect(
+			serialize5e2014CharacterDocument(withEmptyPins).systemData.collectionPins
+		).toBeUndefined();
+	});
+
+	it('rejects earlier current-v0 proficiency records without IDs without modifying them', () => {
+		const current = create5e2014Character();
+		const withoutIds = {
+			...current,
+			systemData: {
+				...current.systemData,
+				proficiencies: { languages: [{ name: 'Common' }], tools: [] }
+			}
+		};
+		const original = structuredClone(withoutIds);
+
+		expect(hydrate5e2014CharacterDocument(withoutIds)).toMatchObject({
+			success: false,
+			issues: [{ code: 'invalid-current-data' }]
+		});
+		expect(withoutIds).toEqual(original);
 	});
 
 	it('rejects future and retired versions without modifying the input', () => {

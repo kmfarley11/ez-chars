@@ -119,5 +119,16 @@ export const hydrate5e2014CharacterDocument = (input: unknown): Hydrate5e2014Cha
 		: { success: false, issues: currentDataIssues(parsed.error) };
 };
 
-export const serialize5e2014CharacterDocument = (character: CurrentCharacter): CurrentCharacter =>
-	characterDocument5e2014Schema.parse(character);
+export const serialize5e2014CharacterDocument = (character: CurrentCharacter): CurrentCharacter => {
+	const collectionPins = character.systemData.collectionPins;
+	if (!collectionPins) return characterDocument5e2014Schema.parse(character);
+
+	const nonEmptyPins = Object.fromEntries(
+		Object.entries(collectionPins).filter(([, identities]) => identities.length > 0)
+	) as NonNullable<CurrentCharacter['systemData']['collectionPins']>;
+	const systemData = { ...character.systemData };
+	if (Object.keys(nonEmptyPins).length > 0) systemData.collectionPins = nonEmptyPins;
+	else delete systemData.collectionPins;
+
+	return characterDocument5e2014Schema.parse({ ...character, systemData });
+};

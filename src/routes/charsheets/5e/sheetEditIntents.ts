@@ -8,6 +8,7 @@ import {
 	type AbilityKey,
 	type Annotation,
 	type CharacterDocument5e2014,
+	type CollectionPriorityKind5e2014,
 	type Feature,
 	type FeatureRef,
 	type Item,
@@ -23,6 +24,10 @@ import {
 	resolve5eRuntimeActionSource,
 	type RuntimeActionDraft
 } from '$lib/dnd5e2014/runtimeActionSources';
+import {
+	reconcile5e2014CollectionPins,
+	set5e2014CollectionPins
+} from '$lib/dnd5e2014/collectionPriority';
 import {
 	getInventoryGroupForItem,
 	inventoryCurrencyMetadata,
@@ -76,6 +81,7 @@ export const runtimeActionEditorPayloadSchema = z.array(
 export const proficiencyEditorPayloadSchema = z.array(
 	z
 		.object({
+			id: z.string().optional(),
 			name: z.string(),
 			source: z.enum(['ancestry', 'background', 'class', 'feature', 'other'])
 		})
@@ -170,6 +176,11 @@ export type SheetEditIntent =
 	| { type: 'resync-runtime-action'; actionId: string }
 	| { type: 'replace-proficiency-languages'; languages: ProficiencyEditorPayload }
 	| { type: 'replace-proficiency-tools'; tools: ProficiencyEditorPayload }
+	| {
+			type: 'replace-collection-pins';
+			collection: CollectionPriorityKind5e2014;
+			identities: Array<string>;
+	  }
 	| { type: 'replace-features'; features: FeatureEditorPayload }
 	| { type: 'replace-traits'; traits: TraitEditorPayload }
 	| { type: 'replace-inventory-group'; group: InventoryGroup; items: InventoryEditorPayload }
@@ -239,19 +250,19 @@ const normalizeDirectAnnotations = (
 
 const replaceNamedProficiencies = (
 	current: Array<NamedProficiency>,
-	next: ProficiencyEditorPayload
+	next: ProficiencyEditorPayload,
+	createId: () => string
 ): Array<NamedProficiency> => {
-	const available = [...current];
+	const currentById = new Map(current.map((entry) => [entry.id, entry]));
 	return next.flatMap((entry) => {
 		const name = entry.name.trim();
 		if (!name) return [];
-		const currentIndex = available.findIndex(
-			(candidate) => candidate.name === name && candidate.source?.kind === entry.source
-		);
-		const matching = currentIndex >= 0 ? available.splice(currentIndex, 1)[0] : undefined;
+		const id = trimmedIdOrNew(entry.id, createId);
+		const matching = currentById.get(id);
 		return [
 			{
 				...matching,
+				id,
 				name,
 				source: { ...matching?.source, kind: entry.source as ProficiencySourceKind }
 			} satisfies NamedProficiency
@@ -277,6 +288,7 @@ export const reduce5eSheetEditIntents = (
 	const createId = options.createId ?? createProductionId;
 	let candidate = structuredClone(character);
 	let shouldReconcileSourceLinks = false;
+	const priorityCollectionsToReconcile = new Set<CollectionPriorityKind5e2014>();
 
 	for (const intent of intents) {
 		switch (intent.type) {
@@ -307,6 +319,7 @@ export const reduce5eSheetEditIntents = (
 					].sort((left, right) => (left.level ?? 0) - (right.level ?? 0))
 				};
 				shouldReconcileSourceLinks = true;
+				priorityCollectionsToReconcile.add('spells');
 				break;
 			}
 
@@ -476,16 +489,25 @@ export const reduce5eSheetEditIntents = (
 			case 'replace-proficiency-languages': {
 				candidate.systemData.proficiencies.languages = replaceNamedProficiencies(
 					candidate.systemData.proficiencies.languages,
-					intent.languages
+					intent.languages,
+					createId
 				);
+				priorityCollectionsToReconcile.add('languages');
 				break;
 			}
 
 			case 'replace-proficiency-tools': {
 				candidate.systemData.proficiencies.tools = replaceNamedProficiencies(
 					candidate.systemData.proficiencies.tools,
-					intent.tools
+					intent.tools,
+					createId
 				);
+				priorityCollectionsToReconcile.add('tools');
+				break;
+			}
+
+			case 'replace-collection-pins': {
+				candidate = set5e2014CollectionPins(candidate, intent.collection, intent.identities);
 				break;
 			}
 
@@ -537,6 +559,7 @@ export const reduce5eSheetEditIntents = (
 					return { ...entry, features: nextFeatures };
 				});
 				shouldReconcileSourceLinks = true;
+				priorityCollectionsToReconcile.add('features');
 				break;
 			}
 
@@ -567,6 +590,7 @@ export const reduce5eSheetEditIntents = (
 					};
 				}
 				shouldReconcileSourceLinks = true;
+				priorityCollectionsToReconcile.add('traits');
 				break;
 			}
 
@@ -605,6 +629,7 @@ export const reduce5eSheetEditIntents = (
 					...(intent.group === 'other' ? nextItems : stableGroups.other)
 				];
 				shouldReconcileSourceLinks = true;
+				priorityCollectionsToReconcile.add('inventory');
 				break;
 			}
 
@@ -739,6 +764,9 @@ export const reduce5eSheetEditIntents = (
 
 	if (shouldReconcileSourceLinks) {
 		candidate = reconcile5eRuntimeActionSourceLinks(candidate);
+	}
+	for (const collection of priorityCollectionsToReconcile) {
+		candidate = reconcile5e2014CollectionPins(candidate, collection);
 	}
 
 	const parsed = safeParse5e2014CharacterDocument(candidate);

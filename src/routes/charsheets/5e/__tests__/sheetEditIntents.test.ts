@@ -67,14 +67,14 @@ describe('5e sheet edit intent reducer', () => {
 			{
 				type: 'replace-proficiency-languages',
 				languages: [
-					{ name: 'Elvish', source: 'ancestry' },
+					{ id: 'language-draconic', name: 'Elvish', source: 'ancestry' },
 					{ name: 'Dwarvish', source: 'background' }
 				]
 			},
 			{
 				type: 'replace-proficiency-tools',
 				tools: [
-					{ name: 'Calligrapher supplies', source: 'background' },
+					{ id: 'tool-calligrapher', name: 'Calligrapher supplies', source: 'background' },
 					{ name: "Thieves' tools", source: 'class' }
 				]
 			},
@@ -102,6 +102,8 @@ describe('5e sheet edit intent reducer', () => {
 			createId: deterministicIds(
 				'magic-missile',
 				'second-wind-action',
+				'language-dwarvish',
+				'tool-thieves',
 				'quick-study',
 				'action-surge'
 			)
@@ -126,16 +128,17 @@ describe('5e sheet edit intent reducer', () => {
 		]);
 		expect(result.character.systemData.runtimeActions[1].source).toBeUndefined();
 		expect(result.character.systemData.proficiencies.languages).toEqual([
-			{ name: 'Elvish', source: { kind: 'ancestry' } },
-			{ name: 'Dwarvish', source: { kind: 'background' } }
+			{ id: 'language-draconic', name: 'Elvish', source: { kind: 'ancestry' } },
+			{ id: 'language-dwarvish', name: 'Dwarvish', source: { kind: 'background' } }
 		]);
 		expect(result.character.systemData.proficiencies.tools).toEqual([
 			{
+				id: 'tool-calligrapher',
 				name: 'Calligrapher supplies',
 				source: { kind: 'background', sourceId: 'sage' },
 				annotations: [expect.objectContaining({ id: 'tool-note' })]
 			},
-			{ name: "Thieves' tools", source: { kind: 'class' } }
+			{ id: 'tool-thieves', name: "Thieves' tools", source: { kind: 'class' } }
 		]);
 		expect(result.character.features).toEqual([
 			expect.objectContaining({
@@ -604,6 +607,43 @@ describe('5e sheet edit intent reducer', () => {
 		});
 	});
 
+	it('preserves inventory Pin identity across rename and an atomic group move', () => {
+		const character = createSheetEditCharacter();
+		character.systemData.collectionPins = { inventory: ['weapon-1'] };
+		const renamed = reduce5eSheetEditIntents(character, [
+			{
+				type: 'update-inventory-item',
+				group: 'weapons',
+				itemId: 'weapon-1',
+				item: { name: 'Moonlit blade', equipped: true }
+			}
+		]);
+
+		expect(renamed.ok).toBe(true);
+		if (!renamed.ok) return;
+		expect(renamed.character.systemData.collectionPins?.inventory).toEqual(['weapon-1']);
+
+		const moved = reduce5eSheetEditIntents(renamed.character, [
+			{ type: 'replace-inventory-group', group: 'weapons', items: [] },
+			{
+				type: 'replace-inventory-group',
+				group: 'other',
+				items: [
+					{ id: 'gear-1', name: 'Rope', quantity: 1 },
+					{ id: 'weapon-1', name: 'Moonlit blade', equipped: false }
+				]
+			}
+		]);
+
+		expect(moved.ok).toBe(true);
+		if (!moved.ok) return;
+		expect(moved.character.systemData.collectionPins?.inventory).toEqual(['weapon-1']);
+		expect(moved.character.inventory.find((item) => item.id === 'weapon-1')?.tags).toBeUndefined();
+		expect(
+			moved.character.systemData.runtimeActions.find((action) => action.id === 'action-1')?.source
+		).toEqual({ kind: 'item', id: 'weapon-1' });
+	});
+
 	it('coalesces roleplay and scratchpad edits and replaces annotations with stable IDs', () => {
 		const character = createSheetEditCharacter();
 		const annotationPath = [
@@ -682,24 +722,126 @@ describe('5e sheet edit intent reducer', () => {
 	it('updates proficiency provenance without creating ancestry source records', () => {
 		const character = createSheetEditCharacter();
 		delete character.systemData.race;
-		const result = reduce5eSheetEditIntents(character, [
-			{
-				type: 'replace-proficiency-languages',
-				languages: [{ name: 'Elvish', source: 'ancestry' }]
-			}
-		]);
+		const result = reduce5eSheetEditIntents(
+			character,
+			[
+				{
+					type: 'replace-proficiency-languages',
+					languages: [{ name: 'Elvish', source: 'ancestry' }]
+				}
+			],
+			{ createId: deterministicIds('language-elvish') }
+		);
 
 		expect(result).toMatchObject({
 			ok: true,
 			character: {
 				systemData: {
 					proficiencies: {
-						languages: [{ name: 'Elvish', source: { kind: 'ancestry' } }]
+						languages: [{ id: 'language-elvish', name: 'Elvish', source: { kind: 'ancestry' } }]
 					}
 				}
 			}
 		});
 		if (result.ok) expect(result.character.systemData.race).toBeUndefined();
+	});
+
+	it('preserves proficiency identity and Pin state on rename, allocates new IDs, and prunes deletion', () => {
+		const character = createSheetEditCharacter();
+		character.systemData.collectionPins = { languages: ['language-draconic'] };
+		const renamed = reduce5eSheetEditIntents(
+			character,
+			[
+				{
+					type: 'replace-proficiency-languages',
+					languages: [
+						{ id: 'language-draconic', name: 'High Draconic', source: 'background' },
+						{ name: 'Elvish', source: 'ancestry' }
+					]
+				}
+			],
+			{ createId: deterministicIds('language-elvish') }
+		);
+
+		expect(renamed.ok).toBe(true);
+		if (!renamed.ok) return;
+		expect(renamed.character.systemData.proficiencies.languages).toEqual([
+			{
+				id: 'language-draconic',
+				name: 'High Draconic',
+				source: { kind: 'background' }
+			},
+			{ id: 'language-elvish', name: 'Elvish', source: { kind: 'ancestry' } }
+		]);
+		expect(renamed.character.systemData.collectionPins?.languages).toEqual(['language-draconic']);
+
+		const deleted = reduce5eSheetEditIntents(renamed.character, [
+			{
+				type: 'replace-proficiency-languages',
+				languages: [{ id: 'language-elvish', name: 'Elvish', source: 'ancestry' }]
+			}
+		]);
+
+		expect(deleted.ok).toBe(true);
+		if (deleted.ok) expect(deleted.character.systemData.collectionPins?.languages).toBeUndefined();
+	});
+
+	it('commits complete Pin identity sets atomically and rejects invalid targets', () => {
+		const character = createSheetEditCharacter();
+		const updated = reduce5eSheetEditIntents(character, [
+			{
+				type: 'replace-collection-pins',
+				collection: 'languages',
+				identities: ['language-common', 'language-draconic']
+			}
+		]);
+
+		expect(updated.ok).toBe(true);
+		if (!updated.ok) return;
+		expect(updated.character.systemData.collectionPins?.languages).toEqual([
+			'language-common',
+			'language-draconic'
+		]);
+
+		const invalid = reduce5eSheetEditIntents(updated.character, [
+			{
+				type: 'replace-collection-pins',
+				collection: 'languages',
+				identities: ['language-common', 'missing-language']
+			}
+		]);
+		expect(invalid).toMatchObject({
+			ok: false,
+			issues: [{ code: 'invalid-character' }]
+		});
+		expect(updated.character.systemData.collectionPins?.languages).toEqual([
+			'language-common',
+			'language-draconic'
+		]);
+	});
+
+	it('prunes every affected Pin namespace in the same deliberate deletion transaction', () => {
+		const character = createSheetEditCharacter();
+		character.systemData.collectionPins = {
+			inventory: ['weapon-1'],
+			spells: ['shield'],
+			features: ['general-feature', 'second-wind'],
+			traits: ['darkvision'],
+			languages: ['language-common'],
+			tools: ['tool-calligrapher']
+		};
+
+		const result = reduce5eSheetEditIntents(character, [
+			{ type: 'replace-inventory-group', group: 'weapons', items: [] },
+			{ type: 'replace-spell-level', level: 1, spells: [] },
+			{ type: 'replace-features', features: [] },
+			{ type: 'replace-traits', traits: [] },
+			{ type: 'replace-proficiency-languages', languages: [] },
+			{ type: 'replace-proficiency-tools', tools: [] }
+		]);
+
+		expect(result.ok).toBe(true);
+		if (result.ok) expect(result.character.systemData.collectionPins).toBeUndefined();
 	});
 
 	it('fails atomically for an invalid semantic target without mutating the input', () => {

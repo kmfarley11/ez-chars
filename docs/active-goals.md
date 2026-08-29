@@ -58,6 +58,7 @@ This is a capability summary for the completed 2014 baseline, not a chronologica
 - Runtime actions support custom creation plus searchable inventory, spell, feature, and trait snapshots with stable source identity, source navigation, confirmed resync, and source-deletion fallback; five-item previews and dense responsive browsing keep larger action sets reachable without dominating the sheet.
 - Weapons, Armor & Shields, Other Gear, and Spells provide searchable responsive dense-collection browsing, focused row editing and notes, sparse spell-slot setup, and repeatable saturated-sheet verification without making every short collection adopt the same density controls.
 - Features, Traits, Languages, and Tools retain compact bullet and card-level Edit/Notes behavior while seven-item previews, search, and bounded or focused browsing keep saturated supporting collections manageable.
+- Inventory, spells, Features, Traits, Languages, and Tools support stable Pin/Unpin priority with deterministic priority-first alphabetical presentation, accessible batch management, immediate equipment/spell row commands, reload and JSON round trips, and durable Language/Tool identities. The familiar presentation and draft workflow are reusable while identity, validation, mutation, and persistence remain system-owned; Runtime Actions deliberately retain their independent order and navigation.
 - Focused field-group, structured-form, annotation, dialog, responsive-layout, panel, collapsible-panel, dense-list, and domain-owned card boundaries support the implemented sheet without claiming a universal cross-system rendering contract.
 - The home-to-sheet accessibility and verification baseline includes keyboard, touch, modal/popover context, mobile geometry, unit/component coverage, and black-box browser checks.
 - Official SRD 5.1 and SRD 5.2.1 PDFs are self-hosted with centralized attribution and provenance; the conservative Shadowdark citation baseline and protected maintainer review boundary are established for later resource-navigation and system-sheet work.
@@ -66,7 +67,7 @@ This is a capability summary for the completed 2014 baseline, not a chronologica
 
 - 5e sheet route still does not expose every optional schema field or deeper 5e detail
 - the current field interaction and binding/mutation contracts are documented in [docs/field-interaction-model.md](field-interaction-model.md) and [docs/field-binding-contract.md](field-binding-contract.md); the component-composition ADR owns the current field/card boundaries, while [docs/field-rendering-api.md](field-rendering-api.md) is retained only as historical rationale
-- the completed `BL-074` refactor retired the legacy `GridContent` and `GridContainer` boundaries after decomposing them into focused field-group, structured-form, annotation, dialog, responsive-layout, surface, collapsible-panel, and domain-owned card responsibilities; completed `BL-076` exercised those seams for Runtime and supporting collections, and `BL-075` is the next Horizon A target
+- the completed `BL-074` refactor retired the legacy `GridContent` and `GridContainer` boundaries after decomposing them into focused field-group, structured-form, annotation, dialog, responsive-layout, surface, collapsible-panel, and domain-owned card responsibilities; completed `BL-076` exercised those seams for Runtime and supporting collections, and completed `BL-075` layered reusable Pin/Unpin UX over domain-owned identity and persistence without claiming a universal collection model
 
 ### Missing
 
@@ -74,6 +75,7 @@ This is a capability summary for the completed 2014 baseline, not a chronologica
 - 2024 D&D and Shadowdark system schemas, creation choices, routes, sheets, and fixtures
 - a system-dispatch and computed-summary boundary that does not require the home list to inspect 5e fields
 - a rights-classified resource library, curated-section search, and contextual reference navigation
+- explicit Runtime Action timing navigation beyond the existing text search; timing and category are searchable today, but the P0 `BL-078` follow-up owns a visible action-economy path before external handoff
 - continued owner solo-play rehearsals and external evidence across the PRD matrix; saturated 2014 rehearsal validated the revised spell, inventory, Runtime Action, and supporting-collection surfaces, and the owner has explicitly validated whole-sheet navigation (MVP outline/navbar) as a required P0 prerequisite before playtest.
 
 ### Deferred

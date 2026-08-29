@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Badge from '$components/Badge.svelte';
+	import IconPin from '$components/IconPin.svelte';
 	import MenuButton from '$components/MenuButton.svelte';
 	import MenuItemButton from '$components/MenuItemButton.svelte';
 	import type { GridContentListRow, GridContentListRowAction } from '$components/gridContentList';
@@ -9,13 +10,17 @@
 		compact?: boolean;
 		onEditRow?: GridContentListRowAction;
 		onNotesRow?: GridContentListRowAction;
+		onTogglePinRow?: GridContentListRowAction;
 	}
 
-	let { row, compact = false, onEditRow, onNotesRow }: Props = $props();
+	let { row, compact = false, onEditRow, onNotesRow, onTogglePinRow }: Props = $props();
 	let actionsTriggerEl = $state<HTMLButtonElement>();
 
 	const annotationCount = $derived(row.annotations?.length ?? 0);
-	const hasActions = $derived(onEditRow !== undefined || onNotesRow !== undefined);
+	const isPinned = $derived('pinned' in row && row.pinned === true);
+	const hasActions = $derived(
+		onEditRow !== undefined || onNotesRow !== undefined || onTogglePinRow !== undefined
+	);
 	const accessibleRowLabel = $derived(
 		[row.label, row.context, row.detail].filter((value) => value?.trim()).join(', ')
 	);
@@ -24,7 +29,11 @@
 		const popover =
 			event.currentTarget instanceof Element ? event.currentTarget.closest('[popover]') : undefined;
 		if (popover instanceof HTMLElement) popover.hidePopover();
-		command?.(row, () => actionsTriggerEl?.focus());
+		command?.(row, () => {
+			if (!actionsTriggerEl?.isConnected) return false;
+			actionsTriggerEl.focus();
+			return document.activeElement === actionsTriggerEl;
+		});
 	};
 </script>
 
@@ -32,8 +41,19 @@
 	<div class="flex min-w-0 items-start justify-between gap-3">
 		<div class="min-w-0 flex-1">
 			<p class={compact ? 'flex min-w-0 items-baseline gap-1 overflow-hidden text-sm' : 'text-sm'}>
-				<span class={compact ? 'min-w-0 truncate font-semibold' : 'font-semibold'}>{row.label}</span
+				<span
+					class={compact
+						? 'flex min-w-0 items-center gap-1.5 truncate font-semibold'
+						: 'flex items-center gap-1.5 font-semibold'}
 				>
+					{#if 'pinned' in row && row.pinned}
+						<span title="Pinned" aria-hidden="true" class="flex items-center justify-center">
+							<IconPin classes="theme-text shrink-0 h-3.5 w-3.5" />
+						</span>
+						<span class="sr-only">Pinned</span>
+					{/if}
+					<span>{row.label}</span>
+				</span>
 				{#if row.detail}
 					<span aria-hidden="true" class="shrink-0">:</span>
 					<span
@@ -71,6 +91,11 @@
 				{/if}
 				{#if onNotesRow}
 					<MenuItemButton onclick={(event) => runCommand(event, onNotesRow)}>Notes</MenuItemButton>
+				{/if}
+				{#if onTogglePinRow}
+					<MenuItemButton onclick={(event) => runCommand(event, onTogglePinRow)}>
+						{isPinned ? 'Unpin' : 'Pin'}
+					</MenuItemButton>
 				{/if}
 			</MenuButton>
 		{/if}

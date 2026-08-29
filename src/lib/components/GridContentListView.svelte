@@ -17,6 +17,7 @@
 		emptyText?: string;
 		onEditRow?: GridContentListRowAction;
 		onNotesRow?: GridContentListRowAction;
+		onTogglePinRow?: GridContentListRowAction;
 	}
 
 	let {
@@ -26,7 +27,8 @@
 		bounded = false,
 		emptyText = 'No items yet.',
 		onEditRow,
-		onNotesRow
+		onNotesRow,
+		onTogglePinRow
 	}: Props = $props();
 
 	const uid = $props.id();
@@ -86,13 +88,13 @@
 			>
 				{#each filteredRows as row, index (row.key)}
 					{#if row.groupLabel && row.groupLabel !== filteredRows[index - 1]?.groupLabel}
-						<li role="presentation" class="px-1 pt-2 first:pt-0">
+						<li aria-hidden="true" class="px-1 pt-2 first:pt-0">
 							<h4 class="theme-text-muted text-xs font-bold tracking-wide uppercase">
 								{row.groupLabel}
 							</h4>
 						</li>
 					{/if}
-					<GridContentListRow {row} {onEditRow} {onNotesRow} />
+					<GridContentListRow {row} {onEditRow} {onNotesRow} {onTogglePinRow} />
 				{/each}
 			</ul>
 			{#if bounded && canScrollUp}

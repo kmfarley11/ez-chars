@@ -223,6 +223,82 @@ describe('5e 2014 character schema', () => {
 		expect(safeParse5e2014CharacterDocument(duplicateFeature).success).toBe(false);
 	});
 
+	it('requires unique Language and Tool identities and validates namespaced Pin targets', () => {
+		const character = create5e2014Character({
+			features: [{ id: 'feature-1', name: 'Keen Mind' }],
+			inventory: [{ id: 'item-1', name: 'Longsword' }],
+			systemData: {
+				race: {
+					name: 'Elf',
+					traits: [{ featureId: 'trait-1', name: 'Darkvision' }]
+				},
+				classes: [
+					{
+						name: 'Wizard',
+						level: 1,
+						features: [{ featureId: 'class-feature-1', name: 'Arcane Recovery' }]
+					}
+				],
+				proficiencies: {
+					languages: [{ id: 'language-1', name: 'Elvish' }],
+					tools: [{ id: 'tool-1', name: "Thieves' tools" }]
+				},
+				spellcasting: {
+					ability: 'int',
+					spells: [{ spellId: 'spell-1', name: 'Shield' }]
+				},
+				collectionPins: {
+					inventory: ['item-1'],
+					spells: ['spell-1'],
+					features: ['feature-1', 'class-feature-1'],
+					traits: ['trait-1'],
+					languages: ['language-1'],
+					tools: ['tool-1']
+				}
+			}
+		});
+
+		expect(safeParse5e2014CharacterDocument(character).success).toBe(true);
+
+		const missingLanguageId = structuredClone(character);
+		missingLanguageId.systemData.proficiencies.languages = [{ name: 'Elvish' } as never];
+		const duplicateToolId = structuredClone(character);
+		duplicateToolId.systemData.proficiencies.tools.push({
+			id: 'tool-1',
+			name: 'Duplicate tool'
+		});
+		const duplicatePin = structuredClone(character);
+		duplicatePin.systemData.collectionPins!.languages = ['language-1', 'language-1'];
+		const danglingPin = structuredClone(character);
+		danglingPin.systemData.collectionPins!.languages = ['missing-language'];
+		const wrongCollectionPin = structuredClone(character);
+		wrongCollectionPin.systemData.collectionPins!.languages = ['tool-1'];
+
+		for (const invalid of [
+			missingLanguageId,
+			duplicateToolId,
+			duplicatePin,
+			danglingPin,
+			wrongCollectionPin
+		]) {
+			expect(safeParse5e2014CharacterDocument(invalid).success).toBe(false);
+		}
+	});
+
+	it('treats absent priority state as a valid entirely unpinned character', () => {
+		const character = create5e2014Character({
+			systemData: {
+				proficiencies: {
+					languages: [{ id: 'language-1', name: 'Common' }],
+					tools: [{ id: 'tool-1', name: 'Navigator tools' }]
+				}
+			}
+		});
+
+		expect(character.systemData.collectionPins).toBeUndefined();
+		expect(safeParse5e2014CharacterDocument(character).success).toBe(true);
+	});
+
 	it('accepts exactly resolved eligible links and rejects missing, ambiguous, or background links', () => {
 		const character = create5e2014Character({
 			features: [{ id: 'general-1', name: 'General' }],

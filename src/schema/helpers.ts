@@ -11,7 +11,7 @@ export function createId(): string {
 	// Fallback for non-secure contexts (e.g., local network mobile testing over HTTP)
 	return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c) => {
 		const num = Number(c);
-		return (num ^ (Math.random() * 16 >> (num / 4))).toString(16);
+		return (num ^ ((Math.random() * 16) >> (num / 4))).toString(16);
 	});
 }
 

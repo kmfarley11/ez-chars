@@ -110,6 +110,63 @@ describe('character import/export envelope', () => {
 		});
 	});
 
+	it('round-trips stable proficiency identities and collection priority state', () => {
+		const prioritized = create5e2014Character({
+			meta: { id: 'prioritized-character' },
+			features: [{ id: 'feature-alert', name: 'Alert' }],
+			inventory: [{ id: 'item-rope', name: 'Rope' }],
+			systemData: {
+				race: {
+					name: 'Elf',
+					traits: [{ featureId: 'trait-darkvision', name: 'Darkvision' }]
+				},
+				proficiencies: {
+					languages: [{ id: 'language-common', name: 'Common' }],
+					tools: [{ id: 'tool-navigator', name: "Navigator's tools" }]
+				},
+				spellcasting: {
+					ability: 'int',
+					spells: [{ spellId: 'spell-shield', name: 'Shield', level: 1 }]
+				},
+				collectionPins: {
+					inventory: ['item-rope'],
+					spells: ['spell-shield'],
+					features: ['feature-alert'],
+					traits: ['trait-darkvision'],
+					languages: ['language-common'],
+					tools: ['tool-navigator']
+				}
+			}
+		});
+
+		const envelope = createCharacterExportEnvelope([prioritized]);
+		const imported = safeParseCharacterExportEnvelope(envelope);
+
+		expect(imported).toMatchObject({
+			success: true,
+			data: {
+				characters: [
+					{
+						systemData: {
+							proficiencies: {
+								languages: [{ id: 'language-common', name: 'Common' }],
+								tools: [{ id: 'tool-navigator', name: "Navigator's tools" }]
+							},
+							collectionPins: {
+								inventory: ['item-rope'],
+								spells: ['spell-shield'],
+								features: ['feature-alert'],
+								traits: ['trait-darkvision'],
+								languages: ['language-common'],
+								tools: ['tool-navigator']
+							}
+						}
+					}
+				]
+			}
+		});
+	});
+
 	it('replaces all current characters with imported characters', () => {
 		const currentCharacter = create5e2014Character({
 			name: 'Current Character',

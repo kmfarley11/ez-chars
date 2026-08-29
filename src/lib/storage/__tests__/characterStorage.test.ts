@@ -93,6 +93,63 @@ describe('character storage adapter', () => {
 		});
 	});
 
+	it('persists and reloads proficiency identities and priority membership', () => {
+		const prioritizedCharacter = create5e2014Character({
+			meta: { id: 'prioritized-character' },
+			features: [{ id: 'feature-alert', name: 'Alert' }],
+			inventory: [{ id: 'item-rope', name: 'Rope' }],
+			systemData: {
+				race: {
+					name: 'Elf',
+					traits: [{ featureId: 'trait-darkvision', name: 'Darkvision' }]
+				},
+				proficiencies: {
+					languages: [{ id: 'language-common', name: 'Common' }],
+					tools: [{ id: 'tool-navigator', name: "Navigator's tools" }]
+				},
+				spellcasting: {
+					ability: 'int',
+					spells: [{ spellId: 'spell-shield', name: 'Shield', level: 1 }]
+				},
+				collectionPins: {
+					inventory: ['item-rope'],
+					spells: ['spell-shield'],
+					features: ['feature-alert'],
+					traits: ['trait-darkvision'],
+					languages: ['language-common'],
+					tools: ['tool-navigator']
+				}
+			}
+		});
+
+		saveStoredCharacters([prioritizedCharacter]);
+
+		expect(loadStoredCharacters([])).toEqual({
+			characters: [prioritizedCharacter],
+			issue: null
+		});
+	});
+
+	it('preserves rejected current-v0 proficiency data that lacks required identities', () => {
+		const fallback = cloneCharacters(seedChars);
+		const current = create5e2014Character({ meta: { id: 'old-v0-character' } });
+		const invalidCurrent = {
+			...current,
+			systemData: {
+				...current.systemData,
+				proficiencies: { languages: [{ name: 'Common' }], tools: [] }
+			}
+		};
+		const stored = JSON.stringify({ version: 1, characters: [invalidCurrent] });
+		localStorage.setItem(CHARS_STORAGE_KEY, stored);
+
+		expect(loadStoredCharacters(fallback)).toEqual({
+			characters: fallback,
+			issue: { kind: 'invalid_or_outdated' }
+		});
+		expect(localStorage.getItem(CHARS_STORAGE_KEY)).toBe(stored);
+	});
+
 	it('preserves outdated source data while falling back with a recovery issue', () => {
 		const fallback = cloneCharacters(seedChars);
 		const firstCharacter = fallback[0];

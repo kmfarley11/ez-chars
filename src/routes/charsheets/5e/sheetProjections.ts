@@ -122,7 +122,8 @@ const createProficiencyListField = (
 				value: entry.source?.kind ?? 'other',
 				editOnly: true,
 				options: proficiencySourceOptions
-			}
+			},
+			id: { fieldName: 'Proficiency Id', value: entry.id, editOnly: true, hidden: true }
 		}
 	}))
 });

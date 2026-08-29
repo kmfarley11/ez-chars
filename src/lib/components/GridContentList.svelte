@@ -17,8 +17,11 @@
 		query?: string;
 		onEditRow?: GridContentListRowAction;
 		onNotesRow?: GridContentListRowAction;
+		onTogglePinRow?: GridContentListRowAction;
 		onBulkEdit?: () => void;
+		onManagePins?: () => void;
 		bulkTriggerEl?: HTMLButtonElement;
+		managePinsTriggerEl?: HTMLButtonElement;
 	}
 
 	let {
@@ -28,8 +31,11 @@
 		query = $bindable(''),
 		onEditRow,
 		onNotesRow,
+		onTogglePinRow,
 		onBulkEdit,
-		bulkTriggerEl = $bindable()
+		onManagePins,
+		bulkTriggerEl = $bindable(),
+		managePinsTriggerEl = $bindable()
 	}: Props = $props();
 
 	const uid = $props.id();
@@ -52,10 +58,19 @@
 <section class="space-y-3" aria-labelledby={`${uid}-heading`}>
 	<div class="flex flex-wrap items-center justify-between gap-2">
 		<h3 id={`${uid}-heading`} class="text-sm font-semibold">{title}</h3>
-		{#if onBulkEdit}
-			<BaseButton size="sm" onclick={onBulkEdit} bind:buttonEl={bulkTriggerEl}
-				>Bulk Edit {title}</BaseButton
-			>
+		{#if onBulkEdit || onManagePins}
+			<div class="flex gap-2">
+				{#if onBulkEdit}
+					<BaseButton size="sm" onclick={onBulkEdit} bind:buttonEl={bulkTriggerEl}>
+						Bulk Edit {title}
+					</BaseButton>
+				{/if}
+				{#if onManagePins}
+					<BaseButton size="sm" onclick={onManagePins} bind:buttonEl={managePinsTriggerEl}>
+						Manage Pins
+					</BaseButton>
+				{/if}
+			</div>
 		{/if}
 	</div>
 
@@ -68,6 +83,7 @@
 			{emptyText}
 			{onEditRow}
 			{onNotesRow}
+			{onTogglePinRow}
 		/>
 	</div>
 
@@ -78,13 +94,13 @@
 			<ul class="space-y-2" aria-label={`${title} preview`}>
 				{#each preview.rows as row, index (row.key)}
 					{#if row.groupLabel && row.groupLabel !== preview.rows[index - 1]?.groupLabel}
-						<li role="presentation" class="px-1 pt-1 first:pt-0">
+						<li aria-hidden="true" class="px-1 pt-1 first:pt-0">
 							<h4 class="theme-text-muted text-xs font-bold tracking-wide uppercase">
 								{row.groupLabel}
 							</h4>
 						</li>
 					{/if}
-					<GridContentListRow {row} compact={true} {onEditRow} {onNotesRow} />
+					<GridContentListRow {row} compact={true} {onEditRow} {onNotesRow} {onTogglePinRow} />
 				{/each}
 			</ul>
 			<BaseButton
@@ -107,5 +123,13 @@
 	scrollAffordance={true}
 	onClose={closeFocusedView}
 >
-	<GridContentListView {title} {rows} bind:query {emptyText} {onEditRow} {onNotesRow} />
+	<GridContentListView
+		{title}
+		{rows}
+		bind:query
+		{emptyText}
+		{onEditRow}
+		{onNotesRow}
+		{onTogglePinRow}
+	/>
 </DialogShell>

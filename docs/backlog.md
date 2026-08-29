@@ -54,12 +54,12 @@ These lightweight queues record priority membership only. Detailed definitions l
 
 ### P0 — Product Prerequisites
 
-- [`BL-075` — Add stable manual collection ordering](#add-stable-manual-collection-ordering)
 - [`BL-069` — Deliver rights-classified reference navigation](#deliver-rights-classified-reference-navigation)
 - [`BL-070` — Establish the multi-system boundary and 2024 D&D sheet](#establish-the-multi-system-boundary-and-2024-dd-sheet)
 - [`BL-071` — Deliver a minimal system-native Shadowdark sheet](#deliver-a-minimal-system-native-shadowdark-sheet)
 - [`BL-072` — Harden the three-system external-playtest matrix](#harden-the-three-system-external-playtest-matrix)
 - [`BL-073` — Investigate scene-aware runtime guidance and navigation](#investigate-scene-aware-runtime-guidance-and-navigation) _(P0 prerequisite: MVP navigation required before playtest)_
+- [`BL-078` — Add action-economy navigation to Runtime Actions](#add-action-economy-navigation-to-runtime-actions)
 
 ### P1 — Priority Improvements
 
@@ -69,7 +69,7 @@ These lightweight queues record priority membership only. Detailed definitions l
 
 ### P2 — Future Feature Work
 
-No active P2 items.
+- [`BL-079` — Consolidate inline SVGs into a unified Icon atom](#consolidate-inline-svgs-into-a-unified-icon-atom)
 
 ## Next Recommended Sequence
 
@@ -77,52 +77,18 @@ _Goal: First External Playtest_
 
 The queues above record strategic priority membership; this list records the dependency-aware action order and may omit blocked or trigger-deferred items.
 
-1. `BL-075`: Let users deliberately surface their most important inventory and spell entries before saturated-sheet owner rehearsal
-2. `BL-069`: Prove multi-source resource discovery and contextual navigation against the 2014 sheet
-3. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary and add the minimal 2024 D&D sheet
-4. `BL-071`: Add the minimal Shadowdark sheet within the conservative baseline after `BL-070` supplies the dispatch boundary
-5. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix
-6. `BL-073`: Deliver minimum viable navigation (e.g., outline/navbar) before external playtest based on scroll-pressure evidence
+1. `BL-069`: Prove multi-source resource discovery and contextual navigation against the 2014 sheet
+2. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary and add the minimal 2024 D&D sheet
+3. `BL-071`: Add the minimal Shadowdark sheet within the conservative baseline after `BL-070` supplies the dispatch boundary
+4. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix
+5. `BL-073`: Deliver minimum viable navigation (e.g., outline/navbar) before external playtest based on scroll-pressure evidence
+6. `BL-078`: Make action, bonus-action, reaction, and other timing categories explicitly navigable before external handoff
 
-The completed `BL-064` proof established the inventory and spell baseline, `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams, and `BL-076` added proportionate density behavior for Runtime Actions and supporting collections without flattening their distinct interaction grammars. `BL-075` now keeps stable ordering separate so the accepted collection previews reflect deliberate user priority before owner rehearsal and external handoff. `BL-066` is an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights. It is deliberately not a first-playtest readiness prerequisite. `BL-073` has been pulled into P0 because the owner validated the critical need for a minimum viable navigation aid (like an outline) by observing scroll behavior on saturated character content during feature development.
+The completed `BL-064` proof established the inventory and spell baseline, `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams, `BL-076` added proportionate density behavior for Runtime Actions and supporting collections without flattening their distinct interaction grammars, and `BL-075` added a reusable player-facing pinning grammar while keeping identity, persistence, and system nuance domain-owned. Accepted collection previews now reflect deliberate user priority before owner rehearsal and external handoff. `BL-066` is an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights. It is deliberately not a first-playtest readiness prerequisite. `BL-073` has been pulled into P0 because the owner validated the critical need for a minimum viable navigation aid (like an outline) by observing scroll behavior on saturated character content during feature development. `BL-078` remains last in the P0 sequence because the existing Runtime Action search already indexes timing and category, but external handoff should not rely on players knowing to express action-economy navigation as free text.
 
 ## Refined Backlog Catalog
 
 Each active refined item has one stable detailed definition in this catalog. Queue entries and the recommended sequence point here; reprioritization must not relocate or duplicate these definitions. When an item is completed and archived, remove its queue link and catalog definition, then retain only the bounded summary required by [Done Recently](#done-recently).
-
-### Add stable manual collection ordering
-
-ID:
-
-- `BL-075`
-
-Sequencing context:
-
-- Execute after the completed `BL-064` five-item preview/focused collection proof and completed `BL-074` ownership refactor. Complete it before continued saturated-sheet rehearsal and external handoff because at-a-glance priority is part of the intended first-playtest experience, not a finding the external playtest must first rediscover.
-
-Refinement outputs:
-
-- **Purpose:** Let users decide which collection entries are most important and preserve that authored order so compact previews and full focused views reflect user intent rather than incidental insertion history.
-- **Included behavior:**
-  - Support stable manual ordering within Weapons, Armor & Shields, Other Gear, and each spell level while preserving record identity, annotations, source links, and authored content.
-  - Make ordering usable with pointer, touch, and baseline keyboard interaction through explicit controls or a dedicated reorder mode; drag or gestures may supplement but never replace the complete path.
-  - Define clear behavior while search is active so filtered result position is not mistaken for canonical order; preserve the underlying order unless the user deliberately enters an ordering workflow.
-  - Reflect committed order consistently in phone previews, focused collection views, persistence, JSON export/restore, and source navigation.
-  - Add stateful Storybook evidence plus focused mutation, persistence, and browser coverage for first/middle/last moves and interrupted or cancelled ordering.
-- **Excluded behavior:**
-  - Alphabetical or rules-derived automatic sorting, relevance ranking, per-view alternate orderings, or synchronized multi-user ordering.
-  - Moving records between equipment groups, changing spell level through reordering, or reclassifying an item as a side effect of position.
-  - Requiring every short collection to adopt ordering before concrete use demonstrates value.
-- **Ambiguities:**
-  - Should the baseline expose Move to top plus Move up/down commands, a dedicated reorder mode, drag-and-drop with equivalent controls, or another compact combination? USER MANUAL ENTRY: perhaps we should consider a "promote"/"favorite" function. Where we un-opinionatedly sort by name alphabetically by default, but otherwise give the user the ability to indicate priority/favoritism for certain objects to be weighed higher than the default sort.
-  - Should reorder controls be unavailable while filtered, or should the UI provide an explicit transition back to canonical-order mode?
-  - Which non-target collection is the next credible consumer after inventory and spells?
-  - Should Runtime Actions join this ordering scope now that `BL-076` defines their compact surface, or retain an independently authored priority model because their source and action-economy semantics differ?
-- **Success:**
-  - Users can deliberately reorder target entries across touch, pointer, and keyboard paths without losing identity or content.
-  - The first five preview entries reliably match the first five authored entries after reload and export/restore.
-  - Search never silently mutates canonical order, and cross-group or cross-level movement cannot occur accidentally.
-- **Recommended workflow:** Full OpenSpec change because this adds observable collection behavior, ordered-list mutation semantics, stable-identity requirements, and accessibility design. Add or refine an ADR only if implementation establishes a durable cross-system ordering contract rather than a 2014 collection behavior.
 
 ### Unify focused detail, editing, and annotations
 
@@ -410,6 +376,41 @@ Refinement outputs:
   - The result either closes the investigation with no scene mode or yields one bounded behavioral proposal grounded in at least two system sheets.
 - **Recommended workflow:** Begin with OpenSpec Explore after the evidence trigger, then use a full OpenSpec change if observable navigation or focus behavior is proposed. An ADR is warranted only if the result establishes a durable cross-system scene/navigation contract; a 2014-only outline proof does not trigger one by itself.
 
+### Add action-economy navigation to Runtime Actions
+
+ID:
+
+- `BL-078`
+
+Sequencing context:
+
+- Keep this at the end of P0 after the broader first-playtest prerequisites. The completed `BL-076` surface already bounds and searches Runtime Actions, including timing and category text, but it still presents action, bonus-action, reaction, free, and other timings as one visually homogeneous result stream. Resolve that explicit navigation gap before external handoff without reopening the accepted density or source-action work.
+
+Refinement outputs:
+
+- **Purpose:** Help players quickly distinguish and reach Runtime Actions by action-economy timing without requiring them to remember that the general text search happens to index timing labels.
+- **Included behavior:**
+  - Add an explicit, quickly resettable way to narrow or organize Runtime Actions by Action, Bonus Action, Reaction, Free, and Other while retaining an All state.
+  - Compose timing navigation with the existing text search as one understandable workflow rather than adding separate search bars; when both are active, results satisfy both constraints.
+  - Preserve visible result counts, explicit no-match behavior, and a one-step return to the complete collection.
+  - Keep timing-navigation state ephemeral and non-destructive; it does not reclassify actions, change canonical order, or persist a selected filter without separate evidence.
+  - Preserve the completed Add/Edit/Notes, source navigation, resync, bounded desktop, focused phone, query-context, focus-restoration, touch, keyboard, and assistive-technology behavior.
+  - Add stateful component and black-box coverage for each timing, mixed timing plus text search, reset, no-match, phone-focused, and keyboard/touch paths.
+- **Excluded behavior:**
+  - Adding multiple timing-specific search boxes, requiring separate saved lists or cards for each timing, or duplicating one action into multiple homes.
+  - Automatically inferring or rewriting an action's timing, adding a new action-economy taxonomy, or generalizing 5e timing categories into a cross-system contract.
+  - Adding category, source, scene, or rules-derived facets without evidence that the timing control is insufficient.
+  - Folding Runtime Actions into the generic pinning rollout owned by `BL-075`; their independently authored priority and source/action-economy semantics remain separate until this navigation proof and playtest evidence justify convergence.
+- **Ambiguities:**
+  - Should the baseline be a compact platform-native single-choice control, a small set of toggle-like timing controls, grouped timing headings, or a filter-plus-group combination?
+  - Should explicit timing navigation appear whenever more than one timing is present, only above the five-item density threshold, or always for any populated Runtime Actions collection?
+  - Does the All view remain one authored-order stream, or do timing headings improve scanning enough to justify grouped presentation even before a filter is selected?
+- **Success:**
+  - A player can show only bonus actions or reactions through an evident named control without typing timing terminology into search.
+  - Timing and text narrowing compose predictably, never mutate character data, and always provide a clear route back to all actions.
+  - Existing Runtime Action commands and responsive/focus behavior remain complete across touch, pointer, keyboard, and assistive-technology paths.
+- **Recommended workflow:** Compact OpenSpec change after resolving the filter-versus-grouping ambiguity because this adds a narrow durable interaction requirement on one established collection surface. No ADR is triggered unless implementation establishes a broader cross-system action-navigation contract. If grouped presentation remains a live candidate, use a named isolated Runtime Actions Storybook comparison and owner checkpoint before route propagation; a settled compact timing filter does not otherwise need a mid-apply proof gate.
+
 ## Ideation Sandbox (Raw / Rough Ideas)
 
 This content is a work in progress to dump rough thoughts, brainstorms, and refactor wishes before prioritizing or organizing them.
@@ -430,10 +431,17 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
   - _Refinement trigger_: Use the ownership seam established by completed `BL-074`, then promote a separate observable-behavior proposal before first external playtest if owner rehearsal still finds desktop scanning disruptive or scratchpad saturation likely.
 
 - Explore responsive collection-row quick actions and optional gestures after the submenu baseline has real use evidence.
-  - _Why_: A consistent submenu scales safely across dense rows, but frequently used commands such as focused Edit may eventually merit one-step access on larger screens or optional mobile acceleration.
-  - _Current direction_: Keep the complete, discoverable submenu as the canonical path. Consider selectively surfaced desktop actions, mobile compression, or optional gestures only as progressive enhancements after `BL-064` and playtest evidence identify genuinely frequent commands.
-  - _Constraints_: Every gesture has an equivalent visible/menu command; destructive actions require confirmation or a recoverable undo path; responsive shortcuts must not create an excessive tab order or make the same command appear ambiguously in multiple places.
-  - _Refinement trigger_: Revisit in Horizon B after the dense-collection baseline has been used on touch, pointer, and keyboard workflows.
+  - _Why_: A consistent submenu scales safely across dense rows, but frequently used commands such as focused Edit may eventually merit one-step access on larger screens or optional mobile acceleration. Completed `BL-075` established Pin/Unpin in equipment and spell row menus while retaining collection-level Manage Pins for batches and quiet supporting bullets for density.
+  - _Current direction_: Keep the complete, discoverable submenu as the canonical path where identity-owned row actions already exist. Treat always-visible shortcuts, platform context-menu enhancements, and optional gestures as the future exploration; do not make right-click, long-press, or another hidden gesture the only path for any command.
+  - _Explore_: Inventory which existing submenu commands merit selectively surfaced desktop actions or mobile acceleration; compare direct quick actions, platform context-menu enhancement, and optional gestures; evaluate responsive command priority, discoverability, touch density, and whether BL-077's focused View/Edit/Notes language supplies useful evidence.
+  - _Constraints_: Every gesture has an equivalent visible/menu command; destructive actions require confirmation or a recoverable undo path; responsive shortcuts must not create an excessive tab order or make the same command appear ambiguously in multiple places; a shared command presentation must not imply shared domain mutations.
+  - _Refinement trigger_: Revisit in Horizon B after Manage Pins and the dense-collection baseline have been used on touch, pointer, and keyboard workflows, or earlier if owner rehearsal shows that collection-level pin management materially obstructs frequent reprioritization.
+- Explore discoverability cues for globally pinned spells after playtest evidence.
+  - _Why_: Completed `BL-075` moves each pinned spell into one global tier and renders it only once. A player who forgets that they pinned a spell may browse its former level group or alphabetical position and incorrectly conclude that it is missing.
+  - _Current direction_: Keep the accepted once-only global tier, visible level/preparation context, and one cross-level search workflow. Do not duplicate actionable spell rows solely as a precaution because duplicate counts, focus destinations, search results, and row actions would become ambiguous.
+  - _Explore_: If evidence warrants it, compare a lightweight per-level notice such as “2 pinned spells shown above,” a jump-to-pinned-spells link, and other non-duplicating wayfinding cues. Check whether search and the visible pinned tier already resolve the confusion before adding another control or label.
+  - _Constraints_: Preserve one actionable row per spell, one spell-search workflow, accurate counts, stable focus restoration, compact phone previews, and visible spell-level/preparation context. Do not introduce a second search bar or silently return pinned spells to their former groups.
+  - _Refinement trigger_: Promote this into a refined backlog item only if repeated owner or external-playtest evidence shows that players overlook pinned spells while browsing their expected level groups, or if another spell-navigation change needs to resolve the same wayfinding problem.
 - Explore source-backed runtime actions as source content plus explicit player overrides rather than fully materialized snapshots.
   - _Why_: Under the current snapshot contract, ordinary edits change the same `name` and `notes` fields that explicit resync later replaces, so resync can erase intentional player detail even though the action remains linked.
   - _Playtest decision (2026-07-25)_: Retain snapshot-and-explicit-resync semantics for the multi-source expansion, with a required overwrite warning before resync. An override-aware persisted model remains a future refactor.
@@ -454,10 +462,40 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
   - _Constraints_: Preserve stable identities and annotations, avoid duplicating editable content across canonical records and grants, retain offline ownership, and do not add provider-specific fields to generic core records prematurely.
   - _Refinement trigger_: Refine before background features become action sources or before an external compendium begins adding or enriching character-owned features.
 
+### Consolidate inline SVGs into a unified Icon atom
+
+ID:
+
+- `BL-079`
+
+Purpose:
+
+- The codebase currently houses several custom SVG icons (e.g. `OpenCloseToggleButton` arrows/hamburgers, `IconPin`, `IconBullet`) duplicated as inline templates or standalone atoms. Consolidating these into a single `<Icon variant="pin" />` atom will centralize common SVG attributes (`xmlns`, `viewBox`, accessibility tags) and ensure structural consistency across the design system.
+
+Included:
+
+- Create a central `Icon` atom with an explicit variant enum/type for all existing icons.
+- Port existing SVGs (like hamburger, chevron, kebab, pin, bullet) to use the new unified atom.
+- Update references in `OpenCloseToggleButton`, `GridContentActionMenu`, `IconPrefixedListItem`, etc.
+- Update Storybook atom stories.
+
+Excluded:
+
+- Altering the visual design or color mapping logic; this is an internal structural refactor only.
+- Modifying complex application-specific illustrations (if any exist) that don't fit the 1em/24px icon square pattern.
+
+Ambiguities:
+
+- Should `GitButton` and `HomeButton` rely on the generic icon atom, or stay independent due to their specialized shapes/responsibilities?
+
+Success:
+
+- Existing standalone icon atoms and inline icon templates are removed, and the single `Icon` atom is used in their place with zero visual regression in Storybook.
+
 ## Done Recently
 
+- `2026-08-29` completed `BL-075`: added stable Pin/Unpin priority for 2014 inventory, spells, Features, Traits, Languages, and Tools; introduced durable Language/Tool identities and validated character-owned Pin state; preserved collection-specific interaction grammar, deterministic priority-first ordering, reload and JSON round trips, accessible batch management, and immediate equipment/spell row commands while leaving Runtime Actions independent
 - `2026-08-23` completed `BL-076`: added searchable, responsive density handling for Runtime Actions and supporting Features, Traits, Languages, and Tools; adopted five-item and seven-item simple-list limits respectively while preserving domain-specific actions, compact bullet presentation, source workflows, query context, focus restoration, and cross-browser saturated coverage
 - `2026-08-16` completed `BL-074`: decomposed the legacy field/card and grid/container surfaces into focused field-group, structured-form, annotation, responsive-layout, panel, collapsible-panel, and domain-owned organism boundaries; retired the compatibility components, expanded stateful Storybook and browser coverage, and preserved typed patch, focus, accessibility, and persistence behavior
 - `2026-08-02` completed `BL-064`: added searchable, responsive dense collection workflows for Weapons, Armor & Shields, Other Gear, and Spells; introduced focused row editing and notes, mobile previews and full-height browsing, sparse spell-slot setup, and a saturated 2014 fixture; recorded Runtime/supporting collection and whole-sheet navigation follow-ups
 - `2026-08-01` completed `BL-068`: adopted and self-hosted official SRD 5.1 and SRD 5.2.1 with centralized public notices, base-path-safe navigation, and a protected local-only review boundary; fixed the sparse Shadowdark citation baseline, expansion gates, and audited human/agent source-review workflow for downstream resource and sheet work
-- `2026-08-01` completed `BL-067`: approved PRD v1 and the first-external-playtest roadmap for 2014 D&D, one adopted current 2024 D&D SRD release, and Shadowdark; established rights-classified reference, multi-system/core, PDF-interoperability, compatibility, survey-evidence, and scene-aware-navigation boundaries as separately refinable work

@@ -3,6 +3,7 @@ import { saturatedCharacter5e2014 } from '../../../../../fixtures/saturatedChara
 import { filterRuntimeActionRows, projectRuntimeActionRows } from '../runtimeActionRows';
 import {
 	filterSupportingCollectionRows,
+	projectPrioritizedSupportingCollectionRows,
 	projectSupportingCollectionRows
 } from '../supportingCollectionRows';
 
@@ -26,11 +27,26 @@ describe('runtime action collection rows', () => {
 });
 
 describe('supporting collection rows', () => {
-	it('projects each domain without forcing shared mutation data', () => {
+	it('projects stable priority identities for every Supporting Collection domain', () => {
 		expect(projectSupportingCollectionRows(saturatedCharacter5e2014, 'features')).toHaveLength(18);
 		expect(projectSupportingCollectionRows(saturatedCharacter5e2014, 'traits')).toHaveLength(7);
 		expect(projectSupportingCollectionRows(saturatedCharacter5e2014, 'languages')).toHaveLength(5);
 		expect(projectSupportingCollectionRows(saturatedCharacter5e2014, 'tools')).toHaveLength(7);
+		for (const kind of ['features', 'traits', 'languages', 'tools'] as const) {
+			const rows = projectSupportingCollectionRows(saturatedCharacter5e2014, kind);
+			expect(rows.every((row) => row.identity.length > 0)).toBe(true);
+			expect(new Set(rows.map((row) => row.identity)).size).toBe(rows.length);
+		}
+	});
+
+	it('projects pinned rows before a deterministic alphabetical baseline in every domain', () => {
+		for (const kind of ['features', 'traits', 'languages', 'tools'] as const) {
+			const rows = projectPrioritizedSupportingCollectionRows(saturatedCharacter5e2014, kind);
+			const firstUnpinned = rows.findIndex((row) => !row.pinned);
+			expect(firstUnpinned).toBeGreaterThan(0);
+			expect(rows.slice(0, firstUnpinned).every((row) => row.pinned)).toBe(true);
+			expect(rows.slice(firstUnpinned).every((row) => !row.pinned)).toBe(true);
+		}
 	});
 
 	it('searches labels, authored detail, and source context while preserving order', () => {

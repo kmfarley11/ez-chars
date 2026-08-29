@@ -3,8 +3,8 @@
 - **Status:** Approved
 - **Author:** Codex with project owner direction
 - **Date:** 2026-07-18
-- **Last reviewed:** 2026-08-01
-- **Latest refinement:** `BL-067` retained JSON/versioned schemas as canonical while adding an immediate interoperability/recovery review trigger for any post-v1 schema reset.
+- **Last reviewed:** 2026-08-28
+- **Latest refinement:** `BL-075` extended the strict current pre-playtest v0 shape with stable Language and Tool record identities plus validated collection-priority identity sets, without promising a v0 migration.
 
 ## Context & Problem Statement
 
@@ -116,3 +116,9 @@ The strict current schema requires unique inventory, spell, and feature identiti
 If playtest or later evidence calls for a fundamental schema reset after durable v1 promises begin, the project must immediately prioritize a recovery and interchange review before asking users to cross the reset. That review includes bounded editable-PDF export/import where exact forms, mappings, and rights make it viable, alongside JSON export and explicit migration/recovery options.
 
 This is a prioritization trigger, not a change in canonical storage: external PDF forms are lossy and cannot replace validated JSON, schema identifiers, migrations, or preservation of application-owned identities, annotations, references, and unbounded collections.
+
+### 2026-08-28: Stable proficiency identities and priority sets in pre-playtest v0
+
+`BL-075` requires Languages and Tools to carry opaque, unique character-record identities so rename, duplicate authored names, sorting, and filtering do not change mutation targets. Their authored names and sources remain non-identifying content; a future canonical catalog identity would be a separate concept. The strict v0 shape also validates system-owned collection-priority identity sets against the records in their corresponding collection and rejects duplicate, dangling, ambiguous, or cross-collection references.
+
+This is an allowed in-place change to the explicitly unstable pre-playtest `dnd5e-2014.schema.v0` epoch. Previously saved v0 documents without the required identities or with invalid priority references may be rejected and preserved for recovery; `BL-075` does not introduce an automatic v0 migration. Rename retains identity and priority, while deliberate deletion prunes affected priority membership in the same validated transaction.

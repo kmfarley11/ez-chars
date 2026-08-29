@@ -13,7 +13,11 @@ export type GridContentListRow = {
 	searchText?: string;
 };
 
-export type GridContentListRowAction = (row: GridContentListRow, restoreFocus: () => void) => void;
+export type GridContentListFocusRestore = () => boolean;
+export type GridContentListRowAction = (
+	row: GridContentListRow,
+	restoreFocus: GridContentListFocusRestore
+) => void;
 
 export type GridContentListPreview<TRow extends GridContentListRow = GridContentListRow> = {
 	rows: Array<TRow>;

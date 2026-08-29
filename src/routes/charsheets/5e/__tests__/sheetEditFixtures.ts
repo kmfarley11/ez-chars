@@ -50,11 +50,12 @@ export const createSheetEditCharacter = (): CharacterDocument5e2014 =>
 			},
 			proficiencies: {
 				languages: [
-					{ name: 'Common', source: { kind: 'ancestry' } },
-					{ name: 'Draconic', source: { kind: 'background' } }
+					{ id: 'language-common', name: 'Common', source: { kind: 'ancestry' } },
+					{ id: 'language-draconic', name: 'Draconic', source: { kind: 'background' } }
 				],
 				tools: [
 					{
+						id: 'tool-calligrapher',
 						name: 'Calligrapher supplies',
 						source: { kind: 'background', sourceId: 'sage' },
 						annotations: [

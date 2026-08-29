@@ -44,11 +44,17 @@ const createProjectionCharacter = (): CharacterDocument5e2014 =>
 			roleplay: { motives: { body: 'Protect the party.' } },
 			proficiencies: {
 				languages: [
-					{ name: 'Common', source: { kind: 'ancestry' } },
-					{ name: 'Elvish', source: { kind: 'ancestry' } },
-					{ name: 'Draconic', source: { kind: 'background' } }
+					{ id: 'language-common', name: 'Common', source: { kind: 'ancestry' } },
+					{ id: 'language-elvish', name: 'Elvish', source: { kind: 'ancestry' } },
+					{ id: 'language-draconic', name: 'Draconic', source: { kind: 'background' } }
 				],
-				tools: [{ name: 'Calligrapher supplies', source: { kind: 'background' } }]
+				tools: [
+					{
+						id: 'tool-calligrapher',
+						name: 'Calligrapher supplies',
+						source: { kind: 'background' }
+					}
+				]
 			},
 			classes: [
 				{
