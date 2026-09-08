@@ -4,7 +4,7 @@
 - **Author:** Codex with project owner direction
 - **Date:** 2026-08-30
 - **Last reviewed:** 2026-09-07
-- **Latest refinement:** [`BL-069`](../../openspec/changes/bl-069-rights-classified-reference-navigation/proposal.md) accepts the compact viewer baseline with a temporary Firefox/macOS rapid-scroll notice, defaults stacked phone navigation closed, and delegates supported-platform classification and broader mobile toolbar optimization to `BL-072` and `BL-082`.
+- **Latest refinement:** [`BL-069`](../../openspec/changes/archive/2026-09-08-bl-069-rights-classified-reference-navigation/proposal.md) accepts the compact viewer baseline with a temporary Firefox/macOS rapid-scroll notice, defaults stacked phone navigation closed, and delegates supported-platform classification and broader mobile toolbar optimization to `BL-072` and `BL-082`.
 
 ## Context & Problem Statement
 

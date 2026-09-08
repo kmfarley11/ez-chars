@@ -178,19 +178,19 @@ The rough 5e, Shadowdark, and Cairn Excalidraw files are existing design evidenc
 
 ## Strategic Priority Queue
 
-This is a vision-level dependency order, not a substitute for backlog IDs or an active OpenSpec task list. PRD v1 is approved; the core/PDF planning audits, the `BL-064` dense inventory/spell proof, the `BL-074` component-boundary refactor, `BL-076` Runtime/supporting collection scaling, and `BL-075` stable collection priority are complete. The active delivery sequence is:
+This is a vision-level dependency order, not a substitute for backlog IDs or an active OpenSpec task list. PRD v1 is approved; the core/PDF planning audits, the `BL-064` dense inventory/spell proof, the `BL-074` component-boundary refactor, `BL-076` Runtime/supporting collection scaling, `BL-075` stable collection priority, and `BL-069` rights-classified reference navigation are complete. The active delivery sequence is:
 
-1. Prove self-hosted/link-only resource discovery and contextual navigation against the existing 2014 sheet (`BL-069`).
-2. Establish the minimum multi-system lifecycle/computed-view boundary and a 2024 5e sheet; support the deliberately adopted SRD 5.2.1 release, audit the existing rough designs, and treat 5e-family reuse as family evidence (`BL-070`).
-3. Add the minimal Shadowdark sheet within the conservative source baseline and use its different shape to validate or revise the shared boundary (`BL-071`).
-4. Harden mobile interaction, sparse NPC/sidekick use, saturated-sheet navigation, backup/restore, resource lookup, and compatibility decisions across the full matrix (`BL-072`).
+1. Establish the minimum multi-system lifecycle/computed-view boundary and a 2024 5e sheet; support the deliberately adopted SRD 5.2.1 release, audit the existing rough designs, and treat 5e-family reuse as family evidence (`BL-070`).
+2. Add the minimal Shadowdark sheet within the conservative source baseline and use its different shape to validate or revise the shared boundary (`BL-071`).
+3. Refine the shared mobile rules-reader controls after both additional source presentations exist and before final matrix hardening (`BL-082`).
+4. Harden mobile interaction, sparse NPC/sidekick use, saturated-sheet navigation, backup/restore, resource lookup, Firefox/macOS compatibility, and supported-platform decisions across the full matrix (`BL-072`).
 5. Deliver the minimum viable outline or jump-navigation response supported by saturated-sheet scroll evidence (`BL-073`).
 6. Add explicit Runtime Action timing navigation so action-economy categories are evident without relying on free-text search knowledge (`BL-078`).
 7. Finalize the survey questions and verify the voluntary in-app feedback path as the last prerequisite before external invitations (`BL-081`).
 8. Run the early P1 fillable-PDF export/import proofs after a target schema and template-delivery basis settle (`BL-066`); they complement but do not gate the first playtest.
 9. Reconcile external evidence before promoting specialized builders, stat-block modes, normalized compendium behavior, more systems, image/OCR import, or connected services.
 
-Completed `BL-075` establishes a familiar player-facing Pin/Unpin presentation and draft-management language while keeping stable identity, validation, mutation, and persistence system-owned. `BL-069` is now the next Horizon A prerequisite. Saturated 2014 evidence has promoted a bounded navigation response (`BL-073`) into P0, while broader scene vocabulary still awaits non-2014 evidence. Explicit Runtime Action timing navigation (`BL-078`) remains the last P0 product-interaction change because timing is already searchable, but external handoff should not depend on users discovering that implicit path. `BL-081` is the final P0 readiness gate so the owner-approved questions and live feedback destination exist before participants are invited.
+Completed `BL-069` establishes rights-classified resource discovery, a responsive app-controlled viewer, persistent and contextual sheet references, explicit external-source handling, and an accepted Firefox/macOS compatibility notice whose cross-platform classification remains with `BL-072`. Completed `BL-075` establishes a familiar player-facing Pin/Unpin presentation and draft-management language while keeping stable identity, validation, mutation, and persistence system-owned. Saturated 2014 evidence has promoted a bounded navigation response (`BL-073`) into P0, while broader scene vocabulary still awaits non-2014 evidence. Explicit Runtime Action timing navigation (`BL-078`) remains the last P0 product-interaction change because timing is already searchable, but external handoff should not depend on users discovering that implicit path. `BL-081` is the final P0 readiness gate so the owner-approved questions and live feedback destination exist before participants are invited.
 
 ## Decision Filter for Future Work
 

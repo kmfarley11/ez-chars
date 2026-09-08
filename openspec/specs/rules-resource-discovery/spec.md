@@ -1,8 +1,11 @@
-# rules-resource-discovery Specification
+# Rules Resource Discovery
 
 ## Purpose
-TBD - created by archiving change bl-069-rights-classified-reference-navigation. Update Purpose after archive.
+
+Define how the application catalogs, searches, distinguishes, and safely exposes rules resources and curated locators without obscuring their identity, rights, availability, or trust state.
+
 ## Requirements
+
 ### Requirement: Rules resources and locators have stable classified identities
 
 The system SHALL register every discoverable rules resource and curated locator with stable identity, source and rules-version context, rights delivery classification, access guidance, and an authoritative destination appropriate to that classification.
@@ -92,4 +95,3 @@ The system SHALL expose adopted source/version and attribution information and S
 - **WHEN** a registered source cannot currently be opened
 - **THEN** the system SHALL retain the bibliographic citation and explain its unavailable state
 - **AND** it SHALL NOT substitute an unregistered mirror or alternate source automatically
-

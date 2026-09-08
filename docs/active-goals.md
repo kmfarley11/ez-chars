@@ -63,13 +63,13 @@ This is a capability summary for the completed 2014 baseline, not a chronologica
 - Focused field-group, structured-form, annotation, dialog, responsive-layout, panel, collapsible-panel, dense-list, and domain-owned card boundaries support the implemented sheet without claiming a universal cross-system rendering contract.
 - The home-to-sheet accessibility and verification baseline includes keyboard, touch, modal/popover context, mobile geometry, unit/component coverage, and black-box browser checks.
 - Official SRD 5.1 and SRD 5.2.1 PDFs are self-hosted with centralized attribution and provenance; the conservative Shadowdark citation baseline and protected maintainer review boundary are established for later resource-navigation and system-sheet work.
+- Rights-classified resource discovery, an app-controlled self-hosted SRD viewer, persistent general Rules access, class/equipment/spell locators, explicit external source states, and annotation reference routing are complete for the 2014 sheet. The accepted playtest baseline carries a temporary Firefox/macOS rapid-scroll compatibility notice; `BL-072` owns cross-platform classification, while `BL-082` and `BL-080` own broader phone-reader optimization and user-local PDF connection.
 
 ### Partial
 
 - 5e sheet route still does not expose every optional schema field or deeper 5e detail
 - the current field interaction and binding/mutation contracts are documented in [docs/field-interaction-model.md](field-interaction-model.md) and [docs/field-binding-contract.md](field-binding-contract.md); the component-composition ADR owns the current field/card boundaries, while [docs/field-rendering-api.md](field-rendering-api.md) is retained only as historical rationale
 - the completed `BL-074` refactor retired the legacy `GridContent` and `GridContainer` boundaries after decomposing them into focused field-group, structured-form, annotation, dialog, responsive-layout, surface, collapsible-panel, and domain-owned card responsibilities; completed `BL-076` exercised those seams for Runtime and supporting collections, and completed `BL-075` layered reusable Pin/Unpin UX over domain-owned identity and persistence without claiming a universal collection model
-- `BL-069` has implemented and received owner approval for the 2014 rights-classified resource catalog, metadata-bounded library, app-owned SRD viewer, persistent general `Rules` action, class/equipment/spell locators, explicit external source states, and annotation routing; the accepted playtest baseline carries a temporary Firefox/macOS rapid-scroll compatibility notice, while cross-platform classification, broader phone reader optimization, and user-local PDF connection remain separate `BL-072`, `BL-082`, and `BL-080` work
 
 ### Missing
 

@@ -1,8 +1,11 @@
-# contextual-reference-navigation Specification
+# Contextual Reference Navigation
 
 ## Purpose
-TBD - created by archiving change bl-069-rights-classified-reference-navigation. Update Purpose after archive.
+
+Define how character-sheet context opens classified rules references, preserves active work, and provides responsive, accessible navigation between self-hosted and external sources.
+
 ## Requirements
+
 ### Requirement: Representative sheet contexts expose focused rules references
 
 The 2014 character sheet SHALL expose clearly named contextual References actions near representative character creation or class, equipment, and spell information without replacing the existing edit, annotation, or collection workflows.
@@ -215,4 +218,3 @@ The system SHALL give resource results, reference actions, viewer controls, docu
 
 - **WHEN** a reference is external, unavailable, offline, alternate, or stale
 - **THEN** its notice and available action SHALL be conveyed by visible text and accessible semantics rather than color alone
-

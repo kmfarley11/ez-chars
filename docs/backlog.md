@@ -81,11 +81,11 @@ The queues above record strategic priority membership; this list records the dep
 
 1. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary and add the minimal 2024 D&D sheet
 2. `BL-071`: Add the minimal Shadowdark sheet within the conservative baseline after `BL-070` supplies the dispatch boundary
-4. `BL-082`: Refine the mobile rules-reader controls after the complete source presentations exist and before final matrix hardening
-5. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix
-6. `BL-073`: Deliver minimum viable navigation (e.g., outline/navbar) before external playtest based on scroll-pressure evidence
-7. `BL-078`: Add generic quickfilters to collection views (e.g. Runtime Actions by timing, Spells by level) before external handoff
-8. `BL-081`: Finalize the survey questions and verify the voluntary in-app feedback path immediately before inviting external playtesters
+3. `BL-082`: Refine the mobile rules-reader controls after the complete source presentations exist and before final matrix hardening
+4. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix
+5. `BL-073`: Deliver minimum viable navigation (e.g., outline/navbar) before external playtest based on scroll-pressure evidence
+6. `BL-078`: Add generic quickfilters to collection views (e.g. Runtime Actions by timing, Spells by level) before external handoff
+7. `BL-081`: Finalize the survey questions and verify the voluntary in-app feedback path immediately before inviting external playtesters
 
 The completed `BL-064` proof established the inventory and spell baseline, `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams, `BL-076` added proportionate density behavior for Runtime Actions and supporting collections without flattening their distinct interaction grammars, and `BL-075` added a reusable player-facing pinning grammar while keeping identity, persistence, and system nuance domain-owned. Accepted collection previews now reflect deliberate user priority before owner rehearsal and external handoff. `BL-066` is an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights. It is deliberately not a first-playtest readiness prerequisite. `BL-082` follows the multi-system source presentations so its phone control proof can optimize one consistent reader before `BL-072` runs the final matrix. `BL-073` has been pulled into P0 because the owner validated the critical need for a minimum viable navigation aid (like an outline) by observing scroll behavior on saturated character content during feature development. `BL-078` remains the final product-interaction change in the P0 sequence because the existing search index covers timing and category, but external handoff should not rely on players knowing to express specific categorization as free text. `BL-081` follows every product prerequisite as the explicit readiness gate that prepares and verifies how external testers will report their experience before invitations are sent.
 
@@ -190,7 +190,6 @@ Refinement outputs:
   - Any import presents mapped values for review and rejects an unsupported artifact non-destructively.
   - Automated fixtures detect field-map or template-signature drift.
 - **Recommended workflow:** Full OpenSpec change because it introduces observable import/export behavior, external-format compatibility, and non-destructive failure requirements. Add or refine an ADR if template delivery, manifest identity, or PDF-library adoption creates a durable architecture/dependency decision.
-
 
 ### Refine mobile rules-reader navigation
 
