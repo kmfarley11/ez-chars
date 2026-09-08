@@ -6,6 +6,7 @@
 	interface Props {
 		heading: string;
 		children?: Snippet;
+		headerActions?: Snippet;
 		startsCollapsed?: boolean;
 		classes?: string;
 	}
@@ -13,6 +14,7 @@
 	let {
 		heading,
 		children = undefined,
+		headerActions = undefined,
 		startsCollapsed = false,
 		classes = undefined
 	}: Props = $props();
@@ -25,7 +27,7 @@
 </script>
 
 <PanelSurface classes={twMerge('flex flex-col', classes)}>
-	<div class="mb-2 flex justify-center">
+	<div class="mb-2 flex items-center justify-center gap-2">
 		<button
 			type="button"
 			class="theme-btn-light touch-target btn inline-flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-center text-lg font-semibold"
@@ -41,6 +43,7 @@
 				{isCollapsed ? '+' : '-'}
 			</span>
 		</button>
+		{@render headerActions?.()}
 	</div>
 	{#if !isCollapsed}
 		<div>

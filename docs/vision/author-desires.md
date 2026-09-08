@@ -143,6 +143,7 @@ The rough 5e, Shadowdark, and Cairn Excalidraw files are existing design evidenc
 - [x] Add stable Pin/Unpin priority ordering across identity-backed inventory, spell, and supporting collections so compact previews reflect deliberate user priority while system adapters retain their own data shapes.
 - [ ] Add explicit Runtime Action timing navigation so action, bonus-action, reaction, free, and other records do not rely on one homogeneous stream or on users knowing timing labels are searchable.
 - [ ] Complete representative player-character, sparse GM sidekick/NPC, and saturated-sheet owner rehearsals on mobile.
+- [ ] Finalize an owner-approved external-playtest survey and verify a clear voluntary in-app path to it before inviting participants, while keeping character data and hidden telemetry out of the feedback flow.
 - [x] Synthesize anonymized pre-playtest surveys and reconcile their directional findings into readiness priorities.
 - [ ] Reconcile external survey and qualitative evidence after the playtest.
 - [ ] If the conservative Shadowdark baseline materially constrains the intended resource evidence, explicitly decide whether adding a fourth CC-licensed system provides enough evidence to justify the extra scope; do not replace Shadowdark or expand the matrix automatically.
@@ -185,10 +186,11 @@ This is a vision-level dependency order, not a substitute for backlog IDs or an 
 4. Harden mobile interaction, sparse NPC/sidekick use, saturated-sheet navigation, backup/restore, resource lookup, and compatibility decisions across the full matrix (`BL-072`).
 5. Deliver the minimum viable outline or jump-navigation response supported by saturated-sheet scroll evidence (`BL-073`).
 6. Add explicit Runtime Action timing navigation so action-economy categories are evident without relying on free-text search knowledge (`BL-078`).
-7. Run the early P1 fillable-PDF export/import proofs after a target schema and template-delivery basis settle (`BL-066`); they complement but do not gate the first playtest.
-8. Reconcile external evidence before promoting specialized builders, stat-block modes, normalized compendium behavior, more systems, image/OCR import, or connected services.
+7. Finalize the survey questions and verify the voluntary in-app feedback path as the last prerequisite before external invitations (`BL-081`).
+8. Run the early P1 fillable-PDF export/import proofs after a target schema and template-delivery basis settle (`BL-066`); they complement but do not gate the first playtest.
+9. Reconcile external evidence before promoting specialized builders, stat-block modes, normalized compendium behavior, more systems, image/OCR import, or connected services.
 
-Completed `BL-075` establishes a familiar player-facing Pin/Unpin presentation and draft-management language while keeping stable identity, validation, mutation, and persistence system-owned. `BL-069` is now the next Horizon A prerequisite. Saturated 2014 evidence has promoted a bounded navigation response (`BL-073`) into P0, while broader scene vocabulary still awaits non-2014 evidence. Explicit Runtime Action timing navigation (`BL-078`) remains last in P0 because timing is already searchable, but external handoff should not depend on users discovering that implicit path.
+Completed `BL-075` establishes a familiar player-facing Pin/Unpin presentation and draft-management language while keeping stable identity, validation, mutation, and persistence system-owned. `BL-069` is now the next Horizon A prerequisite. Saturated 2014 evidence has promoted a bounded navigation response (`BL-073`) into P0, while broader scene vocabulary still awaits non-2014 evidence. Explicit Runtime Action timing navigation (`BL-078`) remains the last P0 product-interaction change because timing is already searchable, but external handoff should not depend on users discovering that implicit path. `BL-081` is the final P0 readiness gate so the owner-approved questions and live feedback destination exist before participants are invited.
 
 ## Decision Filter for Future Work
 

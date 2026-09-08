@@ -8,6 +8,7 @@ import { createReadStream, existsSync, readFileSync } from 'node:fs';
 import { copyFile, mkdir, readdir, stat } from 'node:fs/promises';
 import { extname, isAbsolute, join, relative, resolve as pathResolve } from 'node:path';
 import { execSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 import type { Dirent, Stats } from 'node:fs';
 import type { NextHandleFunction } from 'connect';
 
@@ -15,33 +16,37 @@ const packageVersion = JSON.parse(
 	readFileSync(pathResolve(process.cwd(), 'package.json'), 'utf8')
 ).version;
 
+const copyDirectory = async (
+	src: string,
+	dest: string,
+	excludedDirectoryNames: ReadonlySet<string> = new Set()
+): Promise<void> => {
+	if (!existsSync(src)) return;
+	await mkdir(dest, { recursive: true });
+	const entries: Dirent[] = await readdir(src, { withFileTypes: true });
+	await Promise.all(
+		entries
+			.filter((entry) => !entry.name.startsWith('.') && !excludedDirectoryNames.has(entry.name))
+			.map(async (entry) => {
+				const srcPath = join(src, entry.name);
+				const destPath = join(dest, entry.name);
+				if (entry.isDirectory()) {
+					await copyDirectory(srcPath, destPath, excludedDirectoryNames);
+					return;
+				}
+				if (entry.isFile()) {
+					await copyFile(srcPath, destPath);
+				}
+			})
+	);
+};
+
 const docsExtPlugin = (): Plugin => {
 	const sourceRelative = 'docs/ext';
 	const excludedDirectoryNames = new Set(['local-only']);
 	let rootDir = process.cwd();
 	let outDir = 'dist';
 	let shouldCopyOnCloseBundle = false;
-
-	const copyDirectory = async (src: string, dest: string): Promise<void> => {
-		if (!existsSync(src)) return;
-		await mkdir(dest, { recursive: true });
-		const entries: Dirent[] = await readdir(src, { withFileTypes: true });
-		await Promise.all(
-			entries
-				.filter((entry) => !entry.name.startsWith('.') && !excludedDirectoryNames.has(entry.name))
-				.map(async (entry) => {
-					const srcPath = join(src, entry.name);
-					const destPath = join(dest, entry.name);
-					if (entry.isDirectory()) {
-						await copyDirectory(srcPath, destPath);
-						return;
-					}
-					if (entry.isFile()) {
-						await copyFile(srcPath, destPath);
-					}
-				})
-		);
-	};
 
 	const getContentType = (filePath: string): string => {
 		const extension = extname(filePath).toLowerCase();
@@ -105,7 +110,90 @@ const docsExtPlugin = (): Plugin => {
 			const sourceDir = pathResolve(rootDir, sourceRelative);
 			if (!existsSync(sourceDir)) return;
 			const destination = pathResolve(rootDir, outDir, 'docs/ext');
-			await copyDirectory(sourceDir, destination);
+			await copyDirectory(sourceDir, destination, excludedDirectoryNames);
+		}
+	};
+};
+
+const pdfJsAssetsPlugin = (): Plugin => {
+	const supportDirectoryNames = [
+		'cmaps',
+		'iccs',
+		'image_decoders',
+		'standard_fonts',
+		'wasm'
+	] as const;
+	const supportDirectorySet = new Set<string>(supportDirectoryNames);
+	const require = createRequire(import.meta.url);
+	const packageDir = pathResolve(require.resolve('pdfjs-dist/package.json'), '..');
+	let rootDir = process.cwd();
+	let outDir = 'dist';
+	let shouldCopyOnCloseBundle = false;
+
+	const getContentType = (filePath: string): string => {
+		const extension = extname(filePath).toLowerCase();
+		if (extension === '.wasm') return 'application/wasm';
+		if (extension === '.js' || extension === '.mjs') return 'text/javascript; charset=utf-8';
+		if (extension === '.ttf') return 'font/ttf';
+		return 'application/octet-stream';
+	};
+
+	return {
+		name: 'pdfjs-support-assets',
+		configResolved(config: ResolvedConfig) {
+			rootDir = config.root;
+			outDir = config.build.outDir;
+			shouldCopyOnCloseBundle = config.command === 'build' && config.mode !== 'test';
+		},
+		configureServer(server: ViteDevServer) {
+			const normalizedBase = (server.config.base || '/').replace(/\/$/, '');
+			const mountPoints = ['/pdfjs'];
+			if (normalizedBase && normalizedBase !== '/') {
+				mountPoints.push(`${normalizedBase}/pdfjs`);
+			}
+
+			const handler: NextHandleFunction = (req, res, next) => {
+				if (!req.url) return next();
+				let requestPath: string;
+				try {
+					requestPath = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+				} catch {
+					return next();
+				}
+				const mountPoint = mountPoints.find(
+					(point) => requestPath === point || requestPath.startsWith(`${point}/`)
+				);
+				if (!mountPoint) return next();
+				const sanitized = requestPath.slice(mountPoint.length).replace(/^\/+/, '');
+				const [supportDirectory] = sanitized.split('/');
+				if (!supportDirectorySet.has(supportDirectory)) return next();
+				const target = pathResolve(packageDir, sanitized);
+				const targetRelative = relative(packageDir, target);
+				if (targetRelative.startsWith('..') || isAbsolute(targetRelative)) return next();
+
+				stat(target)
+					.then((fileStat: Stats) => {
+						if (!fileStat.isFile()) return next();
+						res.setHeader('Content-Type', getContentType(target));
+						createReadStream(target)
+							.on('error', () => next())
+							.pipe(res);
+					})
+					.catch(() => next());
+			};
+
+			server.middlewares.use(handler);
+		},
+		async closeBundle() {
+			if (!shouldCopyOnCloseBundle) return;
+			await Promise.all(
+				supportDirectoryNames.map((directoryName) =>
+					copyDirectory(
+						pathResolve(packageDir, directoryName),
+						pathResolve(rootDir, outDir, 'pdfjs', directoryName)
+					)
+				)
+			);
 		}
 	};
 };
@@ -144,5 +232,11 @@ export default defineConfig({
 			})()
 		)
 	},
-	plugins: [tailwindcss(), sveltekit(), docsExtPlugin(), removeUndefinedCodeSplitting()]
+	plugins: [
+		tailwindcss(),
+		sveltekit(),
+		docsExtPlugin(),
+		pdfJsAssetsPlugin(),
+		removeUndefinedCodeSplitting()
+	]
 });

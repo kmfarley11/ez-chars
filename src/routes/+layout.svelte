@@ -23,6 +23,11 @@
 				The app is in an active pre-release phase. Data preservation between exports and imports is
 				not guaranteed during ongoing updates.
 			</p>
+			<p class="theme-text-muted text-sm">
+				Known preview issue: Firefox on macOS may briefly show black areas during rapid
+				character-sheet scrolling. If this disrupts play, try another current browser such as Chrome
+				or Safari.
+			</p>
 		</div>
 	</div>
 	{#if $charsStorageIssue}

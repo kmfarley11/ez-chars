@@ -20,6 +20,7 @@ Character data created during this phase is experimental and is not guaranteed t
 - provide system-native schemas and sheets without forcing 5e root fields onto other systems;
 - validate local persistence and JSON backup/restore at system and I/O boundaries;
 - provide rights-classified resource and curated-section discovery, lawful document navigation, and contextual locators without requiring a normalized compendium;
+- provide a clear voluntary external-playtest feedback path with owner-approved questions before inviting participants, without adding hidden telemetry or transmitting character data;
 - establish a heuristic baseline for dense collections, focused row editing, annotations, and whole-sheet navigation under saturated data before external testing;
 - meet the mobile, keyboard, touch, assistive-technology, empty-state, and error-handling gates in PRD v1;
 - use Storybook and black-box browser tests for isolated and end-to-end evidence where appropriate.
@@ -68,18 +69,20 @@ This is a capability summary for the completed 2014 baseline, not a chronologica
 - 5e sheet route still does not expose every optional schema field or deeper 5e detail
 - the current field interaction and binding/mutation contracts are documented in [docs/field-interaction-model.md](field-interaction-model.md) and [docs/field-binding-contract.md](field-binding-contract.md); the component-composition ADR owns the current field/card boundaries, while [docs/field-rendering-api.md](field-rendering-api.md) is retained only as historical rationale
 - the completed `BL-074` refactor retired the legacy `GridContent` and `GridContainer` boundaries after decomposing them into focused field-group, structured-form, annotation, dialog, responsive-layout, surface, collapsible-panel, and domain-owned card responsibilities; completed `BL-076` exercised those seams for Runtime and supporting collections, and completed `BL-075` layered reusable Pin/Unpin UX over domain-owned identity and persistence without claiming a universal collection model
+- `BL-069` has implemented and received owner approval for the 2014 rights-classified resource catalog, metadata-bounded library, app-owned SRD viewer, persistent general `Rules` action, class/equipment/spell locators, explicit external source states, and annotation routing; the accepted playtest baseline carries a temporary Firefox/macOS rapid-scroll compatibility notice, while cross-platform classification, broader phone reader optimization, and user-local PDF connection remain separate `BL-072`, `BL-082`, and `BL-080` work
 
 ### Missing
 
 - polished empty states
 - 2024 D&D and Shadowdark system schemas, creation choices, routes, sheets, and fixtures
 - a system-dispatch and computed-summary boundary that does not require the home list to inspect 5e fields
-- a rights-classified resource library, curated-section search, and contextual reference navigation
 - explicit Runtime Action timing navigation beyond the existing text search; timing and category are searchable today, but the P0 `BL-078` follow-up owns a visible action-economy path before external handoff
+- final mobile rules-reader control refinement beyond the acceptable default-collapsed `BL-069` navigation baseline; P0 `BL-082` owns the evidence-driven toolbar, disclosure, and auto-hide decision before matrix hardening
+- an owner-approved external-playtest question set and verified in-app feedback path; the final P0 `BL-081` gate owns delivery before invitations are sent
 - continued owner solo-play rehearsals and external evidence across the PRD matrix; saturated 2014 rehearsal validated the revised spell, inventory, Runtime Action, and supporting-collection surfaces, and the owner has explicitly validated whole-sheet navigation (MVP outline/navbar) as a required P0 prerequisite before playtest.
 
 ### Deferred
 
 - durable character-data migration support begins when the first external playtest activates explicit system schema-v1 decisions; no general v0 migration is promised, and the final 2014 v0 receives a one-time transition only if a later approved change defines it before handoff
 - CI; local verification in [docs/verification.md](verification.md) remains the current source of truth until contributor count, release cadence, or branch-protection needs justify GitHub Actions.
-- Firefox-specific dense-sheet scroll optimization; the completed CSS container-query replacement, representative profile, and `BL-064` saturated-sheet recheck did not implicate additional application layout work. Reopen browser-specific optimization only if repeatable evidence implicates application code, using the profiling workflow in [docs/verification.md](verification.md).
+- Broader Firefox-specific dense-sheet scroll optimization remains deferred. Final `BL-069` review supplied evidence against both the original translucent sticky row and compositor-forcing hints on its compact replacement; the bounded control now avoids blur, layout containment, and forced transforms, but rapid scrolling still produces black/unpainted regions in the owner's Firefox-on-macOS environment. The pre-release notice recommends another current browser when this disrupts play. `BL-072` owns headed Firefox comparison on macOS and a non-macOS environment, profiling, supported-platform classification, and the decision to retain, revise, or remove that notice.

@@ -131,7 +131,7 @@ export const SRD_REF_5E_2014: Reference = {
 	locator: {
 		url: FULL_2014_SRD_URL
 	},
-	sourceId: 'local-5.1-srd' // createId()
+	sourceId: 'dnd5e-2014.srd-5-1'
 };
 
 export const DND_BEYOND_BASIC_RULES_REF_5E_2014: Reference = {

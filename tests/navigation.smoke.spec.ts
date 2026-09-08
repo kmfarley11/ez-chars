@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('serves adopted SRDs locally without exposing local-only sources', async ({ page }) => {
 	await page.goto('/');
+	await expect(page.getByText('Known preview issue: Firefox on macOS')).toBeVisible();
 
 	const srdLink = page.getByRole('link', { name: 'View SRD 5.1' });
 	await expect(srdLink).toHaveAttribute('href', '/ez-chars/docs/ext/5e2014/SRD_CC_v5.1.pdf');

@@ -54,12 +54,13 @@ These lightweight queues record priority membership only. Detailed definitions l
 
 ### P0 — Product Prerequisites
 
-- [`BL-069` — Deliver rights-classified reference navigation](#deliver-rights-classified-reference-navigation)
 - [`BL-070` — Establish the multi-system boundary and 2024 D&D sheet](#establish-the-multi-system-boundary-and-2024-dd-sheet)
 - [`BL-071` — Deliver a minimal system-native Shadowdark sheet](#deliver-a-minimal-system-native-shadowdark-sheet)
+- [`BL-082` — Refine mobile rules-reader navigation](#refine-mobile-rules-reader-navigation)
 - [`BL-072` — Harden the three-system external-playtest matrix](#harden-the-three-system-external-playtest-matrix)
 - [`BL-073` — Investigate scene-aware runtime guidance and navigation](#investigate-scene-aware-runtime-guidance-and-navigation) _(P0 prerequisite: MVP navigation required before playtest)_
-- [`BL-078` — Add action-economy navigation to Runtime Actions](#add-action-economy-navigation-to-runtime-actions)
+- [`BL-078` — Add quickfilters to collection views](#add-quickfilters-to-collection-views)
+- [`BL-081` — Prepare playtest feedback collection](#prepare-playtest-feedback-collection) _(final prerequisite before external invitations)_
 
 ### P1 — Priority Improvements
 
@@ -69,6 +70,7 @@ These lightweight queues record priority membership only. Detailed definitions l
 
 ### P2 — Future Feature Work
 
+- [`BL-080` — Connect user-owned rules PDFs locally](#connect-user-owned-rules-pdfs-locally)
 - [`BL-079` — Consolidate inline SVGs into a unified Icon atom](#consolidate-inline-svgs-into-a-unified-icon-atom)
 
 ## Next Recommended Sequence
@@ -77,14 +79,15 @@ _Goal: First External Playtest_
 
 The queues above record strategic priority membership; this list records the dependency-aware action order and may omit blocked or trigger-deferred items.
 
-1. `BL-069`: Prove multi-source resource discovery and contextual navigation against the 2014 sheet
-2. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary and add the minimal 2024 D&D sheet
-3. `BL-071`: Add the minimal Shadowdark sheet within the conservative baseline after `BL-070` supplies the dispatch boundary
-4. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix
-5. `BL-073`: Deliver minimum viable navigation (e.g., outline/navbar) before external playtest based on scroll-pressure evidence
-6. `BL-078`: Make action, bonus-action, reaction, and other timing categories explicitly navigable before external handoff
+1. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary and add the minimal 2024 D&D sheet
+2. `BL-071`: Add the minimal Shadowdark sheet within the conservative baseline after `BL-070` supplies the dispatch boundary
+4. `BL-082`: Refine the mobile rules-reader controls after the complete source presentations exist and before final matrix hardening
+5. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix
+6. `BL-073`: Deliver minimum viable navigation (e.g., outline/navbar) before external playtest based on scroll-pressure evidence
+7. `BL-078`: Add generic quickfilters to collection views (e.g. Runtime Actions by timing, Spells by level) before external handoff
+8. `BL-081`: Finalize the survey questions and verify the voluntary in-app feedback path immediately before inviting external playtesters
 
-The completed `BL-064` proof established the inventory and spell baseline, `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams, `BL-076` added proportionate density behavior for Runtime Actions and supporting collections without flattening their distinct interaction grammars, and `BL-075` added a reusable player-facing pinning grammar while keeping identity, persistence, and system nuance domain-owned. Accepted collection previews now reflect deliberate user priority before owner rehearsal and external handoff. `BL-066` is an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights. It is deliberately not a first-playtest readiness prerequisite. `BL-073` has been pulled into P0 because the owner validated the critical need for a minimum viable navigation aid (like an outline) by observing scroll behavior on saturated character content during feature development. `BL-078` remains last in the P0 sequence because the existing Runtime Action search already indexes timing and category, but external handoff should not rely on players knowing to express action-economy navigation as free text.
+The completed `BL-064` proof established the inventory and spell baseline, `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams, `BL-076` added proportionate density behavior for Runtime Actions and supporting collections without flattening their distinct interaction grammars, and `BL-075` added a reusable player-facing pinning grammar while keeping identity, persistence, and system nuance domain-owned. Accepted collection previews now reflect deliberate user priority before owner rehearsal and external handoff. `BL-066` is an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights. It is deliberately not a first-playtest readiness prerequisite. `BL-082` follows the multi-system source presentations so its phone control proof can optimize one consistent reader before `BL-072` runs the final matrix. `BL-073` has been pulled into P0 because the owner validated the critical need for a minimum viable navigation aid (like an outline) by observing scroll behavior on saturated character content during feature development. `BL-078` remains the final product-interaction change in the P0 sequence because the existing search index covers timing and category, but external handoff should not rely on players knowing to express specific categorization as free text. `BL-081` follows every product prerequisite as the explicit readiness gate that prepares and verifies how external testers will report their experience before invitations are sent.
 
 ## Refined Backlog Catalog
 
@@ -188,41 +191,81 @@ Refinement outputs:
   - Automated fixtures detect field-map or template-signature drift.
 - **Recommended workflow:** Full OpenSpec change because it introduces observable import/export behavior, external-format compatibility, and non-destructive failure requirements. Add or refine an ADR if template delivery, manifest identity, or PDF-library adoption creates a durable architecture/dependency decision.
 
-### Deliver rights-classified reference navigation
+
+### Refine mobile rules-reader navigation
 
 ID:
 
-- `BL-069`
+- `BL-082`
 
 Sequencing context:
 
-- Prove the document-navigation contract against the focused 2014 component boundaries completed by `BL-074`, using the source evidence and conservative Shadowdark baseline established by archived `BL-068`. Reuse the proof for later systems without prebuilding a compendium.
+- Treat the `BL-069` default-collapsed, visibly named `Outline & find` control as the acceptable first baseline. Run this focused P0 refinement after `BL-070` and `BL-071` expose the complete playtest source presentations, then before `BL-072` performs final cross-system hardening. This directly supports the mobile-first, runtime-access, contextual-guidance, and saturation principles in `docs/vision/author-desires.md`; no product-horizon tension is identified.
 
 Refinement outputs:
 
-- **Purpose:** Help a user find the free or user-owned rules document or section relevant to the character information they are viewing or editing, especially on a phone, without implying that the app supplies paid or link-only content.
+- **Purpose:** Make phone-sized rules lookup preserve as much readable document space as practical while keeping page movement, outline, Find, fallback, and dismissal understandable and consistently recoverable.
 - **Included behavior:**
-  - Register self-hosted or link-only resources through versioned metadata with system/rules identity, source/edition identity, topics, curated section labels, page/anchor/URL locators, attribution, availability/ownership guidance, and authoritative acquisition links.
-  - Permit multiple source records and locator maps for one system/topic, while requiring only the free 2014 SRD source in the first proof.
-  - Consume the official SRD 5.1 PDF, notices, and verified hash adopted by `BL-068`, then establish its official page-locator map.
-  - Provide searchable resource and curated-section discovery with explicit empty, no-match, unavailable, and changed-source states.
-  - Navigate to the lawful document location and preserve an in-progress sheet edit when the user follows and returns from a contextual locator.
-  - Prove contextual links from at least character creation/class, equipment, and spells on the 2014 sheet.
-  - Evaluate an in-app PDF dialog/panel versus a focused external/native viewer using phone, keyboard, focus, deep-link, and browser PDF-support evidence.
-  - Cover locator integrity and representative mobile navigation with deterministic tests.
+  - Review the phone reader's global page toolbar, document-navigation disclosure, source context, and dismissal controls as one responsive control system across the supported self-hosted source presentations.
+  - Compare a compact persistent toolbar, explicit toolbar disclosure, scroll-aware auto-hide, and selectively sticky controls; any hidden controls must have an obvious one-step recovery path and must not depend on gesture-only discovery.
+  - Decide which controls must remain continuously visible, which may collapse together, and whether page input, Previous/Next, browser fallback, outline, and Find should share one disclosure or retain distinct homes.
+  - Preserve the `BL-069` default-collapsed mobile navigation baseline until a physical-phone proof demonstrates a clearer replacement; reuse existing buttons, disclosures, icons, focus contracts, and touch-target policy where their behavior fits.
+  - Prove the selected behavior on representative small and large phones, portrait and landscape where supported, long continuous PDF scrolling, keyboard/screen-reader navigation, coarse-pointer input, and both sheet-level and annotation-dialog reference entry.
+  - Use one existing viewer Storybook sandbox as the smallest visual proof and record human interaction bullets in the change-local `verify.md`; add repeatable outcomes to Playwright rather than Storybook `play` functions.
 - **Excluded behavior:**
-  - Normalized spell, item, class, or rules records; a public compendium API; arbitrary full-text ingestion; semantic search; OCR; or user document uploads.
-  - Assuming every browser can search or deep-link a PDF identically without a tested fallback.
+  - Replacing PDF.js, changing resource rights or locator contracts, adding a full-text index, highlighting Find matches, connecting user-local PDFs, or redesigning the desktop sheet/reference workspace.
+  - Hiding essential navigation with no visible recovery control, gesture-only access, browser-sniffed layouts, or persisting toolbar state as character data.
+  - Optimizing each rules system with unrelated phone controls before evidence shows that the shared reader presentation cannot serve it.
 - **Ambiguities:**
-  - Should the first self-hosted PDF open in an in-app panel/dialog, a dedicated app route, or the browser viewer?
-  - Is curated title/topic/section search plus document-native search sufficient for the playtest, or does the licensed 2014 SRD need a bounded app-owned text index?
-  - How should the UI communicate link-only, user-owned/not-included, offline-unavailable, alternate-source, and stale-locator states without burdening the free-first path?
+  - Should the page toolbar remain compact and sticky, collapse behind one clearly named control, or auto-hide only during downward document scrolling and immediately return on upward scroll or focus?
+  - Which action is the strongest mobile anchor: page position, outline/Find, Close/Back, or a combined document-tools disclosure?
+  - Should expanded navigation temporarily replace the document region, overlay it, or remain a bounded stacked region once the default is collapsed?
+  - Can the same responsive composition serve both the full-screen sheet viewer and the smaller annotation-dialog viewer without obscuring draft-return context?
 - **Success:**
-  - A mobile tester finds each configured 2014 topic within the PRD gate and lands at the intended lawful location without losing draft work.
-  - Resource version/attribution is visible, broken or unavailable sources fail clearly, and locator tests detect source drift.
-  - Stored metadata remains a document-navigation index rather than an accidental normalized compendium.
-  - The data model can represent a future paid-book locator alongside a free source without storing protected source text or granting access to the book.
-- **Recommended workflow:** Full OpenSpec change because it introduces new user behavior, persisted/configured source metadata, and unresolved viewer/search choices. Add an ADR for the durable resource-viewer/indexing boundary selected during design.
+  - Opening a reference on each supported phone size initially prioritizes readable PDF content while leaving the presence and recovery of outline/Find and page controls obvious.
+  - A user can continuously scroll, jump to a known page, search, open a curated section, use browser fallback, and dismiss/return without losing context or hunting for controls.
+  - No control auto-hides while focused, no essential action becomes gesture-only, every direct-touch control meets the coarse-pointer policy, and no document-level horizontal overflow appears.
+  - Owner review approves one consistent responsive control grammar before the final three-system matrix rehearsal.
+- **Recommended workflow:** Full OpenSpec change with a small pre-propagation mobile proof because this is likely to modify durable responsive reference-navigation requirements and combines unresolved toolbar visibility, scroll behavior, focus, touch, and nested-viewer trade-offs. The scope benefits from explicit proposal, design, tasks, and a human checkpoint. No new ADR is currently triggered; refine the existing app-controlled PDF-navigation ADR only if the chosen solution changes its durable presentation or lifecycle boundary.
+
+### Connect user-owned rules PDFs locally
+
+ID:
+
+- `BL-080`
+
+Sequencing context:
+
+- Defer until `BL-069` establishes and playtests the resource catalog, source identity, locator integrity, and in-app viewer. This is a P2 product expansion rather than a first-external-playtest prerequisite and is intentionally omitted from the Next Recommended Sequence until a supported user-owned source and privacy/rights review are selected.
+
+Refinement outputs:
+
+- **Purpose:** Let a user connect a lawfully possessed rules PDF on their own device so known references can open inside the established viewer without ez-chars distributing, uploading, syncing, or granting access to that document.
+- **Included behavior:**
+  - Add a user-local source connection workflow for an explicitly supported registered source and edition, using plain language such as `Connect your PDF`, `Connected on this device`, and `Reconnect your copy` rather than implying a server upload.
+  - Show `Requires your copy · not connected` before activation, then offer a just-in-time connection action plus a proactive Manage Local Sources path; once connected, reuse the `BL-069` in-app viewer and locator experience.
+  - Read only a file the user deliberately selects, keep its bytes on the current device/browser profile, and state accurately whether the source is session-only or remembered locally. Never include source bytes in character persistence, JSON backup/export, telemetry, or network requests.
+  - Verify the selected document against the supported source/edition before enabling curated exact-page locators. A mismatch must not inherit another edition's page map silently; retain source guidance and a safe reconnect or limited-view path.
+  - Make remembering a source explicit and optional, use a storage boundary suitable for PDF-sized blobs rather than `localStorage`, report quota/persistence/eviction limitations, and recover through a non-destructive Reconnect flow when bytes or permissions disappear.
+  - Let the user inspect connected source identity, local-only status, storage use where available, and remove/forget the document without affecting characters, annotations, locators, or other sources.
+  - Re-review rights, privacy, security, untrusted-PDF handling, supported-browser behavior, and local-storage lifecycle before public implementation.
+- **Excluded behavior:**
+  - Server upload or processing, cloud or cross-device sync, sharing a connected source, bundling or redistributing protected content, bypassing authentication or DRM, vendor-account integration, or implying ownership verification beyond the selected file/source match.
+  - Arbitrary unknown-document ingestion, user-authored locator-map tooling, OCR, semantic processing, generated excerpts, normalized compendium records, or a persistent cross-document full-text index.
+  - Storing document bytes inside character schema data, localStorage, application exports, committed fixtures, source control, logs, screenshots, or agent-visible processing artifacts.
+  - Treating a filename, display title, purchase assertion, or user possession alone as sufficient proof that a curated locator map matches the selected edition.
+- **Ambiguities:**
+  - Which one supported user-owned source/edition supplies the first lawful proof, and what stable evidence may the public app retain to verify that edition without redistributing protected expression?
+  - When a PDF is valid but does not match the known edition, should the baseline permit unlocated session viewing or reject it until a supported locator map exists?
+  - Should the first cross-browser persistence proof copy bytes into origin-private storage, retain a permissioned file handle where supported, or offer remembered copying only with a session-only fallback?
+  - What size, quota, persistence-request, private-browsing, eviction, and device-change language is understandable enough that `remembered locally` does not promise durable backup?
+  - Which encrypted, malformed, scripted, or otherwise unsupported PDFs must be rejected before the viewer processes them?
+- **Success:**
+  - A user with the supported edition can connect it without network transmission, open a known reference at the verified locator, close/reopen the app according to the selected persistence mode, and understand that availability is device/browser-local.
+  - A different or changed edition never receives an incorrect exact-page locator silently, and reconnecting or removing a source leaves character data and annotations unchanged.
+  - Browser quota, permission loss, storage eviction, private browsing, invalid files, and viewer failures produce clear non-destructive recovery paths.
+  - No connected PDF bytes or extracted source content enter application exports, source control, server requests, logs, or another user's/browser's storage.
+- **Recommended workflow:** Full OpenSpec change after `BL-069` because this adds durable source-connection behavior plus substantial local file identity, PDF security, privacy, quota, persistence, eviction, removal, and cross-browser architecture. An ADR is triggered for the selected device-storage/file-handle boundary and its privacy/retention guarantees; qualified rights review may be a separate gate depending on the first proof source.
 
 ### Establish the multi-system boundary and 2024 D&D sheet
 
@@ -315,8 +358,11 @@ Refinement outputs:
   - Rehearse at the representative mobile and desktop viewports; verify keyboard order, touch targets/exceptions, focus/modal context, scrolling, assistive semantics, and no document-level mobile overflow.
   - Resolve cross-system import/export, invalid-data recovery, mixed-system list/search, system labeling, and source-unavailable behavior.
   - Record performance and accessibility evidence for the supported browser matrix.
+  - Reproduce the owner-observed rapid-scroll black-region artifact in headed Firefox on macOS and at least one non-macOS Firefox environment, compare an equivalent saturated sheet without the persistent Rules control, and use a Firefox profile plus screen recording to distinguish application paint pressure from a browser/platform rendering defect.
+  - Decide whether Firefox on macOS belongs in the initial supported browser-platform matrix, then retain, revise, or remove the temporary pre-release compatibility notice and fallback-browser recommendation according to that evidence.
   - Immediately before external handoff, decide each system's durable schema identifier and whether the final 2014 v0 receives one bounded transition; update fixtures, warnings, migration tests, and recovery documentation.
-  - Run owner solo-play rehearsals, record findings, and prepare an external feedback checklist plus short external survey mapped to the PRD gates.
+  - Run owner solo-play rehearsals, record findings, and identify the external feedback topics that `BL-081` will turn into the final checklist, survey questions, and collection path.
+  - Audit the intentionally representative locator sets from the three system proofs against the actual playtest tasks, then add or correct only the high-value curated rules landmarks needed for class or character setup, runtime play, equipment, spells or system equivalents, and recurring table lookup. Keep the review bounded to document navigation rather than pursuing exhaustive compendium coverage.
   - Ask whether contextual references, empty states, focused editing, and transparent aids provided enough guidance or whether a bounded creation workflow should be promoted.
   - Record whether combat prominence obscures exploration, roleplay, or other system-native scene information and whether ordinary landmarks and system-native cues are sufficient before promoting `BL-073`.
   - After external sessions, synthesize survey and qualitative evidence with response count, limitations, decisions, and backlog destinations before a product-v1.0 decision.
@@ -325,13 +371,17 @@ Refinement outputs:
   - Declaring product v1.0 solely because automated checks or owner rehearsals pass.
 - **Ambiguities:**
   - Which performance budgets and supported browser versions are appropriate once all three real sheets exist?
+  - Is the rapid-scroll black-region artifact specific to Firefox on macOS, reproducible in Firefox elsewhere, or evidence of application paint pressure shared by other browser/platform combinations?
   - Does any sparse-GM scenario justify a lite mode before external handoff, or should that remain a playtest question?
   - Does saturation evidence require a collection search, whole-sheet search, outline, sticky landmarks, tabs, or another navigation aid before handoff?
+  - Which curated rules landmarks are necessary for each playtest scenario, and which lower-value sections should remain reachable through document outline or Find instead of becoming maintained application metadata?
   - Which optional final-v0 migration, if any, is worth supporting for the owner/test fixtures?
 - **Success:**
   - All PRD readiness gates, six owner-run scenarios, and three saturation fixtures pass with no critical blocker.
   - Each external-playtest schema/version promise and recovery path is explicit and tested.
   - Remaining findings have owners and backlog destinations, and external sessions can begin without relying on undocumented setup.
+  - The supported browser-platform matrix and any retained compatibility notice accurately reflect headed cross-platform evidence, including the Firefox/macOS rapid-scroll observation, without attributing an unverified root cause to the browser.
+  - Each playtest system's curated locator set has an owner-reviewed coverage rationale, verified source/version destinations, and no known high-frequency lookup gap in the rehearsed scenarios.
 - **Recommended workflow:** Full OpenSpec change because it crosses systems, persistence compatibility, accessibility, and release-readiness behavior. Add an ADR only if the compatibility or supported-platform decisions materially change existing approved doctrine.
 
 ### Investigate scene-aware runtime guidance and navigation
@@ -376,7 +426,7 @@ Refinement outputs:
   - The result either closes the investigation with no scene mode or yields one bounded behavioral proposal grounded in at least two system sheets.
 - **Recommended workflow:** Begin with OpenSpec Explore after the evidence trigger, then use a full OpenSpec change if observable navigation or focus behavior is proposed. An ADR is warranted only if the result establishes a durable cross-system scene/navigation contract; a 2014-only outline proof does not trigger one by itself.
 
-### Add action-economy navigation to Runtime Actions
+### Add quickfilters to collection views
 
 ID:
 
@@ -384,23 +434,25 @@ ID:
 
 Sequencing context:
 
-- Keep this at the end of P0 after the broader first-playtest prerequisites. The completed `BL-076` surface already bounds and searches Runtime Actions, including timing and category text, but it still presents action, bonus-action, reaction, free, and other timings as one visually homogeneous result stream. Resolve that explicit navigation gap before external handoff without reopening the accepted density or source-action work.
+- Keep this at the end of P0 after the broader first-playtest prerequisites. The completed `BL-076` surface already bounds and searches items including timing and category text, but it still presents discrete groupings (like action timings or spell levels) as one visually homogeneous result stream. Resolve that explicit navigation gap before external handoff without reopening the accepted density or source-action work.
 
 Refinement outputs:
 
-- **Purpose:** Help players quickly distinguish and reach Runtime Actions by action-economy timing without requiring them to remember that the general text search happens to index timing labels.
+- **Purpose:** Help players quickly distinguish and reach relevant categories in collection views (e.g. Runtime Actions by action-economy timing, Spells by level) without requiring them to remember that the general text search happens to index those labels.
 - **Included behavior:**
-  - Add an explicit, quickly resettable way to narrow or organize Runtime Actions by Action, Bonus Action, Reaction, Free, and Other while retaining an All state.
-  - Compose timing navigation with the existing text search as one understandable workflow rather than adding separate search bars; when both are active, results satisfy both constraints.
+  - Establish a generic UI pattern for quickfilters in collection views.
+  - Implement explicit, quickly resettable way to narrow or organize Runtime Actions by Action, Bonus Action, Reaction, Free, and Other while retaining an All state.
+  - Implement a similar quickfilter for Spells by Spell Level (Cantrip, Level 1-9) while retaining an All state.
+  - Compose quickfilters with the existing text search as one understandable workflow rather than adding separate search bars; when both are active, results satisfy both constraints.
   - Preserve visible result counts, explicit no-match behavior, and a one-step return to the complete collection.
-  - Keep timing-navigation state ephemeral and non-destructive; it does not reclassify actions, change canonical order, or persist a selected filter without separate evidence.
+  - Keep quickfilter state ephemeral and non-destructive; it does not reclassify items, change canonical order, or persist a selected filter without separate evidence.
   - Preserve the completed Add/Edit/Notes, source navigation, resync, bounded desktop, focused phone, query-context, focus-restoration, touch, keyboard, and assistive-technology behavior.
-  - Add stateful component and black-box coverage for each timing, mixed timing plus text search, reset, no-match, phone-focused, and keyboard/touch paths.
+  - Add stateful component and black-box coverage for quickfilters, mixed quickfilter plus text search, reset, no-match, phone-focused, and keyboard/touch paths.
 - **Excluded behavior:**
-  - Adding multiple timing-specific search boxes, requiring separate saved lists or cards for each timing, or duplicating one action into multiple homes.
-  - Automatically inferring or rewriting an action's timing, adding a new action-economy taxonomy, or generalizing 5e timing categories into a cross-system contract.
-  - Adding category, source, scene, or rules-derived facets without evidence that the timing control is insufficient.
-  - Folding Runtime Actions into the generic pinning rollout owned by `BL-075`; their independently authored priority and source/action-economy semantics remain separate until this navigation proof and playtest evidence justify convergence.
+  - Adding multiple category-specific search boxes, requiring separate saved lists or cards for each category, or duplicating one item into multiple homes.
+  - Automatically inferring or rewriting an item's classification, adding a new taxonomy, or generalizing 5e categories into a cross-system contract.
+  - Adding category, source, scene, or rules-derived facets without evidence that the quickfilter control is insufficient.
+  - Folding quickfilters into the generic pinning rollout owned by `BL-075`; their independently authored priority and semantics remain separate.
 - **Ambiguities:**
   - Should the baseline be a compact platform-native single-choice control, a small set of toggle-like timing controls, grouped timing headings, or a filter-plus-group combination?
   - Should explicit timing navigation appear whenever more than one timing is present, only above the five-item density threshold, or always for any populated Runtime Actions collection?
@@ -410,6 +462,46 @@ Refinement outputs:
   - Timing and text narrowing compose predictably, never mutate character data, and always provide a clear route back to all actions.
   - Existing Runtime Action commands and responsive/focus behavior remain complete across touch, pointer, keyboard, and assistive-technology paths.
 - **Recommended workflow:** Compact OpenSpec change after resolving the filter-versus-grouping ambiguity because this adds a narrow durable interaction requirement on one established collection surface. No ADR is triggered unless implementation establishes a broader cross-system action-navigation contract. If grouped presentation remains a live candidate, use a named isolated Runtime Actions Storybook comparison and owner checkpoint before route propagation; a settled compact timing filter does not otherwise need a mid-apply proof gate.
+
+### Prepare playtest feedback collection
+
+ID:
+
+- `BL-081`
+
+Sequencing context:
+
+- Execute after every other P0 implementation and owner-readiness rehearsal. This is the final prerequisite before external playtest invitations: it turns the questions exposed by `BL-072` and the PRD gates into a discoverable, verified feedback path without delaying earlier product work on a form integration.
+
+Refinement outputs:
+
+- **Purpose:** Give external playtesters one clear, voluntary, low-friction way to report what worked, what obstructed play, and what should change, while giving the owner responses that can be compared and synthesized after sessions.
+- **Included behavior:**
+  - Draft the short survey collaboratively with the owner, map each question to a playtest task, PRD gate, or explicit learning goal, and obtain owner approval of the final wording before invitations are sent.
+  - Establish a minimum baseline of one clearly named in-app feedback action that opens an owner-controlled external survey, such as a manually created Google Form, with truthful external-destination language and no automatic character-data transmission.
+  - Keep the destination configurable or otherwise straightforward to replace before release; a missing or placeholder destination must not ship as a dead feedback action.
+  - Decide where the action remains discoverable during playtest use, such as the pre-release notice, application navigation, or an equivalent persistent help/about location, and verify the chosen placement on desktop and phone with keyboard and touch.
+  - Include concise participant context, task-success, usability, confidence, failure, accessibility/device, and open-comment prompts only where each answer will inform a product decision; keep optional identifying or follow-up information visibly optional.
+  - Provide a facilitator-facing checklist for qualitative observations that do not fit the participant survey, including interrupted tasks, workarounds, confusion, and requests made aloud during a session.
+  - Record how the owner will export and preserve an anonymized response snapshot, then synthesize response count, limitations, themes, decisions, and backlog destinations after the playtest without committing raw identifiers.
+  - Evaluate an in-app guided form as an optional higher-cost path. If selected, disclose the external recipient before submission, provide understandable success/failure/retry behavior, and ensure the client contains no reusable email, API, or service credential.
+- **Excluded behavior:**
+  - Mandatory survey completion, behavioral analytics, session replay, automatic telemetry, automatic screenshots, character exports, or hidden collection of character, browser, device, account, or contact data.
+  - Building a general support inbox, CRM, account system, custom survey platform, or broad feedback dashboard solely for the first playtest.
+  - Shipping client-side email credentials or implying that an in-app form remains local when it transmits responses to Google, an email service, a serverless endpoint, or another processor.
+  - Requiring completed survey responses or post-playtest synthesis before invitations can be sent; readiness means the questions, destination, disclosure, placement, and submission path are prepared and verified.
+- **Ambiguities:**
+  - Which learning goals and questions are essential, which are facilitator observations, and what completion time is short enough for participants after a session?
+  - Is the minimum external Google Form link sufficient, or does the first playtest benefit enough from an in-app guided flow to justify third-party submission, error handling, abuse prevention, privacy disclosure, and operational ownership?
+  - Where should the feedback action live so it remains easy to find without competing with character-sheet runtime controls or becoming permanent product chrome?
+  - Should responses be anonymous by default, and should optional contact permission or follow-up scheduling be collected in the same instrument or separately?
+  - Which external processor and account owns the form and response retention, and what disclosure or deletion language is proportionate for the selected questions and tester group?
+- **Success:**
+  - Before the first invitation, the owner has approved the question set and can follow the in-app action on desktop and phone to a live survey with no placeholder URL, broken navigation, or accidental loss of application state.
+  - A keyboard, touch, or assistive-technology user can identify that the destination is external, open it, complete the voluntary survey, and understand what information will be sent.
+  - A representative test response reaches the owner through the selected processor without exposing a client credential or transmitting character data, and failure or cancellation leaves the app usable.
+  - The owner can export an anonymized snapshot and has a documented synthesis path that maps evidence to decisions and backlog destinations after the playtest.
+- **Recommended workflow:** Resolve the external-link-versus-guided-submission ambiguity during refinement. Prefer a compact OpenSpec change and no ADR for the minimum external-form link because it adds a narrow durable feedback requirement with modest UI, configuration, accessibility, and browser-navigation work. If an in-app form submits through a new external service or introduces retention, secrets, abuse handling, or backend/serverless infrastructure, use a full OpenSpec change and add an ADR for the processor, transport, credential, privacy, and operational boundary. A proof-before-propagation checkpoint is unnecessary for a normal external link; an in-app guided form should prove one real success and one recoverable failure against a non-production test destination before the live endpoint is enabled.
 
 ## Ideation Sandbox (Raw / Rough Ideas)
 
@@ -422,6 +514,40 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
   - _Critical Question_: Will introducing a third-party form helper conflict with our "platform-native first" preference or cause unnecessary bundle size increases, given we only have local-first state storage?
 
 ### Raw Human Ideation, Unsorted
+
+- Explore exact-match highlighting in the app-controlled PDF viewer after page-level Find has playtest evidence.
+  - _Why_: `BL-069` Find reports matching pages, occurrence counts, and previews, then navigates to the selected page. A user may still spend time locating the phrase on a dense page, especially on a phone.
+  - _Current direction_: Keep page-level Find as the first-playtest baseline. If evidence triggers follow-up, start with one active match highlighted on the selected rendered page and prefer PDF.js find/highlighter integration over bespoke text-span rewriting; expand to previous/next occurrence navigation or multiple visible highlights only if the bounded proof remains usable.
+  - _Explore_: Compare one active highlight, all matches on the current page, previous/next occurrence controls, result counts, and automatic match scrolling. Verify behavior across PDF text spans, normalized whitespace, line breaks, hyphenation, ligatures, Unicode, zoom, nearby-page remounting, and nested viewer scrolling.
+  - _Constraints_: Remain document-scoped and ephemeral; do not create a persistent or cross-document source-text index. Preserve selectable text, screen-reader behavior, visible focus, page and zoom performance, browser fallback, and compatibility with a later `BL-080` user-local source. Avoid a naive matcher that silently misses common PDF text layouts.
+  - _Refinement trigger_: Promote only if owner or external-playtest review repeatedly finds exact phrases difficult to locate after selecting a Find result, or if another viewer-navigation change needs occurrence-level wayfinding. Treat a current-page active-match proof as medium effort; require a separately planned broader viewer integration for browser-grade find behavior.
+
+- Explore viewer-side navigation for references authored on the active character.
+  - _Why_: A character annotation can point into the currently open rules document, but the viewer navigation currently exposes only application-curated sections and the publisher's PDF outline. When several character fields cite the same source, a user may benefit from seeing where that document is used on this character while they read it.
+  - _Current direction_: Keep `BL-069` navigation document-owned for the first playtest. If evidence supports a reverse view, add a distinct disclosure such as `From this character` rather than mixing mutable annotations into `Curated sections` or `PDF outline`; include only references for the active character and open resource, and keep annotation editing in its existing focused workflow.
+  - _Explore_: Compare page-jump-only entries with entries that can also return to the originating sheet field; deduplicate repeated page references without hiding distinct authored context; determine how unsaved annotation drafts, stale locators, deleted fields, and references without exact pages should appear.
+  - _Constraints_: Do not persist a second reverse index, mutate annotations from the document outline, expose another character's content, or couple the generic PDF parser to character schema shapes. Preserve source identity/version checks, stable focus and Back behavior, phone density, and the distinction between application-curated navigation and user-authored references.
+  - _Refinement trigger_: Promote only if owner or external-playtest use shows repeated need to rediscover character-authored citations while inside a source, or if `BL-077` focused reference editing needs a document-side return path.
+
+- Explore viewer-authored pins/bookmarks as source-aware character annotations.
+  - _Why_: During ordinary play, a user may discover a useful rule while browsing or using document Find and want to retain that exact location without the application normalizing the rule into a compendium record. Turning the location into user-authored reference metadata aligns with ez-chars' role as an annotation facilitator.
+  - _Current direction_: Offer a viewer action such as `Save reference` or `Pin this location` that captures the verified source identity/version and current supported locator, then lets the user add a short label or note. Reuse the existing annotation model and reference resolver where practical instead of creating a second document-bookmark system.
+  - _Explore_: Decide whether a saved location belongs to the active character, a particular character field, a character-level references collection, or a device-wide source library; compare immediate save with a small annotation step; determine how users list, search, rename, unpin, and return to saved locations; and test how this composes with a future `From this character` viewer section and `BL-080` user-local sources.
+  - _Constraints_: Do not persist source text or generated excerpts, treat a bookmark as canonical rules data, overload collection-priority Pin/Unpin semantics, or accept an unverified source/version locator silently. Link-only sources may retain lawful user-authored locators but cannot be processed in-app unless a later rights-approved user-local connection exists. Preserve character export clarity, stale-locator feedback, mobile density, keyboard/touch access, and user control over deletion.
+  - _Refinement trigger_: Revisit after the first external playtest if users repeatedly rediscover the same rules locations, create scratchpad links as a workaround, or ask to retain a location discovered through viewer Find. Coordinate with `BL-077`, the `From this character` exploration, and `BL-080` before choosing persistence ownership.
+
+- Explore a reflowing desktop sheet/reference split workspace after playtest evidence.
+  - _Why_: The `BL-069` overlay now supports bounded width adjustment, but it still covers part of the character sheet instead of letting the sheet and reference share a coordinated workspace. Simultaneous comparison may be valuable for rules-heavy edits, especially on wide displays.
+  - _Current direction_: Keep the resizable non-modal overlay for the first playtest. Later compare an app-shell split that reflows the sheet, dock/undock behavior, a movable divider, and whether a remembered allocation is worth the state complexity. Reuse the accessible horizontal-resize contract where it fits without assuming that viewer-local widths define whole-app layout.
+  - _Constraints_: Preserve phone full-screen navigation, sheet and draft state, browser Back/Close behavior, readable minimum widths, keyboard and coarse-pointer operation, and a simple default for users who never resize. Do not persist a layout in character data or let either pane become unreachable.
+  - _Refinement trigger_: Promote only if owner or external-playtest use shows repeated need to read the sheet and rules document simultaneously, or if the fixed overlay still obstructs core desktop work after bounded resizing.
+
+- Explore catalog-derived sheet guidance if contextual References remain insufficiently discoverable.
+  - _Why_: `BL-069` will place focused References actions near character/class, equipment, and spell content, but a newly created character may still leave a player unsure that relevant SRD guidance exists or what a particular action will open. Persistently seeding the same locators as annotations on every character would duplicate global catalog knowledge, pollute exports, and create unclear refresh/removal semantics when the catalog changes.
+  - _Current direction_: First test `BL-069` on a newly created empty character. If its contextual actions are not self-explanatory, prefer version-aware, non-persisted hints projected from the resource catalog near the relevant sheet sections. Reserve authored example annotations for an explicitly identified tutorial or sample character rather than ordinary character factory defaults.
+  - _Explore_: Compare clearer References labels or nearby source summaries, quiet first-use cues, catalog-derived section hints, and one or two tutorial/sample-character examples. Determine whether guidance should appear only on empty sections, until first use, or whenever a relevant locator exists.
+  - _Constraints_: Keep system/catalog guidance distinct from editable user annotations; do not clone catalog locators into character storage or JSON exports; preserve catalog ownership of source identity, version, and locator health; do not introduce re-seeding, synchronization, or deletion semantics unless a later persisted-guidance proposal explicitly justifies them.
+  - _Refinement trigger_: Promote only if the `BL-069` owner review or external playtest shows that users miss the Class, Equipment, or Spell References action, cannot predict its destination, or need more guidance than its label and local context provide.
 
 - Explore desktop collection scroll ownership and Misc. Notes as a possible next dense consumer.
   - _Why_: Bounded inline lists control sheet height, but mouse-wheel input over a still-scrollable collection can interrupt top-to-bottom sheet scanning. The saturated fixture also demonstrates that Misc. Notes & Scratchpad can grow beyond the short/simple case even though `BL-064` intentionally limited its first rollout to equipment and spells.
@@ -494,8 +620,8 @@ Success:
 
 ## Done Recently
 
+- `2026-09-07` completed `BL-069`: delivered rights-classified reference navigation with an app-controlled PDF.js viewer, sticky Rules action, multi-source resource discovery, and contextual sheet integration for class, equipment, and spells; added Playwright coverage and verified browser/mobile behavior
 - `2026-08-29` completed `BL-075`: added stable Pin/Unpin priority for 2014 inventory, spells, Features, Traits, Languages, and Tools; introduced durable Language/Tool identities and validated character-owned Pin state; preserved collection-specific interaction grammar, deterministic priority-first ordering, reload and JSON round trips, accessible batch management, and immediate equipment/spell row commands while leaving Runtime Actions independent
 - `2026-08-23` completed `BL-076`: added searchable, responsive density handling for Runtime Actions and supporting Features, Traits, Languages, and Tools; adopted five-item and seven-item simple-list limits respectively while preserving domain-specific actions, compact bullet presentation, source workflows, query context, focus restoration, and cross-browser saturated coverage
 - `2026-08-16` completed `BL-074`: decomposed the legacy field/card and grid/container surfaces into focused field-group, structured-form, annotation, responsive-layout, panel, collapsible-panel, and domain-owned organism boundaries; retired the compatibility components, expanded stateful Storybook and browser coverage, and preserved typed patch, focus, accessibility, and persistence behavior
 - `2026-08-02` completed `BL-064`: added searchable, responsive dense collection workflows for Weapons, Armor & Shields, Other Gear, and Spells; introduced focused row editing and notes, mobile previews and full-height browsing, sparse spell-slot setup, and a saturated 2014 fixture; recorded Runtime/supporting collection and whole-sheet navigation follow-ups
-- `2026-08-01` completed `BL-068`: adopted and self-hosted official SRD 5.1 and SRD 5.2.1 with centralized public notices, base-path-safe navigation, and a protected local-only review boundary; fixed the sparse Shadowdark citation baseline, expansion gates, and audited human/agent source-review workflow for downstream resource and sheet work

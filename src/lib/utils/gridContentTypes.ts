@@ -5,6 +5,11 @@ export type GridContentBindPath = Array<GridContentPathSegment>;
 
 export type GridContentReference = Reference;
 
+export type GridReferenceInspectionHandler = (
+	reference: GridContentReference,
+	invoker: HTMLElement
+) => void;
+
 export type GridContentAnnotation = Annotation;
 export type GridEditAffordance = 'persistent' | 'hover' | 'menu';
 export type GridAnnotationAffordance = 'persistent' | 'badge' | 'hover';

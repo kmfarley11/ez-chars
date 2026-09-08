@@ -1,13 +1,24 @@
 <script lang="ts">
 	import { toReferenceHref } from '$utils/characterGridHelpers';
 	import { displayOrPlaceholder } from '$utils/displayHelpers';
-	import type { GridContentAnnotation, GridContentReference } from '$utils/gridContentTypes';
+	import type {
+		GridContentAnnotation,
+		GridContentReference,
+		GridReferenceInspectionHandler
+	} from '$utils/gridContentTypes';
 
 	interface Props {
 		annotations: Array<GridContentAnnotation>;
+		onInspectReference?: GridReferenceInspectionHandler;
+		// eslint-disable-next-line no-unused-vars
+		canInspectReference?: (reference: GridContentReference) => boolean;
 	}
 
-	let { annotations }: Props = $props();
+	let {
+		annotations,
+		onInspectReference = undefined,
+		canInspectReference = () => false
+	}: Props = $props();
 
 	const toAnnotationHeading = (
 		annotation: GridContentAnnotation,
@@ -60,7 +71,23 @@
 				{#if annotation.ref}
 					{@const referenceHref = toReferenceHref(annotation.ref)}
 					<p class="theme-text-muted text-xs italic">
-						{#if referenceHref}
+						{#if onInspectReference && canInspectReference(annotation.ref)}
+							<button
+								type="button"
+								class="theme-link touch-target mr-2 underline"
+								onclick={(event) => onInspectReference(annotation.ref!, event.currentTarget)}
+							>
+								Open {formatReference(annotation.ref)} in app
+							</button>
+							{#if referenceHref}
+								<a
+									class="theme-link touch-target underline"
+									href={referenceHref}
+									target="_blank"
+									rel="external noopener noreferrer">Open in browser</a
+								>
+							{/if}
+						{:else if referenceHref}
 							<a
 								class="theme-link underline"
 								href={referenceHref}

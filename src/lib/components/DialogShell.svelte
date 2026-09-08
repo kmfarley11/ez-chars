@@ -9,6 +9,7 @@
 		children?: Snippet;
 		closeText?: string;
 		fullHeightMobile?: boolean;
+		wide?: boolean;
 		scrollAffordance?: boolean;
 
 		// Step navigation
@@ -28,6 +29,7 @@
 		children,
 		closeText = 'Close',
 		fullHeightMobile = false,
+		wide = false,
 		scrollAffordance = false,
 		title,
 		showBack = false,
@@ -80,9 +82,11 @@
 	};
 
 	let mobileClasses = $derived(
-		fullHeightMobile
-			? 'dialog-shell-full-height-mobile max-sm:w-full max-sm:rounded-none max-sm:border-0 m-auto w-[min(92vw,34rem)] rounded-md border p-0'
-			: 'm-auto w-[min(92vw,34rem)] rounded-md border p-0'
+		`${
+			fullHeightMobile
+				? 'dialog-shell-full-height-mobile max-sm:w-full max-sm:rounded-none max-sm:border-0'
+				: ''
+		} m-auto ${wide ? 'w-[min(96vw,72rem)]' : 'w-[min(92vw,34rem)]'} rounded-md border p-0`
 	);
 </script>
 

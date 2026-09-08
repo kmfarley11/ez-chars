@@ -1,5 +1,7 @@
 <script lang="ts">
 	import FieldAnnotationControl from './FieldAnnotationControl.svelte';
+	import { FULL_2014_SRD_PATH } from '$utils/urlHelpers';
+	import { DND5E_2014_SRD_RESOURCE_ID } from '$lib/resources/dnd5e2014ResourceCatalog';
 	import type { GridAnnotationEditorConfig, GridContentAnnotation } from '$utils/gridContentTypes';
 
 	let { withAnnotations = false, canEdit = true } = $props<{
@@ -13,7 +15,16 @@
 	$effect(() => {
 		mockAnnotations = withAnnotations
 			? [
-					{ text: 'A basic note on this field', origin: 'user', kind: 'note' },
+					{
+						text: 'A basic note on this field',
+						origin: 'user',
+						kind: 'note',
+						ref: {
+							kind: 'pdf',
+							sourceId: DND5E_2014_SRD_RESOURCE_ID,
+							locator: { url: FULL_2014_SRD_PATH, page: 8 }
+						}
+					},
 					{
 						text: 'A more urgent pinned note',
 						origin: 'user',
@@ -30,12 +41,12 @@
 	const annotationEditorConfig: GridAnnotationEditorConfig = {
 		referenceTemplates: [
 			{
-				key: 'local-rules',
-				label: 'Local rules PDF',
+				key: 'srd-class-features',
+				label: 'SRD class features',
 				reference: {
 					kind: 'pdf',
-					sourceId: 'local-rules',
-					locator: { url: '/rules.pdf', page: 12 }
+					sourceId: DND5E_2014_SRD_RESOURCE_ID,
+					locator: { url: FULL_2014_SRD_PATH, page: 8 }
 				}
 			}
 		]

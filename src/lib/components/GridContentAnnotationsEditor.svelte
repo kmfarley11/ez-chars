@@ -4,7 +4,8 @@
 	import type {
 		GridAnnotationReferenceTemplate,
 		GridContentAnnotation,
-		GridContentReference
+		GridContentReference,
+		GridReferenceInspectionHandler
 	} from '$utils/gridContentTypes';
 	import { createId } from '../../schema/helpers';
 
@@ -14,6 +15,9 @@
 		referenceTemplates?: Array<GridAnnotationReferenceTemplate>;
 		defaultKind?: GridContentAnnotation['kind'];
 		defaultOrigin?: GridContentAnnotation['origin'];
+		onInspectReference?: GridReferenceInspectionHandler;
+		// eslint-disable-next-line no-unused-vars
+		canInspectReference?: (reference: GridContentReference) => boolean;
 		// eslint-disable-next-line no-unused-vars
 		onChange: (_next: Array<GridContentAnnotation>) => void;
 	}
@@ -23,6 +27,8 @@
 		referenceTemplates = [],
 		defaultKind = 'note',
 		defaultOrigin = 'user',
+		onInspectReference = undefined,
+		canInspectReference = () => false,
 		onChange
 	}: Props = $props();
 
@@ -257,6 +263,10 @@
 								</div>
 								{#each referenceTemplates as template (template.key)}
 									{@const templatePreviewHref = getTemplatePreviewHref(annotation, template)}
+									{@const templateInspectionReference =
+										selectedReferenceTemplateKey === template.key && annotation.ref
+											? annotation.ref
+											: template.reference}
 									<div class="flex items-center justify-between gap-2 text-xs">
 										<label class="touch-target flex cursor-pointer items-center gap-2">
 											<input
@@ -269,7 +279,16 @@
 											/>
 											<span class="theme-text-muted">{template.label}</span>
 										</label>
-										{#if templatePreviewHref}
+										{#if onInspectReference && canInspectReference(templateInspectionReference)}
+											<button
+												type="button"
+												class="theme-link touch-target underline"
+												onclick={(event) =>
+													onInspectReference(templateInspectionReference, event.currentTarget)}
+											>
+												(view in app)
+											</button>
+										{:else if templatePreviewHref}
 											<a
 												class="theme-link underline"
 												href={templatePreviewHref}

@@ -6,7 +6,8 @@
 	interface Props {
 		children?: Snippet;
 		type?: 'button' | 'submit' | 'reset';
-		onclick?: () => void;
+		// eslint-disable-next-line no-unused-vars
+		onclick?: (event: MouseEvent) => void;
 		shadingVariant?: ButtonShadingVariant;
 		size?: ButtonSize;
 		iconOnly?: boolean;

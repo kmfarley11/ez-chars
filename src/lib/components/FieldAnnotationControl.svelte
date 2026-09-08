@@ -1,12 +1,22 @@
 <script lang="ts">
+	import { asset } from '$app/paths';
+	import { tick } from 'svelte';
 	import DialogShell from '$components/DialogShell.svelte';
 	import GridContentAnnotationsDisplay from '$components/GridContentAnnotationsDisplay.svelte';
 	import GridContentAnnotationsEditor from '$components/GridContentAnnotationsEditor.svelte';
+	import ReferencePdfViewer, {
+		type CuratedPdfSection
+	} from '$components/ReferencePdfViewer.svelte';
+	import { dnd5e2014ResourceCatalog } from '$lib/resources/dnd5e2014ResourceCatalog';
+	import { resolveResourceLocator, type ResourceDisposition } from '$lib/resources/resourceCatalog';
 	import type {
 		GridAnnotationAffordance,
 		GridAnnotationEditorConfig,
-		GridContentAnnotation
+		GridContentAnnotation,
+		GridContentReference
 	} from '$utils/gridContentTypes';
+
+	type InternalResourceDisposition = Extract<ResourceDisposition, { kind: 'internal' }>;
 
 	interface Props {
 		fieldLabel: string;
@@ -29,13 +39,69 @@
 	let shouldRenderDialog = $state(false);
 	let isEditing = $state(false);
 	let draftAnnotations = $state<Array<GridContentAnnotation>>([]);
+	let activeReference = $state<InternalResourceDisposition>();
+	let referenceInvoker = $state<HTMLElement>();
 
 	const annotationCount = $derived(annotations.length);
 	const shouldRenderControl = $derived(annotationAffordance !== 'badge' || annotationCount > 0);
 	const canEditAnnotations = $derived(onSaveAnnotations !== undefined);
+	const curatedSections = $derived(
+		activeReference
+			? dnd5e2014ResourceCatalog.locators
+					.filter(
+						(entry) =>
+							entry.resourceId === activeReference?.resource.id &&
+							entry.kind === 'pdf-page' &&
+							entry.health === 'verified' &&
+							entry.page !== undefined
+					)
+					.map((entry): CuratedPdfSection => ({ label: entry.label, page: entry.page! }))
+			: []
+	);
+
+	const findInternalDisposition = (
+		reference: GridContentReference
+	): InternalResourceDisposition | undefined => {
+		if (reference.kind !== 'pdf' || reference.locator.page === undefined) return undefined;
+		const locator = dnd5e2014ResourceCatalog.locators.find(
+			(entry) =>
+				entry.resourceId === reference.sourceId &&
+				entry.kind === 'pdf-page' &&
+				entry.health === 'verified'
+		);
+		if (!locator) return undefined;
+		const resolved = resolveResourceLocator(dnd5e2014ResourceCatalog, locator.id, {
+			resolveAssetHref: (path) => asset(path as Parameters<typeof asset>[0])
+		});
+		if (resolved?.kind !== 'internal') return undefined;
+		const page = reference.locator.page;
+		return {
+			...resolved,
+			locator: { ...resolved.locator, label: `Page ${page}`, page },
+			exactHref: `${resolved.generalHref}#page=${page}`,
+			browserHref: `${resolved.generalHref}#page=${page}`
+		};
+	};
+
+	const canInspectReference = (reference: GridContentReference): boolean =>
+		findInternalDisposition(reference) !== undefined;
+
+	const inspectReference = (reference: GridContentReference, invoker: HTMLElement) => {
+		const resolved = findInternalDisposition(reference);
+		if (!resolved) return;
+		referenceInvoker = invoker;
+		activeReference = resolved;
+	};
+
+	const leaveReference = async () => {
+		activeReference = undefined;
+		await tick();
+		referenceInvoker?.focus();
+	};
 
 	const closeDialog = () => {
 		shouldRenderDialog = false;
+		activeReference = undefined;
 		if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
 		triggerEl?.focus();
 	};
@@ -43,10 +109,15 @@
 	const openDialog = async () => {
 		draftAnnotations = $state.snapshot(annotations);
 		isEditing = false;
+		activeReference = undefined;
 		shouldRenderDialog = true;
 	};
 
 	const handleCancel = () => {
+		if (activeReference) {
+			void leaveReference();
+			return false;
+		}
 		if (isEditing) {
 			draftAnnotations = $state.snapshot(annotations);
 			isEditing = false;
@@ -86,29 +157,53 @@
 {#if shouldRenderDialog}
 	<DialogShell
 		bind:open={shouldRenderDialog}
-		title="{fieldLabel} Annotations"
+		title={activeReference ? activeReference.locator.label : `${fieldLabel} Annotations`}
+		showBack={activeReference !== undefined}
+		onBack={leaveReference}
 		onCancel={handleCancel}
 		onClose={closeDialog}
 		closeText={isEditing ? 'Cancel' : 'Close'}
-		scrollAffordance={true}
+		fullHeightMobile={activeReference !== undefined}
+		wide={activeReference !== undefined}
+		scrollAffordance={activeReference === undefined}
 	>
-		<p class="theme-text-muted text-xs mb-3">{fieldLabel}</p>
-		{#if isEditing && canEditAnnotations}
-			<GridContentAnnotationsEditor
-				annotations={draftAnnotations}
-				referenceTemplates={annotationEditorConfig?.referenceTemplates}
-				defaultKind={annotationEditorConfig?.defaultKind}
-				defaultOrigin={annotationEditorConfig?.defaultOrigin}
-				onChange={(nextAnnotations) => {
-					draftAnnotations = nextAnnotations;
-				}}
-			/>
-		{:else}
-			<GridContentAnnotationsDisplay {annotations} />
+		<div hidden={activeReference !== undefined} inert={activeReference !== undefined}>
+			<p class="theme-text-muted text-xs mb-3">{fieldLabel}</p>
+			{#if isEditing && canEditAnnotations}
+				<GridContentAnnotationsEditor
+					annotations={draftAnnotations}
+					referenceTemplates={annotationEditorConfig?.referenceTemplates}
+					defaultKind={annotationEditorConfig?.defaultKind}
+					defaultOrigin={annotationEditorConfig?.defaultOrigin}
+					onInspectReference={inspectReference}
+					{canInspectReference}
+					onChange={(nextAnnotations) => {
+						draftAnnotations = nextAnnotations;
+					}}
+				/>
+			{:else}
+				<GridContentAnnotationsDisplay
+					{annotations}
+					onInspectReference={inspectReference}
+					{canInspectReference}
+				/>
+			{/if}
+		</div>
+
+		{#if activeReference}
+			<div class="flex h-[min(64dvh,44rem)] min-h-[18rem]">
+				<ReferencePdfViewer
+					title={activeReference.resource.title}
+					url={activeReference.generalHref}
+					browserHref={activeReference.browserHref}
+					initialPage={activeReference.locator.page!}
+					{curatedSections}
+				/>
+			</div>
 		{/if}
 
 		{#snippet actions()}
-			{#if canEditAnnotations && !isEditing}
+			{#if !activeReference && canEditAnnotations && !isEditing}
 				<button
 					type="button"
 					class="theme-btn-light touch-target btn rounded-md border px-3 py-1 font-semibold"
@@ -120,7 +215,7 @@
 					{annotationCount > 0 ? 'Edit' : 'Add'}
 				</button>
 			{/if}
-			{#if canEditAnnotations && isEditing}
+			{#if !activeReference && canEditAnnotations && isEditing}
 				<button
 					type="button"
 					class="theme-btn-light touch-target btn rounded-md border px-3 py-1 font-semibold"

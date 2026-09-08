@@ -4,7 +4,10 @@
 	import SupportingCollectionCard from './components/SupportingCollectionCard.svelte';
 	import Dnd5e2014DenseCollectionCard from './components/Dnd5e2014DenseCollectionCard.svelte';
 	import ResponsiveGrid from '$components/ResponsiveGrid.svelte';
+	import BaseButton from '$components/BaseButton.svelte';
+	import IconBookOpen from '$components/IconBookOpen.svelte';
 	import PanelSurface from '$components/PanelSurface.svelte';
+	import SheetReferenceController from '$components/SheetReferenceController.svelte';
 	import CollapsiblePanel from '$components/CollapsiblePanel.svelte';
 	import GridContentCard from '$components/GridContentCard.svelte';
 	import { applyGridPatches } from '$utils/characterGridHelpers';
@@ -41,6 +44,13 @@
 	} from './components/supportingCollectionRows';
 	import type { CollectionPriorityKind5e2014 } from '../../../schema';
 	import type { CollectionPrioritySaveResult } from '$components/collectionPriority';
+	import {
+		DND5E_2014_CLASS_LOCATOR_ID,
+		DND5E_2014_EQUIPMENT_LOCATOR_ID,
+		DND5E_2014_GENERAL_LOCATOR_ID,
+		DND5E_2014_SPELLCASTING_LOCATOR_ID
+	} from '$lib/resources/dnd5e2014ResourceCatalog';
+	import { openSheetReference } from '$lib/resources/sheetReferenceNavigation';
 
 	interface Props {
 		data: {
@@ -100,6 +110,10 @@
 		armorShields: 'Armor & Shields',
 		other: 'Other Gear'
 	};
+	const rulesTriggerId = 'sheet-rules-trigger';
+	const classReferencesTriggerId = 'sheet-class-references-trigger';
+	const equipmentReferencesTriggerId = 'sheet-equipment-references-trigger';
+	const spellReferencesTriggerId = 'sheet-spell-references-trigger';
 
 	const {
 		annotationEditorConfig,
@@ -372,6 +386,20 @@
 	</div>
 {:else}
 	<div class="sheet-page">
+		<SheetReferenceController />
+		<aside class="sheet-rules-utility" aria-label="Rules shortcut">
+			<BaseButton
+				id={rulesTriggerId}
+				size="lg"
+				iconOnly={true}
+				ariaLabel="Rules"
+				title="Open rules"
+				classes="sheet-rules-trigger rounded-r-none"
+				onclick={() => openSheetReference(DND5E_2014_GENERAL_LOCATOR_ID, rulesTriggerId)}
+			>
+				<IconBookOpen classes="h-5 w-5" />
+			</BaseButton>
+		</aside>
 		<section class="sheet-region sheet-region-overview" aria-labelledby="sheet-overview-heading">
 			<button
 				id="sheet-overview-heading"
@@ -389,6 +417,19 @@
 			</button>
 			{#if !isOverviewRegionCollapsed}
 				<CollapsiblePanel heading="Meta / Top-level Info">
+					{#snippet headerActions()}
+						<BaseButton
+							id={classReferencesTriggerId}
+							size="sm"
+							iconOnly={true}
+							ariaLabel="References: classes"
+							title="Open class references"
+							onclick={() =>
+								openSheetReference(DND5E_2014_CLASS_LOCATOR_ID, classReferencesTriggerId)}
+						>
+							<IconBookOpen classes="h-4 w-4" />
+						</BaseButton>
+					{/snippet}
 					<ResponsiveGrid cols={1} colsMd={3} classes="gap-3">
 						<PanelSurface>
 							<GridContentCard
@@ -572,6 +613,19 @@
 					</ResponsiveGrid>
 				</CollapsiblePanel>
 				<CollapsiblePanel heading="Spells" startsCollapsed={shouldInitiallyCollapseSpells}>
+					{#snippet headerActions()}
+						<BaseButton
+							id={spellReferencesTriggerId}
+							size="sm"
+							iconOnly={true}
+							ariaLabel="References: spells"
+							title="Open spell references"
+							onclick={() =>
+								openSheetReference(DND5E_2014_SPELLCASTING_LOCATOR_ID, spellReferencesTriggerId)}
+						>
+							<IconBookOpen classes="h-4 w-4" />
+						</BaseButton>
+					{/snippet}
 					<ResponsiveGrid cols={1} classes="gap-3">
 						<section aria-label="Spellcasting">
 							<PanelSurface>
@@ -619,6 +673,19 @@
 					</ResponsiveGrid>
 				</CollapsiblePanel>
 				<CollapsiblePanel heading="Inventory / Equipment">
+					{#snippet headerActions()}
+						<BaseButton
+							id={equipmentReferencesTriggerId}
+							size="sm"
+							iconOnly={true}
+							ariaLabel="References: equipment"
+							title="Open equipment references"
+							onclick={() =>
+								openSheetReference(DND5E_2014_EQUIPMENT_LOCATOR_ID, equipmentReferencesTriggerId)}
+						>
+							<IconBookOpen classes="h-4 w-4" />
+						</BaseButton>
+					{/snippet}
 					<ResponsiveGrid cols={1} classes="gap-3">
 						<PanelSurface>
 							<GridContentCard
@@ -733,6 +800,19 @@
 		display: grid;
 		gap: 0.75rem;
 		padding: 0.5rem;
+	}
+
+	.sheet-rules-utility {
+		position: fixed;
+		top: max(5rem, 18dvh);
+		right: 0;
+		z-index: 30;
+		pointer-events: none;
+	}
+
+	.sheet-rules-utility :global(.sheet-rules-trigger) {
+		pointer-events: auto;
+		box-shadow: -0.15rem 0.15rem 0.35rem rgb(0 0 0 / 0.18);
 	}
 
 	.sheet-region {

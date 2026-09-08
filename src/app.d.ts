@@ -8,7 +8,12 @@ declare global {
 		// interface Error {}
 		// interface Locals {}
 		// interface PageData {}
-		// interface PageState {}
+		interface PageState {
+			referenceLocatorId?: string;
+			referenceOrigin?: 'sheet';
+			referenceDirectDismissed?: boolean;
+			referenceReturnFocusId?: string;
+		}
 		// interface Platform {}
 	}
 }

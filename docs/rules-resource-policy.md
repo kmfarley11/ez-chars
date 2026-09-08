@@ -1,7 +1,7 @@
 # Rules-Resource Policy and Source Register
 
 - **Status:** Approved product-risk policy
-- **Last reviewed:** 2026-08-01 during `BL-068` source verification
+- **Last reviewed:** 2026-09-07 during `BL-069` reference-navigation rollout
 
 This maintainer document governs how ez-chars plans, bundles, processes, indexes, and links tabletop rules resources. It is a product-risk and provenance policy, not legal advice. Unclear or high-impact cases require written permission or qualified legal review.
 
@@ -68,11 +68,13 @@ Any source update is a deliberate adoption event. Maintainers verify rights agai
 
 ## First-Playtest Reference Contract
 
-The first playtest requires a document-navigation index, not a normalized rules compendium. The app may search registered resource titles and curated section metadata, then navigate to a self-hosted PDF page, an authoritative web anchor, or a conservative external locator. Supported sheet editors expose relevant locators contextually. The model must not assume one canonical document per system: multiple source records may supply different locators for the same topic, although the first proof may configure only one free source.
+The first playtest requires a document-navigation index, not a normalized rules compendium. The implemented 2014 resource library searches registered resource titles, versions, topics, curated section labels, and independently authored descriptions, then navigates to a self-hosted PDF page or an explicit authoritative external locator. The 2014 sheet keeps one compact `Rules` action reachable for general lookup and exposes class, equipment, and spell locators contextually. The model does not assume one canonical document per system: multiple source records may supply different locators for the same topic, with the preferred verified self-hosted result presented first and lawful alternatives disclosed as `Other sources`.
 
 This index may contain source IDs, system/rules versions, titles, topics, section labels, page numbers, anchors, URLs, and short maintainer-authored descriptions. It does not require source-text extraction, normalized spell/equipment/rules records, semantic search, or a general-purpose API.
 
-Arbitrary ingestion, user uploads, OCR, scan/image recognition, and automated excerpt generation remain outside the first-playtest contract. Licensed full-text indexing may be considered later as a separately specified use because permission to redistribute a work does not automatically settle product, performance, attribution, or update design.
+Verified self-hosted sources open in the app-owned viewer with document navigation, document-scoped Find, and an explicit browser fallback. Link-only sources never enter that viewer and state their not-included or ownership requirement before an external publisher action. Stale locators withhold untrusted exact jumps; unavailable sources retain their citation without silent substitution.
+
+Arbitrary ingestion, user uploads, OCR, scan/image recognition, and automated excerpt generation remain outside the first-playtest contract. User-local PDF connection is tracked separately as `BL-080`. Licensed full-text indexing may be considered later as a separately specified use because permission to redistribute a work does not automatically settle product, performance, attribution, or update design.
 
 ## Adopted and Candidate Source Register
 
@@ -91,7 +93,7 @@ Arbitrary ingestion, user uploads, OCR, scan/image recognition, and automated ex
 
   The artifact instructs users not to add other Wizards attribution, while permitting “compatible with fifth edition” or “5E compatible.” Keep this attribution and any modification notice separate from the MIT-licensed application code.
 
-- **Adopted implementation:** `BL-068` self-hosts the official PDF and migrates current application references to it. `BL-069` establishes curated official-page locators and resource navigation.
+- **Adopted implementation:** `BL-068` self-hosts the official PDF and migrates current application references to it. The current `BL-069` rollout registers general, class, equipment, and spell locators; exposes metadata-bounded discovery and preferred/alternate source states; and routes verified annotations and sheet actions through the app-owned viewer while retaining browser fallback.
 
 ### D&D 5e 2024 — SRD 5.2.1
 

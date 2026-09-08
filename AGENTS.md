@@ -254,6 +254,15 @@ Otherwise, adjust your behavior based on the specific phrasing:
     - Clarify what the next backlog item is after we finish review/archival.
   - Evaluate whether the current changelist and the next item reflect the short vs. long term vision as maintained by our backlog docs.
 
+### User Feedback Semantics
+
+- "nit": this is a nitpick, the user would like this to get addressed but if theres a good reason not to (code structure overhaul/full rewrite, implicates other parts of the system etc.) then feel free to push back with some rationale
+- "pref": this is a subjective preference from the user. similar to a nitpick, but probably intended to change code org. if other parts of the system are significantly implicated then again feel free to push back, but expect that some re-writing could occur for these
+- "q": shorthand for a "question". e.g. the user wants clarification or your opinion, please address these directly in the response. If crafting the response makes you think you should adjust the code feel free to do so, but dont feel obligated, particularly in cases where this seeks clarity. This doesn't mean you can't or necessarily shouldn't edit code. It simply means that the user has a question and needs that question answered.
+- "d" or "desire": this is likely scope creep, but its a desire of the user. they'd like you to either accomodate it or account for the desire in the backlog as best befits you. You may push back and take no other action, but you will need strong rationale in this case.
+
+Any or all of these may be combined with "/" delimiter in the user's prompt to help preface / categorize particular feedback. They should help you assess action and scope of your review response, but not fully dictate.
+
 ## Implementation Fallout & Reconciliation
 
 After implementation, review material decisions, omissions, deviations, and verification discoveries before archive.
