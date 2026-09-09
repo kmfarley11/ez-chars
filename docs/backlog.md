@@ -54,18 +54,19 @@ These lightweight queues record priority membership only. Detailed definitions l
 
 ### P0 — Product Prerequisites
 
+- [`BL-073` — Deliver minimum viable sheet navigation](#deliver-minimum-viable-sheet-navigation)
+- [`BL-078` — Add quickfilters to collection views](#add-quickfilters-to-collection-views)
+- [`BL-082` — Refine mobile rules-reader navigation](#refine-mobile-rules-reader-navigation)
 - [`BL-070` — Establish the multi-system boundary and 2024 D&D sheet](#establish-the-multi-system-boundary-and-2024-dd-sheet)
 - [`BL-071` — Deliver a minimal system-native Shadowdark sheet](#deliver-a-minimal-system-native-shadowdark-sheet)
-- [`BL-082` — Refine mobile rules-reader navigation](#refine-mobile-rules-reader-navigation)
 - [`BL-072` — Harden the three-system external-playtest matrix](#harden-the-three-system-external-playtest-matrix)
-- [`BL-073` — Investigate scene-aware runtime guidance and navigation](#investigate-scene-aware-runtime-guidance-and-navigation) _(P0 prerequisite: MVP navigation required before playtest)_
-- [`BL-078` — Add quickfilters to collection views](#add-quickfilters-to-collection-views)
 - [`BL-081` — Prepare playtest feedback collection](#prepare-playtest-feedback-collection) _(final prerequisite before external invitations)_
 
 ### P1 — Priority Improvements
 
 - [`BL-077` — Unify focused detail, editing, and annotations](#unify-focused-detail-editing-and-annotations)
 - [`BL-066` — Prove bounded fillable-PDF interoperability](#prove-bounded-fillable-pdf-interoperability)
+- [`BL-083` — Investigate scene-aware runtime guidance and focus](#investigate-scene-aware-runtime-guidance-and-focus) _(trigger-deferred and omitted from the recommended sequence until multi-system navigation evidence exists)_
 - [`p1-010` — Add GitHub Actions for quality gates](#add-github-actions-for-quality-gates) _(trigger-deferred and omitted from the recommended sequence until CI needs justify it)_
 
 ### P2 — Future Feature Work
@@ -79,15 +80,15 @@ _Goal: First External Playtest_
 
 The queues above record strategic priority membership; this list records the dependency-aware action order and may omit blocked or trigger-deferred items.
 
-1. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary and add the minimal 2024 D&D sheet
-2. `BL-071`: Add the minimal Shadowdark sheet within the conservative baseline after `BL-070` supplies the dispatch boundary
-3. `BL-082`: Refine the mobile rules-reader controls after the complete source presentations exist and before final matrix hardening
-4. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix
-5. `BL-073`: Deliver minimum viable navigation (e.g., outline/navbar) before external playtest based on scroll-pressure evidence
-6. `BL-078`: Add generic quickfilters to collection views (e.g. Runtime Actions by timing, Spells by level) before external handoff
+1. `BL-073`: Prove minimum viable sheet navigation on the saturated 2014 sheet before multiplying the human-review surface
+2. `BL-078`: Prove collection-scale quickfilters on Runtime Actions and Spells before later sheets multiply comparable dense-list review
+3. `BL-082`: Refine the shared mobile rules-reader controls against the representative 2014 source states before later systems adopt and verify that presentation
+4. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary, add the minimal 2024 D&D sheet, and supply its system-owned navigation and collection behavior
+5. `BL-071`: Add the minimal Shadowdark sheet and its system-owned navigation and collection behavior within the conservative baseline after `BL-070` supplies the dispatch boundary
+6. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix after required interaction work is present
 7. `BL-081`: Finalize the survey questions and verify the voluntary in-app feedback path immediately before inviting external playtesters
 
-The completed `BL-064` proof established the inventory and spell baseline, `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams, `BL-076` added proportionate density behavior for Runtime Actions and supporting collections without flattening their distinct interaction grammars, and `BL-075` added a reusable player-facing pinning grammar while keeping identity, persistence, and system nuance domain-owned. Accepted collection previews now reflect deliberate user priority before owner rehearsal and external handoff. `BL-066` is an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights. It is deliberately not a first-playtest readiness prerequisite. `BL-082` follows the multi-system source presentations so its phone control proof can optimize one consistent reader before `BL-072` runs the final matrix. `BL-073` has been pulled into P0 because the owner validated the critical need for a minimum viable navigation aid (like an outline) by observing scroll behavior on saturated character content during feature development. `BL-078` remains the final product-interaction change in the P0 sequence because the existing search index covers timing and category, but external handoff should not rely on players knowing to express specific categorization as free text. `BL-081` follows every product prerequisite as the explicit readiness gate that prepares and verifies how external testers will report their experience before invitations are sent.
+The completed `BL-064` proof established the inventory and spell baseline, `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams, `BL-076` added proportionate density behavior for Runtime Actions and supporting collections without flattening their distinct interaction grammars, and `BL-075` added a reusable player-facing pinning grammar while keeping identity, persistence, and system nuance domain-owned. Accepted collection previews now reflect deliberate user priority before owner rehearsal and external handoff. `BL-073`, `BL-078`, and `BL-082` now form a bounded interaction-foundation batch: sheet-scale navigation, collection-scale navigation, and document-scale navigation are proved on the representative 2014 surfaces before `BL-070` and `BL-071` multiply the human-review surface. Later system changes must audit, adopt, adapt, or decline those patterns using system-native landmarks and categories rather than inheriting 2014 semantics. This ordering does not make arbitrary UI polish a prerequisite; it advances only the three known P0 retrieval problems with existing representative proofs. `BL-066` remains an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights, not a first-playtest prerequisite. `BL-072` rehearses the resulting interaction and system matrix and gathers any evidence that could trigger the separate, P1 `BL-083` scene-aware investigation. `BL-081` remains the final readiness gate before external invitations.
 
 ## Refined Backlog Catalog
 
@@ -199,7 +200,7 @@ ID:
 
 Sequencing context:
 
-- Treat the `BL-069` default-collapsed, visibly named `Outline & find` control as the acceptable first baseline. Run this focused P0 refinement after `BL-070` and `BL-071` expose the complete playtest source presentations, then before `BL-072` performs final cross-system hardening. This directly supports the mobile-first, runtime-access, contextual-guidance, and saturation principles in `docs/vision/author-desires.md`; no product-horizon tension is identified.
+- Treat the `BL-069` default-collapsed, visibly named `Outline & find` control and its self-hosted, external, unavailable, sheet-level, and annotation-entry states as sufficient representative evidence for the focused mobile proof. Run this P0 refinement after `BL-078` and before `BL-070`; later system changes verify the accepted shared reader presentation against their actual source states instead of gating its design. `BL-072` still owns final cross-system hardening. This directly supports the mobile-first, runtime-access, contextual-guidance, and saturation principles in `docs/vision/author-desires.md`; no product-horizon tension is identified.
 
 Refinement outputs:
 
@@ -274,7 +275,7 @@ ID:
 
 Sequencing context:
 
-- Begin after the completed core/PDF audits and completed `BL-074` 2014 component-boundary refactor, and preferably after the 2014 reference proof identifies contextual-topic needs. It supplies the dispatch boundary required by Shadowdark.
+- Begin after the completed core/PDF audits, the completed `BL-074` 2014 component-boundary refactor, and the `BL-073`, `BL-078`, and `BL-082` interaction-foundation proofs. It supplies the dispatch boundary required by Shadowdark and must verify, adapt, or deliberately decline the accepted navigation, quickfilter, and reader behaviors for the 2024 presentation without treating 2014 semantics as universal.
 
 Refinement outputs:
 
@@ -314,7 +315,7 @@ ID:
 
 Sequencing context:
 
-- Depends on `BL-070` for the minimum dispatch/computed-view boundary and on `BL-068` to confirm the conservative locator contract; it does not depend on the owner seeking permission for broader source use.
+- Depends on `BL-070` for the minimum dispatch/computed-view boundary and on `BL-068` to confirm the conservative locator contract; it does not depend on the owner seeking permission for broader source use. Verify, adapt, or deliberately decline the accepted `BL-073`, `BL-078`, and `BL-082` interaction patterns using Shadowdark-native landmarks, categories, and source behavior.
 
 Refinement outputs:
 
@@ -363,7 +364,7 @@ Refinement outputs:
   - Run owner solo-play rehearsals, record findings, and identify the external feedback topics that `BL-081` will turn into the final checklist, survey questions, and collection path.
   - Audit the intentionally representative locator sets from the three system proofs against the actual playtest tasks, then add or correct only the high-value curated rules landmarks needed for class or character setup, runtime play, equipment, spells or system equivalents, and recurring table lookup. Keep the review bounded to document navigation rather than pursuing exhaustive compendium coverage.
   - Ask whether contextual references, empty states, focused editing, and transparent aids provided enough guidance or whether a bounded creation workflow should be promoted.
-  - Record whether combat prominence obscures exploration, roleplay, or other system-native scene information and whether ordinary landmarks and system-native cues are sufficient before promoting `BL-073`.
+  - Record whether combat prominence obscures exploration, roleplay, or other system-native scene information and whether the `BL-073` landmark baseline remains sufficient; use that evidence to decide whether to promote `BL-083`.
   - After external sessions, synthesize survey and qualitative evidence with response count, limitations, decisions, and backlog destinations before a product-v1.0 decision.
 - **Excluded behavior:**
   - Adding another system, a builder, a compendium, cloud storage, OCR, or broad automation to improve the milestone cosmetically.
@@ -372,7 +373,7 @@ Refinement outputs:
   - Which performance budgets and supported browser versions are appropriate once all three real sheets exist?
   - Is the rapid-scroll black-region artifact specific to Firefox on macOS, reproducible in Firefox elsewhere, or evidence of application paint pressure shared by other browser/platform combinations?
   - Does any sparse-GM scenario justify a lite mode before external handoff, or should that remain a playtest question?
-  - Does saturation evidence require a collection search, whole-sheet search, outline, sticky landmarks, tabs, or another navigation aid before handoff?
+  - After the `BL-073` navigation baseline and `BL-078` quickfilters exist, does saturation evidence still justify whole-sheet search, tabs, or another retrieval aid before handoff?
   - Which curated rules landmarks are necessary for each playtest scenario, and which lower-value sections should remain reachable through document outline or Find instead of becoming maintained application metadata?
   - Which optional final-v0 migration, if any, is worth supporting for the owner/test fixtures?
 - **Success:**
@@ -383,47 +384,79 @@ Refinement outputs:
   - Each playtest system's curated locator set has an owner-reviewed coverage rationale, verified source/version destinations, and no known high-frequency lookup gap in the rehearsed scenarios.
 - **Recommended workflow:** Full OpenSpec change because it crosses systems, persistence compatibility, accessibility, and release-readiness behavior. Add an ADR only if the compatibility or supported-platform decisions materially change existing approved doctrine.
 
-### Investigate scene-aware runtime guidance and navigation
+### Deliver minimum viable sheet navigation
 
 ID:
 
 - `BL-073`
 
-- **Sequencing context:**
-  - This has been promoted to a P0 prerequisite before the official external playtest. While not yet formally playtested, the owner has validated the critical need for a minimum viable navigation aid (such as an outline or jump-navigation surface) by building out features and observing scroll behavior on saturated character content. A preliminary MVP version must be implemented before external handoff.
+Sequencing context:
+
+- Execute before `BL-070` and `BL-071`. Prove the interaction on the saturated 2014 sheet so later system work can supply system-owned landmarks and human review does not multiply an unresolved navigation problem.
 
 Refinement outputs:
 
-- **Purpose:** Determine whether scene-aware guidance, navigation, or focus can keep the most relevant character information close at hand without making overlapping information disappear or turning a character sheet into a collection of surprising modes.
+- **Purpose:** Let players and reviewers reach high-value sheet regions without repeatedly traversing a long character sheet, while preserving the distinct organization and vocabulary of each game system.
 - **Included behavior:**
-  - Preserve combat as a legitimately prominent, rules-dense runtime surface while evaluating faster access to exploration, roleplay, travel, downtime, or other system-native scene concerns.
-  - Use saturated-sheet, owner-rehearsal, and cross-system evidence to compare a persistent outline, grouped landmarks, jump navigation, small scene-relevant summaries or cues, temporary emphasis, explicit filters, and an optional focused view.
-  - Evaluate which system-native identity and orientation details deserve a compact persistent header, which belong in runtime or organizational regions, and whether a computed summary is preferable to relocating canonical fields merely to reclaim sheet space.
-  - Evaluate runtime-action-like convenience for non-combat concerns through system-native projections or guidance; do not assume exploration, roleplay, travel, or downtime should use action-economy records.
-  - Prefer non-destructive navigation and emphasis before evaluating hiding. If hiding remains a candidate, require an obvious active-state indicator, a one-step reset, continued access to all content, and no silent mutation of character data.
-  - Keep scene categories system-native; do not require every game to use 5e's combat/exploration/roleplay framing.
-  - Evaluate phone and desktop behavior, keyboard order, focus movement, assistive semantics, and the interaction with whole-sheet search or dense collection discovery.
+  - Add one compact, discoverable navigation surface for the 2014 character sheet and a reviewed, ordered set of landmarks drawn from its visible high-value regions.
+  - Let a user jump to a landmark without mutating character data or persisting navigation state, and preserve enough context to understand where focus or scroll position moved.
+  - Define explicit, accessible behavior when the destination is inside a collapsed region and when the user navigates back or continues normal document traversal.
+  - Verify the saturated sheet at representative desktop and phone widths with keyboard, touch, and assistive-technology paths, including interaction with the persistent Rules control.
+  - Use the smallest unique Storybook or representative application proof needed for owner review before propagating the behavior across the full 2014 route; keep viewport and interaction checks in reusable manual verification steps rather than redundant stories or Storybook `play` functions.
+  - Require `BL-070` and `BL-071` to audit and provide system-owned landmark labels and ordering for their sheets instead of inheriting a universal or 2014-specific taxonomy.
 - **Excluded behavior:**
-  - Automatically inferring the current scene, synchronizing a mode from a GM tool, or changing modes without an explicit user action.
-  - Generalizing the existing runtime-action data model into a universal container for every scene or pillar.
-  - Making combat and non-combat sections consume equal space by policy, hiding information by default, or requiring a selected pillar before the sheet is usable.
-  - Moving name, progression, ancestry or origin, background, alignment, and appearance wholesale into Runtime without first distinguishing persistent orientation from scene-relevant information.
-  - Defining a universal scene taxonomy, universal sheet renderer, or persisted scene state before concrete systems demonstrate a shared need.
+  - Scene modes, scene inference, scene-specific summaries, temporary emphasis, filters, or focused views; those questions belong to `BL-083` after navigation evidence exists.
+  - A universal landmark taxonomy, universal sheet renderer, or shared registry that freezes one system's labels into other systems.
+  - Whole-sheet search, rules-document navigation, persisted navigation preferences, content reorganization, or hiding sheet information by default.
 - **Ambiguities:**
-  - Do landmarks and an outline solve the retrieval problem without a scene mode?
-  - Should we introduce a navbar/outline (e.g. every titled grid container as an entry) or a tabbing/paging flow (e.g. by pillar of play)? (User strongly advocates for one of these to fix cumbersome scrolling).
-  - On the saturated 2014 sheet, is a persistent outline, compact jump menu, sticky section navigation, or another non-destructive landmark treatment the smallest useful response?
-  - Is the observed problem navigation, missing scene-relevant synthesis, or both?
-  - Which categories belong to each supported system, and which information legitimately appears in more than one category?
-  - Which identity details must remain visible while regions are collapsed, and which can remain one interaction away without weakening character orientation?
-  - If a focused view is useful, should its selection be ephemeral, remembered per character, or remembered only for the current session?
-  - How should search results, quick notes, and urgent state remain visible when a focus is active?
+  - Is a compact outline, jump menu, edge control, or another disclosure pattern the least obstructive navigation surface?
+  - Which headings are useful landmarks, and what granularity avoids both an unhelpfully short list and a second cumbersome outline?
+  - Should selecting a destination expand a collapsed region automatically, ask first, or move focus to its collapsed header?
+  - Is active-section tracking valuable enough for the playtest, or are explicit jumps and predictable browser Back behavior sufficient?
+  - Where can the control live without covering content, competing with the Rules tab, or consuming scarce phone space?
 - **Success:**
-  - Evidence distinguishes navigation, missing scene-relevant guidance, content organization, and density problems.
-  - The recommended design preserves combat prominence where useful while improving access to non-combat information.
-  - Any proposed focus or hiding behavior is explicit, reversible, accessible, and demonstrably better than a simpler outline or landmark treatment.
-  - The result either closes the investigation with no scene mode or yields one bounded behavioral proposal grounded in at least two system sheets.
-- **Recommended workflow:** Begin with OpenSpec Explore after the evidence trigger, then use a full OpenSpec change if observable navigation or focus behavior is proposed. An ADR is warranted only if the result establishes a durable cross-system scene/navigation contract; a 2014-only outline proof does not trigger one by itself.
+  - A user can reach every reviewed high-value 2014 region in a small, bounded number of actions without losing or changing character information.
+  - Scroll movement, focus placement, collapsed destinations, continued keyboard traversal, and return behavior are predictable and owner-approved.
+  - The navigation surface remains usable and non-obstructive at representative desktop and phone widths and does not introduce document overflow or conflict with the Rules control.
+  - The 2024 and Shadowdark changes can supply their own landmarks without adopting 2014 labels or requiring a speculative universal navigation model.
+- **Recommended workflow:** Full OpenSpec change because this adds durable navigation behavior with responsive, scroll, focus, and accessibility trade-offs and benefits from an isolated proof-before-propagation gate. No ADR is currently triggered; add one only if the work establishes a durable cross-system landmark ownership or persistence contract.
+
+### Investigate scene-aware runtime guidance and focus
+
+ID:
+
+- `BL-083`
+
+Sequencing context:
+
+- Split from `BL-073` and keep P1, trigger-deferred, and outside the next recommended sequence. Revisit only after `BL-070`, `BL-071`, and owner or external rehearsal show what friction remains with the minimum viable navigation baseline across materially different systems.
+
+Refinement outputs:
+
+- **Purpose:** Determine whether navigation alone is insufficient and whether system-native scene cues, summaries, emphasis, filters, or focused views would keep relevant character information close without flattening game identity or making overlapping information disappear.
+- **Included behavior:**
+  - Compare the accepted `BL-073` landmark baseline with observed retrieval and orientation problems on the 2014, 2024, and Shadowdark sheets.
+  - Preserve combat as legitimately prominent where the system warrants it while evaluating faster access to exploration, roleplay, travel, downtime, or other system-native concerns.
+  - Compare small scene-relevant summaries or cues, temporary emphasis, explicit filters, and an optional focused view only where evidence shows ordinary navigation is insufficient.
+  - Evaluate whether a compact persistent identity summary or another computed projection improves orientation without relocating canonical fields merely to reclaim space.
+  - Keep categories and projections system-native; do not force every game into 5e's combat, exploration, and roleplay framing or generalize action-economy records into a universal runtime container.
+  - Require any focus or emphasis to be explicit, reversible, accessible, and compatible with search results, quick notes, urgent state, and continued access to the full sheet.
+- **Excluded behavior:**
+  - Automatically inferring the current scene, synchronizing a mode from a GM tool, or changing modes without explicit user action.
+  - A universal scene taxonomy, universal sheet renderer, or persisted scene state before evidence demonstrates a shared need.
+  - Hiding information by default, requiring a selected scene before the sheet is usable, or making combat and non-combat regions consume equal space by policy.
+  - Reopening the accepted landmark navigation solely to make scene behavior possible.
+- **Ambiguities:**
+  - What measurable friction remains after `BL-073`, and is it missing synthesis, content organization, density, or merely unfamiliarity with the navigation surface?
+  - Are lightweight system-native cues sufficient, or does any system benefit from an explicit filter or focused view?
+  - Which information legitimately belongs to more than one scene, and which identity details must remain continuously visible?
+  - If a focused view proves useful, should it remain ephemeral, persist only for the session, or ever become a character preference?
+  - Is the correct outcome to add no scene-aware behavior at all?
+- **Success:**
+  - Evidence distinguishes navigation from missing scene-relevant synthesis, organization, and density problems across at least two materially different systems.
+  - The investigation either closes with no new feature or yields one bounded behavioral direction that preserves system-native vocabulary and full access to character information.
+  - Any proposed focus, filter, or emphasis is demonstrably more useful than the landmark baseline, explicit and reversible, and compatible with phone, keyboard, touch, and assistive-technology use.
+- **Recommended workflow:** Begin with OpenSpec Explore only after the evidence trigger. Use a full OpenSpec change if the evidence supports new observable scene-aware behavior; no durable specification delta or ADR is justified before that direction exists. An ADR is warranted only if the result establishes a durable cross-system scene ownership, persistence, or projection contract.
 
 ### Add quickfilters to collection views
 
@@ -433,7 +466,7 @@ ID:
 
 Sequencing context:
 
-- Keep this at the end of P0 after the broader first-playtest prerequisites. The completed `BL-076` surface already bounds and searches items including timing and category text, but it still presents discrete groupings (like action timings or spell levels) as one visually homogeneous result stream. Resolve that explicit navigation gap before external handoff without reopening the accepted density or source-action work.
+- Run after `BL-073` and before `BL-082`, `BL-070`, and `BL-071`. The completed `BL-076` surface already bounds and searches items including timing and category text, but it still presents discrete groupings (like action timings or spell levels) as one visually homogeneous result stream. Prove the collection-scale interaction against the representative 2014 Runtime Actions and Spells surfaces before later systems multiply comparable dense-list review, while leaving their categories and adoption decisions system-owned. Resolve that explicit navigation gap without reopening the accepted density or source-action work.
 
 Refinement outputs:
 
