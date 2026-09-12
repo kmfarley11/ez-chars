@@ -111,7 +111,10 @@ test('keeps general Rules reachable while scrolled and exposes bounded resource 
 	test.setTimeout(30_000);
 	await openCharacter(page);
 	const storedBefore = await page.evaluate((key) => localStorage.getItem(key), storageKey);
-	await page.getByRole('button', { name: 'Organizational', exact: true }).scrollIntoViewIfNeeded();
+	await page
+		.getByRole('main', { name: '2014 character sheet' })
+		.getByRole('button', { name: 'Organizational', exact: true })
+		.scrollIntoViewIfNeeded();
 
 	const rulesTrigger = page.getByRole('button', { name: 'Rules', exact: true });
 	await expect(rulesTrigger).toBeVisible();

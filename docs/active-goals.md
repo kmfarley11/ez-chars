@@ -64,6 +64,7 @@ This is a capability summary for the completed 2014 baseline, not a chronologica
 - The home-to-sheet accessibility and verification baseline includes keyboard, touch, modal/popover context, mobile geometry, unit/component coverage, and black-box browser checks.
 - Official SRD 5.1 and SRD 5.2.1 PDFs are self-hosted with centralized attribution and provenance; the conservative Shadowdark citation baseline and protected maintainer review boundary are established for later resource-navigation and system-sheet work.
 - Rights-classified resource discovery, an app-controlled self-hosted SRD viewer, persistent general Rules access, class/equipment/spell locators, explicit external source states, and annotation reference routing are complete for the 2014 sheet. The accepted playtest baseline carries a temporary Firefox/macOS rapid-scroll compatibility notice; `BL-072` owns cross-platform classification, while `BL-082` and `BL-080` own broader phone-reader optimization and user-local PDF connection.
+- The 2014 sheet now provides an owner-approved, system-owned landmark hierarchy through a responsive expanded outline and compact icon rail. Explicit jumps reopen collapsed ancestors, focus visible headings, participate in deduplicated Back/Forward history, coexist with Rules navigation, and keep Abilities & Proficiencies separate from Features & Traits without imposing 2014 vocabulary on later systems.
 
 ### Partial
 
@@ -79,7 +80,7 @@ This is a capability summary for the completed 2014 baseline, not a chronologica
 - explicit Runtime Action timing navigation beyond the existing text search; timing and category are searchable today, but the P0 `BL-078` follow-up owns a visible action-economy path before external handoff
 - final mobile rules-reader control refinement beyond the acceptable default-collapsed `BL-069` navigation baseline; P0 `BL-082` owns the evidence-driven toolbar, disclosure, and auto-hide decision before matrix hardening
 - an owner-approved external-playtest question set and verified in-app feedback path; the final P0 `BL-081` gate owns delivery before invitations are sent
-- continued owner solo-play rehearsals and external evidence across the PRD matrix; saturated 2014 rehearsal validated the revised spell, inventory, Runtime Action, and supporting-collection surfaces, and the owner has explicitly validated whole-sheet navigation (MVP outline/navbar) as a required P0 prerequisite before playtest.
+- continued owner solo-play rehearsals and external evidence across the PRD matrix; saturated 2014 rehearsal validated the revised spell, inventory, Runtime Action, supporting-collection, and whole-sheet navigation surfaces, while P0 `BL-084` and `BL-082` own the physical-phone usability and rules-reader blockers found during final navigation review.
 
 ### Deferred
 

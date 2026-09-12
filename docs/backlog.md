@@ -54,7 +54,7 @@ These lightweight queues record priority membership only. Detailed definitions l
 
 ### P0 — Product Prerequisites
 
-- [`BL-073` — Deliver minimum viable sheet navigation](#deliver-minimum-viable-sheet-navigation)
+- [`BL-084` — Harden core mobile viability](#harden-core-mobile-viability)
 - [`BL-078` — Add quickfilters to collection views](#add-quickfilters-to-collection-views)
 - [`BL-082` — Refine mobile rules-reader navigation](#refine-mobile-rules-reader-navigation)
 - [`BL-070` — Establish the multi-system boundary and 2024 D&D sheet](#establish-the-multi-system-boundary-and-2024-dd-sheet)
@@ -80,15 +80,15 @@ _Goal: First External Playtest_
 
 The queues above record strategic priority membership; this list records the dependency-aware action order and may omit blocked or trigger-deferred items.
 
-1. `BL-073`: Prove minimum viable sheet navigation on the saturated 2014 sheet before multiplying the human-review surface
+1. `BL-084`: Make the existing home, menu, inline-edit, and annotation paths viable on physical phones before new interactions or systems inherit them
 2. `BL-078`: Prove collection-scale quickfilters on Runtime Actions and Spells before later sheets multiply comparable dense-list review
-3. `BL-082`: Refine the shared mobile rules-reader controls against the representative 2014 source states before later systems adopt and verify that presentation
+3. `BL-082`: Refine the shared mobile rules-reader controls and resolve the physical-iPhone PDF/viewer blockers before later systems adopt that presentation
 4. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary, add the minimal 2024 D&D sheet, and supply its system-owned navigation and collection behavior
 5. `BL-071`: Add the minimal Shadowdark sheet and its system-owned navigation and collection behavior within the conservative baseline after `BL-070` supplies the dispatch boundary
 6. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix after required interaction work is present
 7. `BL-081`: Finalize the survey questions and verify the voluntary in-app feedback path immediately before inviting external playtesters
 
-The completed `BL-064` proof established the inventory and spell baseline, `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams, `BL-076` added proportionate density behavior for Runtime Actions and supporting collections without flattening their distinct interaction grammars, and `BL-075` added a reusable player-facing pinning grammar while keeping identity, persistence, and system nuance domain-owned. Accepted collection previews now reflect deliberate user priority before owner rehearsal and external handoff. `BL-073`, `BL-078`, and `BL-082` now form a bounded interaction-foundation batch: sheet-scale navigation, collection-scale navigation, and document-scale navigation are proved on the representative 2014 surfaces before `BL-070` and `BL-071` multiply the human-review surface. Later system changes must audit, adopt, adapt, or decline those patterns using system-native landmarks and categories rather than inheriting 2014 semantics. This ordering does not make arbitrary UI polish a prerequisite; it advances only the three known P0 retrieval problems with existing representative proofs. `BL-066` remains an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights, not a first-playtest prerequisite. `BL-072` rehearses the resulting interaction and system matrix and gathers any evidence that could trigger the separate, P1 `BL-083` scene-aware investigation. `BL-081` remains the final readiness gate before external invitations.
+The completed `BL-064` proof established the inventory and spell baseline, `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams, `BL-076` added proportionate density behavior for Runtime Actions and supporting collections without flattening their distinct interaction grammars, `BL-075` added a reusable player-facing pinning grammar while keeping identity, persistence, and system nuance domain-owned, and `BL-073` established sheet-scale navigation. Accepted collection previews now reflect deliberate user priority before owner rehearsal and external handoff. `BL-084`, `BL-078`, and `BL-082` are the remaining interaction-foundation batch: core phone viability, collection-scale navigation, and document-scale navigation are proved on the representative 2014 surfaces before `BL-070` and `BL-071` multiply the human-review surface. Later system changes must audit, adopt, adapt, or decline those patterns using system-native landmarks and categories rather than inheriting 2014 semantics. This ordering does not make arbitrary UI polish a prerequisite; it advances known physical-phone blockers and the remaining known P0 retrieval problems with existing representative proofs. `BL-066` remains an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights, not a first-playtest prerequisite. `BL-072` rehearses the resulting interaction and system matrix and gathers any evidence that could trigger the separate, P1 `BL-083` scene-aware investigation. `BL-081` remains the final readiness gate before external invitations.
 
 ## Refined Backlog Catalog
 
@@ -102,7 +102,7 @@ ID:
 
 Sequencing context:
 
-- Refined from the `BL-074` component audit and its owner-approved composition seams; the speculative comparison study was deliberately deferred to this item. This is a separate observable-behavior change rather than part of the component refactor. Keep it P1 and outside the first-external-playtest prerequisite sequence unless subsequent rehearsal demonstrates that separate Edit and Notes paths materially obstruct core use.
+- Refined from the `BL-074` component audit and its owner-approved composition seams; the speculative comparison study was deliberately deferred to this item. This is a separate observable-behavior change rather than part of the component refactor. Keep it P1 and outside the first-external-playtest prerequisite sequence unless subsequent rehearsal demonstrates that separate Edit and Notes paths materially obstruct core use. P0 `BL-084` may repair responsive composition, focus, viewport, and dismissal defects in the existing mobile Edit and Annotate paths, but it must not absorb this item's deeper View/Edit/Annotations unification or atomic-save redesign.
 
 Refinement outputs:
 
@@ -192,6 +192,44 @@ Refinement outputs:
   - Automated fixtures detect field-map or template-signature drift.
 - **Recommended workflow:** Full OpenSpec change because it introduces observable import/export behavior, external-format compatibility, and non-destructive failure requirements. Add or refine an ADR if template delivery, manifest identity, or PDF-library adoption creates a durable architecture/dependency decision.
 
+### Harden core mobile viability
+
+ID:
+
+- `BL-084`
+
+Sequencing context:
+
+- Physical-iPhone review during the completed `BL-073` implementation exposed blockers outside sheet navigation itself. Run this P0 immediately after `BL-073` and before `BL-078`, `BL-082`, or multi-system expansion so new collection controls and sheets do not multiply known failures in the home, menu, inline-edit, and annotation foundations. This directly supports the mobile-first and human-authorship principles in `docs/vision/author-desires.md`; no product-horizon tension is identified.
+
+Refinement outputs:
+
+- **Purpose:** Make the existing character-list, sheet-command, inline-edit, and annotation journeys comfortable and predictable on physical phones before asking external playtesters to use them or adding more systems that inherit their interaction seams.
+- **Included behavior:**
+  - Recompose the entrypoint character list for representative narrow phones so character identity, system context, primary opening action, and secondary management actions remain legible, well-spaced, and free of page-level horizontal overflow without requiring a desktop-shaped grid.
+  - Correct each affected `…` menu's disclosure lifecycle so its icon, expanded state, accessible semantics, and focus reset when a submenu action transfers control to a dialog and that dialog is saved, cancelled, dismissed, or closed through browser/platform behavior. Retain `×` only while the corresponding menu is actually open.
+  - Prevent the browser's automatic focus zoom from leaving users stranded after inline editing. Prefer phone-appropriate form typography and responsive geometry over disabling user zoom, mutating the viewport meta contract, or scripting a forced zoom-out.
+  - Audit representative inline primitive edits and annotation dialogs on physical small and large phones, including long values, on-screen keyboard presence, validation, Save, Cancel, Escape/Back where supported, dismissal, scroll position, focus return, and reachability of all actions.
+  - Repair shared responsive, focus, overflow, or dialog-shell causes once when evidence supports that ownership; keep domain mutation, validation, and persistence system-owned.
+  - Use the smallest distinct Storybook fixtures for visual composition and manual interaction bullets, plus application-level Playwright coverage for reproducible menu lifecycle, focus, save/cancel, and overflow behavior. Do not create viewport-only stories or Storybook `play` functions.
+- **Excluded behavior:**
+  - The deeper read-first View/Edit/Annotations language, atomic combined saves, or cross-surface interaction redesign owned by `BL-077`.
+  - Rules-reader PDF rendering, resource-panel composition, Find/navigation controls, or document scroll affordances owned by `BL-082`.
+  - Replacing the home route, adding accounts/cloud storage, redesigning character schemas, introducing a universal field/record renderer, or polishing every desktop presentation as part of a phone-readiness fix.
+  - Disabling pinch zoom, setting a restrictive viewport scale, using browser sniffing, or forcing visual-viewport restoration with brittle timing scripts.
+- **Ambiguities:**
+  - Should the narrow character list become stacked cards, a responsive list with a compact metadata/action row, or a table-to-card transformation that preserves the existing desktop table?
+  - Which menu primitive owns the stale `…`/`×` state: native popover lifecycle, dialog handoff, or a domain wrapper, and can one fix cover every affected menu without coupling their commands?
+  - Is 16 CSS-pixel mobile input typography sufficient to prevent focus zoom across the supported iPhone matrix while preserving the existing visual hierarchy, or do particular editors require a different responsive composition?
+  - Which concrete rough edges in Edit and Annotate are blockers in shared dialog/layout behavior versus evidence for the later `BL-077` interaction redesign?
+- **Success:**
+  - A user can identify and open a character, understand its system, and reach its secondary actions on representative narrow phones without clipped content, illegible compression, accidental activation, or document-level horizontal scrolling.
+  - Every tested options trigger reflects the actual menu state after opening, submenu handoff, Save, Cancel, dismissal, and focus return; no closed menu retains a misleading `×` state.
+  - Focusing and completing or cancelling an inline edit does not leave the page involuntarily magnified, and pinch zoom remains available.
+  - Representative inline edits and annotation workflows remain reachable and understandable with the on-screen keyboard open, preserve drafts and persisted data correctly, and return focus/scroll context predictably.
+  - Physical-iPhone owner review and automated mobile application coverage approve the bounded baseline before collection quickfilters or later systems propagate it.
+- **Recommended workflow:** Full OpenSpec change with a small proof-before-propagation checkpoint because this likely modifies durable mobile list, menu-disclosure, focus, responsive form, and dialog requirements across several shared consumers. The work benefits from coordinated proposal, design, tasks, and physical-phone review. No ADR is currently triggered; refine an existing UI decision only if the accepted fix changes the durable dialog, popover, viewport, or responsive-composition boundary.
+
 ### Refine mobile rules-reader navigation
 
 ID:
@@ -200,13 +238,16 @@ ID:
 
 Sequencing context:
 
-- Treat the `BL-069` default-collapsed, visibly named `Outline & find` control and its self-hosted, external, unavailable, sheet-level, and annotation-entry states as sufficient representative evidence for the focused mobile proof. Run this P0 refinement after `BL-078` and before `BL-070`; later system changes verify the accepted shared reader presentation against their actual source states instead of gating its design. `BL-072` still owns final cross-system hardening. This directly supports the mobile-first, runtime-access, contextual-guidance, and saturation principles in `docs/vision/author-desires.md`; no product-horizon tension is identified.
+- Treat the `BL-069` default-collapsed, visibly named `Outline & find` control and its self-hosted, external, unavailable, sheet-level, and annotation-entry states as sufficient representative evidence for the focused mobile proof. Run this P0 refinement after `BL-084` and `BL-078` and before `BL-070`; later system changes verify the accepted shared reader presentation against their actual source states instead of gating its design. Physical-iPhone `BL-073` review added a PDF rendering blocker, resource-overlay defect, and Find/scroll-discoverability evidence to this scope. `BL-072` still owns final cross-system hardening. This directly supports the mobile-first, runtime-access, contextual-guidance, and saturation principles in `docs/vision/author-desires.md`; no product-horizon tension is identified.
 
 Refinement outputs:
 
 - **Purpose:** Make phone-sized rules lookup preserve as much readable document space as practical while keeping page movement, outline, Find, fallback, and dismissal understandable and consistently recoverable.
 - **Included behavior:**
+  - Reproduce and resolve the physical-iPhone self-hosted PDF failure reported as `Page 1: undefined is not a function (near '...value of readableStream...')`, including a clear non-destructive fallback if the supported Safari/PDF.js combination cannot render the document in-app.
+  - Correct the phone resource-reference presentation so opening or resizing the right-side viewer does not unexpectedly white out, displace, or expose a misleading sliver of the underlying sheet; preserve an obvious close/minify path and the intended mobile reading surface.
   - Review the phone reader's global page toolbar, document-navigation disclosure, source context, and dismissal controls as one responsive control system across the supported self-hosted source presentations.
+  - Make Find the primary mobile document-navigation action or otherwise place it immediately discoverable, and provide an evident visual scroll affordance whenever the Outline/Find region contains additional off-screen controls or results.
   - Compare a compact persistent toolbar, explicit toolbar disclosure, scroll-aware auto-hide, and selectively sticky controls; any hidden controls must have an obvious one-step recovery path and must not depend on gesture-only discovery.
   - Decide which controls must remain continuously visible, which may collapse together, and whether page input, Previous/Next, browser fallback, outline, and Find should share one disclosure or retain distinct homes.
   - Preserve the `BL-069` default-collapsed mobile navigation baseline until a physical-phone proof demonstrates a clearer replacement; reuse existing buttons, disclosures, icons, focus contracts, and touch-target policy where their behavior fits.
@@ -217,13 +258,17 @@ Refinement outputs:
   - Hiding essential navigation with no visible recovery control, gesture-only access, browser-sniffed layouts, or persisting toolbar state as character data.
   - Optimizing each rules system with unrelated phone controls before evidence shows that the shared reader presentation cannot serve it.
 - **Ambiguities:**
+  - Is the physical-iPhone page-render failure caused by the selected PDF.js build, a Safari API/version gap, worker delivery, stream handling, or another app integration boundary, and which iOS/Safari versions belong to the playtest support floor?
+  - On phones, should the resource viewer fully replace the sheet workspace, intentionally overlay it, or retain any visible sheet context without producing the observed whiteout/push-over artifact?
   - Should the page toolbar remain compact and sticky, collapse behind one clearly named control, or auto-hide only during downward document scrolling and immediately return on upward scroll or focus?
   - Which action is the strongest mobile anchor: page position, outline/Find, Close/Back, or a combined document-tools disclosure?
   - Should expanded navigation temporarily replace the document region, overlay it, or remain a bounded stacked region once the default is collapsed?
   - Can the same responsive composition serve both the full-screen sheet viewer and the smaller annotation-dialog viewer without obscuring draft-return context?
 - **Success:**
+  - The self-hosted SRD renders on the supported physical-iPhone Safari floor without the reported `readableStream` page error, or the app detects the unsupported path and offers a plainly explained browser fallback without trapping the user.
+  - Opening, minifying, resizing where applicable, and closing a phone reference never leaves a blank overlay, unintended sheet displacement, unreachable control, or ambiguous partial state.
   - Opening a reference on each supported phone size initially prioritizes readable PDF content while leaving the presence and recovery of outline/Find and page controls obvious.
-  - A user can continuously scroll, jump to a known page, search, open a curated section, use browser fallback, and dismiss/return without losing context or hunting for controls.
+  - A user can continuously scroll, jump to a known page, find text without first hunting through a hidden region, recognize when the navigation region itself can scroll, open a curated section, use browser fallback, and dismiss/return without losing context.
   - No control auto-hides while focused, no essential action becomes gesture-only, every direct-touch control meets the coarse-pointer policy, and no document-level horizontal overflow appears.
   - Owner review approves one consistent responsive control grammar before the final three-system matrix rehearsal.
 - **Recommended workflow:** Full OpenSpec change with a small pre-propagation mobile proof because this is likely to modify durable responsive reference-navigation requirements and combines unresolved toolbar visibility, scroll behavior, focus, touch, and nested-viewer trade-offs. The scope benefits from explicit proposal, design, tasks, and a human checkpoint. No new ADR is currently triggered; refine the existing app-controlled PDF-navigation ADR only if the chosen solution changes its durable presentation or lifecycle boundary.
@@ -275,7 +320,7 @@ ID:
 
 Sequencing context:
 
-- Begin after the completed core/PDF audits, the completed `BL-074` 2014 component-boundary refactor, and the `BL-073`, `BL-078`, and `BL-082` interaction-foundation proofs. It supplies the dispatch boundary required by Shadowdark and must verify, adapt, or deliberately decline the accepted navigation, quickfilter, and reader behaviors for the 2024 presentation without treating 2014 semantics as universal.
+- Begin after the completed core/PDF audits, the completed `BL-074` 2014 component-boundary refactor, and the `BL-073`, `BL-084`, `BL-078`, and `BL-082` interaction-foundation proofs. It supplies the dispatch boundary required by Shadowdark and must verify, adapt, or deliberately decline the accepted navigation, mobile-foundation, quickfilter, and reader behaviors for the 2024 presentation without treating 2014 semantics as universal.
 
 Refinement outputs:
 
@@ -315,7 +360,7 @@ ID:
 
 Sequencing context:
 
-- Depends on `BL-070` for the minimum dispatch/computed-view boundary and on `BL-068` to confirm the conservative locator contract; it does not depend on the owner seeking permission for broader source use. Verify, adapt, or deliberately decline the accepted `BL-073`, `BL-078`, and `BL-082` interaction patterns using Shadowdark-native landmarks, categories, and source behavior.
+- Depends on `BL-070` for the minimum dispatch/computed-view boundary and on `BL-068` to confirm the conservative locator contract; it does not depend on the owner seeking permission for broader source use. Verify, adapt, or deliberately decline the accepted `BL-073`, `BL-084`, `BL-078`, and `BL-082` interaction patterns using Shadowdark-native landmarks, categories, and source behavior.
 
 Refinement outputs:
 
@@ -348,7 +393,7 @@ ID:
 
 Sequencing context:
 
-- Execute after `BL-064`, `BL-069`, `BL-070`, and `BL-071` deliver their proofs. This item closes readiness gaps; it must not become an umbrella for missing product epics.
+- Execute after `BL-064`, `BL-069`, `BL-084`, `BL-070`, and `BL-071` deliver their proofs. This item closes readiness gaps; it must not become an umbrella for missing product epics.
 
 Refinement outputs:
 
@@ -383,43 +428,6 @@ Refinement outputs:
   - The supported browser-platform matrix and any retained compatibility notice accurately reflect headed cross-platform evidence, including the Firefox/macOS rapid-scroll observation, without attributing an unverified root cause to the browser.
   - Each playtest system's curated locator set has an owner-reviewed coverage rationale, verified source/version destinations, and no known high-frequency lookup gap in the rehearsed scenarios.
 - **Recommended workflow:** Full OpenSpec change because it crosses systems, persistence compatibility, accessibility, and release-readiness behavior. Add an ADR only if the compatibility or supported-platform decisions materially change existing approved doctrine.
-
-### Deliver minimum viable sheet navigation
-
-ID:
-
-- `BL-073`
-
-Sequencing context:
-
-- Execute before `BL-070` and `BL-071`. Prove the interaction on the saturated 2014 sheet so later system work can supply system-owned landmarks and human review does not multiply an unresolved navigation problem.
-
-Refinement outputs:
-
-- **Purpose:** Let players and reviewers reach high-value sheet regions without repeatedly traversing a long character sheet, while preserving the distinct organization and vocabulary of each game system.
-- **Included behavior:**
-  - Add one compact, discoverable navigation surface for the 2014 character sheet and a reviewed, ordered set of landmarks drawn from its visible high-value regions.
-  - Let a user jump to a landmark without mutating character data or persisting navigation state, and preserve enough context to understand where focus or scroll position moved.
-  - Define explicit, accessible behavior when the destination is inside a collapsed region and when the user navigates back or continues normal document traversal.
-  - Verify the saturated sheet at representative desktop and phone widths with keyboard, touch, and assistive-technology paths, including interaction with the persistent Rules control.
-  - Use the smallest unique Storybook or representative application proof needed for owner review before propagating the behavior across the full 2014 route; keep viewport and interaction checks in reusable manual verification steps rather than redundant stories or Storybook `play` functions.
-  - Require `BL-070` and `BL-071` to audit and provide system-owned landmark labels and ordering for their sheets instead of inheriting a universal or 2014-specific taxonomy.
-- **Excluded behavior:**
-  - Scene modes, scene inference, scene-specific summaries, temporary emphasis, filters, or focused views; those questions belong to `BL-083` after navigation evidence exists.
-  - A universal landmark taxonomy, universal sheet renderer, or shared registry that freezes one system's labels into other systems.
-  - Whole-sheet search, rules-document navigation, persisted navigation preferences, content reorganization, or hiding sheet information by default.
-- **Ambiguities:**
-  - Is a compact outline, jump menu, edge control, or another disclosure pattern the least obstructive navigation surface?
-  - Which headings are useful landmarks, and what granularity avoids both an unhelpfully short list and a second cumbersome outline?
-  - Should selecting a destination expand a collapsed region automatically, ask first, or move focus to its collapsed header?
-  - Is active-section tracking valuable enough for the playtest, or are explicit jumps and predictable browser Back behavior sufficient?
-  - Where can the control live without covering content, competing with the Rules tab, or consuming scarce phone space?
-- **Success:**
-  - A user can reach every reviewed high-value 2014 region in a small, bounded number of actions without losing or changing character information.
-  - Scroll movement, focus placement, collapsed destinations, continued keyboard traversal, and return behavior are predictable and owner-approved.
-  - The navigation surface remains usable and non-obstructive at representative desktop and phone widths and does not introduce document overflow or conflict with the Rules control.
-  - The 2024 and Shadowdark changes can supply their own landmarks without adopting 2014 labels or requiring a speculative universal navigation model.
-- **Recommended workflow:** Full OpenSpec change because this adds durable navigation behavior with responsive, scroll, focus, and accessibility trade-offs and benefits from an isolated proof-before-propagation gate. No ADR is currently triggered; add one only if the work establishes a durable cross-system landmark ownership or persistence contract.
 
 ### Investigate scene-aware runtime guidance and focus
 
@@ -547,6 +555,13 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 
 ### Raw Human Ideation, Unsorted
 
+- Explore whether `Quick Reference` remains a distinct Runtime landmark or becomes part of top-level character information after the navigation baseline has real use evidence.
+  - _Why_: Armor Class, Hit Points, Speed, and similar frequently consulted values may feel like an at-a-glance identity summary rather than a separate retrieval destination. Folding them into Overview could shorten the landmark rail, but it could also mix relatively stable character identity with mutable table-time state and make a valuable direct jump less precise.
+  - _Current direction_: Preserve the existing distinct, default-expanded `Quick Reference` region through `BL-073`; changing the landmark and sheet organization during icon review would exceed its approved bounded split. Use the navigation proof and first playtest to observe whether users deliberately jump there, confuse it with Meta / Top-level Info, or expect those values to remain visible alongside identity.
+  - _Explore_: Compare the current Runtime landmark, a compact persistent identity/runtime summary, and a merged Overview composition; determine whether the right answer varies by game system rather than becoming a universal sheet rule. Coordinate with `BL-083` only if evidence calls for scene-aware or persistent computed summaries.
+  - _Constraints_: Keep canonical values single-owned, preserve default-expanded access and responsive density, avoid turning Overview into another oversized mixed-purpose panel, and do not generalize 2014 information architecture across systems.
+  - _Refinement trigger_: Promote only if owner or external-playtest evidence shows that Quick Reference is rarely used as a destination, is consistently mistaken for top-level information, or that separating it materially worsens at-a-glance play.
+
 - Explore exact-match highlighting in the app-controlled PDF viewer after page-level Find has playtest evidence.
   - _Why_: `BL-069` Find reports matching pages, occurrence counts, and previews, then navigates to the selected page. A user may still spend time locating the phrase on a dense page, especially on a phone.
   - _Current direction_: Keep page-level Find as the first-playtest baseline. If evidence triggers follow-up, start with one active match highlighted on the selected rendered page and prefer PDF.js find/highlighter integration over bespoke text-span rewriting; expand to previous/next occurrence navigation or multiple visible highlights only if the bounded proof remains usable.
@@ -652,8 +667,8 @@ Success:
 
 ## Done Recently
 
+- `2026-09-12` completed `BL-073`: added system-owned landmark navigation to the 2014 sheet with an expanded outline and compact icon rail, responsive phone access, collapsed-destination recovery, accessible focus, deduplicated fragment history, Rules-viewer coexistence, independent Abilities/Proficiencies and Features/Traits panels, and owner-approved hierarchy/icon treatment
 - `2026-09-07` completed `BL-069`: delivered rights-classified reference navigation with an app-controlled PDF.js viewer, sticky Rules action, multi-source resource discovery, and contextual sheet integration for class, equipment, and spells; added Playwright coverage and verified browser/mobile behavior
 - `2026-08-29` completed `BL-075`: added stable Pin/Unpin priority for 2014 inventory, spells, Features, Traits, Languages, and Tools; introduced durable Language/Tool identities and validated character-owned Pin state; preserved collection-specific interaction grammar, deterministic priority-first ordering, reload and JSON round trips, accessible batch management, and immediate equipment/spell row commands while leaving Runtime Actions independent
 - `2026-08-23` completed `BL-076`: added searchable, responsive density handling for Runtime Actions and supporting Features, Traits, Languages, and Tools; adopted five-item and seven-item simple-list limits respectively while preserving domain-specific actions, compact bullet presentation, source workflows, query context, focus restoration, and cross-browser saturated coverage
 - `2026-08-16` completed `BL-074`: decomposed the legacy field/card and grid/container surfaces into focused field-group, structured-form, annotation, responsive-layout, panel, collapsible-panel, and domain-owned organism boundaries; retired the compatibility components, expanded stateful Storybook and browser coverage, and preserved typed patch, focus, accessibility, and persistence behavior
-- `2026-08-02` completed `BL-064`: added searchable, responsive dense collection workflows for Weapons, Armor & Shields, Other Gear, and Spells; introduced focused row editing and notes, mobile previews and full-height browsing, sparse spell-slot setup, and a saturated 2014 fixture; recorded Runtime/supporting collection and whole-sheet navigation follow-ups

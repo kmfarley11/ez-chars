@@ -85,9 +85,8 @@ test('representative phone controls expose non-overlapping 44 CSS-pixel targets'
 	await openCharacter.click();
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-character/);
 	await expect(page.getByText('Current HP:', { exact: false })).toBeVisible();
-	const spellsToggle = page.getByRole('button', { name: 'Expand Spells' });
+	const spellsToggle = page.getByRole('button', { name: 'Collapse Spells' });
 	await collectTargetFailures([{ name: 'Spells section', locator: spellsToggle }], failures);
-	await spellsToggle.click();
 
 	const runtimeActions = page.getByRole('list', { name: 'Runtime actions' });
 	await collectTargetFailures(
@@ -96,7 +95,9 @@ test('representative phone controls expose non-overlapping 44 CSS-pixel targets'
 			{ name: 'More options', locator: page.getByRole('button', { name: 'More options' }) },
 			{
 				name: 'Runtime section',
-				locator: page.getByRole('button', { name: 'Runtime', exact: true })
+				locator: page
+					.getByRole('main', { name: '2014 character sheet' })
+					.getByRole('button', { name: 'Runtime', exact: true })
 			},
 			{
 				name: 'Quick Reference section',
@@ -202,8 +203,12 @@ test('representative phone controls expose non-overlapping 44 CSS-pixel targets'
 
 test('collapsed phone regions leave hidden controls out of keyboard order', async ({ page }) => {
 	await openSeededCharacter(page);
-	const runtimeToggle = page.getByRole('button', { name: 'Runtime', exact: true });
-	const organizationalToggle = page.getByRole('button', { name: 'Organizational', exact: true });
+	const sheet = page.getByRole('main', { name: '2014 character sheet' });
+	const runtimeToggle = sheet.getByRole('button', { name: 'Runtime', exact: true });
+	const organizationalToggle = sheet.getByRole('button', {
+		name: 'Organizational',
+		exact: true
+	});
 
 	await runtimeToggle.focus();
 	await page.keyboard.press('Enter');
@@ -213,12 +218,15 @@ test('collapsed phone regions leave hidden controls out of keyboard order', asyn
 
 	await runtimeToggle.focus();
 	await page.keyboard.press('Enter');
-	const quickReferenceToggle = page.getByRole('button', { name: /Quick Reference/ });
+	const quickReferenceToggle = sheet.getByRole('button', { name: 'Collapse Quick Reference' });
 	await page.keyboard.press('Tab');
 	await expect(quickReferenceToggle).toBeFocused();
 
 	await page.keyboard.press('Enter');
-	await expect(quickReferenceToggle).toHaveAttribute('aria-expanded', 'false');
+	await expect(sheet.getByRole('button', { name: 'Expand Quick Reference' })).toHaveAttribute(
+		'aria-expanded',
+		'false'
+	);
 	await page.keyboard.press('Tab');
 	await expect(
 		page.getByRole('button', { name: 'Collapse Actions / Runtime Summary' })

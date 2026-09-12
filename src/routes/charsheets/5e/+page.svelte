@@ -1,5 +1,8 @@
 <script lang="ts">
+	import { pushState } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
+	import { onMount } from 'svelte';
 	import RuntimeActionsCard from './components/RuntimeActionsCard.svelte';
 	import SupportingCollectionCard from './components/SupportingCollectionCard.svelte';
 	import Dnd5e2014DenseCollectionCard from './components/Dnd5e2014DenseCollectionCard.svelte';
@@ -8,7 +11,6 @@
 	import IconBookOpen from '$components/IconBookOpen.svelte';
 	import PanelSurface from '$components/PanelSurface.svelte';
 	import SheetReferenceController from '$components/SheetReferenceController.svelte';
-	import CollapsiblePanel from '$components/CollapsiblePanel.svelte';
 	import GridContentCard from '$components/GridContentCard.svelte';
 	import { applyGridPatches } from '$utils/characterGridHelpers';
 	import type { GridContentPatch } from '$utils/gridContentTypes';
@@ -51,6 +53,18 @@
 		DND5E_2014_SPELLCASTING_LOCATOR_ID
 	} from '$lib/resources/dnd5e2014ResourceCatalog';
 	import { openSheetReference } from '$lib/resources/sheetReferenceNavigation';
+	import Dnd5e2014NavigablePanel from './components/Dnd5e2014NavigablePanel.svelte';
+	import Dnd5e2014NavigableRegion from './components/Dnd5e2014NavigableRegion.svelte';
+	import Dnd5e2014SheetNavigation from './components/Dnd5e2014SheetNavigation.svelte';
+	import {
+		createDnd5e2014SheetLandmarkCoordinator,
+		setDnd5e2014SheetLandmarkCoordinator
+	} from './sheetLandmarkNavigation';
+	import {
+		dnd5e2014SheetLandmarks,
+		resolveDnd5e2014SheetLandmarkPath,
+		type Dnd5e2014SheetLandmark
+	} from './sheetLandmarks';
 
 	interface Props {
 		data: {
@@ -81,9 +95,44 @@
 		hasMatchingCharacter ? ($charsArray[charIdx] ?? emptyChar) : emptyChar
 	) as CharacterDocument5e2014;
 
-	let isOverviewRegionCollapsed = $state(false);
-	let isRuntimeRegionCollapsed = $state(false);
-	let isOrganizationalRegionCollapsed = $state(false);
+	let currentHistoryFragment = '';
+	const landmarkById = new Map(
+		dnd5e2014SheetLandmarks.map((landmark) => [landmark.fragmentId, landmark])
+	);
+	const landmark = (fragmentId: string): Dnd5e2014SheetLandmark => {
+		const result = landmarkById.get(fragmentId);
+		if (!result) throw new Error(`Missing 2014 sheet landmark: ${fragmentId}`);
+		return result;
+	};
+	const readFragment = () => window.location.hash.slice(1);
+	const landmarkCoordinator = createDnd5e2014SheetLandmarkCoordinator({
+		getCurrentFragment: readFragment,
+		pushFragment: (fragmentId) => {
+			currentHistoryFragment = fragmentId;
+			const sheetUrl = `/charsheets/5e${page.url.search}#${fragmentId}`;
+			pushState(resolve(sheetUrl as '/charsheets/5e'), page.state);
+		}
+	});
+	setDnd5e2014SheetLandmarkCoordinator(landmarkCoordinator);
+
+	const resolveCurrentFragment = async () => {
+		const fragmentId = readFragment();
+		currentHistoryFragment = fragmentId;
+		if (!resolveDnd5e2014SheetLandmarkPath(fragmentId)) return;
+		await landmarkCoordinator.navigate(fragmentId, { recordHistory: false });
+	};
+
+	const handleHistoryTraversal = () => {
+		const fragmentId = readFragment();
+		if (fragmentId === currentHistoryFragment) return;
+		currentHistoryFragment = fragmentId;
+		if (!resolveDnd5e2014SheetLandmarkPath(fragmentId)) return;
+		void landmarkCoordinator.navigate(fragmentId, { recordHistory: false });
+	};
+
+	onMount(() => {
+		void resolveCurrentFragment();
+	});
 	let inventoryCardElements = $state<Partial<Record<InventoryGroup, HTMLElement>>>({});
 	let spellCardElements = $state<Partial<Record<string, HTMLElement>>>({});
 	let inventoryCollectionQueries = $state<Record<InventoryGroup, string>>({
@@ -167,15 +216,6 @@
 		languages: projectPrioritizedSupportingCollectionRows(char, 'languages'),
 		tools: projectPrioritizedSupportingCollectionRows(char, 'tools')
 	});
-	const hasPersistedSpellSlots = $derived(
-		Object.values(char.systemData.spellcasting?.slots ?? {}).some(
-			(slot) => slot.used > 0 || slot.max > 0
-		)
-	);
-	const shouldInitiallyCollapseSpells = $derived(
-		spellDenseRows.length === 0 && !hasPersistedSpellSlots
-	);
-
 	const updateCurrent5eCharacter = (
 		// eslint-disable-next-line no-unused-vars
 		updateFn: (entry: CharacterDocument5e2014) => CharacterDocument5e2014
@@ -362,6 +402,8 @@
 	};
 </script>
 
+<svelte:window onpopstate={handleHistoryTraversal} />
+
 {#if showMissingOrInvalidIdState}
 	<div class="px-4 py-4 sm:px-6">
 		<div
@@ -400,179 +442,156 @@
 				<IconBookOpen classes="h-5 w-5" />
 			</BaseButton>
 		</aside>
-		<section class="sheet-region sheet-region-overview" aria-labelledby="sheet-overview-heading">
-			<button
-				id="sheet-overview-heading"
-				type="button"
-				class="sheet-region-toggle touch-target"
-				aria-expanded={!isOverviewRegionCollapsed}
-				onclick={() => {
-					isOverviewRegionCollapsed = !isOverviewRegionCollapsed;
-				}}
-			>
-				<span class="sheet-region-heading">Overview</span>
-				<span aria-hidden="true" class="sheet-region-toggle-indicator">
-					{isOverviewRegionCollapsed ? '+' : '-'}
-				</span>
-			</button>
-			{#if !isOverviewRegionCollapsed}
-				<CollapsiblePanel heading="Meta / Top-level Info">
-					{#snippet headerActions()}
-						<BaseButton
-							id={classReferencesTriggerId}
-							size="sm"
-							iconOnly={true}
-							ariaLabel="References: classes"
-							title="Open class references"
-							onclick={() =>
-								openSheetReference(DND5E_2014_CLASS_LOCATOR_ID, classReferencesTriggerId)}
-						>
-							<IconBookOpen classes="h-4 w-4" />
-						</BaseButton>
-					{/snippet}
-					<ResponsiveGrid cols={1} colsMd={3} classes="gap-3">
-						<PanelSurface>
-							<GridContentCard
-								handleFieldSavePatch={handleFieldPatchSave}
-								handleEditSavePatches={handleGridPatchesSave}
-								{annotationEditorConfig}
-								data={metaPrimaryData}
-							/>
-						</PanelSurface>
-						<PanelSurface>
-							<GridContentCard
-								handleFieldSavePatch={handleFieldPatchSave}
-								handleEditSavePatches={handleGridPatchesSave}
-								{annotationEditorConfig}
-								data={metaSecondaryData}
-							/>
-						</PanelSurface>
-						<PanelSurface>
-							<GridContentCard
-								handleFieldSavePatch={handleFieldPatchSave}
-								handleEditSavePatches={handleGridPatchesSave}
-								{annotationEditorConfig}
-								data={metaTertiaryData}
-							/>
-						</PanelSurface>
-					</ResponsiveGrid>
-				</CollapsiblePanel>
-			{/if}
-		</section>
-
-		<section class="sheet-region sheet-region-runtime" aria-labelledby="sheet-runtime-heading">
-			<button
-				id="sheet-runtime-heading"
-				type="button"
-				class="sheet-region-toggle touch-target"
-				aria-expanded={!isRuntimeRegionCollapsed}
-				onclick={() => {
-					isRuntimeRegionCollapsed = !isRuntimeRegionCollapsed;
-				}}
-			>
-				<span class="sheet-region-heading">Runtime</span>
-				<span aria-hidden="true" class="sheet-region-toggle-indicator">
-					{isRuntimeRegionCollapsed ? '+' : '-'}
-				</span>
-			</button>
-			{#if !isRuntimeRegionCollapsed}
-				<CollapsiblePanel heading="Quick Reference">
-					<ResponsiveGrid cols={1} colsMd={3} classes="gap-3">
-						<PanelSurface>
-							<GridContentCard
-								handleFieldSavePatch={handleFieldPatchSave}
-								handleEditSavePatches={handleGridPatchesSave}
-								{annotationEditorConfig}
-								displayMaxCols={2}
-								data={quickRefPrimaryData}
-							/>
-						</PanelSurface>
-						<PanelSurface>
-							<GridContentCard
-								handleFieldSavePatch={handleFieldPatchSave}
-								handleEditSavePatches={handleGridPatchesSave}
-								{annotationEditorConfig}
-								data={quickRefMovementData}
-							/>
-						</PanelSurface>
-						<PanelSurface>
-							<GridContentCard
-								handleFieldSavePatch={handleFieldPatchSave}
-								handleEditSavePatches={handleGridPatchesSave}
-								{annotationEditorConfig}
-								displayMaxCols={1}
-								data={quickRefSecondaryData}
-							/>
-						</PanelSurface>
-					</ResponsiveGrid>
-				</CollapsiblePanel>
-				<CollapsiblePanel heading="Actions / Runtime Summary">
-					<ResponsiveGrid cols={1} classes="gap-3">
-						<PanelSurface>
-							<RuntimeActionsCard
-								data={runtimeActionData}
-								character={char}
-								{annotationEditorConfig}
-								handleEditSavePatches={handleGridPatchesSave}
-								onCreateAction={handleCreateRuntimeAction}
-								onResyncAction={handleResyncRuntimeAction}
-								onNavigateToSource={handleNavigateToSource}
-							/>
-						</PanelSurface>
-					</ResponsiveGrid>
-				</CollapsiblePanel>
-				<CollapsiblePanel heading="Abilities & Proficiencies, Features & Traits">
-					<ResponsiveGrid cols={1} classes="gap-3">
-						<PanelSurface>
-							<GridContentCard
-								handleFieldSavePatch={handleFieldPatchSave}
-								handleEditSavePatches={handleGridPatchesSave}
-								{annotationEditorConfig}
-								displayMaxCols={1}
-								displayAlign="center"
-								data={proficiencyBonusRuntimeData}
-							/>
-						</PanelSurface>
-						<ResponsiveGrid cols={1} colsMd={3} colsLg={6} classes="gap-3">
-							{#each abilityRuntimeColumns as column (column.key)}
-								<PanelSurface>
-									<GridContentCard
-										handleFieldSavePatch={handleFieldPatchSave}
-										handleEditSavePatches={handleGridPatchesSave}
-										{annotationEditorConfig}
-										displayMaxCols={1}
-										data={column.data}
-									/>
-								</PanelSurface>
-							{/each}
+		<div class="sheet-layout">
+			<Dnd5e2014SheetNavigation />
+			<main class="sheet-content" aria-label="2014 character sheet">
+				<Dnd5e2014NavigableRegion landmark={landmark('sheet-overview-heading')}>
+					<Dnd5e2014NavigablePanel landmark={landmark('sheet-meta-heading')}>
+						{#snippet headerActions()}
+							<BaseButton
+								id={classReferencesTriggerId}
+								size="sm"
+								iconOnly={true}
+								ariaLabel="References: classes"
+								title="Open class references"
+								onclick={() =>
+									openSheetReference(DND5E_2014_CLASS_LOCATOR_ID, classReferencesTriggerId)}
+							>
+								<IconBookOpen classes="h-4 w-4" />
+							</BaseButton>
+						{/snippet}
+						<ResponsiveGrid cols={1} colsMd={3} classes="gap-3">
+							<PanelSurface>
+								<GridContentCard
+									handleFieldSavePatch={handleFieldPatchSave}
+									handleEditSavePatches={handleGridPatchesSave}
+									{annotationEditorConfig}
+									data={metaPrimaryData}
+								/>
+							</PanelSurface>
+							<PanelSurface>
+								<GridContentCard
+									handleFieldSavePatch={handleFieldPatchSave}
+									handleEditSavePatches={handleGridPatchesSave}
+									{annotationEditorConfig}
+									data={metaSecondaryData}
+								/>
+							</PanelSurface>
+							<PanelSurface>
+								<GridContentCard
+									handleFieldSavePatch={handleFieldPatchSave}
+									handleEditSavePatches={handleGridPatchesSave}
+									{annotationEditorConfig}
+									data={metaTertiaryData}
+								/>
+							</PanelSurface>
 						</ResponsiveGrid>
-						<ResponsiveGrid cols={1} colsMd={2} colsLg={4} classes="gap-3">
-							<section aria-label="Prof. Languages" class="grid">
-								<PanelSurface>
-									<SupportingCollectionCard
-										title="Prof. Languages"
-										rows={supportingCollectionRows.languages}
-										data={proficiencyLanguagesRuntimeData}
-										{annotationEditorConfig}
-										handleEditSavePatches={handleGridPatchesSave}
-										bind:query={supportingCollectionQueries.languages}
-										onSavePins={(draft) => handlePrioritySave('languages', draft)}
-									/>
-								</PanelSurface>
-							</section>
-							<section aria-label="Prof. Tools" class="grid">
-								<PanelSurface>
-									<SupportingCollectionCard
-										title="Prof. Tools"
-										rows={supportingCollectionRows.tools}
-										data={proficiencyToolsRuntimeData}
-										{annotationEditorConfig}
-										handleEditSavePatches={handleGridPatchesSave}
-										bind:query={supportingCollectionQueries.tools}
-										onSavePins={(draft) => handlePrioritySave('tools', draft)}
-									/>
-								</PanelSurface>
-							</section>
+					</Dnd5e2014NavigablePanel>
+				</Dnd5e2014NavigableRegion>
+
+				<Dnd5e2014NavigableRegion landmark={landmark('sheet-runtime-heading')}>
+					<Dnd5e2014NavigablePanel landmark={landmark('sheet-quick-reference-heading')}>
+						<ResponsiveGrid cols={1} colsMd={3} classes="gap-3">
+							<PanelSurface>
+								<GridContentCard
+									handleFieldSavePatch={handleFieldPatchSave}
+									handleEditSavePatches={handleGridPatchesSave}
+									{annotationEditorConfig}
+									displayMaxCols={2}
+									data={quickRefPrimaryData}
+								/>
+							</PanelSurface>
+							<PanelSurface>
+								<GridContentCard
+									handleFieldSavePatch={handleFieldPatchSave}
+									handleEditSavePatches={handleGridPatchesSave}
+									{annotationEditorConfig}
+									data={quickRefMovementData}
+								/>
+							</PanelSurface>
+							<PanelSurface>
+								<GridContentCard
+									handleFieldSavePatch={handleFieldPatchSave}
+									handleEditSavePatches={handleGridPatchesSave}
+									{annotationEditorConfig}
+									displayMaxCols={1}
+									data={quickRefSecondaryData}
+								/>
+							</PanelSurface>
+						</ResponsiveGrid>
+					</Dnd5e2014NavigablePanel>
+					<Dnd5e2014NavigablePanel landmark={landmark('sheet-actions-heading')}>
+						<ResponsiveGrid cols={1} classes="gap-3">
+							<PanelSurface>
+								<RuntimeActionsCard
+									data={runtimeActionData}
+									character={char}
+									{annotationEditorConfig}
+									handleEditSavePatches={handleGridPatchesSave}
+									onCreateAction={handleCreateRuntimeAction}
+									onResyncAction={handleResyncRuntimeAction}
+									onNavigateToSource={handleNavigateToSource}
+								/>
+							</PanelSurface>
+						</ResponsiveGrid>
+					</Dnd5e2014NavigablePanel>
+					<Dnd5e2014NavigablePanel landmark={landmark('sheet-abilities-proficiencies-heading')}>
+						<ResponsiveGrid cols={1} classes="gap-3">
+							<PanelSurface>
+								<GridContentCard
+									handleFieldSavePatch={handleFieldPatchSave}
+									handleEditSavePatches={handleGridPatchesSave}
+									{annotationEditorConfig}
+									displayMaxCols={1}
+									displayAlign="center"
+									data={proficiencyBonusRuntimeData}
+								/>
+							</PanelSurface>
+							<ResponsiveGrid cols={1} colsMd={3} colsLg={6} classes="gap-3">
+								{#each abilityRuntimeColumns as column (column.key)}
+									<PanelSurface>
+										<GridContentCard
+											handleFieldSavePatch={handleFieldPatchSave}
+											handleEditSavePatches={handleGridPatchesSave}
+											{annotationEditorConfig}
+											displayMaxCols={1}
+											data={column.data}
+										/>
+									</PanelSurface>
+								{/each}
+							</ResponsiveGrid>
+							<ResponsiveGrid cols={1} colsMd={2} classes="gap-3">
+								<section aria-label="Prof. Languages" class="grid">
+									<PanelSurface>
+										<SupportingCollectionCard
+											title="Prof. Languages"
+											rows={supportingCollectionRows.languages}
+											data={proficiencyLanguagesRuntimeData}
+											{annotationEditorConfig}
+											handleEditSavePatches={handleGridPatchesSave}
+											bind:query={supportingCollectionQueries.languages}
+											onSavePins={(draft) => handlePrioritySave('languages', draft)}
+										/>
+									</PanelSurface>
+								</section>
+								<section aria-label="Prof. Tools" class="grid">
+									<PanelSurface>
+										<SupportingCollectionCard
+											title="Prof. Tools"
+											rows={supportingCollectionRows.tools}
+											data={proficiencyToolsRuntimeData}
+											{annotationEditorConfig}
+											handleEditSavePatches={handleGridPatchesSave}
+											bind:query={supportingCollectionQueries.tools}
+											onSavePins={(draft) => handlePrioritySave('tools', draft)}
+										/>
+									</PanelSurface>
+								</section>
+							</ResponsiveGrid>
+						</ResponsiveGrid>
+					</Dnd5e2014NavigablePanel>
+					<Dnd5e2014NavigablePanel landmark={landmark('sheet-features-traits-heading')}>
+						<ResponsiveGrid cols={1} colsMd={2} classes="gap-3">
 							<section
 								{@attach registerFeaturesCard}
 								tabindex="-1"
@@ -610,188 +629,170 @@
 								</PanelSurface>
 							</section>
 						</ResponsiveGrid>
-					</ResponsiveGrid>
-				</CollapsiblePanel>
-				<CollapsiblePanel heading="Spells" startsCollapsed={shouldInitiallyCollapseSpells}>
-					{#snippet headerActions()}
-						<BaseButton
-							id={spellReferencesTriggerId}
-							size="sm"
-							iconOnly={true}
-							ariaLabel="References: spells"
-							title="Open spell references"
-							onclick={() =>
-								openSheetReference(DND5E_2014_SPELLCASTING_LOCATOR_ID, spellReferencesTriggerId)}
-						>
-							<IconBookOpen classes="h-4 w-4" />
-						</BaseButton>
-					{/snippet}
-					<ResponsiveGrid cols={1} classes="gap-3">
-						<section aria-label="Spellcasting">
-							<PanelSurface>
-								<GridContentCard
-									handleFieldSavePatch={handleFieldPatchSave}
-									handleEditSavePatches={handleGridPatchesSave}
-									{annotationEditorConfig}
-									displayAlign="center"
-									data={spellcastingRuntimeData}
-								/>
-							</PanelSurface>
-						</section>
-						<section aria-label="Spell slots">
-							<PanelSurface>
-								<GridContentCard
-									handleFieldSavePatch={handleFieldPatchSave}
-									handleEditSavePatches={handleGridPatchesSave}
-									{annotationEditorConfig}
-									displayAlign="center"
-									data={spellSlotRuntimeData}
-								/>
-							</PanelSurface>
-						</section>
-						<section
-							{@attach registerSpellCollection}
-							tabindex="-1"
-							aria-label="Spells collection"
-							class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
-						>
-							<PanelSurface>
-								<Dnd5e2014DenseCollectionCard
-									title="Spells"
-									rows={spellDenseRows}
-									character={char}
-									bulkEditData={spellCollectionBulkEditData}
-									bind:query={spellCollectionQuery}
-									{annotationEditorConfig}
-									emptyText="No spells yet."
-									onIntent={handleSheetIntent}
-									onBulkSave={handleGridPatchesSave}
-									onSavePins={(draft) => handlePrioritySave('spells', draft)}
-								/>
-							</PanelSurface>
-						</section>
-					</ResponsiveGrid>
-				</CollapsiblePanel>
-				<CollapsiblePanel heading="Inventory / Equipment">
-					{#snippet headerActions()}
-						<BaseButton
-							id={equipmentReferencesTriggerId}
-							size="sm"
-							iconOnly={true}
-							ariaLabel="References: equipment"
-							title="Open equipment references"
-							onclick={() =>
-								openSheetReference(DND5E_2014_EQUIPMENT_LOCATOR_ID, equipmentReferencesTriggerId)}
-						>
-							<IconBookOpen classes="h-4 w-4" />
-						</BaseButton>
-					{/snippet}
-					<ResponsiveGrid cols={1} classes="gap-3">
-						<PanelSurface>
-							<GridContentCard
-								handleFieldSavePatch={handleFieldPatchSave}
-								handleEditSavePatches={handleGridPatchesSave}
-								{annotationEditorConfig}
-								displayAlign="center"
-								displayMaxCols={5}
-								data={inventoryCurrencyRuntimeData}
-							/>
-						</PanelSurface>
-						<ResponsiveGrid cols={1} colsMd={3} classes="gap-3">
-							{#each inventoryRuntimeCards as inventoryCard (inventoryCard.key)}
-								<section
-									{@attach registerInventoryCard(inventoryCard.key)}
-									tabindex="-1"
-									aria-label={inventoryGroupLabels[inventoryCard.key]}
-									data-inventory-group={inventoryCard.key}
-									class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
-								>
-									<PanelSurface>
-										<Dnd5e2014DenseCollectionCard
-											title={inventoryCollectionTitles[inventoryCard.key]}
-											rows={inventoryDenseRows[inventoryCard.key]}
-											character={char}
-											bulkEditData={inventoryCard.data}
-											bind:query={inventoryCollectionQueries[inventoryCard.key]}
-											{annotationEditorConfig}
-											emptyText={`No ${inventoryCollectionTitles[inventoryCard.key].toLocaleLowerCase()} yet.`}
-											onIntent={handleSheetIntent}
-											onBulkSave={handleGridPatchesSave}
-											onSavePins={(draft) => handleInventoryPrioritySave(inventoryCard.key, draft)}
-										/>
-									</PanelSurface>
-								</section>
-							{/each}
+					</Dnd5e2014NavigablePanel>
+					<Dnd5e2014NavigablePanel landmark={landmark('sheet-spells-heading')}>
+						{#snippet headerActions()}
+							<BaseButton
+								id={spellReferencesTriggerId}
+								size="sm"
+								iconOnly={true}
+								ariaLabel="References: spells"
+								title="Open spell references"
+								onclick={() =>
+									openSheetReference(DND5E_2014_SPELLCASTING_LOCATOR_ID, spellReferencesTriggerId)}
+							>
+								<IconBookOpen classes="h-4 w-4" />
+							</BaseButton>
+						{/snippet}
+						<ResponsiveGrid cols={1} classes="gap-3">
+							<section aria-label="Spellcasting">
+								<PanelSurface>
+									<GridContentCard
+										handleFieldSavePatch={handleFieldPatchSave}
+										handleEditSavePatches={handleGridPatchesSave}
+										{annotationEditorConfig}
+										displayAlign="center"
+										data={spellcastingRuntimeData}
+									/>
+								</PanelSurface>
+							</section>
+							<section aria-label="Spell slots">
+								<PanelSurface>
+									<GridContentCard
+										handleFieldSavePatch={handleFieldPatchSave}
+										handleEditSavePatches={handleGridPatchesSave}
+										{annotationEditorConfig}
+										displayAlign="center"
+										data={spellSlotRuntimeData}
+									/>
+								</PanelSurface>
+							</section>
+							<section
+								{@attach registerSpellCollection}
+								tabindex="-1"
+								aria-label="Spells collection"
+								class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
+							>
+								<PanelSurface>
+									<Dnd5e2014DenseCollectionCard
+										title="Spells"
+										rows={spellDenseRows}
+										character={char}
+										bulkEditData={spellCollectionBulkEditData}
+										bind:query={spellCollectionQuery}
+										{annotationEditorConfig}
+										emptyText="No spells yet."
+										onIntent={handleSheetIntent}
+										onBulkSave={handleGridPatchesSave}
+										onSavePins={(draft) => handlePrioritySave('spells', draft)}
+									/>
+								</PanelSurface>
+							</section>
 						</ResponsiveGrid>
-					</ResponsiveGrid>
-				</CollapsiblePanel>
-			{/if}
-		</section>
+					</Dnd5e2014NavigablePanel>
+				</Dnd5e2014NavigableRegion>
 
-		<section
-			class="sheet-region sheet-region-organizational"
-			aria-labelledby="sheet-organizational-heading"
-		>
-			<button
-				id="sheet-organizational-heading"
-				type="button"
-				class="sheet-region-toggle touch-target"
-				aria-expanded={!isOrganizationalRegionCollapsed}
-				onclick={() => {
-					isOrganizationalRegionCollapsed = !isOrganizationalRegionCollapsed;
-				}}
-			>
-				<span class="sheet-region-heading">Organizational</span>
-				<span aria-hidden="true" class="sheet-region-toggle-indicator">
-					{isOrganizationalRegionCollapsed ? '+' : '-'}
-				</span>
-			</button>
-			{#if !isOrganizationalRegionCollapsed}
-				<CollapsiblePanel heading="Background, Roleplay, & Notes">
-					<ResponsiveGrid cols={1} classes="gap-3">
-						<ResponsiveGrid cols={1} colsMd={3} classes="gap-3">
+				<Dnd5e2014NavigableRegion landmark={landmark('sheet-organizational-heading')}>
+					<Dnd5e2014NavigablePanel landmark={landmark('sheet-inventory-heading')}>
+						{#snippet headerActions()}
+							<BaseButton
+								id={equipmentReferencesTriggerId}
+								size="sm"
+								iconOnly={true}
+								ariaLabel="References: equipment"
+								title="Open equipment references"
+								onclick={() =>
+									openSheetReference(DND5E_2014_EQUIPMENT_LOCATOR_ID, equipmentReferencesTriggerId)}
+							>
+								<IconBookOpen classes="h-4 w-4" />
+							</BaseButton>
+						{/snippet}
+						<ResponsiveGrid cols={1} classes="gap-3">
 							<PanelSurface>
 								<GridContentCard
 									handleFieldSavePatch={handleFieldPatchSave}
 									handleEditSavePatches={handleGridPatchesSave}
 									{annotationEditorConfig}
-									displayMaxCols={1}
-									data={organizationalBackgroundData}
+									displayAlign="center"
+									displayMaxCols={5}
+									data={inventoryCurrencyRuntimeData}
 								/>
 							</PanelSurface>
+							<ResponsiveGrid cols={1} colsMd={3} classes="gap-3">
+								{#each inventoryRuntimeCards as inventoryCard (inventoryCard.key)}
+									<section
+										{@attach registerInventoryCard(inventoryCard.key)}
+										tabindex="-1"
+										aria-label={inventoryGroupLabels[inventoryCard.key]}
+										data-inventory-group={inventoryCard.key}
+										class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
+									>
+										<PanelSurface>
+											<Dnd5e2014DenseCollectionCard
+												title={inventoryCollectionTitles[inventoryCard.key]}
+												rows={inventoryDenseRows[inventoryCard.key]}
+												character={char}
+												bulkEditData={inventoryCard.data}
+												bind:query={inventoryCollectionQueries[inventoryCard.key]}
+												{annotationEditorConfig}
+												emptyText={`No ${inventoryCollectionTitles[inventoryCard.key].toLocaleLowerCase()} yet.`}
+												onIntent={handleSheetIntent}
+												onBulkSave={handleGridPatchesSave}
+												onSavePins={(draft) =>
+													handleInventoryPrioritySave(inventoryCard.key, draft)}
+											/>
+										</PanelSurface>
+									</section>
+								{/each}
+							</ResponsiveGrid>
+						</ResponsiveGrid>
+					</Dnd5e2014NavigablePanel>
+					<Dnd5e2014NavigablePanel landmark={landmark('sheet-background-notes-heading')}>
+						<ResponsiveGrid cols={1} classes="gap-3">
+							<ResponsiveGrid cols={1} colsMd={3} classes="gap-3">
+								<PanelSurface>
+									<GridContentCard
+										handleFieldSavePatch={handleFieldPatchSave}
+										handleEditSavePatches={handleGridPatchesSave}
+										{annotationEditorConfig}
+										displayMaxCols={1}
+										data={organizationalBackgroundData}
+									/>
+								</PanelSurface>
+								<PanelSurface>
+									<GridContentCard
+										handleFieldSavePatch={handleFieldPatchSave}
+										handleEditSavePatches={handleGridPatchesSave}
+										{annotationEditorConfig}
+										displayMaxCols={1}
+										data={roleplayPrimaryData}
+									/>
+								</PanelSurface>
+								<PanelSurface>
+									<GridContentCard
+										handleFieldSavePatch={handleFieldPatchSave}
+										handleEditSavePatches={handleGridPatchesSave}
+										{annotationEditorConfig}
+										displayMaxCols={1}
+										data={roleplaySecondaryData}
+									/>
+								</PanelSurface>
+							</ResponsiveGrid>
 							<PanelSurface>
 								<GridContentCard
 									handleFieldSavePatch={handleFieldPatchSave}
 									handleEditSavePatches={handleGridPatchesSave}
 									{annotationEditorConfig}
+									displayArrayMode="stack"
 									displayMaxCols={1}
-									data={roleplayPrimaryData}
-								/>
-							</PanelSurface>
-							<PanelSurface>
-								<GridContentCard
-									handleFieldSavePatch={handleFieldPatchSave}
-									handleEditSavePatches={handleGridPatchesSave}
-									{annotationEditorConfig}
-									displayMaxCols={1}
-									data={roleplaySecondaryData}
+									data={scratchpadNotesData}
 								/>
 							</PanelSurface>
 						</ResponsiveGrid>
-						<PanelSurface>
-							<GridContentCard
-								handleFieldSavePatch={handleFieldPatchSave}
-								handleEditSavePatches={handleGridPatchesSave}
-								{annotationEditorConfig}
-								displayArrayMode="stack"
-								displayMaxCols={1}
-								data={scratchpadNotesData}
-							/>
-						</PanelSurface>
-					</ResponsiveGrid>
-				</CollapsiblePanel>
-			{/if}
-		</section>
+					</Dnd5e2014NavigablePanel>
+				</Dnd5e2014NavigableRegion>
+			</main>
+		</div>
 	</div>
 {/if}
 
@@ -799,7 +800,22 @@
 	.sheet-page {
 		display: grid;
 		gap: 0.75rem;
-		padding: 0.5rem;
+		padding: 0.5rem 0.5rem 0.5rem 0;
+	}
+
+	.sheet-layout {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.5rem;
+		min-width: 0;
+	}
+
+	.sheet-content {
+		display: flex;
+		min-width: 0;
+		flex: 1;
+		flex-direction: column;
+		gap: 0.75rem;
 	}
 
 	.sheet-rules-utility {
@@ -813,71 +829,5 @@
 	.sheet-rules-utility :global(.sheet-rules-trigger) {
 		pointer-events: auto;
 		box-shadow: -0.15rem 0.15rem 0.35rem rgb(0 0 0 / 0.18);
-	}
-
-	.sheet-region {
-		border: 1px solid var(--color-surface-border);
-		border-radius: 0.5rem;
-		padding: 0.75rem;
-	}
-
-	.sheet-region-toggle {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4rem;
-		margin: 0 0 0.25rem;
-		border-radius: 0.375rem;
-		padding: 0.25rem 0.4rem;
-		color: var(--color-surface-text);
-		cursor: pointer;
-	}
-
-	.sheet-region-toggle:hover {
-		background-color: color-mix(in oklab, var(--color-surface) 74%, var(--color-brand) 26%);
-	}
-
-	.sheet-region-toggle:focus-visible {
-		outline: 2px solid var(--color-brand);
-		outline-offset: 2px;
-	}
-
-	.sheet-region-heading {
-		font-size: 0.78rem;
-		font-weight: 800;
-		letter-spacing: 0;
-		line-height: 1;
-		text-transform: uppercase;
-	}
-
-	.sheet-region-toggle-indicator {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 1.1rem;
-		height: 1.1rem;
-		border: 1px solid var(--color-surface-border);
-		border-radius: 0.25rem;
-		font-size: 0.8rem;
-		font-weight: 800;
-		line-height: 1;
-	}
-
-	.sheet-region-overview {
-		background-color: color-mix(in oklab, var(--color-surface) 82%, var(--color-muted-surface) 18%);
-	}
-
-	.sheet-region-runtime {
-		border-width: 2px;
-		background-color: color-mix(in oklab, var(--color-surface) 88%, var(--color-brand) 12%);
-	}
-
-	.sheet-region-organizational {
-		background-color: color-mix(in oklab, var(--color-surface) 72%, var(--color-muted-surface) 28%);
-	}
-
-	@supports not (color: color-mix(in oklab, black 50%, white 50%)) {
-		.sheet-region {
-			background-color: var(--color-surface);
-		}
 	}
 </style>

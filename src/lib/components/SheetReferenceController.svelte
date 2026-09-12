@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { replaceState } from '$app/navigation';
-	import { asset } from '$app/paths';
+	import { asset, resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { tick } from 'svelte';
 	import BaseButton from '$components/BaseButton.svelte';
@@ -95,7 +95,11 @@
 	};
 
 	const openLibraryReference = async (locatorId: string) => {
-		replaceState('', { ...page.state, referenceLocatorId: locatorId });
+		const sheetUrl = `/charsheets/5e${page.url.search}${window.location.hash}`;
+		replaceState(resolve(sheetUrl as '/charsheets/5e'), {
+			...page.state,
+			referenceLocatorId: locatorId
+		});
 		isLibraryOpen = false;
 		await tick();
 		headingEl?.focus();
@@ -109,7 +113,11 @@
 		const rest = { ...page.state };
 		delete rest.referenceLocatorId;
 		delete rest.referenceOrigin;
-		replaceState('', { ...rest, referenceDirectDismissed: true });
+		const sheetUrl = `/charsheets/5e${page.url.search}${window.location.hash}`;
+		replaceState(resolve(sheetUrl as '/charsheets/5e'), {
+			...rest,
+			referenceDirectDismissed: true
+		});
 	};
 
 	$effect(() => {

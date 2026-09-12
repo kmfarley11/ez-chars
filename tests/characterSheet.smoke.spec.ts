@@ -47,7 +47,9 @@ test('navigates to a seeded character, adjusts viewport, collapses a region, and
 	await openSeededCharacter(page);
 
 	await page.setViewportSize({ width: 390, height: 844 });
-	const runtimeToggle = page.getByRole('button', { name: 'Runtime', exact: true });
+	const runtimeToggle = page
+		.getByRole('main', { name: '2014 character sheet' })
+		.getByRole('button', { name: 'Runtime', exact: true });
 	await runtimeToggle.click();
 	await expect(runtimeToggle).toHaveAttribute('aria-expanded', 'false');
 	await runtimeToggle.click();
@@ -66,15 +68,13 @@ test('navigates to a seeded character, adjusts viewport, collapses a region, and
 		.toBe(9);
 });
 
-test('starts an empty Spells section collapsed and adds a previously absent spell-slot level', async ({
+test('starts an empty Spells section expanded and adds a previously absent spell-slot level', async ({
 	page
 }) => {
 	await openSeededCharacter(page);
 
-	const spellsToggle = page.getByRole('button', { name: 'Expand Spells' });
-	await expect(spellsToggle).toHaveAttribute('aria-expanded', 'false');
-	await expect(page.getByRole('region', { name: 'Spell slots' })).toHaveCount(0);
-	await spellsToggle.click();
+	const spellsToggle = page.getByRole('button', { name: 'Collapse Spells' });
+	await expect(spellsToggle).toHaveAttribute('aria-expanded', 'true');
 
 	await expect(page.getByRole('region', { name: 'Spellcasting' })).toBeVisible();
 	const slots = page.getByRole('region', { name: 'Spell slots' });

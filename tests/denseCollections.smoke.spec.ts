@@ -59,8 +59,9 @@ test('Other Gear supports bounded search, stable row editing, notes, and bulk ed
 	test.setTimeout(20_000);
 	test.skip(testInfo.project.name === 'Mobile Chrome', 'Desktop bounded-list behavior.');
 	await openSaturatedSheet(page);
+	const sheet = page.getByRole('main', { name: '2014 character sheet' });
 	for (const regionName of ['Overview', 'Runtime', 'Organizational']) {
-		await expect(page.getByRole('button', { name: regionName, exact: true })).toBeVisible();
+		await expect(sheet.getByRole('button', { name: regionName, exact: true })).toBeVisible();
 	}
 
 	const region = page.getByRole('region', { name: 'Other inventory' });
@@ -193,8 +194,9 @@ test('Weapons, Armor & Shields, and Spells share scoped discovery and focused id
 	test.setTimeout(30_000);
 	test.skip(testInfo.project.name === 'Mobile Chrome', 'Desktop collection rollout behavior.');
 	await openSaturatedSheet(page);
+	const sheet = page.getByRole('main', { name: '2014 character sheet' });
 	for (const regionName of ['Overview', 'Runtime', 'Organizational']) {
-		await expect(page.getByRole('button', { name: regionName, exact: true })).toBeVisible();
+		await expect(sheet.getByRole('button', { name: regionName, exact: true })).toBeVisible();
 	}
 
 	const weapons = page.getByRole('region', { name: 'Weapons inventory' });
