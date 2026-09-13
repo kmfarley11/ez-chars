@@ -32,10 +32,8 @@ test.afterEach(({ page }) => {
 async function openSeededCharacter(page: Page) {
 	await page.goto('/');
 	await page
-		.locator('tbody tr')
-		.filter({ hasText: e2eCharacter.identity.name })
-		.locator('td')
-		.first()
+		.getByRole('button', { name: `Open ${e2eCharacter.identity.name}` })
+		.filter({ visible: true })
 		.click();
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-character/);
 	await expect(page.getByText('Current HP:', { exact: false })).toBeVisible();
@@ -66,6 +64,47 @@ test('navigates to a seeded character, adjusts viewport, collapses a region, and
 			}, storageKey)
 		)
 		.toBe(9);
+});
+
+test('scalar field editing preserves focus restoration, Escape cancellation, and unchanged saves', async ({
+	page
+}) => {
+	await openSeededCharacter(page);
+
+	const editHpButton = page.getByRole('button', { name: 'Edit Current HP' });
+	const hpInput = page.getByLabel('Current HP');
+
+	// 1. Enter edit mode and test Escape cancellation with focus restoration
+	await editHpButton.click();
+	await expect(hpInput).toBeFocused();
+	await hpInput.fill('99');
+	await page.keyboard.press('Escape');
+	// Value should revert to original (17) and edit mode should close
+	await expect(page.getByText(/Current HP:\s*17/)).toBeVisible();
+	await expect(editHpButton).toBeFocused();
+
+	// 2. Enter edit mode and test unchanged save with focus restoration
+	await editHpButton.click();
+	await expect(hpInput).toBeFocused();
+	await page.getByRole('button', { name: 'Save', exact: true }).click();
+	await expect(page.getByText(/Current HP:\s*17/)).toBeVisible();
+	await expect(editHpButton).toBeFocused();
+
+	// 3. Enter edit mode and test invalid numeric input error alert
+	await editHpButton.click();
+	await expect(hpInput).toBeFocused();
+	// Temporarily relax type to text to exercise defensive validation branch
+	await hpInput.evaluate((el: HTMLInputElement) => {
+		el.type = 'text';
+	});
+	await hpInput.fill('not-a-number');
+	await page.getByRole('button', { name: 'Save', exact: true }).click();
+	await expect(
+		page.getByRole('alert').filter({ hasText: 'Expected a finite number.' })
+	).toBeVisible();
+	// Cancel the invalid edit
+	await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+	await expect(editHpButton).toBeFocused();
 });
 
 test('starts an empty Spells section expanded and adds a previously absent spell-slot level', async ({
@@ -193,10 +232,8 @@ test('links an inventory suggestion through resync and source deletion fallback'
 	);
 	await page.goto('/');
 	await page
-		.locator('tbody tr')
-		.filter({ hasText: e2eRuntimeActionLinkCharacter.identity.name })
-		.locator('td')
-		.first()
+		.getByRole('button', { name: `Open ${e2eRuntimeActionLinkCharacter.identity.name}` })
+		.filter({ visible: true })
 		.click();
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-runtime-action-link/);
 
@@ -355,10 +392,8 @@ test('creates and navigates spell, feature, trait, and custom runtime actions', 
 	});
 	await page.goto('/');
 	await page
-		.locator('tbody tr')
-		.filter({ hasText: e2eRuntimeActionLinkCharacter.identity.name })
-		.locator('td')
-		.first()
+		.getByRole('button', { name: `Open ${e2eRuntimeActionLinkCharacter.identity.name}` })
+		.filter({ visible: true })
 		.click();
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-runtime-action-link/);
 
@@ -445,10 +480,8 @@ test('dialog interaction behavior: cancellation, filtered selection retention, a
 	);
 	await page.goto('/');
 	await page
-		.locator('tbody tr')
-		.filter({ hasText: e2eRuntimeActionLinkCharacter.identity.name })
-		.locator('td')
-		.first()
+		.getByRole('button', { name: `Open ${e2eRuntimeActionLinkCharacter.identity.name}` })
+		.filter({ visible: true })
 		.click();
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-runtime-action-link/);
 

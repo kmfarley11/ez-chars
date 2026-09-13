@@ -69,7 +69,7 @@
 				bind:this={searchInputEl}
 				id={`${uid}-search`}
 				type="search"
-				class="theme-input touch-target w-full rounded-md border px-3 py-1.5"
+				class="theme-input touch-target w-full rounded-md border px-3 py-1.5 text-base md:text-sm"
 				placeholder="Search rules resources"
 				bind:value={query}
 			/>

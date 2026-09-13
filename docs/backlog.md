@@ -54,7 +54,7 @@ These lightweight queues record priority membership only. Detailed definitions l
 
 ### P0 — Product Prerequisites
 
-- [`BL-084` — Harden core mobile viability](#harden-core-mobile-viability)
+- [`BL-077` — Unify focused detail, editing, and annotations](#unify-focused-detail-editing-and-annotations)
 - [`BL-078` — Add quickfilters to collection views](#add-quickfilters-to-collection-views)
 - [`BL-082` — Refine mobile rules-reader navigation](#refine-mobile-rules-reader-navigation)
 - [`BL-070` — Establish the multi-system boundary and 2024 D&D sheet](#establish-the-multi-system-boundary-and-2024-dd-sheet)
@@ -64,7 +64,6 @@ These lightweight queues record priority membership only. Detailed definitions l
 
 ### P1 — Priority Improvements
 
-- [`BL-077` — Unify focused detail, editing, and annotations](#unify-focused-detail-editing-and-annotations)
 - [`BL-066` — Prove bounded fillable-PDF interoperability](#prove-bounded-fillable-pdf-interoperability)
 - [`BL-083` — Investigate scene-aware runtime guidance and focus](#investigate-scene-aware-runtime-guidance-and-focus) _(trigger-deferred and omitted from the recommended sequence until multi-system navigation evidence exists)_
 - [`p1-010` — Add GitHub Actions for quality gates](#add-github-actions-for-quality-gates) _(trigger-deferred and omitted from the recommended sequence until CI needs justify it)_
@@ -80,7 +79,7 @@ _Goal: First External Playtest_
 
 The queues above record strategic priority membership; this list records the dependency-aware action order and may omit blocked or trigger-deferred items.
 
-1. `BL-084`: Make the existing home, menu, inline-edit, and annotation paths viable on physical phones before new interactions or systems inherit them
+1. `BL-077`: Unify focused detail, editing, and annotations into a read-first interaction language across runtime scalars, rich entities, and collections before collection quickfilters or later sheets multiply the interaction surface
 2. `BL-078`: Prove collection-scale quickfilters on Runtime Actions and Spells before later sheets multiply comparable dense-list review
 3. `BL-082`: Refine the shared mobile rules-reader controls and resolve the physical-iPhone PDF/viewer blockers before later systems adopt that presentation
 4. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary, add the minimal 2024 D&D sheet, and supply its system-owned navigation and collection behavior
@@ -88,7 +87,7 @@ The queues above record strategic priority membership; this list records the dep
 6. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix after required interaction work is present
 7. `BL-081`: Finalize the survey questions and verify the voluntary in-app feedback path immediately before inviting external playtesters
 
-The completed `BL-064` proof established the inventory and spell baseline, `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams, `BL-076` added proportionate density behavior for Runtime Actions and supporting collections without flattening their distinct interaction grammars, `BL-075` added a reusable player-facing pinning grammar while keeping identity, persistence, and system nuance domain-owned, and `BL-073` established sheet-scale navigation. Accepted collection previews now reflect deliberate user priority before owner rehearsal and external handoff. `BL-084`, `BL-078`, and `BL-082` are the remaining interaction-foundation batch: core phone viability, collection-scale navigation, and document-scale navigation are proved on the representative 2014 surfaces before `BL-070` and `BL-071` multiply the human-review surface. Later system changes must audit, adopt, adapt, or decline those patterns using system-native landmarks and categories rather than inheriting 2014 semantics. This ordering does not make arbitrary UI polish a prerequisite; it advances known physical-phone blockers and the remaining known P0 retrieval problems with existing representative proofs. `BL-066` remains an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights, not a first-playtest prerequisite. `BL-072` rehearses the resulting interaction and system matrix and gathers any evidence that could trigger the separate, P1 `BL-083` scene-aware investigation. `BL-081` remains the final readiness gate before external invitations.
+The completed `BL-064` proof established the inventory and spell baseline, `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams, `BL-076` added proportionate density behavior for Runtime Actions and supporting collections without flattening their distinct interaction grammars, `BL-075` added a reusable player-facing pinning grammar while keeping identity, persistence, and system nuance domain-owned, `BL-073` established sheet-scale navigation, and `BL-084` resolved core mobile viability across the home character list, popover disclosure lifecycle, and mobile input typography. Accepted collection previews now reflect deliberate user priority before owner rehearsal and external handoff. Physical-phone rehearsal during `BL-073` demonstrated that separate inline-morphing controls and card bulk-edit dialogs remain fundamentally clunky on mobile (`BL-077`). Addressing `BL-077` establishes a 3-tier read-first interaction language before collection quickfilters (`BL-078`), rules-reader refinement (`BL-082`), and multi-system expansion (`BL-070`, `BL-071`) multiply the human-review surface. Later system changes must audit, adopt, adapt, or decline those patterns using system-native landmarks and categories rather than inheriting 2014 semantics. This ordering does not make arbitrary UI polish a prerequisite; it advances known physical-phone blockers and the remaining known P0 retrieval problems with existing representative proofs. `BL-066` remains an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights, not a first-playtest prerequisite. `BL-072` rehearses the resulting interaction and system matrix and gathers any evidence that could trigger the separate, P1 `BL-083` scene-aware investigation. `BL-081` remains the final readiness gate before external invitations.
 
 ## Refined Backlog Catalog
 
@@ -102,36 +101,38 @@ ID:
 
 Sequencing context:
 
-- Refined from the `BL-074` component audit and its owner-approved composition seams; the speculative comparison study was deliberately deferred to this item. This is a separate observable-behavior change rather than part of the component refactor. Keep it P1 and outside the first-external-playtest prerequisite sequence unless subsequent rehearsal demonstrates that separate Edit and Notes paths materially obstruct core use. P0 `BL-084` may repair responsive composition, focus, viewport, and dismissal defects in the existing mobile Edit and Annotate paths, but it must not absorb this item's deeper View/Edit/Annotations unification or atomic-save redesign.
+- Promoted to #1 P0 following the completion of `BL-084`. Rehearsal and physical-iPhone playtesting during `BL-073` supplied the evidence trigger: the existing inline-morphing controls and card bulk-edit dialogs are materially clunky and obstructive on mobile. Addressing this before introducing collection quickfilters (`BL-078`) or additional game systems (`BL-070`, `BL-071`) prevents multiplying a compromised interaction language. Completed `BL-084` repaired the home list, menu disclosure lifecycle, and WebKit input typography, while this item owns the deeper View/Edit/Annotations interaction model and atomic-save workflow.
 
 Refinement outputs:
 
-- **Purpose:** Give individual character fields and identity-owned collection records a consistent, read-first interaction language so users can review authored detail and annotations together, then deliberately edit the information owned by that singular target without navigating unrelated bulk workflows.
+- **Purpose:** Replace the fragmented inline-edit and bulk-dialog interactions with a cohesive, read-first interaction language across fields and collections, allowing users to review authored detail, provenance, and annotations together and edit them intentionally without mobile UX friction.
 - **Included behavior:**
-  - Define a read-oriented View path that presents the complete value or record detail plus its annotations, references, and useful context when that information exceeds the compact on-sheet rendering.
+  - Evaluate the leading **3-tier read-first interaction hypothesis** against global or section-local editing models before broad propagation:
+    1. **Tier 1 (Runtime scalars):** In-place compact controls (e.g. current HP, spell slot toggles, death saves) remain a firm constraint for rapid tapping during play without modal overhead.
+    2. **Tier 2 (Rich entities / annotated fields):** Read-first presentation on the sheet; tapping opens a focused detail drawer/modal presenting complete description, calculations, provenance, and annotations, with an explicit Edit action to modify authored detail and annotations atomically.
+    3. **Tier 3 (Collections):** Dense on-sheet browsing optimized for scanning and reference, with dedicated manage/add workflows and focused item detail sheets.
   - Define one focused Edit path for an individual field or record that can modify its authored value/detail and create, change, or remove its annotations while preserving provenance, references, stable identity, validation, and focus return.
-  - Allow individually editable fields and collection records to share View/Edit semantics without sharing one universal item-shaped projection or dialog body. Domain adapters continue to supply the appropriate field or record draft and translate an accepted save into validated patches or typed intents.
-  - Preserve direct inline editing for frequently changed primitive runtime values when an additional View step would add no useful context. A simple scalar exposes View only when annotations, references, provenance, longer detail, or another meaningful read surface exists.
+  - Allow individually editable fields and collection records to share View/Edit semantics without sharing one universal item-shaped projection or dialog body. Domain adapters supply the appropriate draft and translate an accepted save into validated patches or typed intents.
   - Treat one singular Edit submission as one intentional save: authored and annotation changes either validate and commit together or leave the target unchanged. Preserve existing local-first persistence and unrelated character data.
-  - Use stateful Storybook proofs to compare bulk values with separate annotations, collapsed per-row annotations, and focused per-row annotation management. Stop at an owner gate before changing bulk behavior; default to keeping bulk value and bulk annotation workflows separate unless the proof supplies clearer contrary evidence.
-  - Verify touch, keyboard, pointer, modal dismissal, cancel-without-save, validation failure, annotation add/edit/remove, stable identity, and focus restoration for representative primitive-field and collection-record consumers.
+  - Require a 4-fixture proof-before-propagation gate in Storybook comparing the leading 3-tier read-first model against global and section-local edit alternatives across: (1) runtime scalar, (2) annotated field, (3) dense collection row, and (4) bulk-management workflow. Stop at an owner review checkpoint before broad sheet propagation.
+  - Verify touch, keyboard, pointer, modal dismissal, cancel-without-save, validation failure, annotation add/edit/remove, stable identity, and focus restoration for representative consumers.
 - **Excluded behavior:**
-  - Forcing every primitive value through a detail dialog, replacing efficient runtime inline controls, or converting simple fields into identity-owned records.
-  - Creating a universal cross-system field/record schema, generic domain reducer, form engine, or persistence API.
-  - Combining all bulk value and annotation editing by default without the explicit owner-reviewed proof, or replacing independently useful collection-level bulk actions.
+  - Forcing every runtime scalar into a detail dialog or removing efficient in-place combat counters.
+  - Creating a universal cross-system field/record schema, generic domain reducer, or monolithic form engine.
   - Changing annotation storage shapes, record identities, source/resync semantics, or character schemas solely to support the interaction redesign.
-  - Adding record deletion, gesture-only shortcuts, or responsive quick-action policy beyond what is necessary to make View and Edit complete and accessible.
+  - Disabling pinch zoom, setting restrictive viewport meta, or relying on browser sniffing.
 - **Ambiguities:**
-  - Which current quiet primitive fields have enough hidden annotations, references, or long-form detail to justify a View action, and which should expose only direct or focused Edit?
-  - Should Edit visually present value/detail and annotations as adjacent sections, progressive sections, or another compact composition on phone-sized screens while retaining one atomic save?
-  - Does the owner-reviewed bulk comparison retain fully separate annotation management or promote a focused per-row annotation escape hatch from the bulk form?
+  - How does the leading 3-tier read-first hypothesis compare against global or section-local edit modes in actual playtesting ergonomics?
+  - Which current quiet primitive fields have enough hidden annotations, references, or long-form detail to justify a Tier 2 detail view versus remaining a Tier 1 runtime scalar?
+  - Should the Tier 2 detail modal/drawer visually present value/detail and annotations as adjacent sections, progressive disclosures, or tabbed views on phone-sized screens while retaining one atomic save?
+  - How does bulk editing interact with per-row annotations without ballooning the bulk form, and does collection row editing retain separate annotation management or promote an in-place per-row annotation workflow?
   - When annotations are removed inside a singular Edit draft, what confirmation or undo treatment is proportionate without treating ordinary draft cancellation as persisted deletion?
 - **Success:**
-  - Users can predict where View and Edit lead for both a representative individual field and collection record without being forced through an item-shaped screen for simple values.
+  - Users can intuitively predict where tapping leads across runtime values, rich fields/entities, and collections under the owner-approved model without modal fatigue or accidental edit mode triggering.
   - View consistently exposes relevant annotations and references; singular Edit can change authored detail and annotations atomically without losing identity, provenance, or unrelated data.
-  - Direct runtime edits remain fast, and bulk editing remains understandable rather than becoming an unbounded annotation form.
-  - Storybook and black-box checks cover read, edit, cancel, invalid, annotated, empty-annotation, touch, keyboard, and responsive states, with explicit owner approval before propagation.
-- **Recommended workflow:** Full OpenSpec change because this changes observable field and collection action behavior, annotation editing responsibilities, and singular-save semantics across multiple consumers. A durable specification delta is expected for character-sheet editing and dense-collection interaction. Refine the component-composition or typed-edit ADR only if implementation changes their existing ownership boundaries; no new ADR is required for labels or dialog composition alone.
+  - Rapid combat interactions (HP, spell slots) remain fast and modal-free.
+  - The 4-fixture proof is reviewed and approved by the owner before rolling out across the full 2014 sheet and future systems.
+- **Recommended workflow:** Full OpenSpec change with a 4-fixture proof-before-propagation checkpoint (`bl-077-unify-detail-editing-annotations`). Durable spec deltas expected for character-sheet editing and dense collection interaction.
 
 ### Add GitHub Actions for quality gates and release orchestration
 
@@ -192,44 +193,6 @@ Refinement outputs:
   - Automated fixtures detect field-map or template-signature drift.
 - **Recommended workflow:** Full OpenSpec change because it introduces observable import/export behavior, external-format compatibility, and non-destructive failure requirements. Add or refine an ADR if template delivery, manifest identity, or PDF-library adoption creates a durable architecture/dependency decision.
 
-### Harden core mobile viability
-
-ID:
-
-- `BL-084`
-
-Sequencing context:
-
-- Physical-iPhone review during the completed `BL-073` implementation exposed blockers outside sheet navigation itself. Run this P0 immediately after `BL-073` and before `BL-078`, `BL-082`, or multi-system expansion so new collection controls and sheets do not multiply known failures in the home, menu, inline-edit, and annotation foundations. This directly supports the mobile-first and human-authorship principles in `docs/vision/author-desires.md`; no product-horizon tension is identified.
-
-Refinement outputs:
-
-- **Purpose:** Make the existing character-list, sheet-command, inline-edit, and annotation journeys comfortable and predictable on physical phones before asking external playtesters to use them or adding more systems that inherit their interaction seams.
-- **Included behavior:**
-  - Recompose the entrypoint character list for representative narrow phones so character identity, system context, primary opening action, and secondary management actions remain legible, well-spaced, and free of page-level horizontal overflow without requiring a desktop-shaped grid.
-  - Correct each affected `…` menu's disclosure lifecycle so its icon, expanded state, accessible semantics, and focus reset when a submenu action transfers control to a dialog and that dialog is saved, cancelled, dismissed, or closed through browser/platform behavior. Retain `×` only while the corresponding menu is actually open.
-  - Prevent the browser's automatic focus zoom from leaving users stranded after inline editing. Prefer phone-appropriate form typography and responsive geometry over disabling user zoom, mutating the viewport meta contract, or scripting a forced zoom-out.
-  - Audit representative inline primitive edits and annotation dialogs on physical small and large phones, including long values, on-screen keyboard presence, validation, Save, Cancel, Escape/Back where supported, dismissal, scroll position, focus return, and reachability of all actions.
-  - Repair shared responsive, focus, overflow, or dialog-shell causes once when evidence supports that ownership; keep domain mutation, validation, and persistence system-owned.
-  - Use the smallest distinct Storybook fixtures for visual composition and manual interaction bullets, plus application-level Playwright coverage for reproducible menu lifecycle, focus, save/cancel, and overflow behavior. Do not create viewport-only stories or Storybook `play` functions.
-- **Excluded behavior:**
-  - The deeper read-first View/Edit/Annotations language, atomic combined saves, or cross-surface interaction redesign owned by `BL-077`.
-  - Rules-reader PDF rendering, resource-panel composition, Find/navigation controls, or document scroll affordances owned by `BL-082`.
-  - Replacing the home route, adding accounts/cloud storage, redesigning character schemas, introducing a universal field/record renderer, or polishing every desktop presentation as part of a phone-readiness fix.
-  - Disabling pinch zoom, setting a restrictive viewport scale, using browser sniffing, or forcing visual-viewport restoration with brittle timing scripts.
-- **Ambiguities:**
-  - Should the narrow character list become stacked cards, a responsive list with a compact metadata/action row, or a table-to-card transformation that preserves the existing desktop table?
-  - Which menu primitive owns the stale `…`/`×` state: native popover lifecycle, dialog handoff, or a domain wrapper, and can one fix cover every affected menu without coupling their commands?
-  - Is 16 CSS-pixel mobile input typography sufficient to prevent focus zoom across the supported iPhone matrix while preserving the existing visual hierarchy, or do particular editors require a different responsive composition?
-  - Which concrete rough edges in Edit and Annotate are blockers in shared dialog/layout behavior versus evidence for the later `BL-077` interaction redesign?
-- **Success:**
-  - A user can identify and open a character, understand its system, and reach its secondary actions on representative narrow phones without clipped content, illegible compression, accidental activation, or document-level horizontal scrolling.
-  - Every tested options trigger reflects the actual menu state after opening, submenu handoff, Save, Cancel, dismissal, and focus return; no closed menu retains a misleading `×` state.
-  - Focusing and completing or cancelling an inline edit does not leave the page involuntarily magnified, and pinch zoom remains available.
-  - Representative inline edits and annotation workflows remain reachable and understandable with the on-screen keyboard open, preserve drafts and persisted data correctly, and return focus/scroll context predictably.
-  - Physical-iPhone owner review and automated mobile application coverage approve the bounded baseline before collection quickfilters or later systems propagate it.
-- **Recommended workflow:** Full OpenSpec change with a small proof-before-propagation checkpoint because this likely modifies durable mobile list, menu-disclosure, focus, responsive form, and dialog requirements across several shared consumers. The work benefits from coordinated proposal, design, tasks, and physical-phone review. No ADR is currently triggered; refine an existing UI decision only if the accepted fix changes the durable dialog, popover, viewport, or responsive-composition boundary.
-
 ### Refine mobile rules-reader navigation
 
 ID:
@@ -238,7 +201,7 @@ ID:
 
 Sequencing context:
 
-- Treat the `BL-069` default-collapsed, visibly named `Outline & find` control and its self-hosted, external, unavailable, sheet-level, and annotation-entry states as sufficient representative evidence for the focused mobile proof. Run this P0 refinement after `BL-084` and `BL-078` and before `BL-070`; later system changes verify the accepted shared reader presentation against their actual source states instead of gating its design. Physical-iPhone `BL-073` review added a PDF rendering blocker, resource-overlay defect, and Find/scroll-discoverability evidence to this scope. `BL-072` still owns final cross-system hardening. This directly supports the mobile-first, runtime-access, contextual-guidance, and saturation principles in `docs/vision/author-desires.md`; no product-horizon tension is identified.
+- Treat the `BL-069` default-collapsed, visibly named `Outline & find` control and its self-hosted, external, unavailable, sheet-level, and annotation-entry states as sufficient representative evidence for the focused mobile proof. Run this P0 refinement after `BL-084`, `BL-077`, and `BL-078` and before `BL-070`; later system changes verify the accepted shared reader presentation against their actual source states instead of gating its design. Physical-iPhone `BL-073` review added a PDF rendering blocker, resource-overlay defect, and Find/scroll-discoverability evidence to this scope. `BL-072` still owns final cross-system hardening. This directly supports the mobile-first, runtime-access, contextual-guidance, and saturation principles in `docs/vision/author-desires.md`; no product-horizon tension is identified.
 
 Refinement outputs:
 
@@ -320,7 +283,7 @@ ID:
 
 Sequencing context:
 
-- Begin after the completed core/PDF audits, the completed `BL-074` 2014 component-boundary refactor, and the `BL-073`, `BL-084`, `BL-078`, and `BL-082` interaction-foundation proofs. It supplies the dispatch boundary required by Shadowdark and must verify, adapt, or deliberately decline the accepted navigation, mobile-foundation, quickfilter, and reader behaviors for the 2024 presentation without treating 2014 semantics as universal.
+- Begin after the completed core/PDF audits, the completed `BL-074` 2014 component-boundary refactor, and the `BL-073`, `BL-084`, `BL-077`, `BL-078`, and `BL-082` interaction-foundation proofs. It supplies the dispatch boundary required by Shadowdark and must verify, adapt, or deliberately decline the accepted navigation, mobile-foundation, quickfilter, and reader behaviors for the 2024 presentation without treating 2014 semantics as universal.
 
 Refinement outputs:
 
@@ -360,7 +323,7 @@ ID:
 
 Sequencing context:
 
-- Depends on `BL-070` for the minimum dispatch/computed-view boundary and on `BL-068` to confirm the conservative locator contract; it does not depend on the owner seeking permission for broader source use. Verify, adapt, or deliberately decline the accepted `BL-073`, `BL-084`, `BL-078`, and `BL-082` interaction patterns using Shadowdark-native landmarks, categories, and source behavior.
+- Depends on `BL-070` for the minimum dispatch/computed-view boundary and on `BL-068` to confirm the conservative locator contract; it does not depend on the owner seeking permission for broader source use. Verify, adapt, or deliberately decline the accepted `BL-073`, `BL-084`, `BL-077`, `BL-078`, and `BL-082` interaction patterns using Shadowdark-native landmarks, categories, and source behavior.
 
 Refinement outputs:
 
@@ -667,8 +630,8 @@ Success:
 
 ## Done Recently
 
+- `2026-09-12` completed `BL-084`: hardened core mobile viability across the application: integrated a responsive character list (`hidden md:block` semantic table on desktop vs `block md:hidden` `ul > li > article` card list on mobile) with human-readable summary projections; established a centralized popover close seam resetting disclosure triggers immediately upon command selection; enforced a 16px mobile input typography baseline to prevent involuntary iOS Safari focus zoom while preserving user pinch-to-zoom; verified with cross-browser Playwright smoke tests and physical iPhone review
 - `2026-09-12` completed `BL-073`: added system-owned landmark navigation to the 2014 sheet with an expanded outline and compact icon rail, responsive phone access, collapsed-destination recovery, accessible focus, deduplicated fragment history, Rules-viewer coexistence, independent Abilities/Proficiencies and Features/Traits panels, and owner-approved hierarchy/icon treatment
 - `2026-09-07` completed `BL-069`: delivered rights-classified reference navigation with an app-controlled PDF.js viewer, sticky Rules action, multi-source resource discovery, and contextual sheet integration for class, equipment, and spells; added Playwright coverage and verified browser/mobile behavior
 - `2026-08-29` completed `BL-075`: added stable Pin/Unpin priority for 2014 inventory, spells, Features, Traits, Languages, and Tools; introduced durable Language/Tool identities and validated character-owned Pin state; preserved collection-specific interaction grammar, deterministic priority-first ordering, reload and JSON round trips, accessible batch management, and immediate equipment/spell row commands while leaving Runtime Actions independent
 - `2026-08-23` completed `BL-076`: added searchable, responsive density handling for Runtime Actions and supporting Features, Traits, Languages, and Tools; adopted five-item and seven-item simple-list limits respectively while preserving domain-specific actions, compact bullet presentation, source workflows, query context, focus restoration, and cross-browser saturated coverage
-- `2026-08-16` completed `BL-074`: decomposed the legacy field/card and grid/container surfaces into focused field-group, structured-form, annotation, responsive-layout, panel, collapsible-panel, and domain-owned organism boundaries; retired the compatibility components, expanded stateful Storybook and browser coverage, and preserved typed patch, focus, accessibility, and persistence behavior

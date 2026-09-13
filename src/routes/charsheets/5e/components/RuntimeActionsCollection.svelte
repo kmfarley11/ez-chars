@@ -48,13 +48,6 @@
 	const filteredRows = $derived(filterRuntimeActionRows(rows, query));
 	const previewRows = $derived(rows.slice(0, denseThreshold));
 
-	const runSourceCommand = (event: MouseEvent, command: () => void) => {
-		const popover =
-			event.currentTarget instanceof Element ? event.currentTarget.closest('[popover]') : undefined;
-		if (popover instanceof HTMLElement) popover.hidePopover();
-		command();
-	};
-
 	const navigateToSource = async (source: RuntimeActionSource) => {
 		focusedOpen = false;
 		await tick();
@@ -131,18 +124,10 @@
 							ariaLabel={`Source actions for ${action.name}`}
 							title={`Source actions for ${action.name}`}
 						>
-							<MenuItemButton
-								onclick={(event) =>
-									runSourceCommand(event, () => void navigateToSource(source.reference))}
-							>
+							<MenuItemButton onclick={() => void navigateToSource(source.reference)}>
 								View {source.label}
 							</MenuItemButton>
-							<MenuItemButton
-								onclick={(event) =>
-									runSourceCommand(event, () =>
-										onResyncAction(action.id, action.name, source.label)
-									)}
-							>
+							<MenuItemButton onclick={() => onResyncAction(action.id, action.name, source.label)}>
 								Resync from source
 							</MenuItemButton>
 						</MenuButton>

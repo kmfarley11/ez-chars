@@ -93,8 +93,14 @@
 		draftValue = String(currentValue);
 		error = undefined;
 		await tick();
-		inputEl?.focus();
-		inputEl?.select();
+		inputEl?.focus({ preventScroll: true });
+		if (inputKind === 'text') {
+			try {
+				inputEl?.select();
+			} catch {
+				// Non-text inputs do not support select in standard DOM.
+			}
+		}
 	};
 
 	const cancelEdit = async () => {
@@ -161,7 +167,7 @@
 			<span class="font-medium">{fieldLabel}:</span>
 			<input
 				bind:this={inputEl}
-				class="theme-input touch-target w-20 rounded-md border px-2 py-1 text-sm"
+				class="theme-input touch-target w-24 min-w-[5rem] rounded-md border px-2 py-1 text-base md:text-sm"
 				type={inputKind}
 				value={draftValue}
 				aria-label={fieldLabel}

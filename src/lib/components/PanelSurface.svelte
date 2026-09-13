@@ -18,7 +18,7 @@
 </script>
 
 <div
-	class={twMerge('theme-grid-layer m-2 rounded-md border p-2', classes)}
+	class={twMerge('theme-grid-layer m-2 min-w-0 rounded-md border p-2', classes)}
 	style="--grid-layer-depth:{gridLayerDepth};"
 >
 	{@render children?.()}

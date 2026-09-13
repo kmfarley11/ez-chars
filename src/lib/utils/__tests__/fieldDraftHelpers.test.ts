@@ -44,6 +44,19 @@ describe('field draft helpers', () => {
 		expect(character.systemData.abilities.strength.score).toBe(12);
 	});
 
+	it('prepares guarded patch operations for paths with escaped characters (~1 and ~0)', () => {
+		const draft = FieldDraft.begin({
+			kind: 'value',
+			path: '/profile/a~1b/tilde~0key',
+			value: 12
+		}).update(15);
+
+		expect(draft.prepareAsPatch()).toEqual([
+			{ op: 'test', path: '/profile/a~1b/tilde~0key', value: 12 },
+			{ op: 'replace', path: '/profile/a~1b/tilde~0key', value: 15 }
+		]);
+	});
+
 	it('can prepare an add patch for optional primitive values', () => {
 		const character = createRepresentativePatchCharacter();
 		const draft = FieldDraft.begin({

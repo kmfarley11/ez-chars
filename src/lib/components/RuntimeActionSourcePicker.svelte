@@ -63,7 +63,7 @@
 	<input
 		type="search"
 		placeholder="Search action sources..."
-		class="theme-input rounded-md border px-3 py-1.5"
+		class="theme-input rounded-md border px-3 py-1.5 text-base md:text-sm"
 		bind:value={searchQuery}
 		aria-label="Search action sources"
 	/>

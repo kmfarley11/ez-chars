@@ -134,7 +134,7 @@
 											</label>
 										{:else if leaf.field.multiline}
 											<textarea
-												class="theme-input w-full rounded-md border px-2 py-1 font-mono text-sm"
+												class="theme-input w-full rounded-md border px-2 py-1 font-mono text-base md:text-sm"
 												rows="5"
 												aria-label={field.fieldName === leaf.field.fieldName
 													? field.fieldName
@@ -146,7 +146,7 @@
 											>
 										{:else if leaf.field.options && typeof leaf.field.value === 'string'}
 											<select
-												class="theme-input w-full rounded-md border px-2 py-1"
+												class="theme-input w-full rounded-md border px-2 py-1 text-base md:text-sm"
 												value={leaf.field.value}
 												aria-label={field.fieldName === leaf.field.fieldName
 													? field.fieldName
@@ -162,7 +162,7 @@
 											</select>
 										{:else}
 											<input
-												class="theme-input w-full rounded-md border px-2 py-1"
+												class="theme-input w-full rounded-md border px-2 py-1 text-base md:text-sm"
 												type={isNumberInput(leaf.field) ? 'number' : 'text'}
 												step={isNumberInput(leaf.field) ? '1' : undefined}
 												value={displayOrPlaceholder(leaf.field.value, '')}
@@ -220,7 +220,7 @@
 									</label>
 								{:else if leaf.field.multiline}
 									<textarea
-										class="theme-input w-full rounded-md border px-2 py-1 font-mono text-sm"
+										class="theme-input w-full rounded-md border px-2 py-1 font-mono text-base md:text-sm"
 										rows="5"
 										aria-label={field.fieldName === leaf.field.fieldName
 											? field.fieldName
@@ -232,7 +232,7 @@
 									>
 								{:else if leaf.field.options && typeof leaf.field.value === 'string'}
 									<select
-										class="theme-input w-full rounded-md border px-2 py-1"
+										class="theme-input w-full rounded-md border px-2 py-1 text-base md:text-sm"
 										value={leaf.field.value}
 										aria-label={field.fieldName === leaf.field.fieldName
 											? field.fieldName
@@ -248,7 +248,7 @@
 									</select>
 								{:else}
 									<input
-										class="theme-input w-full rounded-md border px-2 py-1"
+										class="theme-input w-full rounded-md border px-2 py-1 text-base md:text-sm"
 										type={isNumberInput(leaf.field) ? 'number' : 'text'}
 										step={isNumberInput(leaf.field) ? '1' : undefined}
 										value={displayOrPlaceholder(leaf.field.value, '')}

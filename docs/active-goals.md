@@ -65,6 +65,7 @@ This is a capability summary for the completed 2014 baseline, not a chronologica
 - Official SRD 5.1 and SRD 5.2.1 PDFs are self-hosted with centralized attribution and provenance; the conservative Shadowdark citation baseline and protected maintainer review boundary are established for later resource-navigation and system-sheet work.
 - Rights-classified resource discovery, an app-controlled self-hosted SRD viewer, persistent general Rules access, class/equipment/spell locators, explicit external source states, and annotation reference routing are complete for the 2014 sheet. The accepted playtest baseline carries a temporary Firefox/macOS rapid-scroll compatibility notice; `BL-072` owns cross-platform classification, while `BL-082` and `BL-080` own broader phone-reader optimization and user-local PDF connection.
 - The 2014 sheet now provides an owner-approved, system-owned landmark hierarchy through a responsive expanded outline and compact icon rail. Explicit jumps reopen collapsed ancestors, focus visible headings, participate in deduplicated Back/Forward history, coexist with Rules navigation, and keep Abilities & Proficiencies separate from Features & Traits without imposing 2014 vocabulary on later systems.
+- Core mobile viability is established across the application: the home route adapts cleanly between a desktop data table and touch-friendly mobile card list with formatted summary projections and 44px touch targets; menu popovers use a centralized close seam that immediately resets trigger disclosure before dialog display; and a 16px mobile input typography baseline prevents involuntary iOS Safari focus zoom while preserving user pinch-to-zoom.
 
 ### Partial
 
@@ -80,7 +81,7 @@ This is a capability summary for the completed 2014 baseline, not a chronologica
 - explicit Runtime Action timing navigation beyond the existing text search; timing and category are searchable today, but the P0 `BL-078` follow-up owns a visible action-economy path before external handoff
 - final mobile rules-reader control refinement beyond the acceptable default-collapsed `BL-069` navigation baseline; P0 `BL-082` owns the evidence-driven toolbar, disclosure, and auto-hide decision before matrix hardening
 - an owner-approved external-playtest question set and verified in-app feedback path; the final P0 `BL-081` gate owns delivery before invitations are sent
-- continued owner solo-play rehearsals and external evidence across the PRD matrix; saturated 2014 rehearsal validated the revised spell, inventory, Runtime Action, supporting-collection, and whole-sheet navigation surfaces, while P0 `BL-084` and `BL-082` own the physical-phone usability and rules-reader blockers found during final navigation review.
+- continued owner solo-play rehearsals and external evidence across the PRD matrix; saturated 2014 rehearsal validated the revised spell, inventory, Runtime Action, supporting-collection, and whole-sheet navigation surfaces, while completed `BL-084` resolved core mobile viability, and P0 `BL-077` and `BL-082` own the read-first editing and rules-reader blockers found during final navigation review.
 
 ### Deferred
 

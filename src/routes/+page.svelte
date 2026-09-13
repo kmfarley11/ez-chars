@@ -4,7 +4,7 @@
 	import { charsArray, createNew5eCharacter, deleteCharacterById } from '$storage/store.js';
 
 	import BaseButton from '$components/BaseButton.svelte';
-	import Table from '$components/Table.svelte';
+	import CharacterList from './components/CharacterList.svelte';
 	import MenuItemButton from '$components/MenuItemButton.svelte';
 	import MenuButton from '$components/MenuButton.svelte';
 	import CharacterImportDialog from './components/CharacterImportDialog.svelte';
@@ -221,7 +221,11 @@
 		</div>
 	</div>
 
-	<Table tableData={$charsArray} onSelect={handleCharSelect} onDelete={handleCharacterDelete} />
+	<CharacterList
+		characters={$charsArray}
+		onSelect={handleCharSelect}
+		onDelete={handleCharacterDelete}
+	/>
 </div>
 
 <CharacterImportDialog

@@ -216,7 +216,7 @@
 						<label class="space-y-1">
 							<span class="theme-text-muted text-xs">Name (optional)</span>
 							<input
-								class="theme-input touch-target w-full rounded-md border px-2 py-1"
+								class="theme-input touch-target w-full rounded-md border px-2 py-1 text-base md:text-sm"
 								type="text"
 								data-annotation-name-input
 								value={annotation.name ?? ''}
@@ -233,7 +233,7 @@
 						<label class="space-y-1">
 							<span class="theme-text-muted text-xs">Text (optional)</span>
 							<textarea
-								class="theme-input touch-target w-full rounded-md border px-2 py-1"
+								class="theme-input touch-target w-full rounded-md border px-2 py-1 text-base md:text-sm"
 								rows="3"
 								oninput={(event) => {
 									const target = event.currentTarget as HTMLTextAreaElement;
@@ -303,7 +303,7 @@
 								<label class="mt-2 block space-y-1">
 									<span class="theme-text-muted text-xs">Page (optional)</span>
 									<input
-										class="theme-input touch-target w-full rounded-md border px-2 py-1"
+										class="theme-input touch-target w-full rounded-md border px-2 py-1 text-base md:text-sm"
 										type="number"
 										step="1"
 										min="1"
@@ -319,7 +319,7 @@
 								<label class="mt-2 block space-y-1">
 									<span class="theme-text-muted text-xs">Anchor (optional)</span>
 									<input
-										class="theme-input touch-target w-full rounded-md border px-2 py-1"
+										class="theme-input touch-target w-full rounded-md border px-2 py-1 text-base md:text-sm"
 										type="text"
 										value={annotation.ref?.locator.anchor ?? ''}
 										oninput={(event) => {

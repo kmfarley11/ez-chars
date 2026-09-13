@@ -551,6 +551,7 @@ test('supporting collection actions and Save Pins expose visible keyboard focus'
 test('saturated priority state survives application JSON export and replacement restore', async ({
 	page
 }, testInfo) => {
+	test.setTimeout(20_000);
 	test.skip(
 		testInfo.project.name !== 'chromium',
 		'One Chromium black-box backup proof is sufficient.'
@@ -761,4 +762,62 @@ test('phone previews expose domain-specific limits and focused collections with 
 	await expect(featuresSearch).toHaveValue('wizard class feature 10');
 	await featuresDialog.getByRole('button', { name: 'Close Features' }).click();
 	await expect(browseFeatures).toBeFocused();
+});
+
+test('structured form modal editing supports external form submission, array item addition, and array item removal', async ({
+	page
+}, testInfo) => {
+	test.skip(testInfo.project.name === 'Mobile Chrome', 'Desktop collection editing behavior.');
+
+	await openSaturatedSheet(page);
+	const region = page.getByRole('region', { name: 'Prof. Languages', exact: true });
+	await expect(region.getByText('5 items', { exact: true }).first()).toBeVisible();
+
+	const cardActions = region.getByRole('button', { name: 'Card actions' });
+	await cardActions.click();
+	await page
+		.locator('[popover]:popover-open')
+		.getByRole('button', { name: 'Edit', exact: true })
+		.click();
+
+	const editDialog = page.getByRole('dialog', { name: 'Edit Fields' });
+	await expect(editDialog).toBeVisible();
+
+	// Verify external form submission association
+	const saveBtn = editDialog.getByRole('button', { name: 'Save', exact: true });
+	await expect(saveBtn).toHaveAttribute('form', 'structured-edit-form');
+
+	// Verify array item addition
+	const addBtn = editDialog.getByRole('button', { name: 'Add Language' });
+	await expect(addBtn).toBeVisible();
+	const inputs = editDialog.getByRole('textbox', { name: 'Languages Name' });
+	await expect(inputs).toHaveCount(5);
+
+	await addBtn.click();
+	await expect(inputs).toHaveCount(6);
+	await inputs.nth(5).fill('Deep Speech');
+
+	// Save via external form submission button
+	await saveBtn.click();
+	await expect(editDialog).not.toBeVisible();
+	await expect(cardActions).toBeFocused();
+	await expect(region.getByText('6 items', { exact: true }).first()).toBeVisible();
+	await expect(region.getByText('Deep Speech', { exact: true }).first()).toBeVisible();
+
+	// Verify array item removal
+	await cardActions.click();
+	await page.getByRole('button', { name: 'Edit', exact: true }).click();
+	await expect(editDialog).toBeVisible();
+
+	const removeBtns = editDialog.getByRole('button', { name: 'Remove' });
+	await expect(removeBtns).toHaveCount(6);
+	await removeBtns.nth(5).click();
+	await expect(editDialog.getByRole('textbox', { name: 'Languages Name' })).toHaveCount(5);
+
+	// Save again
+	await editDialog.getByRole('button', { name: 'Save', exact: true }).click();
+	await expect(editDialog).not.toBeVisible();
+	await expect(cardActions).toBeFocused();
+	await expect(region.getByText('5 items', { exact: true }).first()).toBeVisible();
+	await expect(region.getByText('Deep Speech', { exact: true })).toHaveCount(0);
 });

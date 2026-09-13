@@ -70,7 +70,7 @@
 				<input
 					id={`${uid}-${suffix}-search`}
 					type="search"
-					class="theme-input touch-target w-full rounded-md border px-3 py-1.5"
+					class="theme-input touch-target w-full rounded-md border px-3 py-1.5 text-base md:text-sm"
 					placeholder={`Search ${title.toLocaleLowerCase()}`}
 					bind:value={query}
 				/>

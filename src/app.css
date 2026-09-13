@@ -275,10 +275,17 @@ body:has(dialog[open]) {
 	);
 }
 
-@media (pointer: coarse) {
+@media (pointer: coarse), (max-width: 767px) {
 	.touch-target,
 	.theme-input:not([type='checkbox']):not([type='radio']):not([type='file']) {
 		min-inline-size: 44px;
 		min-block-size: 44px;
+	}
+
+	input:not([type='checkbox']):not([type='radio']):not([type='file']),
+	textarea,
+	select,
+	.theme-input {
+		font-size: 16px !important;
 	}
 }

@@ -305,7 +305,7 @@
 			<label class="flex items-center gap-2 text-sm">
 				<span>Page</span>
 				<input
-					class="theme-input touch-target w-20 rounded-md border px-2 py-1"
+					class="theme-input touch-target w-20 rounded-md border px-2 py-1 text-base md:text-sm"
 					type="number"
 					min="1"
 					max={totalPages || undefined}
@@ -433,7 +433,7 @@
 						<label class="block space-y-1 text-sm">
 							<span class="font-semibold">Find in document</span>
 							<input
-								class="theme-input touch-target w-full rounded-md border px-2 py-1"
+								class="theme-input touch-target w-full rounded-md border px-2 py-1 text-base md:text-sm"
 								type="search"
 								value={findQuery}
 								oninput={(event) => {

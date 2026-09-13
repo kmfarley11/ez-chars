@@ -25,10 +25,7 @@
 		[row.label, row.context, row.detail].filter((value) => value?.trim()).join(', ')
 	);
 
-	const runCommand = (event: MouseEvent, command: GridContentListRowAction | undefined) => {
-		const popover =
-			event.currentTarget instanceof Element ? event.currentTarget.closest('[popover]') : undefined;
-		if (popover instanceof HTMLElement) popover.hidePopover();
+	const runCommand = (command: GridContentListRowAction | undefined) => {
 		command?.(row, () => {
 			if (!actionsTriggerEl?.isConnected) return false;
 			actionsTriggerEl.focus();
@@ -87,13 +84,13 @@
 				bind:triggerEl={actionsTriggerEl}
 			>
 				{#if onEditRow}
-					<MenuItemButton onclick={(event) => runCommand(event, onEditRow)}>Edit</MenuItemButton>
+					<MenuItemButton onclick={() => runCommand(onEditRow)}>Edit</MenuItemButton>
 				{/if}
 				{#if onNotesRow}
-					<MenuItemButton onclick={(event) => runCommand(event, onNotesRow)}>Notes</MenuItemButton>
+					<MenuItemButton onclick={() => runCommand(onNotesRow)}>Notes</MenuItemButton>
 				{/if}
 				{#if onTogglePinRow}
-					<MenuItemButton onclick={(event) => runCommand(event, onTogglePinRow)}>
+					<MenuItemButton onclick={() => runCommand(onTogglePinRow)}>
 						{isPinned ? 'Unpin' : 'Pin'}
 					</MenuItemButton>
 				{/if}

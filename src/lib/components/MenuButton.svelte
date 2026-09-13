@@ -40,7 +40,11 @@
 	const anchorName = `--menu-anchor-${componentId}`;
 
 	const handlePopoverToggle = (event: ToggleEvent) => {
-		isMenuOpen = (event.currentTarget as HTMLElement).matches(':popover-open');
+		if ('newState' in event && typeof event.newState === 'string') {
+			isMenuOpen = event.newState === 'open';
+		} else {
+			isMenuOpen = (event.currentTarget as HTMLElement).matches(':popover-open');
+		}
 	};
 
 	let colors = $derived(shadingVariant === 'dark' ? 'theme-btn-dark' : 'theme-btn-light');

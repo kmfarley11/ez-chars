@@ -17,12 +17,17 @@
 		buttonSize = 'md',
 		iconVariant = 'hamburger'
 	}: Props = $props();
+
+	let lastAction = $state<string>('');
 </script>
 
-<div class="p-8 flex justify-end min-h-[200px]">
+<div class="p-8 flex flex-col items-end gap-4 min-h-[200px]">
 	<MenuButton {text} {ariaLabel} {buttonIconOnly} {buttonSize} {iconVariant}>
-		<MenuItemButton>Edit Profile</MenuItemButton>
-		<MenuItemButton>Settings</MenuItemButton>
-		<MenuItemButton>Log Out</MenuItemButton>
+		<MenuItemButton onclick={() => (lastAction = 'Edit Profile')}>Edit Profile</MenuItemButton>
+		<MenuItemButton onclick={() => (lastAction = 'Settings')}>Settings</MenuItemButton>
+		<MenuItemButton onclick={() => (lastAction = 'Log Out')}>Log Out</MenuItemButton>
 	</MenuButton>
+	{#if lastAction}
+		<p class="text-sm theme-text-muted">Last action selected: {lastAction}</p>
+	{/if}
 </div>
