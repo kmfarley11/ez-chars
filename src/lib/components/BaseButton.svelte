@@ -13,6 +13,7 @@
 		iconOnly?: boolean;
 		classes?: string;
 		ariaLabel?: string;
+		ariaPressed?: boolean;
 		ariaExpanded?: boolean;
 		ariaControls?: string;
 		ariaHaspopup?: 'menu' | boolean;
@@ -35,6 +36,7 @@
 		iconOnly = false,
 		classes = undefined,
 		ariaLabel = undefined,
+		ariaPressed = undefined,
 		ariaExpanded = undefined,
 		ariaControls = undefined,
 		ariaHaspopup = undefined,
@@ -75,6 +77,7 @@
 		classes
 	)}
 	aria-label={ariaLabel}
+	aria-pressed={ariaPressed}
 	aria-expanded={ariaExpanded}
 	aria-controls={ariaControls}
 	aria-haspopup={ariaHaspopup}

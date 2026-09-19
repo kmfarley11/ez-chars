@@ -1,0 +1,63 @@
+## 1. Proof-Before-Propagation Batch
+
+- [x] 1.1 Audit the current 2014 sheet's editable targets and record an explicit Tier 1 runtime, Tier 2 rich-detail, Tier 3 collection, or intentionally specialized classification; treat missing classification as read-first and identify source-owned Runtime Action exceptions rather than classifying by primitive type.
+- [x] 1.2 Establish the bounded workflow state used by the proof—view, edit, validation, Save/Cancel, annotation removal/Undo, and focus return—without introducing a universal field/record payload or domain reducer.
+- [x] 1.3 Build the stateful Current HP proof with a stable inline geometry, compact accessible confirm/cancel controls, and no modal handoff or generic increment/decrement assumption.
+- [x] 1.4 Build the stateful annotated profile/background-field proof with an explicit detail target, read-first stacked detail, one authored-plus-annotation draft, atomic Save, validation feedback, Cancel, and annotation removal/Undo.
+- [x] 1.5 Build the Random rock dense-record proof within representative Weapons, Armor & Shields, and Other Gear bullet-list collections, with long authored detail, provenance/references, annotation and pin state, stable identity, adjacent first-class Pin/Unpin and detail targets, collection-level Add, focused eligible Remove, and no duplicate ordinary Edit/Notes overflow menu.
+- [x] 1.6 Build the saturated Features proof with compact scan-first browsing, individual focused detail, structural Organize Collection, preserved mixed general/class ownership, no rich-record or annotation bulk editor, and a comparison between annotation badges alone and a read-only Annotated Items overview.
+- [x] 1.7 Extend the proof through saturated Spells, reusing `Organisms/Dnd5e2014DenseCollectionCard / SpellPriorityAcrossLevels` where practical to cover level grouping, Prepared classification, global pinning, duplicate-name identities, annotations, source links, and the same annotation-overview comparison.
+- [x] 1.8 Add one economical Storybook comparison sandbox for the other proof fixtures; add at most one additional organizer story only if it provides a materially distinct initial composition, and do not add Storybook `play` functions or viewport-only duplicate stories.
+- [x] 1.9 Add focused Vitest contracts for draft composition, annotation removal/Undo, atomic validation, adapter ownership, and stable identity, plus the smallest Playwright proof needed for modal/workflow navigation, Back, query preservation, and focus restoration.
+- [x] 1.10 Draft `docs/decisions/2026-09-12-use-three-tier-read-first-sheet-interactions.md` with Proposed status, comparing the leading three-tier model against global and general section-local editing and recording the proof decisions still awaiting owner review.
+- [x] 1.11 Populate and date the pre-gate automated evidence and exact Storybook/manual proof mapping in [verify.md](verify.md), run `npm run verify:smoke`, and resolve pre-gate failures without propagating the interaction model.
+
+## 2. STOP — Human Review and Approval of the Five-Fixture Proof
+
+- [ ] 2.1 STOP — Present the isolated proof and [verify.md](verify.md) to the owner for desktop and physical-phone review. Do not check this task or begin Section 3 until the owner explicitly approves the three-tier direction and answers or delegates the proof judgments covering Tier 1 control density, the shared compact icon-button grammar, adjacent first-class Pin/Unpin density for repeatable records, detail-target discoverability, label → note badge → content placement, consistent bullet-list equipment groups, direct collection Add plus focused eligible Remove, priority-reorder motion, stacked detail order, spell Prepared placement, and the responsive focused-detail boundary. The owner has already approved per-record note badges plus focused detail without a collection-wide annotation overview and has deferred generic collection organization in favor of Pin/Unpin, direct Add, and focused eligible Remove; the revised proof now presents removal of ordinary record Edit/Notes overflow accelerators for confirmation.
+
+## 3. Approved Interaction Foundation
+
+- [ ] 3.1 Apply the owner-approved proof refinements; reconcile the proposal, design, delta specs, remaining tasks, and five-fixture evidence with the approved interaction model, per-record note placement, ordinary-menu disposition, record-lifecycle/priority boundary, priority-motion outcome, and spell Prepared placement; then update the interaction ADR to Approved with the actual decision and consequences.
+- [ ] 3.2 Extract the smallest reusable focused-detail presentation and navigation coordinator from the approved proof, sharing view/edit/back/focus behavior while keeping each domain's data adapter and content composition explicit; retain the proof-approved narrow `IconButton` primitive for Edit, Confirm, Cancel, Detail, Pin/Unpin, and Add controls, and migrate equivalent rollout controls through it instead of recreating SVG buttons at each call site.
+- [ ] 3.3 Implement the shared local-draft lifecycle so authored and annotation changes Save once, validation failure commits nothing, Cancel discards everything, and annotation removal remains undoable until Save.
+- [ ] 3.4 Extend domain-owned primitive-patch and compound-intent adapters as needed so each supported target produces one validated candidate commit without creating a universal item reducer or changing persisted schemas.
+- [ ] 3.5 Implement responsive presentation of the same logical workflow as a bounded desktop detail surface and a full-height phone surface with one scroll owner and no nested phone modal; extract and reuse a small bounded-scroll-affordance presentation component for inline collection consumers without forcing `DialogShell` through that composition.
+
+## 4. 2014 Sheet Rollout
+
+- [ ] 4.1 Make read-first/quiet presentation the safe default and explicitly opt the audited frequent runtime values into stable inline editing; verify current/temporary HP, death saves, remaining hit dice, spell-slot usage, and every other currently persistent target against the classification record.
+- [ ] 4.2 Migrate rich primitive and profile/background fields to explicit read-first detail targets and unified authored-plus-annotation editing while preserving text selection, copy behavior, accessible names, dismissal, and focus restoration.
+- [ ] 4.3 Migrate structured grid cards that represent singular rich information to the focused workflow, preserving their typed edit intents, provenance/references, validation, annotations, and unrelated data.
+- [ ] 4.4 Migrate equipment and spell records so state-sensitive Pin/Unpin is first-class beside each detail target, ordinary Edit and Notes/References overflow accelerators are removed after focused detail covers them, priority changes remain immediate with useful focus after reordering, and rich-record bulk editing is removed; implement the owner-approved priority-motion treatment and Prepared placement through their canonical mutation paths.
+- [ ] 4.5 Migrate Features, Traits, Languages, and Tools so pinnable compact items expose adjacent first-class Pin/Unpin and focused-detail controls without adopting the full dense-row menu, while direct Add and Manage Pins remain separately understandable and eligible Remove stays in the selected record's focused workflow.
+- [ ] 4.6 Reconcile Runtime Action and other source-owned record entry points with the approved model: preserve the specialized source-picker/custom Add flow, View Source, Resync, ownership semantics, and authored ordering; route eligible action-owned fields and annotations through focused detail; pause for artifact reconciliation rather than changing resync semantics if those boundaries do not compose cleanly.
+- [ ] 4.7 Replace legacy collection-wide Add/Edit forms with direct collection-level Add and focused eligible Remove actions; collect only the initial authored information needed to create a record, require explicit confirmation or a recoverable undo path for removal, preserve mixed Features ownership, record order, identities, and unexposed data, and do not introduce generic reorder or Organize Collection rollout UI.
+- [ ] 4.8 Preserve query, scroll context, and invoking focus across sheet/collection browse, detail, edit, Save/Cancel, and Back transitions; remove superseded competing Edit or Notes dialogs only after all equivalent entry paths are covered.
+- [ ] 4.9 Remove collection-wide annotation editing, aggregate note badges, and overview surfaces; expose quiet note indicators with each annotated record's own text in collection browsing and present the actual annotations only in that record's focused detail and Edit workflow.
+
+## 5. Verification, Documentation, and Follow-Up Reconciliation
+
+- [ ] 5.1 Update `docs/field-interaction-model.md`, `docs/field-binding-contract.md`, and other directly superseded current-state guidance to describe the approved three-tier interaction, atomic draft boundary, domain-owned adapters, record-lifecycle and priority boundary, and disposition of collection-wide annotation review.
+- [ ] 5.2 Add or update Vitest coverage for every changed stable edit/annotation boundary, including invalid combined drafts, cancel-without-save, annotation add/edit/remove/Undo, stable identities, unrelated-data preservation, and specialized domain adapters.
+- [ ] 5.3 Add or update black-box Playwright coverage for representative runtime, rich-detail, dense-record, and supporting-collection workflows across keyboard and pointer/touch-sized viewports, including no nested phone modal, Back/query preservation, Escape/dismissal, deterministic focus restoration after priority movement, and the reduced-motion priority path if animation is retained.
+- [ ] 5.4 Reuse the smallest unique Storybook sandbox set for visual review, keep repeatable assertions out of `play` functions, and update [verify.md](verify.md) with explicit desktop and physical-phone interaction bullets plus dated automated results.
+- [ ] 5.5 Run `npm run verify:smoke`, the applicable cross-browser Playwright suite, and the performance checks in `docs/verification.md`; investigate material interaction or mobile regressions and record any environmental exception precisely.
+- [ ] 5.6 Reconcile every deferred issue or evidence trigger discovered during proof, rollout, or review into an existing or new entry in `docs/backlog.md`; do not leave the only record in this change's design, ADR, or verification notes.
+- [ ] 5.7 Run `openspec validate bl-077-unify-detail-editing-annotations --strict` and correct all change-local validation failures.
+
+## 6. STOP — Final Post-Apply User Review and Approval
+
+- [ ] 6.1 STOP — Present the completed scope, changed interaction surfaces, [verify.md](verify.md), automated evidence, material trade-offs, and backlog-reconciled follow-ups to the owner. This task must remain unchecked until the owner completes final desktop and physical-phone review and explicitly approves archival.
+
+## 7. Backlog Updates & Reconciliation at Archive Time
+
+- [ ] 7.1 Confirm again that every unresolved follow-up and evidence trigger is represented in `docs/backlog.md`, then remove `BL-077` from the P0 queue and refined catalog and add a dated concise completion summary to the top of `Done Recently`, pruning that section to its bounded recent history.
+- [ ] 7.2 Remove `BL-077` from the `Next Recommended Sequence`, promote and reconcile the next dependency-aware target in that block, and update its explanatory sequence narrative.
+- [ ] 7.3 Update `docs/active-goals.md` and applicable current vision status only where the completed interaction foundation materially changes their current-state claims.
+- [ ] 7.4 Archive the change, repair repo-relative links after the directory move, merge the delta requirements into meaningful main capability specs without delta-operation headings, validate each affected main spec strictly, and run `openspec validate --all --strict`.
+- [ ] 7.5 Provide a useful suggested commit message whose subject includes `BL-077` and summarizes the approved read-first editing and annotation interaction foundation.
+
+## Executor Recommendation
+
+Use a complex-capability model at high reasoning for the proof, shared workflow, domain-adapter reconciliation, and rollout. The work crosses responsive interaction design, accessibility, atomic mutation boundaries, several distinct 2014 domains, and a consequential human proof gate; a simpler model is appropriate only for isolated mechanical migrations after the approved pattern and tests are established.
