@@ -2,14 +2,23 @@
 	import { tick } from 'svelte';
 	import Badge from '$components/Badge.svelte';
 	import BaseButton from '$components/BaseButton.svelte';
-	import GridContentActionMenu from '$components/GridContentActionMenu.svelte';
+	import IconButton from '$components/IconButton.svelte';
 	import MenuButton from '$components/MenuButton.svelte';
 	import MenuItemButton from '$components/MenuItemButton.svelte';
 	import ResponsiveCollectionView from '$components/ResponsiveCollectionView.svelte';
 	import type { RuntimeActionSource } from '../../../../schema';
 	import { filterRuntimeActionRows, type RuntimeActionRow } from './runtimeActionRows';
 
-	type ActionCallback = () => void;
+	// eslint-disable-next-line no-unused-vars
+	type ActionCallback = (..._args: [boolean?]) => void;
+	type OpenActionCallback = (
+		// eslint-disable-next-line no-unused-vars
+		row: RuntimeActionRow,
+		// eslint-disable-next-line no-unused-vars
+		restoreFocus: () => boolean,
+		// eslint-disable-next-line no-unused-vars
+		fromFocusedView: boolean
+	) => void;
 	// eslint-disable-next-line no-unused-vars
 	type NavigateCallback = (source: RuntimeActionSource) => void;
 	// eslint-disable-next-line no-unused-vars
@@ -20,13 +29,12 @@
 		query?: string;
 		denseThreshold?: number;
 		onAdd: ActionCallback;
-		onEdit: ActionCallback;
-		onNotes: ActionCallback;
+		onOpenAction: OpenActionCallback;
 		onNavigateToSource: NavigateCallback;
 		onResyncAction: ResyncCallback;
-		cardActionsTriggerEl?: HTMLButtonElement;
-		focusedCardActionsTriggerEl?: HTMLButtonElement;
 		addActionTriggerEl?: HTMLButtonElement;
+		focusedOpen?: boolean;
+		onFocusedOpened?: () => void;
 	}
 
 	let {
@@ -34,17 +42,15 @@
 		query = $bindable(''),
 		denseThreshold = 5,
 		onAdd,
-		onEdit,
-		onNotes,
+		onOpenAction,
 		onNavigateToSource,
 		onResyncAction,
-		cardActionsTriggerEl = $bindable(),
-		focusedCardActionsTriggerEl = $bindable(),
-		addActionTriggerEl = $bindable()
+		addActionTriggerEl = $bindable(),
+		focusedOpen = $bindable(false),
+		onFocusedOpened = undefined
 	}: Props = $props();
 
 	const uid = $props.id();
-	let focusedOpen = $state(false);
 	const filteredRows = $derived(filterRuntimeActionRows(rows, query));
 	const previewRows = $derived(rows.slice(0, denseThreshold));
 
@@ -53,25 +59,46 @@
 		await tick();
 		onNavigateToSource(source);
 	};
+
+	const addAction = async () => {
+		const fromFocusedView = focusedOpen;
+		if (fromFocusedView) {
+			focusedOpen = false;
+			await tick();
+		}
+		onAdd(fromFocusedView);
+	};
+
+	const openAction = async (action: RuntimeActionRow, element: HTMLButtonElement) => {
+		const fromFocusedView = focusedOpen;
+		if (fromFocusedView) {
+			focusedOpen = false;
+			await tick();
+		}
+		onOpenAction(
+			action,
+			() => {
+				const target = element.isConnected
+					? element
+					: document.getElementById(`runtime-action-${action.id}-detail`);
+				if (!(target instanceof HTMLElement)) return false;
+				target.focus();
+				return document.activeElement === target;
+			},
+			fromFocusedView
+		);
+	};
 </script>
 
 {#snippet actions(focused = false)}
 	{#if focused}
-		<BaseButton size="sm" onclick={onAdd}>Add action</BaseButton>
-		<GridContentActionMenu
-			canEdit={true}
-			{onEdit}
-			{onNotes}
-			bind:triggerEl={focusedCardActionsTriggerEl}
-		/>
+		<BaseButton size="sm" onclick={() => void addAction()} bind:buttonEl={addActionTriggerEl}
+			>Add action</BaseButton
+		>
 	{:else}
-		<BaseButton size="sm" onclick={onAdd} bind:buttonEl={addActionTriggerEl}>Add action</BaseButton>
-		<GridContentActionMenu
-			canEdit={true}
-			{onEdit}
-			{onNotes}
-			bind:triggerEl={cardActionsTriggerEl}
-		/>
+		<BaseButton size="sm" onclick={() => void addAction()} bind:buttonEl={addActionTriggerEl}
+			>Add action</BaseButton
+		>
 	{/if}
 {/snippet}
 
@@ -105,6 +132,11 @@
 						{#if !compact && action.target}
 							<p class="theme-text-muted mt-1 text-xs">Target: {action.target}</p>
 						{/if}
+						{#if (action.annotations?.length ?? 0) > 0}
+							<Badge
+								label={`${action.annotations?.length} ${(action.annotations?.length ?? 0) === 1 ? 'note' : 'notes'}`}
+							/>
+						{/if}
 						{#if action.notes}
 							<p
 								class={compact
@@ -115,23 +147,34 @@
 							</p>
 						{/if}
 					</div>
-					{#if action.source}
-						{@const source = action.source}
-						<MenuButton
-							text="Source"
-							iconVariant="chevron"
-							buttonSize="sm"
-							ariaLabel={`Source actions for ${action.name}`}
-							title={`Source actions for ${action.name}`}
-						>
-							<MenuItemButton onclick={() => void navigateToSource(source.reference)}>
-								View {source.label}
-							</MenuItemButton>
-							<MenuItemButton onclick={() => onResyncAction(action.id, action.name, source.label)}>
-								Resync from source
-							</MenuItemButton>
-						</MenuButton>
-					{/if}
+					<div class="flex shrink-0 items-center gap-1">
+						{#if action.source}
+							{@const source = action.source}
+							<MenuButton
+								text="Source"
+								iconVariant="chevron"
+								buttonSize="sm"
+								ariaLabel={`Source actions for ${action.name}`}
+								title={`Source actions for ${action.name}`}
+							>
+								<MenuItemButton onclick={() => void navigateToSource(source.reference)}>
+									View {source.label}
+								</MenuItemButton>
+								<MenuItemButton
+									onclick={() => onResyncAction(action.id, action.name, source.label)}
+								>
+									Resync from source
+								</MenuItemButton>
+							</MenuButton>
+						{/if}
+						<IconButton
+							id={`runtime-action-${action.id}-detail`}
+							variant="detail"
+							size="sm"
+							ariaLabel={`View ${action.name} details`}
+							onclick={(event) => void openAction(action, event.currentTarget as HTMLButtonElement)}
+						/>
+					</div>
 				</div>
 			</li>
 		{/each}
@@ -154,6 +197,7 @@
 		emptyText="No runtime actions yet."
 		bind:query
 		bind:focusedOpen
+		{onFocusedOpened}
 	>
 		{#snippet preview()}
 			{@render actionRows(previewRows, true, 'Runtime actions preview')}

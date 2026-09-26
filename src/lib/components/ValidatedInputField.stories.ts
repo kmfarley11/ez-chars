@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/sveltekit';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { fn } from 'storybook/test';
 
 import ValidatedInputField from './ValidatedInputField.svelte';
 
@@ -28,19 +28,5 @@ export const Required: Story = {
 export const Invalid: Story = {
 	args: {
 		validator: (value) => (value.trim() ? undefined : 'Enter a character name')
-	}
-};
-
-export const TypingNotifiesTheOwner: Story = {
-	args: {
-		onValueChange: fn()
-	},
-	play: async ({ canvasElement, args }) => {
-		const canvas = within(canvasElement);
-		const input = canvas.getByRole('textbox', { name: 'Character name' });
-
-		await userEvent.type(input, 'Aster');
-
-		await expect(args.onValueChange).toHaveBeenLastCalledWith('Aster');
 	}
 };

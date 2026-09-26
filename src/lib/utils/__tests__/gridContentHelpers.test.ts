@@ -4,6 +4,9 @@ import {
 	collectHelpAnnotationGroups,
 	collectPatchesFromData,
 	collectValuePatchesFromData,
+	isInlineRuntimeContent,
+	isInlineRuntimeField,
+	isInlineRuntimeFieldGroup,
 	readGridAnnotationsAtPath,
 	resolveGridFieldDescriptor,
 	resolveGridFieldDescriptors,
@@ -68,6 +71,38 @@ const createPatchProjectionData = (): GridContentData => ({
 		annotationBindPath: ['systemData', 'annotations', 'emptyAnnotatedField', '_annotations'],
 		value: 'No notes yet'
 	}
+});
+
+describe('grid interaction classification', () => {
+	const runtimeField = {
+		fieldName: 'Current',
+		value: 1,
+		bindPath: ['value'],
+		capabilities: { canEditValue: true },
+		interaction: { tier: 'runtime' as const, editAffordance: 'persistent' as const }
+	};
+	const readFirstField = {
+		...runtimeField,
+		fieldName: 'Maximum',
+		interaction: { tier: 'read-first' as const, editAffordance: 'menu' as const }
+	};
+
+	it('requires an explicit runtime tier for Tier 1 fields', () => {
+		expect(isInlineRuntimeField(runtimeField)).toBe(true);
+		expect(isInlineRuntimeContent(runtimeField)).toBe(true);
+		expect(isInlineRuntimeField({ ...runtimeField, interaction: undefined })).toBe(false);
+		expect(isInlineRuntimeContent(readFirstField)).toBe(false);
+	});
+
+	it('classifies a nested group as inline only when every child is Tier 1', () => {
+		const runtimeGroup = { value: { current: runtimeField, max: runtimeField } };
+		const mixedGroup = { value: { current: runtimeField, max: readFirstField } };
+
+		expect(isInlineRuntimeFieldGroup(runtimeGroup)).toBe(true);
+		expect(isInlineRuntimeContent(runtimeGroup)).toBe(true);
+		expect(isInlineRuntimeFieldGroup(mixedGroup)).toBe(false);
+		expect(isInlineRuntimeContent(mixedGroup)).toBe(false);
+	});
 });
 
 describe('grid field descriptor resolution', () => {
@@ -168,6 +203,7 @@ describe('grid field descriptor resolution', () => {
 					path: ['systemData', 'combat', 'hitPoints', 'current'],
 					inputKind: 'number',
 					interaction: {
+						tier: 'runtime',
 						editAffordance: 'persistent',
 						annotationAffordance: 'persistent'
 					}
@@ -225,6 +261,7 @@ describe('grid field descriptor resolution', () => {
 				canEditAnnotations: true
 			},
 			interaction: {
+				tier: 'runtime',
 				editAffordance: 'persistent',
 				annotationAffordance: 'persistent'
 			},

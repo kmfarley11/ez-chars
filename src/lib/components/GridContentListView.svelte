@@ -1,7 +1,7 @@
 <script lang="ts">
 	import BaseButton from '$components/BaseButton.svelte';
+	import BoundedCollectionRegion from '$components/BoundedCollectionRegion.svelte';
 	import GridContentListRow from '$components/GridContentListRow.svelte';
-	import { createScrollAffordanceAttachment } from '$components/scrollAffordance';
 	import {
 		filterGridContentListRows,
 		getGridContentListCountLabel,
@@ -14,9 +14,9 @@
 		rows: ReadonlyArray<GridContentListRowData>;
 		query?: string;
 		bounded?: boolean;
+		searchEnabled?: boolean;
 		emptyText?: string;
-		onEditRow?: GridContentListRowAction;
-		onNotesRow?: GridContentListRowAction;
+		onOpenRow?: GridContentListRowAction;
 		onTogglePinRow?: GridContentListRowAction;
 	}
 
@@ -25,43 +25,40 @@
 		rows,
 		query = $bindable(''),
 		bounded = false,
+		searchEnabled = true,
 		emptyText = 'No items yet.',
-		onEditRow,
-		onNotesRow,
+		onOpenRow,
 		onTogglePinRow
 	}: Props = $props();
 
 	const uid = $props.id();
 	const searchLabel = $derived(`Search ${title}`);
-	const hasQuery = $derived(query.trim().length > 0);
-	const filteredRows = $derived(filterGridContentListRows(rows, query));
+	const effectiveQuery = $derived(searchEnabled ? query : '');
+	const hasQuery = $derived(effectiveQuery.trim().length > 0);
+	const filteredRows = $derived(filterGridContentListRows(rows, effectiveQuery));
 	const countLabel = $derived(
 		getGridContentListCountLabel(filteredRows.length, rows.length, hasQuery)
 	);
-	let canScrollUp = $state(false);
-	let canScrollDown = $state(false);
-	const trackScrollAffordance = createScrollAffordanceAttachment((state) => {
-		canScrollUp = state.canScrollUp;
-		canScrollDown = state.canScrollDown;
-	});
 </script>
 
 <div class="space-y-2">
-	<div class="flex flex-wrap items-end gap-2">
-		<label class="min-w-48 flex-1 space-y-1" for={`${uid}-search`}>
-			<span class="sr-only">{searchLabel}</span>
-			<input
-				id={`${uid}-search`}
-				type="search"
-				class="theme-input touch-target w-full rounded-md border px-3 py-1.5 text-base md:text-sm"
-				placeholder={`Search ${title.toLocaleLowerCase()}`}
-				bind:value={query}
-			/>
-		</label>
-		{#if hasQuery}
-			<BaseButton size="sm" onclick={() => (query = '')}>Clear search</BaseButton>
-		{/if}
-	</div>
+	{#if searchEnabled}
+		<div class="flex flex-wrap items-end gap-2">
+			<label class="min-w-48 flex-1 space-y-1" for={`${uid}-search`}>
+				<span class="sr-only">{searchLabel}</span>
+				<input
+					id={`${uid}-search`}
+					type="search"
+					class="theme-input touch-target w-full rounded-md border px-3 py-1.5 text-base md:text-sm"
+					placeholder={`Search ${title.toLocaleLowerCase()}`}
+					bind:value={query}
+				/>
+			</label>
+			{#if hasQuery}
+				<BaseButton size="sm" onclick={() => (query = '')}>Clear search</BaseButton>
+			{/if}
+		</div>
+	{/if}
 
 	<p class="theme-text-muted text-xs" role="status" aria-live="polite">{countLabel}</p>
 
@@ -77,15 +74,13 @@
 			>
 			or revise the search.
 		</p>
-	{:else}
-		<div class={bounded ? 'relative rounded-md border p-1 shadow-inner' : ''}>
-			<ul
-				class={bounded
-					? 'dense-list-bounded scroll-affordance-viewport space-y-2 overflow-y-auto px-1 py-1'
-					: 'space-y-2'}
-				aria-label={`${title} results`}
-				{@attach trackScrollAffordance}
-			>
+	{:else if bounded}
+		<BoundedCollectionRegion
+			ariaLabel={`${title} scrollable results`}
+			viewportId="bounded-collection"
+			maxHeight="20rem"
+		>
+			<ul class="space-y-2" aria-label={`${title} results`}>
 				{#each filteredRows as row, index (row.key)}
 					{#if row.groupLabel && row.groupLabel !== filteredRows[index - 1]?.groupLabel}
 						<li aria-hidden="true" class="px-1 pt-2 first:pt-0">
@@ -94,30 +89,22 @@
 							</h4>
 						</li>
 					{/if}
-					<GridContentListRow {row} {onEditRow} {onNotesRow} {onTogglePinRow} />
+					<GridContentListRow {row} {onOpenRow} {onTogglePinRow} />
 				{/each}
 			</ul>
-			{#if bounded && canScrollUp}
-				<div
-					class="scroll-affordance-fade scroll-affordance-fade-top absolute inset-x-1 top-1 h-8"
-					data-scroll-affordance="more-above"
-					aria-hidden="true"
-				></div>
-			{/if}
-			{#if bounded && canScrollDown}
-				<div
-					class="scroll-affordance-fade scroll-affordance-fade-bottom absolute inset-x-1 bottom-1 h-8"
-					data-scroll-affordance="more-below"
-					aria-hidden="true"
-				></div>
-			{/if}
-		</div>
+		</BoundedCollectionRegion>
+	{:else}
+		<ul class="space-y-2" aria-label={`${title} results`}>
+			{#each filteredRows as row, index (row.key)}
+				{#if row.groupLabel && row.groupLabel !== filteredRows[index - 1]?.groupLabel}
+					<li aria-hidden="true" class="px-1 pt-2 first:pt-0">
+						<h4 class="theme-text-muted text-xs font-bold tracking-wide uppercase">
+							{row.groupLabel}
+						</h4>
+					</li>
+				{/if}
+				<GridContentListRow {row} {onOpenRow} {onTogglePinRow} />
+			{/each}
+		</ul>
 	{/if}
 </div>
-
-<style>
-	.dense-list-bounded {
-		max-height: 20rem;
-		overflow-y: auto;
-	}
-</style>

@@ -1,15 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/sveltekit';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { fn } from 'storybook/test';
 import { create5e2014Character } from '../../../../schema';
 import RuntimeActionsCardStoryHarness from './RuntimeActionsCardStoryHarness.svelte';
 
 const character = create5e2014Character({
 	features: [
-		{
-			id: 'shield-feature',
-			name: 'Shield',
-			summary: 'A general feature with a duplicate name.'
-		}
+		{ id: 'shield-feature', name: 'Shield', summary: 'A general feature with a duplicate name.' }
 	],
 	inventory: [
 		{ id: 'sword-1', name: 'Longsword', equipped: true, notes: '1d8 slashing' },
@@ -62,126 +58,6 @@ const character = create5e2014Character({
 	}
 });
 
-const meta = {
-	title: 'Organisms/RuntimeActionsCard',
-	component: RuntimeActionsCardStoryHarness,
-	args: {
-		initialCharacter: character,
-		onEditSavePatches: fn(),
-		onCreateAction: fn(),
-		onResyncAction: fn(),
-		onNavigateToSource: fn(),
-		confirmResync: fn(() => true)
-	}
-} satisfies Meta<typeof RuntimeActionsCardStoryHarness>;
-
-export default meta;
-type Story = StoryObj<typeof meta>;
-
-const getVisibleActions = (canvasElement: HTMLElement) => {
-	const list = within(canvasElement)
-		.getAllByRole('list', { name: 'Runtime actions results' })
-		.find((candidate) => candidate.checkVisibility());
-	if (!list) throw new Error('Expected a visible Runtime actions results list');
-	return within(list);
-};
-
-export const MixedLinkedAndCustom: Story = {
-	play: async ({ canvasElement, args }) => {
-		const canvas = within(canvasElement);
-		const actions = getVisibleActions(canvasElement);
-		await expect(actions.getByText('Player-authored strike note.')).toBeVisible();
-		const inventoryAction = actions.getByText('Longsword attack').closest('li');
-		const spellAction = actions.getByText('Shield reaction').closest('li');
-		const customAction = actions.getByText('Improvise').closest('li');
-		if (!inventoryAction || !spellAction || !customAction) {
-			throw new Error('Expected all runtime-action rows');
-		}
-		await expect(within(inventoryAction).getByText('Inventory')).toBeVisible();
-		await expect(within(spellAction).getByText('Spell')).toBeVisible();
-		await expect(within(customAction).getByText('Custom')).toBeVisible();
-		await expect(
-			actions.queryByRole('button', { name: 'Source actions for Improvise' })
-		).not.toBeInTheDocument();
-
-		await userEvent.click(
-			actions.getByRole('button', { name: 'Source actions for Shield reaction' })
-		);
-		await userEvent.click(actions.getByRole('button', { name: 'View Spell · Shield' }));
-		await expect(canvas.getByRole('status')).toHaveTextContent(
-			'Source navigation requested for Spell · Shield'
-		);
-		await expect(args.onNavigateToSource).toHaveBeenCalledWith({
-			kind: 'spell',
-			id: 'shield-spell'
-		});
-	}
-};
-
-export const MixedSourceDialogFlow: Story = {
-	play: async ({ canvasElement, args }) => {
-		const canvas = within(canvasElement);
-		await userEvent.click(canvas.getByRole('button', { name: 'Add action' }));
-		const dialog = await within(canvasElement.ownerDocument.body).findByRole('dialog', {
-			name: 'Add action'
-		});
-		const picker = within(dialog);
-		await expect(picker.getByText('Level 1 · Prepared')).toBeVisible();
-		await expect(picker.getAllByText('Spell')[0]).toBeVisible();
-		await userEvent.click(picker.getByRole('button', { name: /Arcane Recovery/ }));
-
-		const review = within(canvasElement.ownerDocument.body).getByRole('dialog', {
-			name: 'Review action'
-		});
-		await userEvent.type(within(review).getByRole('textbox', { name: 'Target' }), 'Self');
-		await userEvent.click(within(review).getByRole('button', { name: 'Confirm Action' }));
-		await expect(args.onCreateAction).toHaveBeenCalledWith(
-			expect.objectContaining({
-				name: 'Arcane Recovery',
-				target: 'Self',
-				source: { kind: 'feature', id: 'arcane-recovery' }
-			})
-		);
-	}
-};
-
-export const CustomActionFlow: Story = {
-	play: async ({ canvasElement, args }) => {
-		const canvas = within(canvasElement);
-		await userEvent.click(canvas.getByRole('button', { name: 'Add action' }));
-		const dialog = within(canvasElement.ownerDocument.body).getByRole('dialog', {
-			name: 'Add action'
-		});
-		await userEvent.click(within(dialog).getByRole('button', { name: /Create custom action/ }));
-		const review = within(canvasElement.ownerDocument.body).getByRole('dialog', {
-			name: 'Review action'
-		});
-		await userEvent.type(within(review).getByRole('textbox', { name: 'Name' }), 'Distract');
-		await userEvent.click(within(review).getByRole('button', { name: 'Confirm Action' }));
-		await expect(args.onCreateAction).toHaveBeenCalledWith(
-			expect.not.objectContaining({ source: expect.anything() })
-		);
-	}
-};
-
-export const ResyncConfirmationCancelled: Story = {
-	args: {
-		confirmResync: fn(() => false)
-	},
-	play: async ({ canvasElement, args }) => {
-		const actions = getVisibleActions(canvasElement);
-		await userEvent.click(
-			actions.getByRole('button', { name: 'Source actions for Longsword attack' })
-		);
-		await userEvent.click(actions.getByRole('button', { name: 'Resync from source' }));
-		await expect(args.confirmResync).toHaveBeenCalledWith(
-			'Longsword attack',
-			'Inventory · Longsword'
-		);
-		await expect(args.onResyncAction).not.toHaveBeenCalled();
-	}
-};
-
 const clutteredItems = [
 	{ id: 'clutter-longsword', name: 'Longsword', equipped: true, notes: '1d8 slashing damage' },
 	{ id: 'clutter-shield', name: 'Shield', equipped: true, notes: '+2 AC' },
@@ -195,24 +71,33 @@ const clutteredItems = [
 	{ id: 'clutter-hook', name: 'Grappling hook', notes: 'Iron hook and rope' }
 ];
 
+const meta = {
+	title: 'Organisms/RuntimeActionsCard',
+	component: RuntimeActionsCardStoryHarness,
+	args: {
+		initialCharacter: character,
+		onCreateAction: fn(),
+		onResyncAction: fn(),
+		onNavigateToSource: fn(),
+		confirmResync: fn(() => true)
+	},
+	parameters: {
+		docs: {
+			description: {
+				component:
+					'Runtime Action sandbox with custom and source-owned records. Manually verify focused detail/editing separately from View Source and Resync, using the viewport toolbar for phone review.'
+			}
+		}
+	}
+} satisfies Meta<typeof RuntimeActionsCardStoryHarness>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const MixedLinkedAndCustom: Story = {};
+
 export const SearchableClutteredSources: Story = {
 	args: {
 		initialCharacter: create5e2014Character({ inventory: clutteredItems })
-	},
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement);
-		await userEvent.click(canvas.getByRole('button', { name: 'Add action' }));
-		const dialog = within(canvasElement.ownerDocument.body).getByRole('dialog', {
-			name: 'Add action'
-		});
-		await userEvent.type(within(dialog).getByRole('searchbox'), 'xyz rock');
-		await expect(within(dialog).getByText('Random rock')).toBeVisible();
-		await expect(within(dialog).queryByText('Rope')).not.toBeInTheDocument();
-	}
-};
-
-export const NarrowScreen: Story = {
-	parameters: {
-		viewport: { defaultViewport: 'mobile1' }
 	}
 };

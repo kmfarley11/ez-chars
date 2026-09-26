@@ -1,10 +1,14 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import GridContentActionMenu from '$components/GridContentActionMenu.svelte';
+	import BaseButton from '$components/BaseButton.svelte';
+	import Badge from '$components/Badge.svelte';
+	import IconButton from '$components/IconButton.svelte';
 	import IconPrefixedListItem from '$components/IconPrefixedListItem.svelte';
 	import ManagePinsDialog from '$components/ManagePinsDialog.svelte';
 	import ResponsiveCollectionView from '$components/ResponsiveCollectionView.svelte';
 	import {
+		animateCollectionRowMovement,
+		captureCollectionRowPositions,
 		projectCollectionPriorityRows,
 		type CollectionPriorityLabelComparator,
 		type CollectionPrioritySave
@@ -15,19 +19,30 @@
 		type SupportingCollectionRow
 	} from './supportingCollectionRows';
 
-	type ActionCallback = () => void;
+	// eslint-disable-next-line no-unused-vars
+	type ActionCallback = (..._args: [boolean?]) => void;
+	type OpenRowCallback = (
+		// eslint-disable-next-line no-unused-vars
+		row: SupportingCollectionRow,
+		// eslint-disable-next-line no-unused-vars
+		restoreFocus: () => boolean,
+		// eslint-disable-next-line no-unused-vars
+		fromFocusedView: boolean
+	) => void;
 
 	interface Props {
 		title: string;
 		rows: ReadonlyArray<SupportingCollectionRow>;
 		query?: string;
 		denseThreshold?: number;
-		onEdit: ActionCallback;
-		onNotes: ActionCallback;
+		onAdd?: ActionCallback;
+		onOpenRow: OpenRowCallback;
 		onSavePins?: CollectionPrioritySave;
 		comparePriorityLabels?: CollectionPriorityLabelComparator;
-		cardActionsTriggerEl?: HTMLButtonElement;
-		focusedCardActionsTriggerEl?: HTMLButtonElement;
+		showManagePins?: boolean;
+		addTriggerEl?: HTMLButtonElement;
+		focusedOpen?: boolean;
+		onFocusedOpened?: () => void;
 	}
 
 	let {
@@ -35,16 +50,18 @@
 		rows,
 		query = $bindable(''),
 		denseThreshold = 7,
-		onEdit,
-		onNotes,
+		onAdd,
+		onOpenRow,
 		onSavePins,
 		comparePriorityLabels,
-		cardActionsTriggerEl = $bindable(),
-		focusedCardActionsTriggerEl = $bindable()
+		showManagePins = false,
+		addTriggerEl = $bindable(),
+		focusedOpen = $bindable(false),
+		onFocusedOpened = undefined
 	}: Props = $props();
 
 	const priorityEnabled = $derived(Boolean(onSavePins && comparePriorityLabels));
-	const canManagePins = $derived(priorityEnabled && rows.length > 0);
+	const canManagePins = $derived(showManagePins && priorityEnabled && rows.length > 0);
 	const canonicalRows = $derived(
 		priorityEnabled && comparePriorityLabels
 			? projectCollectionPriorityRows(rows, comparePriorityLabels)
@@ -54,9 +71,10 @@
 	const previewRows = $derived(getGridContentListPreview(canonicalRows, denseThreshold).rows);
 	let isManagePinsOpen = $state(false);
 	let managePinsReturnEl = $state<HTMLButtonElement>();
+	let priorityActionError = $state('');
 
-	const openManagePins = (focused: boolean) => {
-		managePinsReturnEl = focused ? focusedCardActionsTriggerEl : cardActionsTriggerEl;
+	const openManagePins = (element: HTMLButtonElement) => {
+		managePinsReturnEl = element;
 		managePinsReturnEl?.focus();
 		isManagePinsOpen = true;
 	};
@@ -68,26 +86,78 @@
 			if (managePinsReturnEl?.isConnected) managePinsReturnEl.focus();
 		});
 	};
+
+	const stableRowAction = (row: SupportingCollectionRow, action: 'pin' | 'detail') =>
+		document.getElementById(`${row.key}-${action}-action`);
+
+	const openRow = async (row: SupportingCollectionRow, element: HTMLButtonElement) => {
+		const fromFocusedView = focusedOpen;
+		if (fromFocusedView) {
+			focusedOpen = false;
+			await tick();
+		}
+		onOpenRow(
+			row,
+			() => {
+				const target = element.isConnected ? element : stableRowAction(row, 'detail');
+				if (!(target instanceof HTMLElement)) return false;
+				target.focus();
+				return document.activeElement === target;
+			},
+			fromFocusedView
+		);
+	};
+
+	const addRecord = async () => {
+		if (!onAdd) return;
+		const fromFocusedView = focusedOpen;
+		if (fromFocusedView) {
+			focusedOpen = false;
+			await tick();
+		}
+		onAdd(fromFocusedView);
+	};
+
+	const togglePin = async (row: SupportingCollectionRow, element: HTMLButtonElement) => {
+		if (!onSavePins) return;
+		priorityActionError = '';
+		const list = element.closest('ul');
+		const positions = captureCollectionRowPositions(list);
+		const next = canonicalRows
+			.filter((candidate) => (candidate.identity === row.identity ? !row.pinned : candidate.pinned))
+			.map((candidate) => candidate.identity);
+		try {
+			const result = await onSavePins(next);
+			if (!result.ok) priorityActionError = result.message;
+		} catch {
+			priorityActionError = 'Pins could not be saved. Review the collection and try again.';
+		}
+		await tick();
+		animateCollectionRowMovement(list, positions);
+		const target = element.isConnected ? element : stableRowAction(row, 'pin');
+		if (target instanceof HTMLElement) target.focus();
+	};
 </script>
 
-{#snippet actions(focused = false)}
-	{#if focused}
-		<GridContentActionMenu
-			canEdit={true}
-			{onEdit}
-			{onNotes}
-			onManagePins={canManagePins ? () => openManagePins(true) : undefined}
-			bind:triggerEl={focusedCardActionsTriggerEl}
-		/>
-	{:else}
-		<GridContentActionMenu
-			canEdit={true}
-			{onEdit}
-			{onNotes}
-			onManagePins={canManagePins ? () => openManagePins(false) : undefined}
-			bind:triggerEl={cardActionsTriggerEl}
-		/>
-	{/if}
+{#snippet actions()}
+	<div class="flex items-center gap-1">
+		{#if onAdd}
+			<IconButton
+				bind:buttonEl={addTriggerEl}
+				variant="add"
+				size="sm"
+				ariaLabel={`Add ${title}`}
+				onclick={() => void addRecord()}
+			/>
+		{/if}
+		{#if canManagePins}
+			<BaseButton
+				size="sm"
+				onclick={(event) => openManagePins(event.currentTarget as HTMLButtonElement)}
+				>Manage Pins</BaseButton
+			>
+		{/if}
+	</div>
 {/snippet}
 
 {#snippet collectionRows(
@@ -99,27 +169,49 @@
 		{#each items as row (row.key)}
 			{@const annotationCount = row.annotations?.length ?? 0}
 			{@const isPinned = priorityEnabled && row.pinned}
-			<IconPrefixedListItem
-				icon={isPinned ? 'pin' : 'bullet'}
-				title={isPinned ? 'Pinned' : undefined}
-				paragraphClasses={compact ? 'supporting-collection-compact' : 'supporting-collection-full'}
+			<li
+				class="flex min-w-0 items-center gap-2 rounded-md border px-2 py-1"
+				data-row-key={row.key}
 			>
-				<span>{row.label}</span>
-				{#if row.detail}
-					<span aria-hidden="true">:</span>
-					<span class="theme-text-muted italic"> {row.detail}</span>
-				{/if}
-				{#if row.context}
-					<span aria-hidden="true"> · </span>
-					<span class="theme-text-muted text-xs">{row.context}</span>
-				{/if}
-				{#if annotationCount > 0}
-					<span class="theme-text-muted text-xs">
-						({annotationCount}
-						{annotationCount === 1 ? 'note' : 'notes'})
-					</span>
-				{/if}
-			</IconPrefixedListItem>
+				<div class="min-w-0 flex-1">
+					<IconPrefixedListItem
+						icon={isPinned ? 'pin' : 'bullet'}
+						element="div"
+						title={isPinned ? 'Pinned' : undefined}
+						paragraphClasses={compact
+							? 'supporting-collection-compact'
+							: 'supporting-collection-full'}
+					>
+						<span>{row.label}</span>
+						{#each row.badges ?? [] as badge (`${row.key}-${badge}`)}<Badge label={badge} />{/each}
+						{#if row.context}<Badge label={row.context} />{/if}
+						{#if annotationCount > 0}<Badge
+								label={`${annotationCount} ${annotationCount === 1 ? 'note' : 'notes'}`}
+							/>{/if}
+					</IconPrefixedListItem>
+					{#if row.detail}<p class="theme-text-muted mt-1 truncate text-xs">{row.detail}</p>{/if}
+				</div>
+				<div class="flex shrink-0 items-center gap-1">
+					{#if priorityEnabled}
+						<IconButton
+							id={`${row.key}-pin-action`}
+							variant="pin"
+							size="sm"
+							shadingVariant={row.pinned ? 'dark' : 'light'}
+							ariaLabel={`${row.pinned ? 'Unpin' : 'Pin'} ${row.label}`}
+							ariaPressed={row.pinned}
+							onclick={(event) => void togglePin(row, event.currentTarget as HTMLButtonElement)}
+						/>
+					{/if}
+					<IconButton
+						id={`${row.key}-detail-action`}
+						variant="detail"
+						size="sm"
+						ariaLabel={`View ${row.label} details`}
+						onclick={(event) => void openRow(row, event.currentTarget as HTMLButtonElement)}
+					/>
+				</div>
+			</li>
 		{/each}
 	</ul>
 {/snippet}
@@ -137,6 +229,8 @@
 		threshold={denseThreshold}
 		emptyText={`No ${title.toLocaleLowerCase()} yet.`}
 		bind:query
+		bind:focusedOpen
+		{onFocusedOpened}
 	>
 		{#snippet preview()}
 			{@render collectionRows(previewRows, true, `${title} preview`)}
@@ -145,9 +239,12 @@
 			{@render collectionRows(filteredRows, false, `${title} results`)}
 		{/snippet}
 		{#snippet focusedActions()}
-			{@render actions(true)}
+			{@render actions()}
 		{/snippet}
 	</ResponsiveCollectionView>
+	{#if priorityActionError}<p class="theme-error rounded-md border px-3 py-2 text-sm" role="alert">
+			{priorityActionError}
+		</p>{/if}
 </div>
 
 {#if priorityEnabled && onSavePins && isManagePinsOpen}

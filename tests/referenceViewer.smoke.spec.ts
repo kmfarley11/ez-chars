@@ -346,11 +346,10 @@ test('preserves an unsaved annotation draft while the reference is a dialog step
 }) => {
 	test.setTimeout(30_000);
 	await openCharacter(page);
-	await page.getByRole('button', { name: 'Add annotations for Current HP' }).click();
-	let dialog = page.getByRole('dialog', { name: 'Current HP Annotations' });
-	await dialog.getByRole('button', { name: 'Add', exact: true }).click();
-	await dialog.getByText('Annotations (0)').click();
-	await dialog.getByRole('button', { name: 'Add', exact: true }).click();
+	await page.getByRole('button', { name: 'Add notes for Current HP' }).click();
+	let dialog = page.getByRole('dialog', { name: 'Current HP Notes' });
+	await dialog.getByRole('button', { name: 'Add note', exact: true }).click();
+	await dialog.getByRole('button', { name: 'Add note', exact: true }).click();
 	const draftText = 'Unsaved draft survives reference navigation.';
 	await dialog.getByText('Text (optional)').locator('..').getByRole('textbox').fill(draftText);
 	await dialog.getByLabel('SRD 5.1 (local PDF)').click();
@@ -359,7 +358,7 @@ test('preserves an unsaved annotation draft while the reference is a dialog step
 	dialog = page.getByRole('dialog', { name: 'Page 8' });
 	await expect(dialog.getByLabel('PDF page 8, current page')).toBeVisible();
 	await dialog.getByRole('button', { name: 'Back' }).click();
-	dialog = page.getByRole('dialog', { name: 'Current HP Annotations' });
+	dialog = page.getByRole('dialog', { name: 'Current HP Notes' });
 	await expect(dialog.getByText('Text (optional)').locator('..').getByRole('textbox')).toHaveValue(
 		draftText
 	);
@@ -371,7 +370,7 @@ test('preserves an unsaved annotation draft while the reference is a dialog step
 	await expect(dialog.getByLabel('PDF page 8, current page')).toBeVisible();
 	await dialog.getByRole('button', { name: 'Back' }).click();
 	await expect(
-		page.getByRole('dialog', { name: 'Current HP Annotations' }).getByText(draftText)
+		page.getByRole('dialog', { name: 'Current HP Notes' }).getByText(draftText)
 	).toBeVisible();
 });
 

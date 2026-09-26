@@ -114,9 +114,13 @@ describe('prioritized 5e spell projection', () => {
 			['level-one-shield', '1st-level spells']
 		]);
 		expect(new Set(rows.map(({ identity }) => identity)).size).toBe(spells.length);
-		expect(rows.find(({ identity }) => identity === 'level-seven-teleport')?.context).toBe(
-			'Spell level 7 · Not prepared'
-		);
+		expect(rows.find(({ identity }) => identity === 'level-seven-teleport')?.badges).toEqual([
+			'Spell level 7'
+		]);
+		expect(rows.find(({ identity }) => identity === 'level-three-fireball')?.badges).toEqual([
+			'Spell level 3',
+			'Prepared'
+		]);
 	});
 
 	it('returns an unpinned spell to its level group and keeps duplicate-name search priority-first', () => {

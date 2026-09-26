@@ -1,35 +1,37 @@
 <script lang="ts">
 	import Badge from '$components/Badge.svelte';
 	import IconPin from '$components/IconPin.svelte';
-	import MenuButton from '$components/MenuButton.svelte';
-	import MenuItemButton from '$components/MenuItemButton.svelte';
+	import IconButton from '$components/IconButton.svelte';
 	import type { GridContentListRow, GridContentListRowAction } from '$components/gridContentList';
 
 	interface Props {
 		row: GridContentListRow;
 		compact?: boolean;
-		onEditRow?: GridContentListRowAction;
-		onNotesRow?: GridContentListRowAction;
+		onOpenRow?: GridContentListRowAction;
 		onTogglePinRow?: GridContentListRowAction;
 	}
 
-	let { row, compact = false, onEditRow, onNotesRow, onTogglePinRow }: Props = $props();
-	let actionsTriggerEl = $state<HTMLButtonElement>();
+	let { row, compact = false, onOpenRow, onTogglePinRow }: Props = $props();
+	let detailTriggerEl = $state<HTMLButtonElement>();
+	let pinTriggerEl = $state<HTMLButtonElement>();
 
 	const annotationCount = $derived(row.annotations?.length ?? 0);
 	const isPinned = $derived('pinned' in row && row.pinned === true);
-	const hasActions = $derived(
-		onEditRow !== undefined || onNotesRow !== undefined || onTogglePinRow !== undefined
-	);
 	const accessibleRowLabel = $derived(
 		[row.label, row.context, row.detail].filter((value) => value?.trim()).join(', ')
 	);
 
-	const runCommand = (command: GridContentListRowAction | undefined) => {
+	const runCommand = (
+		command: GridContentListRowAction | undefined,
+		trigger: HTMLButtonElement | undefined
+	) => {
 		command?.(row, () => {
-			if (!actionsTriggerEl?.isConnected) return false;
-			actionsTriggerEl.focus();
-			return document.activeElement === actionsTriggerEl;
+			const stableTrigger = trigger?.isConnected
+				? trigger
+				: document.getElementById(`${row.key}-detail-action`);
+			if (!(stableTrigger instanceof HTMLElement)) return false;
+			stableTrigger.focus();
+			return document.activeElement === stableTrigger;
 		});
 	};
 </script>
@@ -74,27 +76,28 @@
 				</div>
 			{/if}
 		</div>
-		{#if hasActions}
-			<MenuButton
-				buttonIconOnly={true}
-				buttonSize="sm"
-				iconVariant="ellipsis"
-				ariaLabel={`Row actions for ${accessibleRowLabel}`}
-				title={`Row actions for ${accessibleRowLabel}`}
-				bind:triggerEl={actionsTriggerEl}
-			>
-				{#if onEditRow}
-					<MenuItemButton onclick={() => runCommand(onEditRow)}>Edit</MenuItemButton>
-				{/if}
-				{#if onNotesRow}
-					<MenuItemButton onclick={() => runCommand(onNotesRow)}>Notes</MenuItemButton>
-				{/if}
-				{#if onTogglePinRow}
-					<MenuItemButton onclick={() => runCommand(onTogglePinRow)}>
-						{isPinned ? 'Unpin' : 'Pin'}
-					</MenuItemButton>
-				{/if}
-			</MenuButton>
-		{/if}
+		<div class="flex shrink-0 items-center gap-1">
+			{#if onTogglePinRow}
+				<IconButton
+					bind:buttonEl={pinTriggerEl}
+					variant="pin"
+					size="sm"
+					shadingVariant={isPinned ? 'dark' : 'light'}
+					ariaLabel={`${isPinned ? 'Unpin' : 'Pin'} ${accessibleRowLabel}`}
+					ariaPressed={isPinned}
+					onclick={() => runCommand(onTogglePinRow, pinTriggerEl)}
+				/>
+			{/if}
+			{#if onOpenRow}
+				<IconButton
+					id={`${row.key}-detail-action`}
+					bind:buttonEl={detailTriggerEl}
+					variant="detail"
+					size="sm"
+					ariaLabel={`View ${accessibleRowLabel} details`}
+					onclick={() => runCommand(onOpenRow, detailTriggerEl)}
+				/>
+			{/if}
+		</div>
 	</div>
 </li>

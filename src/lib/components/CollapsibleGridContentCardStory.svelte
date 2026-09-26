@@ -13,14 +13,14 @@
 			value: 24,
 			bindPath: ['hp'],
 			capabilities: { canEditValue: true },
-			interaction: { editAffordance: 'persistent' }
+			interaction: { tier: 'runtime', editAffordance: 'persistent' }
 		},
 		ac: {
 			fieldName: 'AC',
 			value: 16,
 			bindPath: ['ac'],
 			capabilities: { canEditValue: true },
-			interaction: { editAffordance: 'persistent' }
+			interaction: { tier: 'runtime', editAffordance: 'persistent' }
 		}
 	};
 </script>

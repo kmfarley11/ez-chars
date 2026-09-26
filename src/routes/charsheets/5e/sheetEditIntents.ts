@@ -73,7 +73,8 @@ export const runtimeActionEditorPayloadSchema = z.array(
 			timing: runtimeActionTimingSchema.optional(),
 			category: runtimeActionCategorySchema.optional(),
 			target: z.string().optional(),
-			notes: z.string().optional()
+			notes: z.string().optional(),
+			annotations: z.array(annotationSchema).optional()
 		})
 		.strict()
 );
@@ -83,7 +84,8 @@ export const proficiencyEditorPayloadSchema = z.array(
 		.object({
 			id: z.string().optional(),
 			name: z.string(),
-			source: z.enum(['ancestry', 'background', 'class', 'feature', 'other'])
+			source: z.enum(['ancestry', 'background', 'class', 'feature', 'other']),
+			annotations: z.array(annotationSchema).optional()
 		})
 		.strict()
 );
@@ -94,7 +96,10 @@ export const featureEditorPayloadSchema = z.array(
 			.object({
 				featureId: z.string().optional(),
 				name: z.string(),
-				owner: z.literal('general')
+				owner: z.literal('general'),
+				summary: z.string().optional(),
+				description: z.string().optional(),
+				annotations: z.array(annotationSchema).optional()
 			})
 			.strict(),
 		z
@@ -102,7 +107,8 @@ export const featureEditorPayloadSchema = z.array(
 				featureId: z.string().optional(),
 				name: z.string(),
 				owner: z.literal('class'),
-				classIndex: z.number().int().min(0)
+				classIndex: z.number().int().min(0),
+				annotations: z.array(annotationSchema).optional()
 			})
 			.strict()
 	])
@@ -112,7 +118,8 @@ export const traitEditorPayloadSchema = z.array(
 	z
 		.object({
 			featureId: z.string().optional(),
-			name: z.string()
+			name: z.string(),
+			annotations: z.array(annotationSchema).optional()
 		})
 		.strict()
 );
@@ -264,7 +271,10 @@ const replaceNamedProficiencies = (
 				...matching,
 				id,
 				name,
-				source: { ...matching?.source, kind: entry.source as ProficiencySourceKind }
+				source: { ...matching?.source, kind: entry.source as ProficiencySourceKind },
+				...(entry.annotations !== undefined
+					? { annotations: normalizeDirectAnnotations(entry.annotations, createId) }
+					: {})
 			} satisfies NamedProficiency
 		];
 	});
@@ -424,7 +434,10 @@ export const reduce5eSheetEditIntents = (
 							...(entry.timing !== undefined ? { timing: entry.timing } : {}),
 							...(entry.category !== undefined ? { category: entry.category } : {}),
 							...(entry.target !== undefined ? { target: entry.target } : {}),
-							...(entry.notes !== undefined ? { notes: entry.notes } : {})
+							...(entry.notes !== undefined ? { notes: entry.notes } : {}),
+							...(entry.annotations !== undefined
+								? { annotations: normalizeDirectAnnotations(entry.annotations, createId) }
+								: {})
 						} satisfies RuntimeAction
 					];
 				});
@@ -540,7 +553,16 @@ export const reduce5eSheetEditIntents = (
 					if (entry.owner === 'general') {
 						const id = suppliedId || createId();
 						const currentFeature = suppliedId ? currentGeneralById.get(suppliedId) : undefined;
-						nextGeneralFeatures.push({ ...currentFeature, id, name });
+						nextGeneralFeatures.push({
+							...currentFeature,
+							id,
+							name,
+							...(entry.summary !== undefined ? { summary: entry.summary } : {}),
+							...(entry.description !== undefined ? { description: entry.description } : {}),
+							...(entry.annotations !== undefined
+								? { annotations: normalizeDirectAnnotations(entry.annotations, createId) }
+								: {})
+						});
 						continue;
 					}
 					const currentFeatures = candidate.systemData.classes[entry.classIndex]?.features ?? [];
@@ -549,7 +571,14 @@ export const reduce5eSheetEditIntents = (
 						: undefined;
 					const featureId = suppliedId || createId();
 					const nextEntries = nextFeaturesByClass.get(entry.classIndex) ?? [];
-					nextEntries.push({ ...currentFeature, featureId, name });
+					nextEntries.push({
+						...currentFeature,
+						featureId,
+						name,
+						...(entry.annotations !== undefined
+							? { annotations: normalizeDirectAnnotations(entry.annotations, createId) }
+							: {})
+					});
 					nextFeaturesByClass.set(entry.classIndex, nextEntries);
 				}
 				candidate.features = nextGeneralFeatures;
@@ -574,7 +603,10 @@ export const reduce5eSheetEditIntents = (
 						{
 							...currentTraitsById.get(featureId),
 							featureId,
-							name
+							name,
+							...(entry.annotations !== undefined
+								? { annotations: normalizeDirectAnnotations(entry.annotations, createId) }
+								: {})
 						} satisfies FeatureRef
 					];
 				});

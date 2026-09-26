@@ -1,4 +1,13 @@
 import type { Annotation, Item } from '../../../../schema';
+import {
+	cloneAnnotations,
+	restoreRemovedDraftAnnotation,
+	validateDraftAnnotations,
+	type AnnotationRemoval,
+	type DraftCommitResult
+} from '$utils/focusedDraft';
+
+export type { AnnotationRemoval } from '$utils/focusedDraft';
 
 export type ProofProfileField = {
 	body: string;
@@ -31,19 +40,7 @@ export type ProofSpellRecord = {
 	source: string;
 };
 
-export type AnnotationRemoval = {
-	annotation: Annotation;
-	index: number;
-};
-
-export type CommitResult<T> = { ok: true; value: T } | { ok: false; message: string };
-
-const cloneAnnotations = (annotations: ReadonlyArray<Annotation>): Array<Annotation> =>
-	annotations.map((annotation) => ({
-		...annotation,
-		tags: annotation.tags ? [...annotation.tags] : undefined,
-		ref: annotation.ref ? { ...annotation.ref, locator: { ...annotation.ref.locator } } : undefined
-	}));
+export type CommitResult<T> = DraftCommitResult<T>;
 
 export const cloneProfileDraft = (value: ProofProfileField): ProofProfileField => ({
 	body: value.body,
@@ -70,18 +67,6 @@ export const cloneSpellDraft = (value: ProofSpellRecord): ProofSpellRecord => ({
 	annotations: cloneAnnotations(value.annotations)
 });
 
-const validateAnnotations = (annotations: ReadonlyArray<Annotation>): string | undefined => {
-	const emptyIndex = annotations.findIndex(
-		(annotation) =>
-			(annotation.text?.trim().length ?? 0) === 0 &&
-			(annotation.name?.trim().length ?? 0) === 0 &&
-			annotation.ref === undefined
-	);
-	return emptyIndex >= 0
-		? `Annotation ${emptyIndex + 1} needs text, a name, or a reference.`
-		: undefined;
-};
-
 export const commitProfileDraft = (
 	current: ProofProfileField,
 	draft: ProofProfileField,
@@ -90,7 +75,7 @@ export const commitProfileDraft = (
 	if (draft.body.trim().length === 0) {
 		return { ok: false, message: `${label} cannot be empty.` };
 	}
-	const annotationError = validateAnnotations(draft.annotations);
+	const annotationError = validateDraftAnnotations(draft.annotations);
 	if (annotationError) return { ok: false, message: annotationError };
 	return {
 		ok: true,
@@ -109,7 +94,7 @@ export const commitInventoryDraft = (
 	if (draft.item.name.trim().length === 0) {
 		return { ok: false, message: 'Item name cannot be empty.' };
 	}
-	const annotationError = validateAnnotations(draft.item.annotations ?? []);
+	const annotationError = validateDraftAnnotations(draft.item.annotations ?? []);
 	if (annotationError) return { ok: false, message: annotationError };
 	return {
 		ok: true,
@@ -132,7 +117,7 @@ export const commitFeatureDraft = (
 	if (draft.name.trim().length === 0) {
 		return { ok: false, message: 'Feature name cannot be empty.' };
 	}
-	const annotationError = validateAnnotations(draft.annotations);
+	const annotationError = validateDraftAnnotations(draft.annotations);
 	if (annotationError) return { ok: false, message: annotationError };
 	return {
 		ok: true,
@@ -152,7 +137,7 @@ export const commitSpellDraft = (
 	if (draft.name.trim().length === 0) {
 		return { ok: false, message: 'Spell name cannot be empty.' };
 	}
-	const annotationError = validateAnnotations(draft.annotations);
+	const annotationError = validateDraftAnnotations(draft.annotations);
 	if (annotationError) return { ok: false, message: annotationError };
 	return {
 		ok: true,
@@ -183,8 +168,4 @@ export const removeAnnotationForDraft = (
 export const restoreRemovedAnnotation = (
 	annotations: ReadonlyArray<Annotation>,
 	removal: AnnotationRemoval
-): Array<Annotation> => {
-	const next = cloneAnnotations(annotations);
-	next.splice(Math.min(removal.index, next.length), 0, cloneAnnotations([removal.annotation])[0]);
-	return next;
-};
+): Array<Annotation> => restoreRemovedDraftAnnotation(annotations, removal);

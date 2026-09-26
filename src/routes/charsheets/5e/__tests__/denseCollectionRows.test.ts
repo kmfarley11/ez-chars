@@ -34,7 +34,7 @@ describe('2014 dense collection row identity', () => {
 			label: 'Random rock',
 			annotations: [expect.objectContaining({ id: 'saturated-rock-note' })]
 		});
-		expect(rows.every((row) => row.badges === undefined)).toBe(true);
+		expect(rows.find((row) => row.key === 'item:saturated-gear-3')?.badges).toEqual(['Quantity 1']);
 	});
 
 	it('edits one filtered inventory identity without losing annotations, links, or sibling order', () => {

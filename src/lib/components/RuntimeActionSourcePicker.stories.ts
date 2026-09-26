@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/sveltekit';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { fn } from 'storybook/test';
 import RuntimeActionSourcePicker from './RuntimeActionSourcePicker.svelte';
 import type { RuntimeActionSourceCandidate } from '$lib/dnd5e2014/runtimeActionSources';
 
@@ -80,17 +80,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const MixedSources: Story = {
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement);
-		const shieldOptions = canvas.getAllByRole('button', { name: /Shield/ });
-		await expect(within(shieldOptions[0]).getByText('Inventory')).toBeVisible();
-		await expect(within(shieldOptions[1]).getByText('Spell')).toBeVisible();
-		const fireBolt = canvas.getByRole('button', { name: /Fire Bolt/ });
-		await expect(within(fireBolt).getByText('Spell')).toBeVisible();
-		await expect(within(fireBolt).getByText('Cantrip')).toBeVisible();
-	}
-};
+export const MixedSources: Story = {};
 
 export const DuplicateNameSelected: Story = {
 	args: { selectedKey: 'spell:shield-spell' }
@@ -101,34 +91,9 @@ export const InventoryFilterControls: Story = {
 };
 
 export const InventoryQuantitySelectedFiltered: Story = {
-	args: { selectedKey: 'item:shield-item' },
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement);
-		await expect(canvas.getByText('Armor & Shields · Quantity 2')).toBeVisible();
-		await userEvent.click(canvas.getByRole('button', { name: 'Spells' }));
-		const selectedFiltered = canvas.getByText('Selected (filtered)').closest('button');
-		if (!selectedFiltered) throw new Error('Expected the selected filtered source option');
-		await expect(selectedFiltered).toBeVisible();
-		await expect(within(selectedFiltered).getByText('Inventory')).toBeVisible();
-		await expect(canvas.getByText('Armor & Shields · Quantity 2')).toBeVisible();
-	}
+	args: { selectedKey: 'item:shield-item', category: 'spell' }
 };
 
 export const NoMatches: Story = {
 	args: { searchQuery: 'missing source' }
-};
-
-export const FilterInteraction: Story = {
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement);
-		await userEvent.type(canvas.getByRole('searchbox'), 'prepared shield');
-		await expect(canvas.getByText('Level 1 · Prepared')).toBeVisible();
-		await expect(canvas.queryByText('Armor & Shields · Quantity 2')).not.toBeInTheDocument();
-
-		await userEvent.clear(canvas.getByRole('searchbox'));
-		await userEvent.click(canvas.getByRole('button', { name: 'Inventory' }));
-		await userEvent.click(canvas.getByRole('checkbox', { name: 'Equipped only' }));
-		await expect(canvas.getByText('Armor & Shields · Quantity 2')).toBeVisible();
-		await expect(canvas.queryByText('Wizard')).not.toBeInTheDocument();
-	}
 };

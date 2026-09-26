@@ -7,6 +7,7 @@
 		GridContentAnnotation,
 		GridContentField,
 		GridEditAffordance,
+		GridInteractionTier,
 		GridFieldPatchOperation
 	} from '$utils/gridContentTypes';
 
@@ -19,6 +20,7 @@
 		inputKind?: 'text' | 'number';
 		suffix?: string;
 		ariaLabel?: string;
+		tier?: GridInteractionTier;
 		editAffordance?: GridEditAffordance;
 		annotationAffordance?: GridAnnotationAffordance;
 		annotations?: Array<GridContentAnnotation>;
@@ -37,6 +39,7 @@
 		inputKind = typeof value === 'number' ? 'number' : 'text',
 		suffix = '',
 		ariaLabel = undefined,
+		tier = 'runtime',
 		editAffordance = 'persistent',
 		annotationAffordance = 'persistent',
 		annotations = [],
@@ -59,6 +62,7 @@
 			canEditAnnotations: onSaveAnnotations !== undefined
 		},
 		interaction: {
+			tier,
 			editAffordance,
 			annotationAffordance
 		},

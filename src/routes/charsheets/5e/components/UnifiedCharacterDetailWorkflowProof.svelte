@@ -10,12 +10,12 @@
 	import GridContentAnnotationsDisplay from '$components/GridContentAnnotationsDisplay.svelte';
 	import GridContentAnnotationsEditor from '$components/GridContentAnnotationsEditor.svelte';
 	import IconButton from '$components/IconButton.svelte';
-	import { createScrollAffordanceAttachment } from '$components/scrollAffordance';
 	import {
 		getInventoryGroupForItem,
 		withInventoryGroupTags,
 		type InventoryGroup
 	} from '$lib/dnd5e2014/inventory';
+	import BoundedCollectionRegion from '$components/BoundedCollectionRegion.svelte';
 	import StableRuntimeFieldProof from './StableRuntimeFieldProof.svelte';
 	import {
 		cloneFeatureDraft,
@@ -42,6 +42,7 @@
 		| 'inventory-detail'
 		| 'inventory-edit'
 		| 'inventory-add'
+		| 'inventory-browse'
 		| 'features-browse'
 		| 'feature-detail'
 		| 'feature-edit'
@@ -169,8 +170,14 @@
 	let screen = $state<Screen>('closed');
 	let open = $derived(screen !== 'closed');
 	let invoker = $state<HTMLElement | undefined>();
-	let detailReturn = $state<'features-browse' | 'spells-browse' | undefined>();
+	let detailReturn = $state<'inventory-browse' | 'features-browse' | 'spells-browse' | undefined>();
 	let selectedInventoryId = $state(rock.id);
+	let inventoryBrowseGroup = $state<InventoryGroup>('other');
+	let inventoryQueries = $state<Record<InventoryGroup, string>>({
+		weapons: '',
+		armorShields: '',
+		other: ''
+	});
 	let selectedFeatureId = $state<string | undefined>();
 	let selectedSpellId = $state<string | undefined>();
 	let featureQuery = $state('');
@@ -189,18 +196,7 @@
 	let addSpellLevel = $state(1);
 	let proofRecordSequence = 0;
 	const prefersReducedMotion = new MediaQuery('prefers-reduced-motion: reduce', true);
-	let canScrollFeaturesUp = $state(false);
-	let canScrollFeaturesDown = $state(false);
-	let canScrollSpellsUp = $state(false);
-	let canScrollSpellsDown = $state(false);
-	const trackFeatureScrollAffordance = createScrollAffordanceAttachment((state) => {
-		canScrollFeaturesUp = state.canScrollUp;
-		canScrollFeaturesDown = state.canScrollDown;
-	});
-	const trackSpellScrollAffordance = createScrollAffordanceAttachment((state) => {
-		canScrollSpellsUp = state.canScrollUp;
-		canScrollSpellsDown = state.canScrollDown;
-	});
+	const inventoryPreviewLimit = 5;
 
 	const activeProfile = $derived(
 		profileKind === 'background'
@@ -261,11 +257,18 @@
 	};
 
 	const openInventory = (id: string, element: HTMLElement, editing = false) => {
-		invoker = element;
+		if (screen !== 'inventory-browse') invoker = element;
 		selectedInventoryId = id;
-		detailReturn = undefined;
+		detailReturn = screen === 'inventory-browse' ? 'inventory-browse' : undefined;
 		if (editing) beginInventoryEdit();
 		else screen = 'inventory-detail';
+	};
+
+	const openInventoryBrowse = (group: InventoryGroup, element: HTMLElement) => {
+		invoker = element;
+		inventoryBrowseGroup = group;
+		detailReturn = undefined;
+		screen = 'inventory-browse';
 	};
 
 	const openFeatures = (element: HTMLElement) => {
@@ -368,6 +371,12 @@
 		if (screen === 'inventory-edit') return setScreen('inventory-detail');
 		if (screen === 'feature-edit') return setScreen('feature-detail');
 		if (screen === 'spell-edit') return setScreen('spell-detail');
+		if (screen === 'inventory-detail' && detailReturn === 'inventory-browse') {
+			screen = detailReturn;
+			await tick();
+			document.getElementById(`proof-focused-inventory-detail-${selectedInventoryId}`)?.focus();
+			return;
+		}
 		if (screen === 'feature-detail' && detailReturn) {
 			screen = detailReturn;
 			await tick();
@@ -521,9 +530,8 @@
 				provenance: `Player-authored inventory · ${inventoryGroupLabels[addInventoryGroup]}`,
 				references: []
 			};
-			inventoryRecords = [...inventoryRecords, record];
-			selectedInventoryId = record.item.id;
-			return setScreen('inventory-detail');
+			inventoryRecords = [record, ...inventoryRecords];
+			return closeWorkflow();
 		}
 
 		if (screen === 'feature-add') {
@@ -535,8 +543,7 @@
 				annotations: []
 			};
 			features = [...features, record];
-			selectedFeatureId = record.id;
-			return setScreen('feature-detail');
+			return closeWorkflow();
 		}
 
 		if (screen === 'spell-add') {
@@ -551,8 +558,7 @@
 				source: 'Player-authored spell'
 			};
 			spells = [...spells, record];
-			selectedSpellId = record.id;
-			return setScreen('spell-detail');
+			return closeWorkflow();
 		}
 	};
 
@@ -636,6 +642,7 @@
 	);
 	const showBack = $derived(
 		isEditing ||
+			(screen === 'inventory-detail' && detailReturn === 'inventory-browse') ||
 			(screen === 'feature-detail' && detailReturn !== undefined) ||
 			(screen === 'spell-detail' && detailReturn !== undefined)
 	);
@@ -646,19 +653,64 @@
 				? 'Add Feature'
 				: screen === 'spell-add'
 					? 'Add Spell'
-					: screen.startsWith('profile')
-						? activeProfileLabel
-						: screen.startsWith('inventory')
-							? (selectedInventory?.item.name ?? 'Inventory item')
-							: screen.startsWith('feature')
-								? screen === 'features-browse'
-									? 'Features'
-									: (selectedFeature?.name ?? 'Feature')
-								: screen === 'spells-browse'
-									? 'Spells'
-									: (selectedSpell?.name ?? 'Spell')
+					: screen === 'inventory-browse'
+						? inventoryGroupLabels[inventoryBrowseGroup]
+						: screen.startsWith('profile')
+							? activeProfileLabel
+							: screen.startsWith('inventory')
+								? (selectedInventory?.item.name ?? 'Inventory item')
+								: screen.startsWith('feature')
+									? screen === 'features-browse'
+										? 'Features'
+										: (selectedFeature?.name ?? 'Feature')
+									: screen === 'spells-browse'
+										? 'Spells'
+										: (selectedSpell?.name ?? 'Spell')
 	);
 </script>
+
+{#snippet inventoryRows(
+	records: ReadonlyArray<ProofInventoryRecord>,
+	group: InventoryGroup,
+	focused = false
+)}
+	<ul class="space-y-1.5" aria-label={`${inventoryGroupLabels[group]} records`}>
+		{#each records as record (record.item.id)}
+			<li class="theme-panel flex items-center gap-2 rounded-md border px-2 py-1">
+				<div class="min-w-0 flex-1">
+					<div class="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
+						<p class="truncate text-sm font-semibold">{record.item.name}</p>
+						{#if (record.item.annotations?.length ?? 0) > 0}
+							<Badge label={noteLabel(record.item.annotations?.length ?? 0)} />
+						{/if}
+					</div>
+					<p class="theme-text-muted mt-1 line-clamp-2 text-xs">
+						{record.item.notes || 'No authored detail.'}
+					</p>
+				</div>
+				<div class="flex shrink-0 items-center gap-1">
+					<IconButton
+						id={`${focused ? 'proof-focused' : 'proof-inline'}-inventory-pin-${record.item.id}`}
+						variant="pin"
+						size="sm"
+						shadingVariant={record.pinned ? 'dark' : 'light'}
+						ariaLabel={`${record.pinned ? 'Unpin' : 'Pin'} ${record.item.name}`}
+						ariaPressed={record.pinned}
+						onclick={(event) =>
+							toggleInventoryPinned(record.item.id, event.currentTarget as HTMLElement)}
+					/>
+					<IconButton
+						id={`${focused ? 'proof-focused' : 'proof-inline'}-inventory-detail-${record.item.id}`}
+						variant="detail"
+						size="sm"
+						ariaLabel={`View ${record.item.name} details`}
+						onclick={(event) => openInventory(record.item.id, event.currentTarget as HTMLElement)}
+					/>
+				</div>
+			</li>
+		{/each}
+	</ul>
+{/snippet}
 
 <div class="mx-auto max-w-6xl space-y-6 p-4">
 	<header class="space-y-2">
@@ -693,22 +745,22 @@
 					value={temporaryHp}
 					onChange={(value) => (temporaryHp = value)}
 				/>
-				<article class="rounded-lg border p-2">
-					<div class="flex min-h-18 items-center justify-between gap-2">
-						<div>
-							<p class="theme-text-muted text-xs font-semibold tracking-wide uppercase">
-								Maximum HP
-							</p>
-							<p class="mt-1 text-2xl font-bold tabular-nums">{maximumHpProfile.body}</p>
-						</div>
-						<IconButton
-							variant="detail"
-							size="sm"
-							ariaLabel="View Maximum HP details"
-							title="View Maximum HP details"
-							onclick={(event) => openProfile(event.currentTarget as HTMLElement, 'maximum-hp')}
-						/>
+				<article
+					class="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg border p-2"
+				>
+					<div class="min-w-0">
+						<p class="theme-text-muted text-xs font-semibold tracking-wide uppercase">Maximum HP</p>
+						<p class="mt-1 flex h-8 items-center text-2xl font-bold tabular-nums">
+							{maximumHpProfile.body}
+						</p>
 					</div>
+					<IconButton
+						variant="detail"
+						size="sm"
+						ariaLabel="View Maximum HP details"
+						title="View Maximum HP details"
+						onclick={(event) => openProfile(event.currentTarget as HTMLElement, 'maximum-hp')}
+					/>
 				</article>
 			</div>
 		</div>
@@ -729,12 +781,14 @@
 						class="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg border p-2"
 					>
 						<div class="min-w-0">
-							<p class="theme-text-muted text-xs font-semibold tracking-wide uppercase">Ancestry</p>
-							{#if ancestryProfile.annotations.length > 0}
-								<div class="mt-1.5 flex flex-wrap gap-1.5">
+							<div class="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+								<p class="theme-text-muted text-xs font-semibold tracking-wide uppercase">
+									Ancestry
+								</p>
+								{#if ancestryProfile.annotations.length > 0}
 									<Badge label={noteLabel(ancestryProfile.annotations.length)} />
-								</div>
-							{/if}
+								{/if}
+							</div>
 							<p class="mt-1 truncate font-semibold">{ancestryProfile.body}</p>
 						</div>
 						<div class="flex items-center gap-1">
@@ -752,10 +806,10 @@
 						class="grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg border p-2"
 					>
 						<div class="min-w-0">
-							<p class="theme-text-muted text-xs font-semibold tracking-wide uppercase">
-								Background
-							</p>
-							<div class="mt-1.5 flex flex-wrap gap-1.5">
+							<div class="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+								<p class="theme-text-muted text-xs font-semibold tracking-wide uppercase">
+									Background
+								</p>
 								<Badge label={noteLabel(profile.annotations.length)} />
 							</div>
 							<p class="mt-1 truncate font-semibold">{profile.body}</p>
@@ -783,6 +837,13 @@
 						{@const groupRecords = inventoryRecords.filter(
 							(record) => getInventoryGroupForItem(record.item) === group
 						)}
+						{@const normalizedGroupQuery = inventoryQueries[group].trim().toLocaleLowerCase()}
+						{@const visibleGroupRecords = groupRecords.filter((record) =>
+							`${record.item.name} ${record.item.notes ?? ''}`
+								.toLocaleLowerCase()
+								.includes(normalizedGroupQuery)
+						)}
+						{@const isDenseGroup = groupRecords.length > inventoryPreviewLimit}
 						<article class="space-y-2 rounded-lg border p-2">
 							<div class="flex items-center justify-between gap-2">
 								<div class="min-w-0">
@@ -797,41 +858,39 @@
 									onclick={(event) => beginInventoryAdd(group, event.currentTarget as HTMLElement)}
 								/>
 							</div>
-							<ul class="space-y-1.5" aria-label={inventoryGroupLabels[group]}>
-								{#each groupRecords as record (record.item.id)}
-									<li class="theme-panel flex items-center gap-2 rounded-md border px-2 py-1">
-										<div class="min-w-0 flex-1">
-											<p class="truncate text-sm font-semibold">{record.item.name}</p>
-											{#if (record.item.annotations?.length ?? 0) > 0}
-												<div class="mt-1 flex flex-wrap gap-1.5">
-													<Badge label={noteLabel(record.item.annotations?.length ?? 0)} />
-												</div>
-											{/if}
-											<p class="theme-text-muted mt-1 line-clamp-2 text-xs">
-												{record.item.notes || 'No authored detail.'}
-											</p>
-										</div>
-										<div class="flex shrink-0 items-center gap-1">
-											<IconButton
-												variant="pin"
-												size="sm"
-												shadingVariant={record.pinned ? 'dark' : 'light'}
-												ariaLabel={`${record.pinned ? 'Unpin' : 'Pin'} ${record.item.name}`}
-												ariaPressed={record.pinned}
-												onclick={(event) =>
-													toggleInventoryPinned(record.item.id, event.currentTarget as HTMLElement)}
-											/>
-											<IconButton
-												variant="detail"
-												size="sm"
-												ariaLabel={`View ${record.item.name} details`}
-												onclick={(event) =>
-													openInventory(record.item.id, event.currentTarget as HTMLElement)}
-											/>
-										</div>
-									</li>
-								{/each}
-							</ul>
+							{#if isDenseGroup}
+								<label class="block">
+									<span class="sr-only">Search {inventoryGroupLabels[group]}</span>
+									<input
+										class="theme-input touch-target w-full rounded-md border px-2 py-1 text-base md:text-sm"
+										type="search"
+										placeholder={`Search ${inventoryGroupLabels[group].toLocaleLowerCase()}`}
+										bind:value={inventoryQueries[group]}
+									/>
+								</label>
+								{#if visibleGroupRecords.length > 0}
+									<BoundedCollectionRegion
+										ariaLabel={`${inventoryGroupLabels[group]} scrollable results`}
+										viewportId={`proof-inventory-${group}`}
+									>
+										{@render inventoryRows(visibleGroupRecords, group)}
+									</BoundedCollectionRegion>
+								{:else}
+									<p class="theme-text-muted rounded-md border px-2 py-2 text-xs" role="status">
+										No {inventoryGroupLabels[group].toLocaleLowerCase()} match this search.
+									</p>
+								{/if}
+								<BaseButton
+									size="sm"
+									classes="w-full"
+									onclick={(event) =>
+										openInventoryBrowse(group, event.currentTarget as HTMLElement)}
+								>
+									Browse all {groupRecords.length} items
+								</BaseButton>
+							{:else}
+								{@render inventoryRows(groupRecords, group)}
+							{/if}
 						</article>
 					{/each}
 				</div>
@@ -882,70 +941,49 @@
 								bind:value={featureQuery}
 							/>
 						</label>
-						<div class="relative rounded-md border p-1 shadow-inner">
-							<!-- Keyboard users need to focus the bounded scroll owner. -->
-							<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-							<div
-								class="scroll-affordance-viewport max-h-52 overflow-y-auto pr-1"
-								role="region"
-								aria-label="Features scrollable results"
-								tabindex="0"
-								data-scroll-viewport="proof-features"
-								{@attach trackFeatureScrollAffordance}
-							>
-								<ul class="space-y-1" aria-label="Features in sheet">
-									{#each prioritizedVisibleFeatures as feature (feature.id)}
-										<li
-											class="theme-panel flex items-center gap-2 rounded-md border px-2 py-1"
-											animate:flip={{ duration: prefersReducedMotion.current ? 0 : 160 }}
-										>
-											<div class="min-w-0 flex-1">
+						<BoundedCollectionRegion
+							ariaLabel="Features scrollable results"
+							viewportId="proof-features"
+						>
+							<ul class="space-y-1" aria-label="Features in sheet">
+								{#each prioritizedVisibleFeatures as feature (feature.id)}
+									<li
+										class="theme-panel flex items-center gap-2 rounded-md border px-2 py-1"
+										animate:flip={{ duration: prefersReducedMotion.current ? 0 : 160 }}
+									>
+										<div class="min-w-0 flex-1">
+											<div class="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
 												<p class="truncate text-sm font-semibold">{feature.name}</p>
+												<Badge label={feature.owner} />
 												{#if feature.annotations.length}
-													<div class="mt-1 flex flex-wrap gap-1.5">
-														<Badge label={noteLabel(feature.annotations.length)} />
-													</div>
+													<Badge label={noteLabel(feature.annotations.length)} />
 												{/if}
-												<p class="theme-text-muted mt-1 truncate text-xs">{feature.owner}</p>
 											</div>
-											<IconButton
-												id={`proof-inline-feature-pin-${feature.id}`}
-												variant="pin"
-												size="sm"
-												shadingVariant={featurePins.includes(feature.id) ? 'dark' : 'light'}
-												ariaLabel={`${featurePins.includes(feature.id) ? 'Unpin' : 'Pin'} ${feature.name}`}
-												ariaPressed={featurePins.includes(feature.id)}
-												title={`${featurePins.includes(feature.id) ? 'Unpin' : 'Pin'} ${feature.name}`}
-												onclick={(event) =>
-													toggleFeaturePinned(feature.id, event.currentTarget as HTMLElement)}
-											/>
-											<IconButton
-												variant="detail"
-												size="sm"
-												ariaLabel={`View ${feature.name} details`}
-												title={`View ${feature.name} details`}
-												onclick={(event) =>
-													openFeature(feature.id, event.currentTarget as HTMLElement)}
-											/>
-										</li>
-									{/each}
-								</ul>
-							</div>
-							{#if canScrollFeaturesUp}
-								<div
-									class="scroll-affordance-fade scroll-affordance-fade-top absolute inset-x-1 top-1 h-8"
-									data-scroll-affordance="more-above"
-									aria-hidden="true"
-								></div>
-							{/if}
-							{#if canScrollFeaturesDown}
-								<div
-									class="scroll-affordance-fade scroll-affordance-fade-bottom absolute inset-x-1 bottom-1 h-8"
-									data-scroll-affordance="more-below"
-									aria-hidden="true"
-								></div>
-							{/if}
-						</div>
+											<p class="theme-text-muted mt-1 truncate text-xs">{feature.detail}</p>
+										</div>
+										<IconButton
+											id={`proof-inline-feature-pin-${feature.id}`}
+											variant="pin"
+											size="sm"
+											shadingVariant={featurePins.includes(feature.id) ? 'dark' : 'light'}
+											ariaLabel={`${featurePins.includes(feature.id) ? 'Unpin' : 'Pin'} ${feature.name}`}
+											ariaPressed={featurePins.includes(feature.id)}
+											title={`${featurePins.includes(feature.id) ? 'Unpin' : 'Pin'} ${feature.name}`}
+											onclick={(event) =>
+												toggleFeaturePinned(feature.id, event.currentTarget as HTMLElement)}
+										/>
+										<IconButton
+											variant="detail"
+											size="sm"
+											ariaLabel={`View ${feature.name} details`}
+											title={`View ${feature.name} details`}
+											onclick={(event) =>
+												openFeature(feature.id, event.currentTarget as HTMLElement)}
+										/>
+									</li>
+								{/each}
+							</ul>
+						</BoundedCollectionRegion>
 					</article>
 
 					<article class="rounded-lg border p-2">
@@ -997,73 +1035,50 @@
 						bind:value={spellQuery}
 					/>
 				</label>
-				<div class="relative rounded-md border p-1 shadow-inner">
-					<!-- Keyboard users need to focus the bounded scroll owner. -->
-					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-					<div
-						class="scroll-affordance-viewport max-h-56 overflow-y-auto pr-1"
-						role="region"
-						aria-label="Spells scrollable results"
-						tabindex="0"
-						data-scroll-viewport="proof-spells"
-						{@attach trackSpellScrollAffordance}
-					>
-						<ul class="space-y-1" aria-label="Spells in sheet">
-							{#each visibleSpells.toSorted((a, b) => Number(b.pinned) - Number(a.pinned) || a.level - b.level || a.name.localeCompare(b.name)) as spell (spell.id)}
-								<li
-									class="theme-panel flex items-center gap-2 rounded-md border px-2 py-1"
-									animate:flip={{ duration: prefersReducedMotion.current ? 0 : 160 }}
-								>
-									<div class="min-w-0 flex-1">
+				<BoundedCollectionRegion
+					ariaLabel="Spells scrollable results"
+					viewportId="proof-spells"
+					maxHeight="14rem"
+				>
+					<ul class="space-y-1" aria-label="Spells in sheet">
+						{#each visibleSpells.toSorted((a, b) => Number(b.pinned) - Number(a.pinned) || a.level - b.level || a.name.localeCompare(b.name)) as spell (spell.id)}
+							<li
+								class="theme-panel flex items-center gap-2 rounded-md border px-2 py-1"
+								animate:flip={{ duration: prefersReducedMotion.current ? 0 : 160 }}
+							>
+								<div class="min-w-0 flex-1">
+									<div class="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
 										<p class="truncate text-sm font-semibold">{spell.name}</p>
+										<Badge label={levelLabel(spell.level)} />
+										{#if spell.prepared}<Badge label="Prepared" />{/if}
 										{#if spell.annotations.length}
-											<div class="mt-1 flex flex-wrap gap-1.5">
-												<Badge label={noteLabel(spell.annotations.length)} />
-											</div>
+											<Badge label={noteLabel(spell.annotations.length)} />
 										{/if}
-										<p class="theme-text-muted mt-1 truncate text-xs">
-											{levelLabel(spell.level)}{spell.prepared ? ' · Prepared' : ''}{spell.pinned
-												? ' · Pinned'
-												: ''}
-										</p>
 									</div>
-									<IconButton
-										id={`proof-inline-spell-pin-${spell.id}`}
-										variant="pin"
-										size="sm"
-										shadingVariant={spell.pinned ? 'dark' : 'light'}
-										ariaLabel={`${spell.pinned ? 'Unpin' : 'Pin'} ${spell.name} ${spell.id}`}
-										ariaPressed={spell.pinned}
-										title={`${spell.pinned ? 'Unpin' : 'Pin'} ${spell.name}`}
-										onclick={(event) =>
-											toggleSpellPinned(spell.id, event.currentTarget as HTMLElement)}
-									/>
-									<IconButton
-										variant="detail"
-										size="sm"
-										ariaLabel={`View ${spell.name} ${spell.id} details`}
-										title={`View ${spell.name} details`}
-										onclick={(event) => openSpell(spell.id, event.currentTarget as HTMLElement)}
-									/>
-								</li>
-							{/each}
-						</ul>
-					</div>
-					{#if canScrollSpellsUp}
-						<div
-							class="scroll-affordance-fade scroll-affordance-fade-top absolute inset-x-1 top-1 h-8"
-							data-scroll-affordance="more-above"
-							aria-hidden="true"
-						></div>
-					{/if}
-					{#if canScrollSpellsDown}
-						<div
-							class="scroll-affordance-fade scroll-affordance-fade-bottom absolute inset-x-1 bottom-1 h-8"
-							data-scroll-affordance="more-below"
-							aria-hidden="true"
-						></div>
-					{/if}
-				</div>
+									<p class="theme-text-muted mt-1 truncate text-xs">{spell.detail}</p>
+								</div>
+								<IconButton
+									id={`proof-inline-spell-pin-${spell.id}`}
+									variant="pin"
+									size="sm"
+									shadingVariant={spell.pinned ? 'dark' : 'light'}
+									ariaLabel={`${spell.pinned ? 'Unpin' : 'Pin'} ${spell.name} ${spell.id}`}
+									ariaPressed={spell.pinned}
+									title={`${spell.pinned ? 'Unpin' : 'Pin'} ${spell.name}`}
+									onclick={(event) =>
+										toggleSpellPinned(spell.id, event.currentTarget as HTMLElement)}
+								/>
+								<IconButton
+									variant="detail"
+									size="sm"
+									ariaLabel={`View ${spell.name} ${spell.id} details`}
+									title={`View ${spell.name} details`}
+									onclick={(event) => openSpell(spell.id, event.currentTarget as HTMLElement)}
+								/>
+							</li>
+						{/each}
+					</ul>
+				</BoundedCollectionRegion>
 			</article>
 		</div>
 	</section>
@@ -1103,7 +1118,7 @@
 	bind:open
 	title={dialogTitle}
 	fullHeightMobile
-	wide={screen.startsWith('feature') || screen.startsWith('spell')}
+	wide={screen === 'inventory-browse' || screen.startsWith('feature') || screen.startsWith('spell')}
 	scrollAffordance
 	{showBack}
 	onBack={() => void handleBack()}
@@ -1244,7 +1259,7 @@
 				</p>
 			</section>
 			<section>
-				<h3 class="text-sm font-semibold">Annotations</h3>
+				<h3 class="text-sm font-semibold">Notes</h3>
 				<div class="mt-1">
 					<GridContentAnnotationsDisplay annotations={activeProfile.annotations} />
 				</div>
@@ -1305,7 +1320,7 @@
 				</p>
 			</section>
 			<section>
-				<h3 class="text-sm font-semibold">Annotations</h3>
+				<h3 class="text-sm font-semibold">Notes</h3>
 				<div class="mt-1">
 					<GridContentAnnotationsDisplay annotations={selectedInventory.item.annotations ?? []} />
 				</div>
@@ -1343,6 +1358,40 @@
 					{saveError}
 				</p>{/if}
 		</div>
+	{:else if screen === 'inventory-browse'}
+		{@const browseRecords = inventoryRecords.filter(
+			(record) => getInventoryGroupForItem(record.item) === inventoryBrowseGroup
+		)}
+		{@const normalizedBrowseQuery = inventoryQueries[inventoryBrowseGroup]
+			.trim()
+			.toLocaleLowerCase()}
+		{@const visibleBrowseRecords = browseRecords.filter((record) =>
+			`${record.item.name} ${record.item.notes ?? ''}`
+				.toLocaleLowerCase()
+				.includes(normalizedBrowseQuery)
+		)}
+		<div class="space-y-4">
+			<label class="block space-y-1">
+				<span class="text-sm font-semibold"
+					>Search {inventoryGroupLabels[inventoryBrowseGroup]}</span
+				>
+				<input
+					class="theme-input touch-target w-full rounded-md border p-2 text-base md:text-sm"
+					type="search"
+					bind:value={inventoryQueries[inventoryBrowseGroup]}
+				/>
+			</label>
+			<p class="theme-text-muted text-xs" role="status">
+				{visibleBrowseRecords.length} of {browseRecords.length} items
+			</p>
+			{#if visibleBrowseRecords.length > 0}
+				{@render inventoryRows(visibleBrowseRecords, inventoryBrowseGroup, true)}
+			{:else}
+				<p class="theme-text-muted rounded-md border px-3 py-3 text-sm" role="status">
+					No {inventoryGroupLabels[inventoryBrowseGroup].toLocaleLowerCase()} match this search.
+				</p>
+			{/if}
+		</div>
 	{:else if screen === 'features-browse'}
 		<div class="space-y-4">
 			<label class="block space-y-1"
@@ -1360,13 +1409,14 @@
 						animate:flip={{ duration: prefersReducedMotion.current ? 0 : 160 }}
 					>
 						<div class="min-w-0">
-							<p class="truncate font-semibold">{feature.name}</p>
-							{#if feature.annotations.length}
-								<div class="mt-1 flex flex-wrap gap-1.5">
+							<div class="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
+								<p class="truncate font-semibold">{feature.name}</p>
+								<Badge label={feature.owner} />
+								{#if feature.annotations.length}
 									<Badge label={noteLabel(feature.annotations.length)} />
-								</div>
-							{/if}
-							<p class="theme-text-muted mt-1 text-xs">{feature.owner} · {feature.id}</p>
+								{/if}
+							</div>
+							<p class="theme-text-muted mt-1 text-xs">{feature.detail}</p>
 						</div>
 						<div class="flex shrink-0 items-center gap-2">
 							<IconButton
@@ -1406,7 +1456,7 @@
 				</p>
 			</section>
 			<section>
-				<h3 class="text-sm font-semibold">Annotations</h3>
+				<h3 class="text-sm font-semibold">Notes</h3>
 				<div class="mt-1">
 					<GridContentAnnotationsDisplay annotations={selectedFeature.annotations} />
 				</div>
@@ -1472,15 +1522,15 @@
 								class="theme-panel flex items-center gap-2 rounded-md border p-2"
 							>
 								<div class="min-w-0 flex-1">
-									<p class="truncate font-semibold">{spell.name}</p>
-									{#if spell.annotations.length}
-										<div class="mt-1 flex flex-wrap gap-1.5">
+									<div class="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
+										<p class="truncate font-semibold">{spell.name}</p>
+										<Badge label={levelLabel(spell.level)} />
+										{#if spell.prepared}<Badge label="Prepared" />{/if}
+										{#if spell.annotations.length}
 											<Badge label={noteLabel(spell.annotations.length)} />
-										</div>
-									{/if}
-									<p class="theme-text-muted mt-1 text-xs">
-										{levelLabel(spell.level)} · {spell.id}
-									</p>
+										{/if}
+									</div>
+									<p class="theme-text-muted mt-1 text-xs">{spell.id}</p>
 								</div>
 								<BaseButton size="sm" onclick={() => toggleSpellPrepared(spell.id)}
 									>{spell.prepared ? 'Prepared' : 'Prepare'}</BaseButton
@@ -1518,12 +1568,14 @@
 									class="theme-panel flex items-center gap-2 rounded-md border p-2"
 								>
 									<div class="min-w-0 flex-1">
-										<p class="truncate font-semibold">{spell.name}</p>
-										{#if spell.annotations.length}
-											<div class="mt-1 flex flex-wrap gap-1.5">
+										<div class="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
+											<p class="truncate font-semibold">{spell.name}</p>
+											<Badge label={levelLabel(spell.level)} />
+											{#if spell.prepared}<Badge label="Prepared" />{/if}
+											{#if spell.annotations.length}
 												<Badge label={noteLabel(spell.annotations.length)} />
-											</div>
-										{/if}
+											{/if}
+										</div>
 										<p class="theme-text-muted mt-1 text-xs">{spell.id}</p>
 									</div>
 									<BaseButton size="sm" onclick={() => toggleSpellPrepared(spell.id)}
@@ -1577,7 +1629,7 @@
 				</p>
 			</section>
 			<section>
-				<h3 class="text-sm font-semibold">Annotations</h3>
+				<h3 class="text-sm font-semibold">Notes</h3>
 				<div class="mt-1">
 					<GridContentAnnotationsDisplay annotations={selectedSpell.annotations} />
 				</div>

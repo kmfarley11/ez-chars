@@ -1,13 +1,10 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { applyGridPatches } from '$utils/characterGridHelpers';
-	import type { GridContentPatch } from '$utils/gridContentTypes';
 	import {
 		resolve5eRuntimeActionSource,
 		type RuntimeActionDraft
 	} from '$lib/dnd5e2014/runtimeActionSources';
 	import type { CharacterDocument5e2014, RuntimeActionSource } from '../../../../schema';
-	import { decode5eGridPatches } from '../sheetEditDecoder';
 	import {
 		reduce5eSheetEditIntents,
 		type SheetEditIntent,
@@ -18,8 +15,6 @@
 
 	interface Props {
 		initialCharacter: CharacterDocument5e2014;
-		// eslint-disable-next-line no-unused-vars
-		onEditSavePatches?: (_patches: Array<GridContentPatch>) => void;
 		// eslint-disable-next-line no-unused-vars
 		onCreateAction?: (_draft: RuntimeActionDraft) => void;
 		// eslint-disable-next-line no-unused-vars
@@ -32,7 +27,6 @@
 
 	let {
 		initialCharacter,
-		onEditSavePatches = undefined,
 		onCreateAction = undefined,
 		onResyncAction = undefined,
 		onNavigateToSource = undefined,
@@ -63,28 +57,6 @@
 		return true;
 	};
 
-	const handleGridPatchesSave = (patches: Array<GridContentPatch>) => {
-		const decoded = decode5eGridPatches(patches);
-		if (!decoded.ok) {
-			issueMessage = formatIssues(decoded.issues);
-			return;
-		}
-
-		const patched = applyGridPatches(character, decoded.edits.canonicalPatches);
-		const result = reduce5eSheetEditIntents(patched, decoded.edits.intents, {
-			createId: createStoryId
-		});
-		if (!result.ok) {
-			issueMessage = formatIssues(result.issues);
-			return;
-		}
-
-		character = result.character;
-		feedback = 'Saved runtime action changes.';
-		issueMessage = undefined;
-		onEditSavePatches?.(patches);
-	};
-
 	const handleCreateAction = (draft: RuntimeActionDraft) => {
 		if (!commitIntents([{ type: 'create-runtime-action', draft }])) return;
 		feedback = `Added ${draft.name}.`;
@@ -112,10 +84,9 @@
 {/if}
 
 <RuntimeActionsCard
-	data={projection.runtimeActionData}
 	{character}
 	annotationEditorConfig={projection.annotationEditorConfig}
-	handleEditSavePatches={handleGridPatchesSave}
+	onIntents={commitIntents}
 	onCreateAction={handleCreateAction}
 	onResyncAction={handleResyncAction}
 	onNavigateToSource={handleNavigateToSource}

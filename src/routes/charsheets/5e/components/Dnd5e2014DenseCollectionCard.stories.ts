@@ -76,16 +76,15 @@ export const Default: Story = {
 		'Confirm the pinned Longsword appears before the alphabetical unpinned Weapons tier.',
 		'Open Dagger row actions, choose Pin, and confirm Dagger moves into the pinned tier while focus returns to its row-actions button.',
 		'Reopen Dagger row actions, confirm the command now reads Unpin, invoke it, and confirm Dagger returns to the alphabetical unpinned tier.',
-		'Choose Manage Pins and confirm the four-item manager does not show search.',
-		'Change Pins, save, and confirm ordering updates while focus returns to Manage Pins.'
+		'Confirm no collection-level Manage Pins action duplicates the promoted row command.'
 	)
 };
 
 export const Empty: Story = {
 	args: { emptyText: 'No items found.', rows: [] },
 	parameters: manualReview(
-		'Confirm the empty state and Bulk Edit action remain available.',
-		'Confirm Manage Pins is omitted because there are no eligible identities.'
+		'Confirm the empty state and direct Add action remain available.',
+		'Confirm no priority action appears without an eligible record.'
 	)
 };
 
@@ -93,9 +92,8 @@ export const OtherGearFilteredUnlimitedPins: Story = {
 	args: { title: 'Other Gear', rows: otherGearRows, query: 'rope' },
 	parameters: manualReview(
 		'Confirm both duplicate Rope rows remain distinguishable by authored detail and identity-owned state.',
-		'Open Manage Pins and confirm the active Rope query is retained.',
-		'Clear the manager query and confirm seven pinned choices remain selected—more than the five-row preview limit.',
-		'Save a change and confirm filtered context and focus are preserved.'
+		'Pin one filtered Rope directly and confirm the query is retained while the correct duplicate moves.',
+		'Unpin the same identity and confirm filtered context and focus remain preserved.'
 	)
 };
 
@@ -106,10 +104,17 @@ export const InvalidInventoryPrioritySave: Story = {
 		prioritySaveError: 'One selected item no longer belongs to this inventory.'
 	},
 	parameters: manualReview(
-		'Open an unpinned row action menu, choose Pin, and confirm the validation alert appears without reordering while focus returns to that row action.',
-		'Open Manage Pins, change a checkbox, and choose Save Pins.',
-		'Confirm the validation alert remains in the open dialog and no row reorders.',
-		'Confirm changing the draft clears the stale alert before retrying.'
+		'Choose Pin on an unpinned row and confirm the validation alert appears without reordering.',
+		'Confirm focus remains on the same row-level Pin action and no collection-level batch manager appears.'
+	)
+};
+
+export const RejectedRecordRemoval: Story = {
+	args: { rejectIntents: true },
+	parameters: manualReview(
+		'Open Dagger details, choose Remove item, then Confirm remove.',
+		'Confirm the Dagger detail remains open with actionable feedback and the row still exists.',
+		'Choose Keep record or close the detail and confirm focus returns to a stable collection control.'
 	)
 };
 
@@ -120,6 +125,6 @@ export const SpellPriorityAcrossLevels: Story = {
 		'Confirm the remaining spells appear exactly once under cantrip-through-ninth-level headings and alphabetically within each populated level.',
 		'Open Magic Missile row actions, choose Pin, and confirm it moves into Pinned spells while focus returns to its row-actions button.',
 		'Reopen Magic Missile row actions, choose Unpin, and confirm it returns to the 1st-level group with focus preserved.',
-		'Open Manage Pins and confirm all levels share the same batch manager and search context.'
+		'Confirm no collection-level batch manager duplicates the row-level Pin/Unpin controls.'
 	)
 };

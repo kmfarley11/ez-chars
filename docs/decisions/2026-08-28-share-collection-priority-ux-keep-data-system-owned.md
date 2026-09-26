@@ -3,8 +3,8 @@
 - **Status:** Approved
 - **Author:** Codex with project owner direction
 - **Date:** 2026-08-28
-- **Last reviewed:** 2026-08-28
-- **Latest refinement:** [`BL-075`](../../openspec/changes/bl-075-stable-collection-priority/proposal.md) implemented batch management plus immediate Pin/Unpin in established equipment and spell row menus while retaining collection-level actions for Supporting Collections.
+- **Last reviewed:** 2026-09-20
+- **Latest refinement:** [Archived `BL-077`](../../openspec/changes/archive/2026-09-26-bl-077-unify-detail-editing-annotations/proposal.md) promotes immediate record-level Pin/Unpin beside Detail across eligible collections and leaves the reusable batch manager dormant unless playtest evidence justifies restoring it.
 
 ## Context & Problem Statement
 
@@ -46,6 +46,8 @@ Each game-system adapter owns identity, validation, mutation, and persistence. D
 
 The reusable batch workflow uses a local draft and submits one complete set on Save. Cancel, native dismissal, and Escape discard the draft. Equipment and spell rows also expose immediate state-sensitive Pin/Unpin through their established action menus; each command derives and submits one complete intended identity set through the same validated adapter callback. Supporting Collections do not gain row menus solely for pinning. Runtime Actions do not adopt this boundary in BL-075 because their authored order and action-economy navigation require independent product work.
 
+**Operative refinement:** BL-077 retains the narrow data and mutation boundary but changes the rollout presentation. Eligible repeatable records now expose first-class row-level Pin/Unpin beside Detail, including Supporting Collections, while the batch manager remains dormant. This supersedes the earlier placement guidance below without changing identity ownership, complete-set mutation semantics, validation, or persistence.
+
 ### Local primitive reuse audit
 
 - Reuse `DialogShell.svelte` for native modal lifecycle, cancellation interception, scroll ownership, and close behavior.
@@ -79,3 +81,7 @@ Owner review established that Pin/Unpin belongs in the already-visible equipment
 ### 2026-08-28 — Implementation reconciliation
 
 The completed boundary preserves the existing composition taxonomy: `ManagePinsDialog` and the icon-prefixed list item are focused molecules, while Supporting and dense collection cards remain organisms that own domain adaptation and workflow placement. The 5e reducer accepts a complete identity set, re-resolves it against the current character, validates the resulting character once, and commits or rejects the operation atomically. This typed intent is a compound collection mutation under the existing field-binding contract, not a new primitive JSON Patch convention or a system-neutral mutation API.
+
+### 2026-09-20 — Prefer the record-local priority action during BL-077
+
+Production-composition review found that exposing both Manage Pins and a promoted Pin/Unpin control duplicated the same operation and crowded collection headings. BL-077 therefore uses row-level Pin/Unpin as the only visible priority path for eligible records. The reusable batch dialog and complete-set callback remain available in the component layer, but no rollout consumer exposes them. Reconsider a batch surface only if owner or external-playtest evidence shows that repeated individual priority changes are materially slow or confusing.

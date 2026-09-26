@@ -30,7 +30,7 @@
 		const idValue = displayOrPlaceholder(annotation.id, '').trim();
 		if (idValue.length > 0) return idValue;
 
-		return `Annotation ${annotationIdx + 1}`;
+		return `Note ${annotationIdx + 1}`;
 	};
 
 	const formatReference = (reference: GridContentReference): string => {

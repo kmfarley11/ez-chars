@@ -51,6 +51,7 @@
 		emptyText?: string;
 		query?: string;
 		prioritySaveError?: string;
+		rejectIntents?: boolean;
 		rows?: Array<Dnd5e2014DenseCollectionRow>;
 	}
 
@@ -59,6 +60,7 @@
 		emptyText = 'No items found.',
 		query = $bindable(''),
 		prioritySaveError = '',
+		rejectIntents = false,
 		rows = defaultRows
 	}: Props = $props();
 
@@ -111,8 +113,17 @@
 		})
 	);
 
-	const onIntent = () => {};
-	const onBulkSave = () => {};
+	const firstInventoryRow = $derived(rows.find((row) => row.source.kind === 'item'));
+	const collection = $derived(
+		rows[0]?.source.kind === 'spell'
+			? ({ kind: 'spell' } as const)
+			: ({
+					kind: 'item',
+					group:
+						firstInventoryRow?.source.kind === 'item' ? firstInventoryRow.source.group : 'weapons'
+				} as const)
+	);
+	const onIntents = () => (rejectIntents ? false : undefined);
 	const onSavePins = async (identities: ReadonlyArray<string>) => {
 		if (prioritySaveError) return { ok: false as const, message: prioritySaveError };
 		pinnedIdentities.clear();
@@ -126,11 +137,10 @@
 		{title}
 		rows={presentedRows}
 		character={mockCharacter}
-		bulkEditData={{}}
+		{collection}
 		{emptyText}
 		bind:query
-		{onIntent}
-		{onBulkSave}
+		{onIntents}
 		{onSavePins}
 	/>
 </div>

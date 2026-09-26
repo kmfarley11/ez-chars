@@ -11,7 +11,14 @@ import {
 import { compare5e2014PriorityLabels } from '$lib/dnd5e2014/collectionPriority';
 
 export type SupportingCollectionKind = 'features' | 'traits' | 'languages' | 'tools';
-export type SupportingCollectionRow = GridContentListRow & CollectionPriorityRow;
+export type SupportingCollectionRow = GridContentListRow &
+	CollectionPriorityRow & {
+		source:
+			| { kind: 'general-feature'; id: string }
+			| { kind: 'class-feature'; id: string; classIndex: number }
+			| { kind: 'trait'; id: string }
+			| { kind: 'proficiency'; id: string; collection: 'languages' | 'tools' };
+	};
 
 const sourceLabels: Record<ProficiencySourceKind, string> = {
 	ancestry: 'Ancestry',
@@ -32,7 +39,8 @@ const projectProficiencyRows = (
 		label: entry.name,
 		pinned: pinnedIdentities.has(entry.id),
 		...(entry.source ? { context: sourceLabels[entry.source.kind] } : {}),
-		...(entry.annotations ? { annotations: entry.annotations } : {})
+		...(entry.annotations ? { annotations: entry.annotations } : {}),
+		source: { kind: 'proficiency', id: entry.id, collection: kind }
 	}));
 
 export const projectSupportingCollectionRows = (
@@ -52,7 +60,8 @@ export const projectSupportingCollectionRows = (
 						? { detail: feature.summary ?? feature.description }
 						: {}),
 					context: 'General feature',
-					...(feature.annotations ? { annotations: feature.annotations } : {})
+					...(feature.annotations ? { annotations: feature.annotations } : {}),
+					source: { kind: 'general-feature' as const, id: feature.id }
 				})),
 				...character.systemData.classes.flatMap((classLevel, classIndex) =>
 					(classLevel.features ?? []).map((feature) => ({
@@ -63,7 +72,8 @@ export const projectSupportingCollectionRows = (
 						context: classLevel.subclass
 							? `${classLevel.name} · ${classLevel.subclass}`
 							: classLevel.name,
-						...(feature.annotations ? { annotations: feature.annotations } : {})
+						...(feature.annotations ? { annotations: feature.annotations } : {}),
+						source: { kind: 'class-feature' as const, id: feature.featureId, classIndex }
 					}))
 				)
 			];
@@ -76,7 +86,8 @@ export const projectSupportingCollectionRows = (
 				label: trait.name,
 				pinned: traitPins.has(trait.featureId),
 				context: character.systemData.race?.name ?? 'Ancestry trait',
-				...(trait.annotations ? { annotations: trait.annotations } : {})
+				...(trait.annotations ? { annotations: trait.annotations } : {}),
+				source: { kind: 'trait' as const, id: trait.featureId }
 			}));
 		}
 		case 'languages':

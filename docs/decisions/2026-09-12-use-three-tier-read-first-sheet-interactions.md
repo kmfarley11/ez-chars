@@ -1,10 +1,10 @@
 # 2026-09-12 Use Three-Tier Read-First Sheet Interactions
 
-**Status:** Proposed  
-**Author:** Codex  
-**Date:** 2026-09-12  
-**Last reviewed:** 2026-09-18  
-**Latest refinement:** BL-077 five-fixture proof; collection-wide annotation overview and generic collection organization rejected for rollout, while the latest revision proposes label → note badge → content ordering, one shared compact icon-button grammar, consistent equipment bullet lists, removal of duplicate ordinary Edit/Notes menus, first-class row-level Pin/Unpin plus Manage Pins, direct Add, and focused eligible Remove. Priority motion and the revised presentation remain pending at the mid-apply gate.
+**Status:** Approved
+**Author:** Codex
+**Date:** 2026-09-12
+**Last reviewed:** 2026-09-21
+**Latest refinement:** BL-077's final architecture audit made interaction tier explicit projection metadata, centralized runtime/read-first classification, and made nested runtime groups compose the shared primitive field renderer; the 5e layer now selects semantics and domain adapters without owning a parallel control system.
 
 ## Context & Problem Statement
 
@@ -31,17 +31,17 @@ The product needs one understandable interaction language without turning the ch
 3. **Read-first three-tier interaction**
    - Keeps explicitly classified runtime state inline, opens rich targets into focused detail and editing, and keeps collection browsing, priority, and record lifecycle distinct. It introduces another navigation depth, so discoverability, Back behavior, and responsive presentation require proof.
 
-## Proposed Decision Outcome
+## Decision Outcome
 
-Adopt the read-first three-tier model if the BL-077 human proof validates it:
+Adopt the read-first three-tier model validated by the BL-077 human proof:
 
 1. **Runtime state** uses deliberately classified, geometrically stable inline controls.
 2. **Rich detail** opens through an explicit target into a read-first surface. Edit creates one local draft containing authored information and annotations; one Save validates and commits the whole target, while Cancel discards it.
 3. **Collections** remain scan-first. Individual records use focused detail; established Pin/Unpin owns player priority, direct Add creates one record, and eligible Remove remains associated with the selected record and requires confirmation or a recoverable undo path. Generic collection organization and reordering are deferred.
 
-The shared layer may coordinate view/edit/back/focus state and presentation, but each domain retains its own data adapter and candidate validation. Pin/Unpin is promoted beside the detail target for repeatable pinnable records, remains an immediate accessible toggle, and preserves focus when priority reordering moves a record. Singular fields do not receive a pin merely for visual consistency. Source navigation, resynchronization, and other justified quick commands also remain distinct rather than being forced through the focused draft.
+The shared layer may coordinate view/edit/back/focus state and presentation, but each domain retains its own data adapter and candidate validation. Pin/Unpin is promoted beside the detail target for repeatable pinnable records, remains an immediate accessible toggle, and preserves focus when priority reordering moves a record. The batch pin manager remains reusable internally but is not exposed by the rollout because it duplicates this promoted action; later playtest evidence may justify restoring it. Singular fields do not receive a pin merely for visual consistency. Source navigation, resynchronization, and other justified quick commands also remain distinct rather than being forced through the focused draft.
 
-Quiet note badges follow the annotated field or record label and precede its value or supporting content rather than appearing among action controls, and collections do not repeat those notes as an aggregate badge. Compact Edit, Confirm, Cancel, Detail, Pin/Unpin, and Add actions share one base-button-backed icon grammar, while consequential Remove remains labeled in focused detail. Once an ordinary record's detail target owns authored editing, annotations, and references, its duplicate Edit and Notes/References overflow menu is removed. Domain-specific menus remain available where commands such as View Source or Resync are not authored-detail actions. A brief reduced-motion-aware priority animation remains a proof judgment rather than an approved architectural dependency.
+Compact field and record metadata sits inline with the applicable title when space permits, with descriptive or state badges first and the quiet note count last; supporting value/detail follows, action controls remain separate, and collections do not repeat notes as an aggregate badge. Compact Edit, Confirm, Cancel, Detail, Pin/Unpin, and Add actions share one base-button-backed icon grammar, while consequential Remove remains labeled in focused detail. This narrow button vocabulary does not establish a universal icon registry. Once an ordinary record's detail target owns authored editing, annotations, and references, its duplicate Edit and Notes/References overflow menu is removed. Domain-specific menus remain available where commands such as View Source or Resync are not authored-detail actions. Same-list priority movement uses the approved brief transform-only animation and becomes instantaneous under reduced motion. Prepared remains available in scan and focused Edit through one canonical mutation path.
 
 This proposal does not authorize a global sheet edit mode, a general section-wide edit mode, a universal record payload, or changed persistence semantics.
 
@@ -61,19 +61,35 @@ This proposal does not authorize a global sheet edit mode, a general section-wid
 
 ### 2026-09-18 — Five-fixture proof awaiting owner review
 
-The isolated proof covers Current and Temporary HP beside read-first Maximum HP, annotated Background and Ancestry fields, Random rock within consistent Weapons, Armor & Shields, and Other Gear bullet-list collections, saturated Features, and saturated Spells. Owner review established that per-record note badges plus focused detail provide the useful annotation path and rejected a read-only Annotated Items overview. The latest proof revision also omits aggregate collection badges because they do not identify the relevant records, orders compact summaries as label/title → note badge → value/supporting content, and uses one base-button-backed icon primitive for the approved compact action vocabulary; these refinements remain pending gate confirmation. Owner review also found the working Organize Collection interaction promising but premature to adopt or scale. It is preserved as an explicitly deferred Storybook-only concept while rollout retains first-class row-level Pin/Unpin, Manage Pins, direct collection Add, and labeled focused eligible Remove. The proof promotes the pin toggle beside the detail control for repeatable records, intentionally excludes singular Maximum HP, Background, and Ancestry fields, and now removes the ordinary record `…` menu because detail owns Edit and annotation/reference access; that removal also remains pending confirmation. A short reduced-motion-aware same-list reorder animation remains under proof. The proof continues to expose Prepared both as a scan-row action and focused-edit field for judgment.
+The isolated proof covers Current and Temporary HP beside read-first Maximum HP, annotated Background and Ancestry fields, Random rock within consistent Weapons, Armor & Shields, and Other Gear bullet-list collections, saturated Features, and saturated Spells. Owner review established that per-record note badges plus focused detail provide the useful annotation path and rejected a read-only Annotated Items overview. The latest proof revision also omits aggregate collection badges because they do not identify the relevant records, places compact semantic badges inline with titles with Notes last, aligns all three HP tiles, and uses one base-button-backed icon primitive for the approved compact action vocabulary. Equipment becomes searchable and bounded after five records, and successful Add closes back to its invoking control instead of forcing the new record's detail open; these refinements remain pending gate confirmation. Owner review also found the working Organize Collection interaction promising but premature to adopt or scale. It is preserved as an explicitly deferred Storybook-only concept while rollout retains first-class row-level Pin/Unpin, direct collection Add, and labeled focused eligible Remove. The proof promotes the pin toggle beside the detail control for repeatable records, intentionally excludes singular Maximum HP, Background, and Ancestry fields, and now removes the ordinary record `…` menu because detail owns Edit and annotation/reference access; that removal also remains pending confirmation. A short reduced-motion-aware same-list reorder animation remains under proof. The proof continues to expose Prepared both as a scan-row action and focused-edit field for judgment.
 
 Before this ADR becomes Approved, the owner must decide or delegate:
 
 - Tier 1 control density;
 - shared compact icon-button grammar and action alignment;
 - first-class Pin/Unpin density and discoverability on repeatable records;
-- focused-detail target discoverability and label → note badge → content placement;
-- consistent equipment list composition and the direct Add / focused eligible Remove boundary;
+- focused-detail target discoverability and inline semantic metadata badges with Notes last;
+- consistent equipment list composition, the five-item saturation boundary, and the direct Add-dismissal / focused eligible Remove boundary;
 - removal of aggregate note badges and ordinary Edit/Notes overflow menus;
 - whether priority-reorder motion should survive the proof;
 - stacked authored/provenance/annotation/reference ordering;
 - spell Prepared placement; and
 - the responsive boundary for full-height focused detail.
 
-The authoritative proof mapping and evidence live in [the BL-077 verification record](../../openspec/changes/bl-077-unify-detail-editing-annotations/verify.md).
+The authoritative proof mapping and evidence live in [the archived BL-077 verification record](../../openspec/changes/archive/2026-09-26-bl-077-unify-detail-editing-annotations/verify.md).
+
+### 2026-09-19 — Proof approved for rollout
+
+The owner approved the complete revised proof. The rollout therefore adopts the three-tier model, compact runtime geometry, explicit detail targets, title-adjacent semantic badges with Notes last, first-class Pin/Unpin, successful Add dismissal and focus return, focused confirmed Remove, five-item equipment saturation, reduced-motion-aware same-list priority animation, stacked authored/provenance/annotation/reference detail, Prepared access in both scan and focused Edit through one canonical state, and a full-height phone workflow with no nested modal. Generic batch organization remains deferred Storybook evidence, and a universal icon registry remains intentionally out of scope.
+
+### 2026-09-20 — Production-composition reconciliation
+
+Integrated review exposed useful cases that the isolated proof did not show. Every visually bounded group containing non-runtime authored values now receives one group-level Detail target whose focused Edit reaches the complete group; all-runtime groups remain inline and avoid a redundant dialog. Reference Stats use the shared compact inline read-first grammar, with the more prominent stacked treatment retained as an explicit renderer variant. Runtime tiles fill their responsive tracks, and the standalone Proficiency Bonus field fills a centered bounded card rather than implying an accidental grid position.
+
+Supporting and dense collections expose direct Add plus record-local Pin/Unpin and Detail. The batch pin manager remains dormant because exposing both priority paths added action density without adding capability. Trait Add is restored as ancestry-owned creation through the existing validated domain reducer; generic Trait removal remains unavailable because the persisted model does not distinguish independently removable authored traits from ancestry-owned content.
+
+Treasure denominations are Tier 1 because they change frequently enough during play to justify direct editing. Follow-up review rejected both mixed classification and a bespoke group-wide control inside one spell-slot card: Used and Max now share one compact full-track Tier 1 level group while each value uses the familiar field-local runtime row and adjacent Edit/annotation actions. Saving either row still supplies the complete typed pair, and no redundant group Detail action appears. Empty annotation-capable leaves show only a compact Add annotation action until the user starts one, avoiding repeated `Annotations (0)` scaffolding while retaining the atomic target draft. Runtime Actions remain non-pinnable within BL-077 because authored order and persisted priority have not yet been reconciled; repeated owner feedback promotes both explicit action-economy quickfilters and Runtime Action Pin/Unpin into P0 `BL-078`. The broader idea of piecewise editable leaves inside read-first Detail is promising but may change the target-wide Save contract, so P0 `BL-085` owns that proof. Annotation attachment and rediscovery are explicit `BL-081` survey evidence rather than an assumption that every field should accumulate notes.
+
+### 2026-09-21 — Shared-renderer architecture audit
+
+The production-composition gate was approved after a final audit for system-specific UI leakage. Interaction tier is now explicit projection metadata rather than an inference from primitive type or `editAffordance`; missing tier continues to mean read-first. Shared classification helpers decide whether a field or an entirely runtime nested group receives inline treatment. Nested runtime groups compose the same primitive field renderer used elsewhere, including its draft, focus, validation, annotation, and compact-control behavior, while their thin group adapter only reconstructs the complete typed mutation required by compound domains such as spell slots. The 5e layer therefore owns field selection, semantic classification, ordering, and typed persistence adapters—not a separate runtime control implementation. The intentionally bespoke all-in-one Storybook comparison remains non-production evidence, and its simple runtime fixture now also delegates to the shared renderer.

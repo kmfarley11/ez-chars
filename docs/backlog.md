@@ -54,8 +54,8 @@ These lightweight queues record priority membership only. Detailed definitions l
 
 ### P0 — Product Prerequisites
 
-- [`BL-077` — Unify focused detail, editing, and annotations](#unify-focused-detail-editing-and-annotations)
-- [`BL-078` — Add quickfilters to collection views](#add-quickfilters-to-collection-views)
+- [`BL-085` — Refine focused structured editing density and granularity](#refine-focused-structured-editing-density-and-granularity)
+- [`BL-078` — Add collection quickfilters and Runtime Action priority](#add-collection-quickfilters-and-runtime-action-priority)
 - [`BL-082` — Refine mobile rules-reader navigation](#refine-mobile-rules-reader-navigation)
 - [`BL-070` — Establish the multi-system boundary and 2024 D&D sheet](#establish-the-multi-system-boundary-and-2024-dd-sheet)
 - [`BL-071` — Deliver a minimal system-native Shadowdark sheet](#deliver-a-minimal-system-native-shadowdark-sheet)
@@ -79,60 +79,57 @@ _Goal: First External Playtest_
 
 The queues above record strategic priority membership; this list records the dependency-aware action order and may omit blocked or trigger-deferred items.
 
-1. `BL-077`: Unify focused detail, editing, and annotations into a read-first interaction language across runtime scalars, rich entities, and collections before collection quickfilters or later sheets multiply the interaction surface
-2. `BL-078`: Prove collection-scale quickfilters on Runtime Actions and Spells before later sheets multiply comparable dense-list review
+1. `BL-085`: Refine focused compound editing so concise field controls and on-demand annotations preserve the read-first density without weakening atomic Save behavior
+2. `BL-078`: Prove collection-scale quickfilters on Runtime Actions and Spells plus persisted Runtime Action priority before later sheets multiply comparable dense-list review
 3. `BL-082`: Refine the shared mobile rules-reader controls and resolve the physical-iPhone PDF/viewer blockers before later systems adopt that presentation
 4. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary, add the minimal 2024 D&D sheet, and supply its system-owned navigation and collection behavior
 5. `BL-071`: Add the minimal Shadowdark sheet and its system-owned navigation and collection behavior within the conservative baseline after `BL-070` supplies the dispatch boundary
 6. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix after required interaction work is present
 7. `BL-081`: Finalize the survey questions and verify the voluntary in-app feedback path immediately before inviting external playtesters
 
-The completed `BL-064` proof established the inventory and spell baseline, `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams, `BL-076` added proportionate density behavior for Runtime Actions and supporting collections without flattening their distinct interaction grammars, `BL-075` added a reusable player-facing pinning grammar while keeping identity, persistence, and system nuance domain-owned, `BL-073` established sheet-scale navigation, and `BL-084` resolved core mobile viability across the home character list, popover disclosure lifecycle, and mobile input typography. Accepted collection previews now reflect deliberate user priority before owner rehearsal and external handoff. Physical-phone rehearsal during `BL-073` demonstrated that separate inline-morphing controls and card bulk-edit dialogs remain fundamentally clunky on mobile (`BL-077`). Addressing `BL-077` establishes a 3-tier read-first interaction language before collection quickfilters (`BL-078`), rules-reader refinement (`BL-082`), and multi-system expansion (`BL-070`, `BL-071`) multiply the human-review surface. Later system changes must audit, adopt, adapt, or decline those patterns using system-native landmarks and categories rather than inheriting 2014 semantics. This ordering does not make arbitrary UI polish a prerequisite; it advances known physical-phone blockers and the remaining known P0 retrieval problems with existing representative proofs. `BL-066` remains an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights, not a first-playtest prerequisite. `BL-072` rehearses the resulting interaction and system matrix and gathers any evidence that could trigger the separate, P1 `BL-083` scene-aware investigation. `BL-081` remains the final readiness gate before external invitations.
+The completed `BL-064` proof established the inventory and spell baseline, `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams, `BL-076` added proportionate density behavior for Runtime Actions and supporting collections without flattening their distinct interaction grammars, `BL-075` added a reusable player-facing pinning grammar while keeping identity, persistence, and system nuance domain-owned, `BL-073` established sheet-scale navigation, `BL-084` resolved core mobile viability, and `BL-077` established the three-tier read-first interaction language across runtime values, rich detail, and collections. BL-077's final production review identified the narrower `BL-085` follow-up for concise compound-field editing and on-demand annotations; it now leads the sequence before collection quickfilters (`BL-078`), rules-reader refinement (`BL-082`), and multi-system expansion (`BL-070`, `BL-071`) multiply the human-review surface. Later system changes must audit, adopt, adapt, or decline those patterns using system-native landmarks and categories rather than inheriting 2014 semantics. This ordering does not make arbitrary UI polish a prerequisite; it advances known physical-phone blockers and the remaining known P0 retrieval problems with existing representative proofs. `BL-066` remains an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights, not a first-playtest prerequisite. `BL-072` rehearses the resulting interaction and system matrix and gathers any evidence that could trigger the separate, P1 `BL-083` scene-aware investigation. `BL-081` remains the final readiness gate before external invitations.
 
 ## Refined Backlog Catalog
 
 Each active refined item has one stable detailed definition in this catalog. Queue entries and the recommended sequence point here; reprioritization must not relocate or duplicate these definitions. When an item is completed and archived, remove its queue link and catalog definition, then retain only the bounded summary required by [Done Recently](#done-recently).
 
-### Unify focused detail, editing, and annotations
+### Refine focused structured editing density and granularity
 
 ID:
 
-- `BL-077`
+- `BL-085`
 
 Sequencing context:
 
-- Promoted to #1 P0 following the completion of `BL-084`. Rehearsal and physical-iPhone playtesting during `BL-073` supplied the evidence trigger: the existing inline-morphing controls and card bulk-edit dialogs are materially clunky and obstructive on mobile. Addressing this before introducing collection quickfilters (`BL-078`) or additional game systems (`BL-070`, `BL-071`) prevents multiplying a compromised interaction language. Completed `BL-084` repaired the home list, menu disclosure lifecycle, and WebKit input typography, while this item owns the deeper View/Edit/Annotations interaction model and atomic-save workflow.
+- Run next, after completed `BL-077` and before the remaining interaction-foundation work or additional systems. Final BL-077 production review found that the read-first sheet presentation is successful, but compound focused Edit surfaces—most visibly Abilities & Proficiencies—still resemble broad forms: every leaf receives a bordered editor and an empty annotation section even when the common task is toggling a few proficiencies. BL-077 compacts the zero-annotation state as a safe baseline; this follow-up decides whether the focused workflow itself should remain one target-wide Edit mode or adopt piecewise field controls inside Detail without losing the approved atomic-draft guarantee.
 
 Refinement outputs:
 
-- **Purpose:** Replace the fragmented inline-edit and bulk-dialog interactions with a cohesive, read-first interaction language across fields and collections, allowing users to review authored detail, provenance, and annotations together and edit them intentionally without mobile UX friction.
+- **Purpose:** Make compound read-first targets quick and calm to edit on desktop and phone, with concise boolean/value controls and annotations available on demand rather than visually dominating fields that have no notes.
 - **Included behavior:**
-  - Evaluate the leading **3-tier read-first interaction hypothesis** against global or section-local editing models before broad propagation:
-    1. **Tier 1 (Runtime scalars):** In-place compact controls (e.g. current HP, spell slot toggles, death saves) remain a firm constraint for rapid tapping during play without modal overhead.
-    2. **Tier 2 (Rich entities / annotated fields):** Read-first presentation on the sheet; tapping opens a focused detail drawer/modal presenting complete description, calculations, provenance, and annotations, with an explicit Edit action to modify authored detail and annotations atomically.
-    3. **Tier 3 (Collections):** Dense on-sheet browsing optimized for scanning and reference, with dedicated manage/add workflows and focused item detail sheets.
-  - Define one focused Edit path for an individual field or record that can modify its authored value/detail and create, change, or remove its annotations while preserving provenance, references, stable identity, validation, and focus return.
-  - Allow individually editable fields and collection records to share View/Edit semantics without sharing one universal item-shaped projection or dialog body. Domain adapters supply the appropriate draft and translate an accepted save into validated patches or typed intents.
-  - Treat one singular Edit submission as one intentional save: authored and annotation changes either validate and commit together or leave the target unchanged. Preserve existing local-first persistence and unrelated character data.
-  - Require a 4-fixture proof-before-propagation gate in Storybook comparing the leading 3-tier read-first model against global and section-local edit alternatives across: (1) runtime scalar, (2) annotated field, (3) dense collection row, and (4) bulk-management workflow. Stop at an owner review checkpoint before broad sheet propagation.
-  - Verify touch, keyboard, pointer, modal dismissal, cancel-without-save, validation failure, annotation add/edit/remove, stable identity, and focus restoration for representative consumers.
+  - Compare the current target-wide Edit form with a piecewise presentation inside the focused surface, using the real six Ability/skill groups as the primary saturated proof and at least one mixed prose/value group as a counterexample.
+  - Preserve one explicit local draft and one atomic target Save unless owner-approved proof demonstrates a clearer model that still prevents partial commits, hidden autosave, and annotation/value divergence.
+  - Make boolean proficiency controls semantically clear and compact, with understandable checked/unchecked states, labels, keyboard order, and coarse-pointer targets.
+  - Keep zero-annotation fields visually quiet through one on-demand Add annotation action; reveal counts and full editors only when annotations exist or the user deliberately starts adding one.
+  - Distinguish editable, derived, and unavailable leaves without making read-only values appear disabled or requiring every leaf to expose the same controls.
+  - Preserve Cancel-to-Detail, validation feedback, annotation removal/Undo, focus restoration, phone one-scroll ownership, and selectable read-first content.
+  - Use the smallest production-backed Storybook comparison that makes the target-wide versus piecewise trade-off visible, then stop for owner review before changing all focused structured editors.
 - **Excluded behavior:**
-  - Forcing every runtime scalar into a detail dialog or removing efficient in-place combat counters.
-  - Creating a universal cross-system field/record schema, generic domain reducer, or monolithic form engine.
-  - Changing annotation storage shapes, record identities, source/resync semantics, or character schemas solely to support the interaction redesign.
-  - Disabling pinch zoom, setting restrictive viewport meta, or relying on browser sniffing.
+  - Returning to a global sheet Edit mode, reintroducing collection-wide rich-record forms, or making the whole character sheet permanently form-like.
+  - Requiring annotations on every field, changing annotation storage or reference shapes, or adding a character-wide annotation index.
+  - Silently committing each leaf as soon as it changes, introducing nested dialogs, or weakening target-level validation merely to imitate Tier 1 controls.
+  - Generalizing 5e Ability/proficiency semantics into a cross-system field schema before later systems supply evidence.
 - **Ambiguities:**
-  - How does the leading 3-tier read-first hypothesis compare against global or section-local edit modes in actual playtesting ergonomics?
-  - Which current quiet primitive fields have enough hidden annotations, references, or long-form detail to justify a Tier 2 detail view versus remaining a Tier 1 runtime scalar?
-  - Should the Tier 2 detail modal/drawer visually present value/detail and annotations as adjacent sections, progressive disclosures, or tabbed views on phone-sized screens while retaining one atomic save?
-  - How does bulk editing interact with per-row annotations without ballooning the bulk form, and does collection row editing retain separate annotation management or promote an in-place per-row annotation workflow?
-  - When annotations are removed inside a singular Edit draft, what confirmation or undo treatment is proportionate without treating ordinary draft cancellation as persisted deletion?
+  - Should Detail contain directly activatable per-leaf Edit controls, or should one explicit Edit mode remain while only the selected leaf expands and the rest stay compact?
+  - If several leaves are changed piecewise, where should dirty state, validation errors, outer Save/Cancel, and focus return remain visible without recreating a long bulk form?
+  - Should an existing annotation count open that leaf's editor directly while an empty field shows only Add annotation, or should annotation editing remain in one target-level disclosure?
+  - Which derived values belong in the focused surface for context, and how should they remain readable without suggesting they can be changed?
 - **Success:**
-  - Users can intuitively predict where tapping leads across runtime values, rich fields/entities, and collections under the owner-approved model without modal fatigue or accidental edit mode triggering.
-  - View consistently exposes relevant annotations and references; singular Edit can change authored detail and annotations atomically without losing identity, provenance, or unrelated data.
-  - Rapid combat interactions (HP, spell slots) remain fast and modal-free.
-  - The 4-fixture proof is reviewed and approved by the owner before rolling out across the full 2014 sheet and future systems.
-- **Recommended workflow:** Full OpenSpec change with a 4-fixture proof-before-propagation checkpoint (`bl-077-unify-detail-editing-annotations`). Durable spec deltas expected for character-sheet editing and dense collection interaction.
+  - A player can change several saving-throw or skill proficiencies on a phone without scanning repeated empty annotation boxes or losing track of the active field and final Save boundary.
+  - Empty annotation eligibility consumes no persistent bordered section, while adding, editing, removing, and undoing a real annotation remains evident and accessible.
+  - The owner can explain whether edits commit per leaf or per focused target, and automation proves invalid or cancelled work never partially changes the character.
+  - The accepted presentation works for both boolean-heavy and prose/value compound targets without forcing every system or field through one payload shape.
+- **Recommended workflow:** Full OpenSpec change because this may modify the durable focused-editing and atomic-save requirements and changes a shared structured-form boundary across many sheet groups. Use one production-backed proof-before-propagation checkpoint. Refine the existing three-tier interaction ADR if the accepted result changes the target-wide draft rule; no new ADR is otherwise triggered.
 
 ### Add GitHub Actions for quality gates and release orchestration
 
@@ -429,7 +426,7 @@ Refinement outputs:
   - Any proposed focus, filter, or emphasis is demonstrably more useful than the landmark baseline, explicit and reversible, and compatible with phone, keyboard, touch, and assistive-technology use.
 - **Recommended workflow:** Begin with OpenSpec Explore only after the evidence trigger. Use a full OpenSpec change if the evidence supports new observable scene-aware behavior; no durable specification delta or ADR is justified before that direction exists. An ADR is warranted only if the result establishes a durable cross-system scene ownership, persistence, or projection contract.
 
-### Add quickfilters to collection views
+### Add collection quickfilters and Runtime Action priority
 
 ID:
 
@@ -437,34 +434,42 @@ ID:
 
 Sequencing context:
 
-- Run after `BL-073` and before `BL-082`, `BL-070`, and `BL-071`. The completed `BL-076` surface already bounds and searches items including timing and category text, but it still presents discrete groupings (like action timings or spell levels) as one visually homogeneous result stream. Prove the collection-scale interaction against the representative 2014 Runtime Actions and Spells surfaces before later systems multiply comparable dense-list review, while leaving their categories and adoption decisions system-owned. Resolve that explicit navigation gap without reopening the accepted density or source-action work.
+- Run after `BL-077` and before `BL-082`, `BL-070`, and `BL-071`. The completed `BL-076` surface already bounds and searches items including timing and category text, but it still presents discrete groupings (like action timings or spell levels) as one visually homogeneous result stream. BL-077 review also supplied repeated owner evidence that Runtime Actions need the same readily visible Pin/Unpin priority concept as other growing collections, while their existing array order remains meaningful. Prove filtering and priority together against the representative 2014 Runtime Actions and Spells surfaces before later systems multiply comparable dense-list review, while leaving their categories and adoption decisions system-owned.
 
 Refinement outputs:
 
-- **Purpose:** Help players quickly distinguish and reach relevant categories in collection views (e.g. Runtime Actions by action-economy timing, Spells by level) without requiring them to remember that the general text search happens to index those labels.
+- **Purpose:** Help players quickly distinguish, prioritize, and reach relevant collection content—especially Runtime Actions by action-economy timing and player priority, and Spells by level or Prepared state—without requiring them to remember category vocabulary or expecting text search to match non-text state.
 - **Included behavior:**
-  - Establish a generic UI pattern for quickfilters in collection views.
+  - Establish a shared quickfilter presentation and composition pattern whose available facets and options remain explicitly supplied by each collection rather than inferred from arbitrary badges or frozen into a cross-system taxonomy.
   - Implement explicit, quickly resettable way to narrow or organize Runtime Actions by Action, Bonus Action, Reaction, Free, and Other while retaining an All state.
-  - Implement a similar quickfilter for Spells by Spell Level (Cantrip, Level 1-9) while retaining an All state.
+  - Implement Spell quickfilters for Spell Level (Cantrip, Level 1-9) and Prepared state while retaining an All state and making non-text state such as Prepared discoverable without a misleading text-search expectation.
+  - Extend the established first-class Pin/Unpin grammar to Runtime Actions using their stable action identities, with persisted priority that does not rewrite the action's timing, source ownership, or authored content.
+  - Preserve authored order as the deterministic baseline for unpinned actions and define an understandable pinned tier that composes predictably with the All view, timing quickfilters, and text search.
   - Compose quickfilters with the existing text search as one understandable workflow rather than adding separate search bars; when both are active, results satisfy both constraints.
   - Preserve visible result counts, explicit no-match behavior, and a one-step return to the complete collection.
-  - Keep quickfilter state ephemeral and non-destructive; it does not reclassify items, change canonical order, or persist a selected filter without separate evidence.
+  - Keep quickfilter state ephemeral and non-destructive; it does not reclassify items or persist a selected filter. Keep Pin/Unpin explicit and persisted without treating it as a general drag/reorder system.
   - Preserve the completed Add/Edit/Notes, source navigation, resync, bounded desktop, focused phone, query-context, focus-restoration, touch, keyboard, and assistive-technology behavior.
   - Add stateful component and black-box coverage for quickfilters, mixed quickfilter plus text search, reset, no-match, phone-focused, and keyboard/touch paths.
 - **Excluded behavior:**
   - Adding multiple category-specific search boxes, requiring separate saved lists or cards for each category, or duplicating one item into multiple homes.
   - Automatically inferring or rewriting an item's classification, adding a new taxonomy, or generalizing 5e categories into a cross-system contract.
-  - Adding category, source, scene, or rules-derived facets without evidence that the quickfilter control is insufficient.
-  - Folding quickfilters into the generic pinning rollout owned by `BL-075`; their independently authored priority and semantics remain separate.
+  - Turning every visible metadata badge into an interactive filter or sort control. BL-077 may use title-adjacent badges for compact scanning, but only collection-owned facets deliberately approved for the Runtime Action and Spell proofs—timing, level, and Prepared state—are in scope; ownership, note-state, source, scene, and rules-derived facets remain out of scope unless later evidence justifies them.
+  - Adding arbitrary drag/reorder, replacing authored action order, or inferring a universal cross-system Runtime Action priority contract from the 2014 proof.
 - **Ambiguities:**
   - Should the baseline be a compact platform-native single-choice control, a small set of toggle-like timing controls, grouped timing headings, or a filter-plus-group combination?
   - Should explicit timing navigation appear whenever more than one timing is present, only above the five-item density threshold, or always for any populated Runtime Actions collection?
   - Does the All view remain one authored-order stream, or do timing headings improve scanning enough to justify grouped presentation even before a filter is selected?
+  - Should pinned actions form one global tier above timing groups, remain pinned within their current timing view, or use another composition that keeps both priority and timing legible?
+  - Should Spell Level and Prepared filters compose simultaneously, or should the smallest playtest control expose one active narrowing choice at a time?
+  - How should priority state reconcile source deletion, source resynchronization, action removal, import/export, and stale action identities without changing current source-ownership semantics?
+  - After BL-077 establishes compact metadata badges, do users naturally interpret any particular badge as an expected filter affordance, and if so should only the already-approved action-timing and spell-level categories become interactive in this effort?
 - **Success:**
   - A player can show only bonus actions or reactions through an evident named control without typing timing terminology into search.
+  - A player can narrow Spells by level or Prepared state through evident controls, and can reset either narrowing without disturbing text search or character data.
+  - A player can Pin or Unpin a Runtime Action directly, retains that priority through reload and JSON round trips, and can still understand the remaining authored order.
   - Timing and text narrowing compose predictably, never mutate character data, and always provide a clear route back to all actions.
-  - Existing Runtime Action commands and responsive/focus behavior remain complete across touch, pointer, keyboard, and assistive-technology paths.
-- **Recommended workflow:** Compact OpenSpec change after resolving the filter-versus-grouping ambiguity because this adds a narrow durable interaction requirement on one established collection surface. No ADR is triggered unless implementation establishes a broader cross-system action-navigation contract. If grouped presentation remains a live candidate, use a named isolated Runtime Actions Storybook comparison and owner checkpoint before route propagation; a settled compact timing filter does not otherwise need a mid-apply proof gate.
+  - Existing Runtime Action source commands, focused editing, responsive/focus behavior, and removal/reconciliation semantics remain complete across touch, pointer, keyboard, and assistive-technology paths.
+- **Recommended workflow:** Full OpenSpec change because the combined retrieval improvement now adds persisted Runtime Action priority, ordering/reconciliation decisions, import/export coverage, and a durable quickfilter requirement. Use one production-backed Runtime Actions comparison checkpoint to resolve global-versus-within-timing pin placement and filter-versus-grouping before propagation. Refine the existing collection-priority ADR rather than creating a new ADR unless implementation establishes a distinct cross-system action-navigation or persistence contract.
 
 ### Prepare playtest feedback collection
 
@@ -485,6 +490,7 @@ Refinement outputs:
   - Keep the destination configurable or otherwise straightforward to replace before release; a missing or placeholder destination must not ship as a dead feedback action.
   - Decide where the action remains discoverable during playtest use, such as the pre-release notice, application navigation, or an equivalent persistent help/about location, and verify the chosen placement on desktop and phone with keyboard and touch.
   - Include concise participant context, task-success, usability, confidence, failure, accessibility/device, and open-comment prompts only where each answer will inform a product decision; keep optional identifying or follow-up information visibly optional.
+  - Include a bounded annotation question and facilitator observation prompt that distinguishes “I did not need a note” from “I could not find the right attachment point” and “I could not re-find a note later.” Use that evidence to evaluate whether field-level attachment is appropriately selective, too granular, or missing a character-level discovery path rather than assuming every field should accumulate notes.
   - Provide a facilitator-facing checklist for qualitative observations that do not fit the participant survey, including interrupted tasks, workarounds, confusion, and requests made aloud during a session.
   - Record how the owner will export and preserve an anonymized response snapshot, then synthesize response count, limitations, themes, decisions, and backlog destinations after the playtest without committing raw identifiers.
   - Evaluate an in-app guided form as an optional higher-cost path. If selected, disclose the external recipient before submission, provide understandable success/failure/retry behavior, and ensure the client contains no reusable email, API, or service credential.
@@ -499,6 +505,7 @@ Refinement outputs:
   - Where should the feedback action live so it remains easy to find without competing with character-sheet runtime controls or becoming permanent product chrome?
   - Should responses be anonymous by default, and should optional contact permission or follow-up scheduling be collected in the same instrument or separately?
   - Which external processor and account owns the form and response retention, and what disclosure or deletion language is proportionate for the selected questions and tester group?
+  - Do players naturally attach notes to a small set of meaningful fields or records and later rediscover them, or does the current per-field model expose implausible destinations while failing to provide the retrieval path they expect?
 - **Success:**
   - Before the first invitation, the owner has approved the question set and can follow the in-app action on desktop and phone to a live survey with no placeholder URL, broken navigation, or accidental loss of application state.
   - A keyboard, touch, or assistive-technology user can identify that the destination is external, open it, complete the voluntary survey, and understand what information will be sent.
@@ -520,10 +527,10 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 
 - Revisit batch collection organization only when more-than-pinning needs are demonstrated.
   - _Why_: The `BL-077` Organize Collection proof produced a clean add/remove/reorder interaction, but adopting it across collections now would add a competing collection-level action, partially duplicate established Pin/Unpin priority, and prematurely assume that general, class-owned, source-owned, and minimal records share lifecycle and ordering rules.
-  - _Current direction_: Preserve the working interaction in `Organisms/Collection Organizer Concept / Deferred Batch Organization` as Storybook-only design evidence. For the BL-077 rollout, retain Pin/Unpin and Manage Pins for priority, direct collection-level Add for creation, and focused eligible Remove for one record. Do not add generic reorder or Organize Collection production UI.
-  - _Explore_: If triggered, compare the preserved batch organizer with domain-specific multi-select removal, batch creation, canonical-order editing, and existing Manage Pins. Resolve ownership-specific removal, generated/source-owned records, destructive recovery, keyboard/touch ordering, and whether any domain actually needs canonical manual reorder beyond pinning.
+  - _Current direction_: Preserve the working interaction in `Organisms/Collection Organizer Concept / Deferred Batch Organization` as Storybook-only design evidence. For the BL-077 rollout, use first-class record-level Pin/Unpin for priority, direct collection-level Add for creation, and focused eligible Remove for one record. Keep the reusable batch pin manager dormant rather than exposing a competing action. Do not add generic reorder or Organize Collection production UI.
+  - _Explore_: If triggered, compare the preserved batch organizer and dormant batch pin manager with domain-specific multi-select removal, batch creation, canonical-order editing, and repeated record-level priority changes. Resolve ownership-specific removal, generated/source-owned records, destructive recovery, keyboard/touch ordering, and whether any domain actually needs canonical manual reorder beyond pinning.
   - _Constraints_: Do not conflate player priority with canonical order, expose system-owned records to unsupported deletion, reintroduce rich-record or annotation bulk editing, or scale one 5e collection's structure into a cross-system contract.
-  - _Refinement trigger_: Promote only if owner or external-playtest evidence shows repeated multi-record add/remove/reorder work that direct Add, focused Remove, and Manage Pins make materially slow or confusing, or before a specific domain requires authored canonical ordering that pinning cannot represent.
+  - _Refinement trigger_: Promote only if owner or external-playtest evidence shows repeated multi-record add/remove/reorder work that direct Add, focused Remove, and individual Pin/Unpin actions make materially slow or confusing, or before a specific domain requires authored canonical ordering that pinning cannot represent.
 
 - Explore cross-record note review only if record-scoped discovery stops scaling.
   - _Why_: `BL-077` deliberately uses quiet per-record note counts plus focused detail instead of a collection-wide `Annotated Items` surface. The proof showed that the overview duplicated navigation without displaying the note content and made its count ambiguous between annotated records and total notes.
@@ -575,17 +582,17 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
 
 - Explore desktop collection scroll ownership and Misc. Notes as a possible next dense consumer.
   - _Why_: Bounded inline lists control sheet height, but mouse-wheel input over a still-scrollable collection can interrupt top-to-bottom sheet scanning. The saturated fixture also demonstrates that Misc. Notes & Scratchpad can grow beyond the short/simple case even though `BL-064` intentionally limited its first rollout to equipment and spells.
-  - _Current direction_: Keep normal scroll chaining at collection boundaries as the narrow `BL-064` mitigation. Do not adopt collapse-by-default yet: hiding collection contents may trade scroll friction for weaker at-a-glance runtime access. Leave Misc. Notes on its existing bulk path until a focused proof confirms that searchable identity-owned rows improve it.
-  - _Explore_: Compare bounded inline scrolling, an explicit expand state, focused browsing on every viewport, compact/collapsed previews, and wheel delegation where technically reliable. For notes, evaluate title/body search, stable row Edit/Notes actions, note-kind context, empty behavior, ordering, and whether the complete collection should use the proven dense-list boundary.
+  - _Current direction_: Keep normal scroll chaining at collection boundaries as the narrow `BL-064` mitigation. Do not adopt collapse-by-default yet: hiding collection contents may trade scroll friction for weaker at-a-glance runtime access. Leave Misc. Notes on its current singular focused structured-card path until a dedicated proof confirms that searchable identity-owned rows improve it.
+  - _Explore_: Compare bounded inline scrolling, an explicit expand state, focused browsing on every viewport, compact/collapsed previews, and wheel delegation where technically reliable. For notes, evaluate title/body search, stable row Detail and note indicators, record-scoped editing/removal, note-kind context, empty behavior, ordering, and whether the complete collection should use the proven dense-list boundary.
   - _Constraints_: Preserve full item reachability, authored order, stable IDs, annotations, keyboard/touch access, source navigation, and sheet landmarks. Avoid scroll-jacking scripts and do not force every non-target collection into the dense pattern.
   - _Refinement trigger_: Use the ownership seam established by completed `BL-074`, then promote a separate observable-behavior proposal before first external playtest if owner rehearsal still finds desktop scanning disruptive or scratchpad saturation likely.
 
-- Explore responsive collection-row quick actions and optional gestures after the submenu baseline has real use evidence.
-  - _Why_: A consistent submenu scales safely across dense rows, but frequently used commands such as focused Edit may eventually merit one-step access on larger screens or optional mobile acceleration. Completed `BL-075` established Pin/Unpin in equipment and spell row menus while retaining collection-level Manage Pins for batches and quiet supporting bullets for density.
-  - _Current direction_: Keep the complete, discoverable submenu as the canonical path where identity-owned row actions already exist. Treat always-visible shortcuts, platform context-menu enhancements, and optional gestures as the future exploration; do not make right-click, long-press, or another hidden gesture the only path for any command.
-  - _Explore_: Inventory which existing submenu commands merit selectively surfaced desktop actions or mobile acceleration; compare direct quick actions, platform context-menu enhancement, and optional gestures; evaluate responsive command priority, discoverability, touch density, and whether BL-077's focused View/Edit/Notes language supplies useful evidence.
+- Explore responsive collection-row quick actions and optional gestures after the focused-detail baseline has real use evidence.
+  - _Why_: `BL-077` replaces ordinary row Edit/Notes menus with adjacent first-class Detail and Pin/Unpin controls while retaining explicitly labeled menus only for genuinely distinct commands such as Runtime Action source navigation and resync. Other frequently used domain commands may eventually merit one-step access on larger screens or optional mobile acceleration, but adding them prematurely could overwhelm dense rows.
+  - _Current direction_: Keep visible Detail plus state-sensitive Pin/Unpin as the canonical repeatable-record path, focused detail as the value/annotation path, and source-specific menus only where their command family is distinct. Treat additional shortcuts, platform context-menu enhancements, and optional gestures as future exploration; do not make right-click, long-press, or another hidden gesture the only path for any command.
+  - _Explore_: Inventory which remaining domain commands merit selectively surfaced desktop actions or mobile acceleration; compare direct quick actions, platform context-menu enhancement, and optional gestures; evaluate responsive command priority, discoverability, touch density, tab-order cost, and whether the accepted BL-077 Detail/Pin grammar is already sufficient.
   - _Constraints_: Every gesture has an equivalent visible/menu command; destructive actions require confirmation or a recoverable undo path; responsive shortcuts must not create an excessive tab order or make the same command appear ambiguously in multiple places; a shared command presentation must not imply shared domain mutations.
-  - _Refinement trigger_: Revisit in Horizon B after Manage Pins and the dense-collection baseline have been used on touch, pointer, and keyboard workflows, or earlier if owner rehearsal shows that collection-level pin management materially obstructs frequent reprioritization.
+  - _Refinement trigger_: Revisit in Horizon B after the row-level Pin/Unpin and dense-collection baseline have been used on touch, pointer, and keyboard workflows, or earlier if owner rehearsal shows that individual priority changes materially obstruct frequent reprioritization and justify restoring a batch surface.
 - Explore discoverability cues for globally pinned spells after playtest evidence.
   - _Why_: Completed `BL-075` moves each pinned spell into one global tier and renders it only once. A player who forgets that they pinned a spell may browse its former level group or alphabetical position and incorrectly conclude that it is missing.
   - _Current direction_: Keep the accepted once-only global tier, visible level/preparation context, and one cross-level search workflow. Do not duplicate actionable spell rows solely as a precaution because duplicate counts, focus destinations, search results, and row actions would become ambiguous.
@@ -644,8 +651,8 @@ Success:
 
 ## Done Recently
 
+- `2026-09-21` completed `BL-077`: established an owner-approved three-tier read-first interaction language with stable inline runtime edits, focused atomic Detail/Edit flows, record-local Notes, direct collection Add and focused eligible Remove, row-level Pin/Unpin, responsive one-surface phone behavior, explicit semantic tier metadata, and shared field, group, and workflow components while retaining domain-owned mutation adapters
 - `2026-09-12` completed `BL-084`: hardened core mobile viability across the application: integrated a responsive character list (`hidden md:block` semantic table on desktop vs `block md:hidden` `ul > li > article` card list on mobile) with human-readable summary projections; established a centralized popover close seam resetting disclosure triggers immediately upon command selection; enforced a 16px mobile input typography baseline to prevent involuntary iOS Safari focus zoom while preserving user pinch-to-zoom; verified with cross-browser Playwright smoke tests and physical iPhone review
 - `2026-09-12` completed `BL-073`: added system-owned landmark navigation to the 2014 sheet with an expanded outline and compact icon rail, responsive phone access, collapsed-destination recovery, accessible focus, deduplicated fragment history, Rules-viewer coexistence, independent Abilities/Proficiencies and Features/Traits panels, and owner-approved hierarchy/icon treatment
 - `2026-09-07` completed `BL-069`: delivered rights-classified reference navigation with an app-controlled PDF.js viewer, sticky Rules action, multi-source resource discovery, and contextual sheet integration for class, equipment, and spells; added Playwright coverage and verified browser/mobile behavior
 - `2026-08-29` completed `BL-075`: added stable Pin/Unpin priority for 2014 inventory, spells, Features, Traits, Languages, and Tools; introduced durable Language/Tool identities and validated character-owned Pin state; preserved collection-specific interaction grammar, deterministic priority-first ordering, reload and JSON round trips, accessible batch management, and immediate equipment/spell row commands while leaving Runtime Actions independent
-- `2026-08-23` completed `BL-076`: added searchable, responsive density handling for Runtime Actions and supporting Features, Traits, Languages, and Tools; adopted five-item and seven-item simple-list limits respectively while preserving domain-specific actions, compact bullet presentation, source workflows, query context, focus restoration, and cross-browser saturated coverage

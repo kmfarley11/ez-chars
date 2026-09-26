@@ -13,7 +13,7 @@ test.beforeEach(async ({ page }) => {
 test('keeps runtime editing stable and restores focus after cancel', async ({ page }) => {
 	const edit = page.getByRole('button', { name: 'Edit Current HP' });
 	await edit.click();
-	const input = page.getByRole('spinbutton', { name: 'Edit Current HP' });
+	const input = page.getByRole('spinbutton', { name: 'Current HP' });
 	await input.fill('37');
 	await page.getByRole('button', { name: 'Cancel editing Current HP' }).click();
 
@@ -140,9 +140,8 @@ test('keeps collection Add separate from focused eligible Remove', async ({ page
 	await addDialog.getByRole('textbox', { name: 'Initial detail (optional)' }).fill('For ruins.');
 	await addDialog.getByRole('button', { name: 'Add record' }).click();
 
-	const detailDialog = page.getByRole('dialog', { name: 'Surveyor kit' });
-	await expect(detailDialog.getByText('For ruins.')).toBeVisible();
-	await detailDialog.getByRole('button', { name: 'Close' }).click();
+	await expect(addDialog).toHaveCount(0);
+	await expect(page.getByText('Surveyor kit', { exact: true })).toBeVisible();
 	await expect(addOtherGear).toBeFocused();
 
 	await page.getByRole('button', { name: 'View Surveyor kit details' }).click();
@@ -183,4 +182,40 @@ test('keeps collection Add separate from focused eligible Remove', async ({ page
 			name: 'Remove feature'
 		})
 	).toHaveCount(0);
+});
+
+test('bounds equipment after the five-item preview limit and retains a full browse path', async ({
+	page
+}) => {
+	const addOtherGear = page.getByRole('button', { name: 'Add Other Gear item' });
+	for (const name of ['Field journal', 'Chalk pouch', 'Signal mirror', 'Wax tablets']) {
+		await addOtherGear.click();
+		const addDialog = page.getByRole('dialog', { name: 'Add Other Gear item' });
+		await addDialog.getByRole('textbox', { name: 'Name' }).fill(name);
+		await addDialog.getByRole('button', { name: 'Add record' }).click();
+		await expect(addOtherGear).toBeFocused();
+	}
+
+	const search = page.getByRole('searchbox', { name: 'Search Other Gear' });
+	await expect(search).toBeVisible();
+	const viewport = page.getByRole('region', { name: 'Other Gear scrollable results' });
+	await expect(viewport).toBeVisible();
+	await expect(viewport.locator('li')).toHaveCount(6);
+
+	await search.fill('Signal mirror');
+	await expect(viewport.getByText('Signal mirror', { exact: true })).toBeVisible();
+	await expect(viewport.getByText('Random rock', { exact: true })).toHaveCount(0);
+
+	await page.getByRole('button', { name: 'Browse all 6 items' }).click();
+	const browseDialog = page.getByRole('dialog', { name: 'Other Gear' });
+	const browseSearch = browseDialog.getByRole('searchbox', { name: 'Search Other Gear' });
+	await expect(browseSearch).toHaveValue('Signal mirror');
+	const details = browseDialog.getByRole('button', { name: 'View Signal mirror details' });
+	await details.click();
+	await expect(page.getByRole('dialog')).toHaveCount(1);
+	await page.getByRole('button', { name: 'Back', exact: true }).click();
+	await expect(browseSearch).toHaveValue('Signal mirror');
+	await expect(details).toBeFocused();
+	await browseDialog.getByRole('button', { name: 'Close' }).click();
+	await expect(page.getByRole('button', { name: 'Browse all 6 items' })).toBeFocused();
 });

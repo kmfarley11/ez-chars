@@ -8,7 +8,7 @@
 		open: boolean;
 		data: GridContentData;
 		// eslint-disable-next-line no-unused-vars
-		handleEditSave?: (_payload: GridContentData) => void;
+		handleEditSave?: (_payload: GridContentData) => boolean | void;
 		// eslint-disable-next-line no-unused-vars
 		handleEditSavePatches?: (_patches: Array<GridContentPatch>) => void;
 		handleEditCancel?: () => void;
@@ -25,12 +25,14 @@
 		onClosed = undefined,
 		title = 'Edit Fields'
 	}: Props = $props();
+	let saveError = $state('');
 
 	const handleCloseAction = () => {
 		open = false;
 	};
 
 	const onDialogShellClose = () => {
+		saveError = '';
 		onClosed?.();
 	};
 
@@ -41,12 +43,16 @@
 
 	const onSaveComplete = (payload: GridContentData) => {
 		if (handleEditSave) {
-			handleEditSave(payload);
+			if (handleEditSave(payload) === false) {
+				saveError = 'Review the required fields and try again.';
+				return;
+			}
 		} else if (handleEditSavePatches) {
 			handleEditSavePatches(
 				collectValuePatchesFromData(payload).map(({ path, value }) => ({ path, value }))
 			);
 		}
+		saveError = '';
 		handleCloseAction();
 	};
 
@@ -63,6 +69,7 @@
 >
 	{#if open}
 		<StructuredForm id={formId} {data} onSave={onSaveComplete} />
+		{#if saveError}<p class="theme-error mt-3 text-sm" role="alert">{saveError}</p>{/if}
 	{/if}
 
 	{#snippet actions()}

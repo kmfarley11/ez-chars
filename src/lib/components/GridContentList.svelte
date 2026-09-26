@@ -3,7 +3,9 @@
 	import DialogShell from '$components/DialogShell.svelte';
 	import GridContentListRow from '$components/GridContentListRow.svelte';
 	import GridContentListView from '$components/GridContentListView.svelte';
+	import IconButton from '$components/IconButton.svelte';
 	import {
+		GRID_CONTENT_LIST_PREVIEW_LIMIT,
 		getGridContentListBrowseLabel,
 		getGridContentListPreview,
 		type GridContentListRow as GridContentListRowData,
@@ -15,13 +17,14 @@
 		rows: ReadonlyArray<GridContentListRowData>;
 		emptyText?: string;
 		query?: string;
-		onEditRow?: GridContentListRowAction;
-		onNotesRow?: GridContentListRowAction;
+		onOpenRow?: GridContentListRowAction;
 		onTogglePinRow?: GridContentListRowAction;
-		onBulkEdit?: () => void;
+		onAdd?: () => void;
 		onManagePins?: () => void;
-		bulkTriggerEl?: HTMLButtonElement;
+		onFocusedOpened?: () => void;
+		addTriggerEl?: HTMLButtonElement;
 		managePinsTriggerEl?: HTMLButtonElement;
+		focusedOpen?: boolean;
 	}
 
 	let {
@@ -29,28 +32,29 @@
 		rows,
 		emptyText = 'No items yet.',
 		query = $bindable(''),
-		onEditRow,
-		onNotesRow,
+		onOpenRow,
 		onTogglePinRow,
-		onBulkEdit,
+		onAdd,
 		onManagePins,
-		bulkTriggerEl = $bindable(),
-		managePinsTriggerEl = $bindable()
+		onFocusedOpened,
+		addTriggerEl = $bindable(),
+		managePinsTriggerEl = $bindable(),
+		focusedOpen = $bindable(false)
 	}: Props = $props();
 
 	const uid = $props.id();
-	let isFocusedViewOpen = $state(false);
 	let browseTriggerEl = $state<HTMLButtonElement>();
 
 	const preview = $derived(getGridContentListPreview(rows));
+	const isDense = $derived(rows.length > GRID_CONTENT_LIST_PREVIEW_LIMIT);
 	const browseLabel = $derived(getGridContentListBrowseLabel(rows.length));
 
 	const openFocusedView = () => {
-		isFocusedViewOpen = true;
+		focusedOpen = true;
 	};
 
 	const closeFocusedView = () => {
-		isFocusedViewOpen = false;
+		focusedOpen = false;
 		browseTriggerEl?.focus();
 	};
 </script>
@@ -58,12 +62,16 @@
 <section class="space-y-3" aria-labelledby={`${uid}-heading`}>
 	<div class="flex flex-wrap items-center justify-between gap-2">
 		<h3 id={`${uid}-heading`} class="text-sm font-semibold">{title}</h3>
-		{#if onBulkEdit || onManagePins}
-			<div class="flex gap-2">
-				{#if onBulkEdit}
-					<BaseButton size="sm" onclick={onBulkEdit} bind:buttonEl={bulkTriggerEl}>
-						Bulk Edit {title}
-					</BaseButton>
+		{#if onAdd || onManagePins}
+			<div class="flex items-center gap-1">
+				{#if onAdd}
+					<IconButton
+						variant="add"
+						size="sm"
+						ariaLabel={`Add ${title}`}
+						onclick={onAdd}
+						bind:buttonEl={addTriggerEl}
+					/>
 				{/if}
 				{#if onManagePins}
 					<BaseButton size="sm" onclick={onManagePins} bind:buttonEl={managePinsTriggerEl}>
@@ -79,10 +87,10 @@
 			{title}
 			{rows}
 			bind:query
-			bounded={true}
+			bounded={isDense}
+			searchEnabled={isDense}
 			{emptyText}
-			{onEditRow}
-			{onNotesRow}
+			{onOpenRow}
 			{onTogglePinRow}
 		/>
 	</div>
@@ -90,7 +98,7 @@
 	<div class="space-y-2 sm:hidden">
 		{#if rows.length === 0}
 			<p class="theme-text-muted rounded-md border px-3 py-3 text-sm italic">{emptyText}</p>
-		{:else}
+		{:else if isDense}
 			<ul class="space-y-2" aria-label={`${title} preview`}>
 				{#each preview.rows as row, index (row.key)}
 					{#if row.groupLabel && row.groupLabel !== preview.rows[index - 1]?.groupLabel}
@@ -100,7 +108,7 @@
 							</h4>
 						</li>
 					{/if}
-					<GridContentListRow {row} compact={true} {onEditRow} {onNotesRow} {onTogglePinRow} />
+					<GridContentListRow {row} compact={true} {onOpenRow} {onTogglePinRow} />
 				{/each}
 			</ul>
 			<BaseButton
@@ -111,25 +119,28 @@
 			>
 				{browseLabel}
 			</BaseButton>
+		{:else}
+			<GridContentListView
+				{title}
+				{rows}
+				bind:query
+				searchEnabled={false}
+				{emptyText}
+				{onOpenRow}
+				{onTogglePinRow}
+			/>
 		{/if}
 	</div>
 </section>
 
 <DialogShell
-	bind:open={isFocusedViewOpen}
+	bind:open={focusedOpen}
 	{title}
 	closeText={`Close ${title}`}
 	fullHeightMobile={true}
 	scrollAffordance={true}
+	onOpened={onFocusedOpened}
 	onClose={closeFocusedView}
 >
-	<GridContentListView
-		{title}
-		{rows}
-		bind:query
-		{emptyText}
-		{onEditRow}
-		{onNotesRow}
-		{onTogglePinRow}
-	/>
+	<GridContentListView {title} {rows} bind:query {emptyText} {onOpenRow} {onTogglePinRow} />
 </DialogShell>

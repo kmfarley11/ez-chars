@@ -102,31 +102,48 @@ const createProjectionCharacter = (): CharacterDocument5e2014 =>
 	});
 
 describe('5e sheet projections', () => {
-	it('projects every current sheet region into its existing card groups', () => {
+	it('projects the active sheet card groups without retired collection-wide editor payloads', () => {
 		const projection = project5eSheet(createProjectionCharacter());
 
 		expect(Object.keys(projection.metaPrimaryData)).toEqual(['name', 'classLevels']);
-		expect(Object.keys(projection.quickRefPrimaryData)).toEqual([
+		expect(Object.keys(projection.quickRefLiveData)).toEqual([
 			'currentHp',
 			'tempHp',
-			'maxHp',
-			'initiative',
-			'armorClass'
+			'deathSavesOk',
+			'deathSavesRip',
+			'hitDiceRemaining'
 		]);
-		expect(projection.abilityRuntimeColumns).toHaveLength(6);
-		expect(projection.runtimeActionData.actions.value).toHaveLength(1);
-		expect(projection.proficiencyLanguagesRuntimeData.languages.value).toHaveLength(3);
-		expect(projection.featuresRuntimeData.features.value).toHaveLength(2);
-		expect(projection.featuresRuntimeData.features).toMatchObject({
-			fieldName: 'Features',
-			bindPath: ['__features']
+		expect(projection.quickRefReferenceData).toMatchObject({
+			maxHp: { value: 18 },
+			armorClass: { value: 16 },
+			initiative: { value: 3 },
+			hitDiceTotal: { value: '2d8' },
+			speed: { value: 30 }
 		});
-		expect(projection.traitRuntimeData.traits.value).toHaveLength(1);
-		expect(Object.keys(projection.spellcastingRuntimeData)).toEqual([
-			'ability',
-			'spellSaveDC',
-			'spellAttackBonus'
-		]);
+		expect(projection.quickRefReferenceData).not.toHaveProperty('hitDiceRemaining');
+		expect(projection.abilityRuntimeColumns).toHaveLength(6);
+		expect(projection.proficiencyBonusRuntimeData.proficiencyBonus).toMatchObject({
+			value: 2,
+			capabilities: { canEditValue: true, canEditAnnotations: true },
+			interaction: {
+				tier: 'read-first',
+				editAffordance: 'hover',
+				annotationAffordance: 'badge'
+			}
+		});
+		expect(projection).not.toHaveProperty('runtimeActionData');
+		expect(projection).not.toHaveProperty('proficiencyLanguagesRuntimeData');
+		expect(projection).not.toHaveProperty('featuresRuntimeData');
+		expect(projection).not.toHaveProperty('traitRuntimeData');
+		expect(projection.spellcastingRuntimeData).toMatchObject({
+			spellcastingSummary: {
+				value: {
+					ability: { value: 'int' },
+					spellSaveDC: { value: 12 },
+					spellAttackBonus: { value: 4 }
+				}
+			}
+		});
 		expect(Object.keys(projection.spellSlotRuntimeData)).toEqual([
 			'slot1',
 			'slot2',
@@ -141,8 +158,8 @@ describe('5e sheet projections', () => {
 		expect(projection.spellSlotRuntimeData.slot1).toMatchObject({
 			fieldName: '1st',
 			value: {
-				used: { value: 1 },
-				max: { value: 3 }
+				used: { value: 1, interaction: { tier: 'runtime', editAffordance: 'persistent' } },
+				max: { value: 3, interaction: { tier: 'runtime', editAffordance: 'persistent' } }
 			}
 		});
 		expect(projection.spellSlotRuntimeData.slot2).toMatchObject({
@@ -153,24 +170,21 @@ describe('5e sheet projections', () => {
 			}
 		});
 		expect(projection.spellSlotRuntimeData).not.toHaveProperty('slot1Used');
-		expect(Object.keys(projection.spellCollectionBulkEditData)).toEqual([
-			'level-cantrips',
-			'level-1',
-			'level-2',
-			'level-3',
-			'level-4',
-			'level-5',
-			'level-6',
-			'level-7',
-			'level-8',
-			'level-9'
-		]);
+		expect(projection).not.toHaveProperty('spellCollectionBulkEditData');
 		expect(projection.inventoryRuntimeCards.map((card) => card.key)).toEqual([
 			'weapons',
 			'armorShields',
 			'other'
 		]);
-		expect(projection.inventoryCurrencyRuntimeData.gp.value).toBe(12);
+		expect(projection.inventoryCurrencyRuntimeData.gp).toMatchObject({
+			value: 12,
+			capabilities: { canEditValue: true, canEditAnnotations: false },
+			interaction: {
+				tier: 'runtime',
+				editAffordance: 'persistent',
+				annotationAffordance: 'badge'
+			}
+		});
 		expect(projection.roleplayPrimaryData.motives.value).toBe('Protect the party.');
 		expect(projection.scratchpadNotesData.notes.value).toHaveLength(1);
 	});
@@ -179,8 +193,8 @@ describe('5e sheet projections', () => {
 		const character = createProjectionCharacter();
 		delete character.systemData.combat.hitPoints.temp;
 		const projection = project5eSheet(character);
-		const currentHp = projection.quickRefPrimaryData.currentHp;
-		const tempHp = projection.quickRefPrimaryData.tempHp;
+		const currentHp = projection.quickRefLiveData.currentHp;
+		const tempHp = projection.quickRefLiveData.tempHp;
 
 		expect(currentHp.annotations).toEqual([
 			expect.objectContaining({ id: 'current-hp-note', text: 'Reduced by an ogre.' })

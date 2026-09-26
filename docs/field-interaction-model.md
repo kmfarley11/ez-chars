@@ -1,134 +1,146 @@
 # Field Interaction Model
 
-This document defines the target MVP interaction model for field-level editing and annotations on the 5e sheet. It is the source of truth for `p1-030` slice 1 and should guide the binding work in `p1-040`.
+This document defines the current read-first interaction model for editing and annotations on the 5e character sheet. It should be read with [field-binding-contract.md](field-binding-contract.md), which defines mutation and validation ownership.
 
 ## Goals
 
-- Make primitive runtime fields directly editable from the sheet.
-- Keep annotations and source references available without making them the primary click or tap behavior.
-- Preserve ordinary text selection and copy flows for values users may want to paste into search engines, VTTs, notes, or external references.
-- Avoid desktop-only interaction patterns; mouse, keyboard, and touch must all have a supported path.
-- Keep data persistence and validation outside the field display component. Field UI should emit focused patch intent, while the page or store applies and saves it.
+- Keep the sheet dense, readable, selectable, and useful during play.
+- Make frequently changing runtime values fast to update without making every value look editable.
+- Give rich fields and records one predictable path from reading to editing.
+- Keep annotations and source references attached to the specific field or record they describe.
+- Use the same logical workflow for mouse, keyboard, and touch, with responsive presentation rather than separate behaviors.
+- Keep validation, schema knowledge, persistence, and domain mutation outside generic presentation components.
 
-## Field Types
+## Safe Default
 
-- Primitive fields: strings, numbers, booleans, and small enums. These are the first target for direct field editing.
-- Compound fields: lists, rows, grouped objects, long notes, spell groups, inventory groups, and action lists. The comprehensive View/Edit/Annotation interaction model for these regions is pending **BL-077**. In the interim, they rely on structured intent dialogs, row-level action menus, or the existing bulk editor.
-- Derived or display-only fields: calculated, roll-up, or source-only values. These should not enter edit mode unless a real bind path exists.
+Missing interaction classification means **read-first**. A primitive type or writable path alone does not opt a value into inline editing.
 
-## Edit Affordance Strategy
+Projection code explicitly classifies each target into one of three tiers or an intentionally specialized workflow:
 
-The sheet should not make every field look equally editable all the time. Most table use is read, select, copy, paste, and annotation review; editing is frequent only for runtime state.
+1. Stable inline runtime editing
+2. Read-first focused detail
+3. Scan-first collection interaction
 
-- Runtime/state fields should use a persistent or near-persistent edit affordance. Examples include current HP, temp HP, spell slots used, death saves, resource counters, conditions, and prepared/equipped toggles.
-- Reference/profile fields should preserve text selection and copying as the quiet default. Editing remains available, but should use a subtler affordance such as focus/hover/touch actions, an explicit local menu, or a section edit state.
-- Annotation visibility should be considered separately from value editing. A field with annotations, notes, or source references may show a persistent indicator or count even when value editing stays quiet.
-- Empty annotation controls must remain discoverable through keyboard and touch flows; they should not rely on hover alone.
+Domain-owned exceptions, such as Runtime Action source commands, remain specialized when collapsing them into a generic workflow would lose important semantics.
 
-Use this initial classification when choosing affordance defaults:
+## Tier 1: Stable Inline Runtime Editing
 
-- Runtime/state fields: current HP, temp HP, spell slots used, death saves, resource counters, conditions, prepared toggles, and equipped toggles. Default toward `editAffordance: 'persistent'` or a near-persistent equivalent because these values change during play.
-- Reference/profile fields: ancestry, class, proficiencies, spells known, feature text, background, roleplay notes, inventory descriptions, and other relatively stable character facts. Default toward quieter edit affordances such as `hover` or `menu`, while prioritizing reading, text selection, copying, and annotation review.
-- Ambiguous fields should choose the quieter reference/profile behavior until play usage shows they are frequently changed at the table.
+Tier 1 is reserved for values that change repeatedly during play, including current and temporary HP, death saves, remaining hit dice, spell-slot Used and Max values, and carried currency.
 
-Shared field components should expose affordance options directly instead of hiding behavior behind a domain label like `runtime`. Domain-specific wrappers may choose defaults, but the shared component API should stay explicit and reuse the grid affordance types exported from [gridContentTypes.ts](../src/lib/gridContentTypes.ts):
+- The read state stays compact and exposes a persistent Edit control.
+- Editing replaces the value in the same stable geometry rather than opening another surface.
+- Confirm and Cancel are explicit, compact, keyboard-focusable, and touch accessible.
+- Enter may confirm a valid single-line edit; Escape cancels.
+- Cancel emits no mutation and restores the prior display value.
+- Saving uses the field's focused patch or typed intent and preserves unrelated character data.
+- Annotations remain available through the field's focused annotation/detail path; inline runtime controls do not grow into a general rich-record editor.
 
-```ts
-interface GridFieldInteraction {
-	editAffordance?: GridEditAffordance;
-	annotationAffordance?: GridAnnotationAffordance;
-}
-```
+Tier 1 is an explicit opt-in. Slowly changing profile data, long prose, rich records, and collections do not become inline editors simply because they contain primitive values.
 
-- `editAffordance: 'persistent'` keeps an edit control visibly available for runtime/state fields.
-- `editAffordance: 'hover'` reveals edit controls on hover/focus and must still provide a touch path.
-- `editAffordance: 'menu'` routes less-common value edits through an explicit local action menu.
-- `annotationAffordance: 'persistent'` keeps an annotation action visibly available.
-- `annotationAffordance: 'badge'` shows annotation presence/count persistently and opens details from that indicator.
-- `annotationAffordance: 'hover'` may reveal empty annotation actions on hover/focus, but cannot be the only path on keyboard or touch.
+The projection-owned `interaction.tier` value is the semantic source of truth for this choice. `editAffordance` only selects how an already classified target presents its control; it must not be used to infer Tier 1 behavior. A missing tier therefore remains read-first even when the field is writable or an older projection still supplies an edit-affordance hint.
 
-## Primary Field Action
+Neighboring values may still receive different classifications when their play semantics justify it, but the current Spell Slots composition deliberately keeps Used and Max in the same compact Tier 1 level group. Each value uses the familiar field-local runtime row with adjacent Edit and annotation actions; saving either row supplies the complete typed pair without exposing a competing group-detail action.
 
-For editable primitive fields, the primary click or tap should edit the field value.
+## Tier 2: Read-First Focused Detail
 
-- Mouse: clicking an editable value enters field edit mode.
-- Touch: tapping an editable value enters field edit mode. Annotation access must not depend on long-press as the only gesture.
-- Keyboard: editable fields should be reachable by tab focus. Enter or Space starts editing where appropriate; Escape cancels an active edit.
-- Boolean fields may commit immediately through a checkbox or toggle when validation is straightforward.
-- Single-line text or numeric fields may commit with Enter. Multi-line or uncertain edits should use an explicit Save or Done control.
+Tier 2 covers profile/background values and singular structured cards whose detail, provenance, references, or annotations deserve room to read.
 
-The MVP should prefer predictable explicit commit behavior over surprising blur-save behavior until the field validation and focus model are proven.
+- Sheet content remains selectable and copyable.
+- A compact Detail control opens the focused view; the whole row is not silently converted into an edit gesture.
+- Detail presents authored content first, followed by provenance/references and per-record annotations where present.
+- Edit is entered from detail and uses one local draft for all eligible authored and annotation changes.
+- Save validates one complete candidate and commits atomically. Validation failure commits nothing and keeps the draft available for correction.
+- Cancel while editing returns to detail rather than dismissing the whole workflow.
+- Back or Close from detail returns to the invoking sheet control with useful focus.
+- Removing an annotation from the draft remains undoable until Save.
+- A field with no draft annotations shows one compact Add note action rather than an expanded zero-count editor; the full editor appears only after deliberate entry or when annotations already exist.
+- Compact read-first primitives use the shared inline `Label: value` presentation by default. A section may explicitly request the shared stacked label-over-value variant when the additional emphasis is worth its vertical cost.
+
+The focused workflow is not a global or section-wide edit mode. It intentionally scopes one commit to one field, card, or stable record.
+
+P0 `BL-085` will compare the current target-wide Edit form with piecewise leaf controls inside the same focused surface. Until that proof is approved, piecewise controls must not silently become per-leaf immediate commits or weaken the atomic target draft defined here.
+
+## Tier 3: Scan-First Collections
+
+Tier 3 covers repeatable collections such as equipment, spells, Features, Traits, Languages, Tools, and Runtime Actions.
+
+- The sheet preserves compact browsing, search where density requires it, bounded scrolling, and useful saturation behavior.
+- Add is a direct collection-level action that asks only for the initial authored data needed to create a record.
+- Eligible records expose a compact Detail control and first-class Pin/Unpin beside it.
+- Detail opens the selected record through the Tier 2 view/edit workflow.
+- Eligible Remove is scoped to the selected record, requires confirmation, and returns focus to a stable nearby destination after the record disappears.
+- Pinning is immediate, preserves stable record identity, and may reorder the collection with a brief reduced-motion-aware transition.
+- Row-level Pin/Unpin is the rollout priority path. The reusable batch manager remains dormant and may return only if playtest evidence shows repeated individual changes are materially slow.
+- Metadata uses compact semantic badges; note count is record-local and appears last among metadata badges.
+
+Runtime Actions are the deliberate priority exception in this rollout: their authored order remains canonical here, so BL-077 does not retrofit Pin/Unpin or priority persistence. P0 `BL-078` now owns both visible action-economy quickfilters and the evidence-driven follow-up to add first-class Runtime Action Pin/Unpin while preserving an understandable authored-order baseline.
+
+The current model does **not** provide collection-wide rich-record editing, a card-wide annotation editor, aggregate note counts, or a collection-wide annotation overview. Ordinary Edit/Notes overflow accelerators are removed once focused detail covers the same record. A specialized menu may remain for genuinely distinct commands, such as Runtime Action View Source and Resync.
+
+## Focused Workflow Presentation
+
+Desktop and phone use the same view/edit/back state model.
+
+- Desktop uses a bounded detail surface.
+- Phone uses a full-height surface with one scroll owner and no nested modal.
+- Query and browse context remain intact while a record is inspected or edited.
+- Back returns from edit to detail, then from detail to the collection or sheet.
+- Save, Cancel, Close, priority movement, and removal restore focus deterministically when the original trigger still exists, or to a stable equivalent such as Add or the reopened collection.
+
+Generic presentation coordinates view/edit/back/focus behavior. Domain adapters continue to own the actual draft shape, validation, mutation intent, stable identity, and preservation of unexposed data.
+
+## Annotations And References
+
+The persisted and engineering model remains an annotation because an entry may include structured source context, but the player-facing UI calls these entries **Notes**. Buttons, headings, badges, accessible names, and validation messages should use Note/Notes consistently; implementation types, paths, and technical documentation may continue to use annotation.
+
+- Annotation presence is a quiet record-local badge, not a collection-wide total.
+- The actual annotation text is read in that field or record's focused detail.
+- Per-field attachment is selective rather than an expectation that every value receives notes. `BL-081` will ask whether players find meaningful attachment points and can later rediscover notes; that evidence may trigger a coarser or cross-record discovery path.
+- Eligible authored values and annotations share one local edit draft and one atomic Save.
+- Source/reference links remain readable before entering Edit.
+- Annotation access cannot depend on hover or long-press.
+- Removing a draft annotation is recoverable until Save; persisted annotations are unchanged by Cancel.
 
 ## Text Selection And Copy
 
-Users should still be able to select and copy displayed field values for external search, notes, VTTs, or rules lookup.
+Reading remains the primary sheet behavior outside Tier 1.
 
-- Selection should take precedence once the user drags across text or uses keyboard selection shortcuts.
-- Double-click or drag selection should not be swallowed by edit activation.
-- Copying focused display text should remain possible before entering edit mode.
-- If primary click-to-edit conflicts with reliable selection, prefer a slightly more deliberate edit trigger, such as click-to-focus followed by Enter, an edit affordance, or edit-on-second-click for long text values.
-- Short numeric and boolean fields can favor faster edit behavior because copy/search needs are lower.
-- Long text, spell names, feature names, item names, and notes should favor easy selection and copying because external lookup is a common table flow.
-- Persistent edit controls are appropriate for runtime/state fields, but should not become the default for long reference fields where visible controls would add noise and compete with reading or copying.
+- Display text stays selectable and copyable for external lookup, notes, VTTs, and rules references.
+- Long names, feature text, spell details, equipment descriptions, and notes favor explicit Detail/Edit controls rather than click-to-edit.
+- Visible controls must not swallow drag selection, keyboard selection shortcuts, or copy behavior.
+- Runtime values may favor faster editing because their repeated update need outweighs long-text selection needs.
 
-The intended precedence is: preserve explicit text selection and copy gestures first, then provide direct editing with the least extra friction that still works consistently across mouse, keyboard, and touch.
+## Mutation Boundary
 
-## Annotation Action
+- Primitive Tier 1 edits emit focused RFC 6902 patch intent where a direct binding is appropriate.
+- Tier 2 and Tier 3 focused edits build one local authored-plus-annotation draft and submit it to a domain-owned adapter.
+- A domain adapter constructs and validates one candidate character before commit.
+- Lifecycle and priority commands such as Add, confirmed Remove, Pin/Unpin, View Source, and Resync remain explicit commands outside the authored-content draft.
+- Generic components do not infer schema ownership, synthesize 5e annotation paths, or persist data directly.
 
-Annotations should open through a secondary, explicit affordance near the field.
+## Accessibility And Touch
 
-- The affordance must be keyboard focusable and touch accessible.
-- The affordance should have an accessible label that names the field and the annotation action.
-- Fields with existing annotations or source references may show a small persistent indicator.
-- Empty annotation controls may be revealed on focus, active field state, or a stable section-level editing state, but they must not be available only through hover.
-- Opening and closing annotation UI should return focus to the originating field or annotation control.
-
-The current help and annotation data should remain valid. This model changes the intended access path, not the stored annotation shape.
-
-## Bulk Edit Fallback
-
-The existing card-wide edit dialog can remain during the migration.
-
-- It remains useful as an MVP fallback for compound fields, list rows, multi-field reference/profile surfaces, and mixed cards that still contain fields without direct inline controls.
-- It should not be the primary way to edit runtime/state primitives once direct field controls exist for those fields.
-- It may temporarily duplicate editing for a displayed field when a card still needs bulk edit for nearby non-direct fields. Treat that as a migration fallback, not the target component model.
-- New runtime/state primitive work should prefer the field-level patch path first, then leave card-wide editing only where the surrounding surface still needs it.
-- Field-level display, direct editing, and annotation behavior now compose through `FieldGroupView` and `GridContentCard`; standalone editors should remain only where their surrounding interaction contract is materially different.
-
-## Patch Semantics
-
-Field-level edit UI should emit focused patch intent instead of constructing whole-card edits.
-
-- Value edits patch the field's value bind path.
-- Annotation edits patch the field's annotation bind path.
-- Display components should not know whether persistence is LocalStorage, import/export, or a future transport.
-- The owning route or store remains responsible for validation, migration, persistence, and error handling.
-
-This keeps direct editing aligned with the future shared binding and patch abstraction work in `p1-040`.
-
-## Visual And Interaction Expectations
-
-- Editable values should have a subtle, consistent affordance without making dense runtime sections noisy.
-- Annotation controls should not cause layout shift while scrolling.
-- Focus states should be visible and consistent with the app theme.
-- Runtime field editing should preserve the sheet's dense at-table readability.
-- Runtime edit controls may be visibly present by default because those fields change during play.
-- Reference-field edit controls should be quieter by default so the sheet remains useful as a readable, selectable, copyable reference surface.
-- Annotation presence should be easier to notice than edit capability. Reviewing existing annotations and sources is a first-class sheet behavior, not an advanced edit-only flow.
-- Direct field editing is the MVP behavior even though the rough sheet reference mentions clickable rolls; dice rolling remains out of MVP scope.
+- All Edit, Detail, Add, Pin/Unpin, Confirm, Cancel, Back, Close, and menu actions are keyboard focusable and have contextual accessible names.
+- Touch actions do not rely on hover or long-press.
+- Coarse-pointer controls inherit the repository touch-target policy.
+- Validation feedback is associated with the affected editor and does not close the workflow.
+- Focus returns to the invoking control or a deliberate stable fallback after dismissal or mutation.
 
 ## Manual Review Checklist
 
-When the model is implemented, verify:
+- Edit and cancel a Tier 1 runtime value without layout jump or mutation.
+- Save a Tier 1 value with keyboard and touch-sized controls.
+- Open a Tier 2 detail, enter Edit, change authored content and an annotation, and confirm they commit together.
+- Remove and undo a draft annotation, then verify Cancel leaves persisted data unchanged.
+- Add, inspect, edit, pin, unpin, and remove representative Tier 3 records while preserving search and scroll context.
+- Confirm notes appear only on their own record and no collection-wide Edit/Notes surface competes with focused detail.
+- Confirm Runtime Action source commands retain their distinct source semantics.
+- Repeat the focused workflow on a phone-sized surface and verify one scroll owner, Back behavior, and deterministic focus return.
 
-- A mouse user can edit a primitive field and separately open annotations.
-- A keyboard user can focus the field, edit it, cancel it, save it, and open annotations.
-- A touch user can edit the field and open annotations without relying on hover or long-press.
-- Focus returns to a sensible place after edit or annotation UI closes.
-- Existing help, source references, and annotation data remain visible and editable where they already existed.
+## Non-Goals
 
-## Open Follow-Ups
-
-- Exact inline editor styling and controls belong to implementation slices.
-- The first field surface used to prove the model should be chosen during `p1-040` or `p1-030` slice 2.
-- Whether annotations open as a dialog, popover, or side panel can remain implementation-specific as long as the accessibility and touch requirements above are met.
+- A global sheet edit mode or general section-wide edit mode.
+- Generic collection organization beyond current row-level Pin/Unpin behavior.
+- Collection-wide rich-record editing or annotation review.
+- A universal field, record, or multi-system mutation reducer.
+- Persisting UI workflow state in the character schema.

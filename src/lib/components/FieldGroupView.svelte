@@ -1,13 +1,15 @@
 <script lang="ts">
 	import FieldAnnotationControl from '$components/FieldAnnotationControl.svelte';
 	import GridPrimitiveField from '$components/GridPrimitiveField.svelte';
+	import GridRuntimeFieldGroup from '$components/GridRuntimeFieldGroup.svelte';
 	import {
 		formatFieldValue,
 		getLabeledDisplayParts,
 		isDirectEditablePrimitiveField,
+		isInlineRuntimeFieldGroup,
 		normalizeData
 	} from '$utils/gridContentHelpers';
-	import { isGridFieldArray } from '$utils/gridFieldGuards';
+	import { isGridFieldArray, isGridNestedFields } from '$utils/gridFieldGuards';
 	import type {
 		GridAnnotationEditorConfig,
 		GridContentAnnotation,
@@ -23,6 +25,10 @@
 		displayMaxCols?: number;
 		displayAlign?: 'left' | 'center';
 		displayArrayMode?: 'inline' | 'stack';
+		displayPrimitiveMode?: 'inline' | 'stacked';
+		displaySectionBreakBefore?: string;
+		displaySectionBreakLabel?: string;
+		interactive?: boolean;
 		annotationEditorConfig?: GridAnnotationEditorConfig;
 		onFieldSavePatch?: (
 			/* eslint-disable no-unused-vars */
@@ -36,6 +42,10 @@
 			_annotations: Array<GridContentAnnotation>
 			/* eslint-enable no-unused-vars */
 		) => void;
+		onFocusedSavePatches?: (
+			// eslint-disable-next-line no-unused-vars
+			_patches: Array<GridContentPatch>
+		) => boolean | void;
 	}
 
 	let {
@@ -43,28 +53,18 @@
 		displayMaxCols = 3,
 		displayAlign = 'left',
 		displayArrayMode = 'inline',
+		displayPrimitiveMode = 'inline',
+		displaySectionBreakBefore = undefined,
+		displaySectionBreakLabel = undefined,
+		interactive = true,
 		annotationEditorConfig = undefined,
 		onFieldSavePatch,
-		handleFieldSaveAnnotations
+		handleFieldSaveAnnotations,
+		onFocusedSavePatches
 	}: Props = $props();
 
 	const normalizedData = $derived<GridContentData>(normalizeData(data));
 	const displayEntries = $derived(Object.entries(normalizedData));
-	const leadFieldEntries = $derived(
-		displayEntries.filter(
-			([, field]) =>
-				isDirectEditablePrimitiveField(field) && field.interaction?.editAffordance === 'persistent'
-		)
-	);
-	const gridEntries = $derived(
-		displayEntries.filter(
-			([, field]) =>
-				!(
-					isDirectEditablePrimitiveField(field) &&
-					field.interaction?.editAffordance === 'persistent'
-				)
-		)
-	);
 
 	const saveFieldAnnotations = (
 		field: GridContentField,
@@ -91,26 +91,18 @@
 
 	const displayItemClass = $derived(
 		displayAlign === 'center'
-			? 'inline-flex items-center justify-center text-center'
-			: 'inline-block'
+			? 'flex w-full items-center justify-center text-center'
+			: 'block w-full'
 	);
+
+	const inlineNestedFields = (field: GridContentField) =>
+		interactive && isInlineRuntimeFieldGroup(field) && isGridNestedFields(field.value)
+			? Object.entries(field.value)
+			: undefined;
 </script>
 
 <div>
-	{#if leadFieldEntries.length > 0}
-		<div class={gridEntries.length > 0 ? 'mb-2 grid gap-2 border-b pb-2' : 'grid gap-2'}>
-			{#each leadFieldEntries as [fieldKey, field] (fieldKey)}
-				<GridPrimitiveField
-					{fieldKey}
-					{field}
-					{annotationEditorConfig}
-					onSavePatch={savePrimitiveFieldPatch}
-					onSaveAnnotations={savePrimitiveFieldAnnotations}
-				/>
-			{/each}
-		</div>
-	{/if}
-	{#if gridEntries.length > 0}
+	{#if displayEntries.length > 0}
 		<div class="@container/gridcontent">
 			<div
 				class={displayMaxCols === 1
@@ -119,19 +111,44 @@
 						? 'grid grid-cols-1 @[400px]/gridcontent:grid-cols-2 gap-2'
 						: 'grid grid-cols-1 @[400px]/gridcontent:grid-cols-2 @[600px]/gridcontent:grid-cols-3 gap-2'}
 			>
-				{#each gridEntries as [fieldKey, field] (fieldKey)}
+				{#each displayEntries as [fieldKey, field] (fieldKey)}
+					{#if fieldKey === displaySectionBreakBefore}
+						<div class="col-span-full border-t border-[var(--color-surface-border)] pt-2">
+							{#if displaySectionBreakLabel}
+								<p class="theme-text-muted text-xs font-semibold tracking-wide uppercase">
+									{displaySectionBreakLabel}
+								</p>
+							{/if}
+						</div>
+					{/if}
 					{@const labeledParts = getLabeledDisplayParts(field)}
 					{@const fieldLabel = field.fieldName ?? fieldKey}
-					<div class={displayAlign === 'center' ? 'flex min-w-0 justify-center' : 'min-w-0'}>
-						<div class={displayAlign === 'center' ? 'min-w-0 text-center' : 'min-w-0'}>
-							<span data-grid-auto-item class={displayItemClass}>
-								{#if isDirectEditablePrimitiveField(field)}
+					{@const runtimeFields = inlineNestedFields(field)}
+					<div
+						class={displayAlign === 'center'
+							? 'flex w-full min-w-0 justify-center'
+							: 'w-full min-w-0'}
+					>
+						<div
+							class={displayAlign === 'center' ? 'w-full min-w-0 text-center' : 'w-full min-w-0'}
+						>
+							<div data-grid-auto-item class={displayItemClass}>
+								{#if runtimeFields}
+									<GridRuntimeFieldGroup
+										label={fieldLabel}
+										fields={runtimeFields}
+										{annotationEditorConfig}
+										onSavePatches={onFocusedSavePatches}
+										onSaveAnnotations={savePrimitiveFieldAnnotations}
+									/>
+								{:else if interactive && isDirectEditablePrimitiveField(field)}
 									<GridPrimitiveField
 										{fieldKey}
 										{field}
 										{annotationEditorConfig}
 										onSavePatch={savePrimitiveFieldPatch}
 										onSaveAnnotations={savePrimitiveFieldAnnotations}
+										onSaveFocusedPatches={onFocusedSavePatches}
 									/>
 								{:else if typeof field.value === 'boolean'}
 									<span class="inline-flex items-center gap-2 align-middle">
@@ -144,8 +161,16 @@
 										/>
 										<span class="font-medium">{field.fieldName}</span>
 									</span>
+								{:else if displayPrimitiveMode === 'stacked' && (typeof field.value === 'string' || typeof field.value === 'number')}
+									<span class="block min-w-0">
+										<span
+											class="theme-text-muted block text-xs font-semibold tracking-wide uppercase"
+											>{fieldLabel}</span
+										>
+										<span class="mt-1 block truncate font-semibold">{formatFieldValue(field)}</span>
+									</span>
 								{:else if labeledParts}
-									<span class="inline-flex flex-nowrap items-baseline gap-1 whitespace-nowrap">
+									<span class="inline-flex flex-wrap items-baseline gap-x-1 gap-y-0.5">
 										<span class="font-medium">{field.fieldName}:</span>
 										{#each labeledParts as part, idx (`${fieldKey}-${idx}`)}
 											{#if idx > 0}
@@ -193,7 +218,7 @@
 										/>
 									</span>
 								{/if}
-							</span>
+							</div>
 						</div>
 					</div>
 				{/each}

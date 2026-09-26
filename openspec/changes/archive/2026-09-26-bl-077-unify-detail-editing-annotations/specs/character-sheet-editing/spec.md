@@ -6,15 +6,27 @@ The system SHALL classify editable character-sheet information as frequently cha
 
 #### Scenario: Editing explicitly classified runtime state
 
-- **WHEN** a user edits a frequently changed runtime value such as current hit points
+- **WHEN** a user edits a frequently changed runtime value such as current hit points or carried currency
 - **THEN** the value SHALL be editable directly on the sheet without opening a focused detail presentation
 - **AND** entering and leaving edit state SHALL NOT cause disruptive movement of surrounding content
+
+#### Scenario: Presenting neighboring runtime values
+
+- **WHEN** multiple runtime values share one responsive grid
+- **THEN** each value surface SHALL fill its allocated grid track rather than shrink to its content
+- **AND** entering edit state SHALL preserve the surrounding track allocation
 
 #### Scenario: Opening rich information
 
 - **WHEN** a user activates the explicit detail target for a rich field or record
 - **THEN** the system SHALL first present the target's available authored detail, provenance, annotations, and references together
 - **AND** changing that information SHALL require a separately identifiable Edit action
+
+#### Scenario: Opening a bounded group of rich information
+
+- **WHEN** multiple non-runtime fields share one visually bounded sheet group
+- **THEN** the group SHALL expose one explicit detail target for the complete group
+- **AND** its focused Edit SHALL make every eligible authored field in that group reachable without adding persistent inline controls to each value
 
 #### Scenario: Presenting an unclassified editable field
 
@@ -51,6 +63,12 @@ The system SHALL treat authored values and annotations changed during one focuse
 - **THEN** the annotation SHALL be restored within the draft
 - **AND** neither removal nor restoration SHALL change the stored target before the outer Save action
 
+#### Scenario: Offering annotations for a field with no notes
+
+- **WHEN** an editable focused field supports annotations but its draft contains none
+- **THEN** the editor SHALL expose one compact Add annotation action without reserving an expanded zero-count annotation section
+- **AND** the complete annotation editor SHALL appear only after the user deliberately starts an annotation
+
 ### Requirement: Rich-detail entry preserves the reading surface
 
 The system SHALL expose an explicit keyboard-, pointer-, touch-, and assistive-technology-operable target for opening rich detail without making an entire content container behave as an undisclosed activation target.
@@ -58,8 +76,14 @@ The system SHALL expose an explicit keyboard-, pointer-, touch-, and assistive-t
 #### Scenario: Showing a note indicator for a rich field
 
 - **WHEN** a read-first rich field has annotations and its compact presentation distinguishes a field label from its displayed value
-- **THEN** the field SHALL present its label, then its quiet note indicator, then its displayed value
+- **THEN** the field SHALL present its quiet note indicator inline with its label when space allows, followed by its displayed value
 - **AND** the indicator SHALL remain separate from the field's detail action cluster
+
+#### Scenario: Reading compact rich fields consistently
+
+- **WHEN** a bounded sheet group presents several read-first primitive values
+- **THEN** the default compact presentation SHALL use one shared label-and-value grammar across those values
+- **AND** a section MAY explicitly request a stacked label-over-value variant when its information hierarchy justifies the additional height
 
 #### Scenario: Selecting text near a detail target
 

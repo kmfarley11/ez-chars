@@ -55,15 +55,17 @@ Run this quick check before deploy when touching theme or UI colors.
 
 ## 7) Dense collections
 
-- With the saturated fixture, confirm Weapons, Armor & Shields, Other Gear, and Spells each retain a clear collection heading, count, separately named bulk action, search scope, and row submenu in every theme.
+- With the saturated fixture, confirm Weapons, Armor & Shields, Other Gear, and Spells each retain a clear collection heading, count, direct Add action, search scope, and record-local Detail plus Pin/Unpin controls in every theme without a redundant batch Pin manager.
 - On desktop/tablet, verify the thin scrollbar, border, and boundary-aware top/bottom fade make overflow evident without permanently obscuring the first or final row.
 - At the top and bottom of a bounded desktop list, continue the mouse-wheel gesture and confirm scrolling can hand back to the character sheet; separately note any disruptive interception while the collection itself still has room to scroll.
 - On a phone viewport, confirm each target card shows at most five authored rows and one exact `Browse all X items` action; long `Name: detail` summaries truncate on one line without widening the page.
 - In the full-height phone collection, verify search, result count, scrolling content, footer rule, and Close action remain visually distinct; the footer must not crowd the final row.
 - Search duplicate inventory and spell names and confirm quantity/equipped or Spell/level/prepared context remains legible. Group-local inventory rows should not repeat an Inventory badge.
-- Confirm the compact Spellcasting summary and discrete Spell Slots group both appear before the spell collection. Every level should read once as `<level>: <used> / <max>`, including `0 / 0` absent-level defaults, without a duplicate `Used` field or per-level slot card.
+- Confirm the compact Spellcasting summary and discrete Spell Slots group both appear before the spell collection. Every level should expose Tier 1 Used and Max exactly once, including `0 / 0` absent-level defaults. Each row owns adjacent field-local Edit and annotation actions, and the all-runtime group has no redundant Detail action.
+- Confirm every spell-slot level group fills its responsive grid track in read and edit states; Used and Max values remain left-aligned beneath their labels, and editing either row must not collapse the bordered surface or cause adjacent groups to use inconsistent geometry.
+- In Abilities & Proficiencies focused Edit, confirm zero-note leaves use one compact right-aligned Add annotation action without an empty bordered annotation disclosure; after activation, the full annotation editor should appear and receive focus.
 - Open a character with no spells or meaningful slots and confirm Spells starts collapsed, expansion exposes all setup controls, and saving the first nonzero slot makes the section start expanded after reload.
-- Open row Edit and Notes from a filtered result, save and cancel representative changes, and confirm the active query, row context, annotation indicator, and focus destination remain understandable.
+- Open a filtered record through Detail, enter Edit, save and cancel representative authored-plus-annotation drafts, and confirm the active query, row context, note indicator, and focus destination remain understandable. Pin/Unpin should remain available without entering Edit.
 - Check empty and no-match states. The inline `Clear` must look actionable and remain visually distinct from the surrounding sentence, while the full-size `Clear search` control remains available.
 - Rehearse Overview, Runtime, and Organizational landmarks with the saturated sheet on desktop and phone; dense collections must not hide unrelated combat or non-combat regions.
 - At the four-column Runtime breakpoint, confirm the bordered Languages, Tools, Features, and Traits cards fill their shared grid row consistently even when their content lengths differ; equal visual height must not imply identical search or scrolling behavior.

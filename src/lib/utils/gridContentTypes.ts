@@ -13,6 +13,7 @@ export type GridReferenceInspectionHandler = (
 export type GridContentAnnotation = Annotation;
 export type GridEditAffordance = 'persistent' | 'hover' | 'menu';
 export type GridAnnotationAffordance = 'persistent' | 'badge' | 'hover';
+export type GridInteractionTier = 'runtime' | 'read-first';
 export type GridFieldPatchOperation = 'replace' | 'add';
 
 export type GridFieldBinding = {
@@ -31,6 +32,7 @@ export type GridFieldCapabilities = {
 };
 
 export type GridFieldInteraction = {
+	tier?: GridInteractionTier;
 	editAffordance?: GridEditAffordance;
 	annotationAffordance?: GridAnnotationAffordance;
 };

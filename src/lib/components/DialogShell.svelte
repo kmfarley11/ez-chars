@@ -1,16 +1,18 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import { tick, type Snippet } from 'svelte';
 	import { createScrollAffordanceAttachment } from '$components/scrollAffordance';
 
 	interface Props {
 		open?: boolean;
 		onClose?: () => void;
+		onOpened?: () => void;
 		actions?: Snippet<[() => void]>;
 		children?: Snippet;
 		closeText?: string;
 		fullHeightMobile?: boolean;
 		wide?: boolean;
 		scrollAffordance?: boolean;
+		scrollTop?: number;
 
 		// Step navigation
 		title?: string;
@@ -25,12 +27,14 @@
 	let {
 		open = $bindable(false),
 		onClose,
+		onOpened,
 		actions,
 		children,
 		closeText = 'Close',
 		fullHeightMobile = false,
 		wide = false,
 		scrollAffordance = false,
+		scrollTop = $bindable(0),
 		title,
 		showBack = false,
 		onBack,
@@ -39,6 +43,7 @@
 
 	let dialogEl: HTMLDialogElement | undefined = $state();
 	let headingEl: HTMLHeadingElement | undefined = $state();
+	let scrollViewportEl: HTMLDivElement | undefined = $state();
 	let canScrollUp = $state(false);
 	let canScrollDown = $state(false);
 	const trackScrollAffordance = createScrollAffordanceAttachment((state) => {
@@ -53,6 +58,10 @@
 	$effect(() => {
 		if (open && !dialogEl?.open) {
 			dialogEl?.showModal();
+			void tick().then(() => {
+				if (scrollViewportEl) scrollViewportEl.scrollTop = scrollTop;
+				requestAnimationFrame(() => onOpened?.());
+			});
 		} else if (!open && dialogEl?.open) {
 			dialogEl?.close();
 		}
@@ -127,11 +136,15 @@
 		{/if}
 		<div class="dialog-shell-scroll-region relative min-h-0 flex-1">
 			<div
+				bind:this={scrollViewportEl}
 				class="dialog-shell-scroll-viewport h-full overflow-y-auto pb-4 {scrollAffordance
 					? 'scroll-affordance-viewport'
 					: ''}"
 				data-scroll-viewport={scrollAffordance ? 'dialog-content' : undefined}
 				{@attach trackScrollAffordance}
+				onscroll={(event) => {
+					scrollTop = event.currentTarget.scrollTop;
+				}}
 			>
 				{@render children?.()}
 			</div>

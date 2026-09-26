@@ -28,7 +28,7 @@ async function openSaturatedSheet(page: Page) {
 	await page.goto('/');
 	await page.getByRole('button', { name: 'Open Saturated Playtest Adventurer' }).click();
 	await expect(page).toHaveURL(new RegExp(`/charsheets/5e\\?id=${characterId}`));
-	await expect(page.getByText('Current HP:', { exact: false })).toBeVisible();
+	await expect(page.getByText('Current HP', { exact: true }).first()).toBeVisible();
 }
 
 async function expectMinimumTouchTarget(locator: Locator, label: string) {
@@ -53,7 +53,7 @@ async function expectVisibleKeyboardFocus(locator: Locator, label: string) {
 	expect(outline.width, `${label} outline width`).toBeGreaterThanOrEqual(2);
 }
 
-test('Other Gear supports bounded search, stable row editing, notes, and bulk editing', async ({
+test('Other Gear supports bounded search, focused editing, notes, and priority', async ({
 	page
 }, testInfo) => {
 	test.setTimeout(20_000);
@@ -68,9 +68,11 @@ test('Other Gear supports bounded search, stable row editing, notes, and bulk ed
 	const results = region.getByRole('list', { name: 'Other Gear results' });
 	const search = region.getByRole('searchbox', { name: 'Search Other Gear' });
 	await expect(region.getByText('32 items', { exact: true }).first()).toBeVisible();
-	await expect(region.getByRole('button', { name: 'Bulk Edit Other Gear' })).toBeVisible();
+	await expect(region.getByRole('button', { name: 'Add Other Gear' })).toBeVisible();
+	await expect(region.getByRole('button', { name: 'Bulk Edit Other Gear' })).toHaveCount(0);
 	await expect(results).toBeVisible();
-	const dimensions = await results.evaluate((element) => ({
+	const scrollRegion = region.getByRole('region', { name: 'Other Gear scrollable results' });
+	const dimensions = await scrollRegion.evaluate((element) => ({
 		clientHeight: element.clientHeight,
 		scrollHeight: element.scrollHeight,
 		overscrollBehaviorY: getComputedStyle(element).overscrollBehaviorY
@@ -87,38 +89,31 @@ test('Other Gear supports bounded search, stable row editing, notes, and bulk ed
 	const secondRope = results.locator('[data-row-key="item:saturated-gear-9"]');
 	await expect(firstRope).toBeVisible();
 	await expect(secondRope).toBeVisible();
-	const secondRopeActions = secondRope.getByRole('button', { name: /Row actions for Rope/ });
-	await secondRopeActions.click();
-	await page.getByRole('button', { name: 'Edit', exact: true }).click();
-	const editDialog = page.getByRole('dialog', { name: 'Edit Rope' });
-	await editDialog.getByLabel('Detail', { exact: true }).fill('Priority climbing rope.');
-	await editDialog.getByRole('button', { name: 'Save', exact: true }).click();
-	await expect(secondRopeActions).toBeFocused();
+	const secondRopeDetail = secondRope.getByRole('button', { name: /^View Rope.*details$/ });
+	await secondRopeDetail.click();
+	const ropeDialog = page.getByRole('dialog', { name: 'Rope', exact: true });
+	await ropeDialog.getByRole('button', { name: 'Edit', exact: true }).click();
+	await ropeDialog.getByLabel('Detail', { exact: true }).fill('Priority climbing rope.');
+	await ropeDialog.getByRole('button', { name: 'Save', exact: true }).click();
+	await expect(ropeDialog.getByRole('heading', { name: 'Authored information' })).toBeVisible();
+	await ropeDialog.getByRole('button', { name: 'Close', exact: true }).click();
+	await expect(secondRopeDetail).toBeFocused();
 	await expect(search).toHaveValue('rope');
 	await expect(secondRope.getByText('Priority climbing rope.')).toBeVisible();
 
-	await secondRopeActions.click();
-	await page.getByRole('button', { name: 'Pin', exact: true }).click();
-	await expect(secondRopeActions).toBeFocused();
+	const pinSecondRope = secondRope.getByRole('button', { name: /^Pin Rope/ });
+	await pinSecondRope.click();
+	const unpinSecondRope = secondRope.getByRole('button', { name: /^Unpin Rope/ });
+	await expect(unpinSecondRope).toBeFocused();
 	await expect(secondRope.getByTitle('Pinned')).toBeVisible();
-	await secondRopeActions.click();
-	await page.getByRole('button', { name: 'Unpin', exact: true }).click();
-	await expect(secondRopeActions).toBeFocused();
+	await unpinSecondRope.click();
+	await expect(secondRope.getByRole('button', { name: /^Pin Rope/ })).toBeFocused();
 	await expect(secondRope.getByTitle('Pinned')).toHaveCount(0);
 
-	const managePins = region.getByRole('button', { name: 'Manage Pins' });
-	await expect(managePins).toBeVisible();
-	await managePins.click();
-	const managePinsDialog = page.getByRole('dialog', { name: 'Manage Pins' });
-	await expect(managePinsDialog).toBeVisible();
-	await expect(managePinsDialog.getByRole('searchbox')).toHaveValue('rope');
-
-	await managePinsDialog
-		.getByRole('checkbox', { name: /Authored detail for campaign gear 1\./ })
-		.check();
-	await managePinsDialog.getByRole('button', { name: 'Save Pins', exact: true }).click();
-	await expect(managePinsDialog).not.toBeVisible();
-	await expect(managePins).toBeFocused();
+	await expect(region.getByRole('button', { name: 'Manage Pins' })).toHaveCount(0);
+	const pinFirstRope = firstRope.getByRole('button', { name: /^Pin Rope/ });
+	await pinFirstRope.click();
+	await expect(firstRope.getByRole('button', { name: /^Unpin Rope/ })).toBeFocused();
 	await expect(search).toHaveValue('rope');
 
 	await search.fill('');
@@ -150,19 +145,22 @@ test('Other Gear supports bounded search, stable row editing, notes, and bulk ed
 
 	await search.fill('random rock');
 	const rock = results.locator('[data-row-key="item:saturated-gear-3"]');
-	const rockActions = rock.getByRole('button', { name: /Row actions for Random rock/ });
-	await rockActions.click();
-	await page.getByRole('button', { name: 'Notes', exact: true }).click();
-	const notesDialog = page.getByRole('dialog', { name: 'Notes' });
-	await notesDialog.getByRole('button', { name: 'Edit', exact: true }).click();
-	await notesDialog.getByText('Annotations (1)').click();
-	await notesDialog.getByText('Annotation 1').click();
-	await notesDialog
+	const rockDetail = rock.getByRole('button', { name: /^View Random rock.*details$/ });
+	await rockDetail.click();
+	const rockDialog = page.getByRole('dialog', { name: 'Random rock', exact: true });
+	await expect(rockDialog.getByRole('heading', { name: 'Notes' })).toBeVisible();
+	await rockDialog.getByRole('button', { name: 'Edit', exact: true }).click();
+	await rockDialog.getByText('Notes (1)').click();
+	await rockDialog.getByText('Note 1').click();
+	await rockDialog
 		.getByRole('textbox', { name: 'Text (optional)' })
 		.fill('Confirmed magical during the saturated rehearsal.');
-	await notesDialog.getByRole('button', { name: 'Save', exact: true }).click();
-	await notesDialog.getByRole('button', { name: 'Close' }).click();
-	await expect(rockActions).toBeFocused();
+	await rockDialog.getByRole('button', { name: 'Save', exact: true }).click();
+	await expect(
+		rockDialog.getByText('Confirmed magical during the saturated rehearsal.')
+	).toBeVisible();
+	await rockDialog.getByRole('button', { name: 'Close' }).click();
+	await expect(rockDetail).toBeFocused();
 	await expect(rock.getByText('1 note')).toBeVisible();
 
 	await search.fill('portable hole');
@@ -207,39 +205,31 @@ test('Weapons, Armor & Shields, and Spells share scoped discovery and focused id
 	await expect(spells.getByText('28 items', { exact: true }).first()).toBeVisible();
 	const spellsHeading = spells.getByRole('heading', { name: 'Spells', exact: true });
 	await expect(spellsHeading.locator('..')).not.toContainText('28 items');
-	await expect(weapons.getByRole('button', { name: 'Bulk Edit Weapons' })).toBeVisible();
-	await expect(armor.getByRole('button', { name: 'Bulk Edit Armor & Shields' })).toBeVisible();
+	await expect(weapons.getByRole('button', { name: 'Add Weapons' })).toBeVisible();
+	await expect(armor.getByRole('button', { name: 'Add Armor & Shields' })).toBeVisible();
+	await expect(weapons.getByRole('button', { name: 'Bulk Edit Weapons' })).toHaveCount(0);
+	await expect(armor.getByRole('button', { name: 'Bulk Edit Armor & Shields' })).toHaveCount(0);
 	for (const collection of [
-		{ region: weapons, title: 'Weapons', target: /Training sword 2/ },
-		{ region: armor, title: 'Armor & Shields', target: /Armor set 2/ }
+		{ region: weapons, target: /Training sword 2/, pinName: /^Pin Training sword 2/ },
+		{ region: armor, target: /Armor set 2/, pinName: /^Pin Armor set 2/ }
 	]) {
-		const managePins = collection.region.getByRole('button', { name: 'Manage Pins' });
-		await managePins.click();
-		const dialog = page.getByRole('dialog', {
-			name: `Manage Pins · ${collection.title}`,
-			exact: true
-		});
-		await expect(dialog.getByRole('searchbox')).toBeVisible();
-		await dialog.getByRole('checkbox', { name: collection.target }).check();
-		await dialog.getByRole('button', { name: 'Save Pins', exact: true }).click();
-		await expect(dialog).not.toBeVisible();
-		await expect(managePins).toBeFocused();
-		await expect(
-			collection.region
-				.getByRole('listitem')
-				.filter({ hasText: collection.target })
-				.getByTitle('Pinned')
-		).toBeVisible();
+		await expect(collection.region.getByRole('button', { name: 'Manage Pins' })).toHaveCount(0);
+		const row = collection.region.getByRole('listitem').filter({ hasText: collection.target });
+		await row.getByRole('button', { name: collection.pinName }).click();
+		await expect(row.getByTitle('Pinned')).toBeVisible();
 	}
 
-	const spellcasting = page.getByRole('region', { name: 'Spellcasting' });
+	const spellcasting = page.getByRole('region', { name: 'Spellcasting summary' });
 	const spellSlots = page.getByRole('region', { name: 'Spell slots' });
 	await expect(page.getByRole('heading', { name: 'Spellcasting', exact: true })).toHaveCount(0);
 	await expect(page.getByRole('heading', { name: 'Spell Slots', exact: true })).toHaveCount(0);
-	await expect(spellcasting).toContainText('Ability: int');
-	await expect(spellSlots).toContainText('1st: 1 / 4');
-	await expect(spellSlots).toContainText('9th: 0 / 0');
-	await expect(spellSlots).not.toContainText('1st Used');
+	await expect(spellcasting).toContainText(/int\s+ability.*16\s+save dc.*8\s+attack bonus/i);
+	await expect(spellSlots.getByText('1st', { exact: true })).toBeVisible();
+	await expect(spellSlots.getByText('9th', { exact: true })).toBeVisible();
+	await expect(spellSlots).toContainText('Used 1');
+	await expect(spellSlots).toContainText('Max 4');
+	await expect(spellSlots).toContainText('Used 0');
+	await expect(spellSlots).toContainText('Max 0');
 	const spellcastingBox = await spellcasting.boundingBox();
 	const spellSlotsBox = await spellSlots.boundingBox();
 	const spellCollectionBox = await spells.boundingBox();
@@ -260,45 +250,42 @@ test('Weapons, Armor & Shields, and Spells share scoped discovery and focused id
 	await expect(weapons.getByRole('searchbox', { name: 'Search Weapons' })).toHaveValue('');
 
 	const spellSearch = spells.getByRole('searchbox', { name: 'Search Spells' });
-	const bulkEditSpells = spells.getByRole('button', { name: 'Bulk Edit Spells' });
-	await bulkEditSpells.click();
-	const bulkDialog = page.getByRole('dialog', { name: 'Bulk Edit Spells' });
-	await expect(bulkDialog.getByText('Cantrips', { exact: true }).first()).toBeVisible();
-	await expect(bulkDialog.getByRole('button', { name: 'Add Cantrip' })).toBeVisible();
-	await expect(bulkDialog.getByRole('button', { name: 'Add Spell' }).first()).toBeVisible();
-	await bulkDialog.getByRole('button', { name: 'Cancel', exact: true }).click();
-	await expect(bulkEditSpells).toBeFocused();
+	const addSpell = spells.getByRole('button', { name: 'Add Spells' });
+	await addSpell.click();
+	const addDialog = page.getByRole('dialog', { name: 'Add Spells' });
+	await expect(addDialog.getByLabel('Name', { exact: true })).toBeVisible();
+	await addDialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+	await expect(addSpell).toBeFocused();
 
 	await spellSearch.fill('shield');
 	await expect(spells.getByText('2 of 28 items', { exact: true }).first()).toBeVisible();
 	const spellResults = spells.getByRole('list', { name: 'Spells results' });
-	await expect(spellResults.getByText('Spell', { exact: true })).toHaveCount(2);
+	await expect(spellResults.locator('[data-row-key^="spell:"]')).toHaveCount(2);
 	await expect(spellResults.getByText('Pinned spells', { exact: true })).toBeVisible();
 	await expect(spellResults.getByText('Cantrips', { exact: true })).toHaveCount(0);
 	await expect(spellResults.getByText('1st-level spells', { exact: true })).toHaveCount(0);
-	await expect(spellResults.getByText('Cantrip · Prepared', { exact: true })).toBeVisible();
-	await expect(
-		spellResults.getByText('Spell level 1 · Not prepared', { exact: true })
-	).toBeVisible();
+	await expect(spellResults.getByText('Cantrip', { exact: true })).toBeVisible();
+	await expect(spellResults.getByText('Prepared', { exact: true })).toBeVisible();
+	await expect(spellResults.getByText('Spell level 1', { exact: true })).toBeVisible();
 
 	const levelOneShield = spellResults.locator('[data-row-key="spell:saturated-spell-12"]');
-	const levelOneActions = levelOneShield.getByRole('button', { name: /Row actions for Shield/ });
-	await levelOneActions.click();
-	await page.getByRole('button', { name: 'Edit', exact: true }).click();
-	const editDialog = page.getByRole('dialog', { name: 'Edit Shield' });
-	await editDialog.getByLabel('Notes', { exact: true }).fill('Priority level-one shield.');
-	await editDialog.getByRole('button', { name: 'Save', exact: true }).click();
-	await expect(levelOneActions).toBeFocused();
+	const levelOneDetail = levelOneShield.getByRole('button', { name: /^View Shield.*details$/ });
+	await levelOneDetail.click();
+	const shieldDialog = page.getByRole('dialog', { name: 'Shield', exact: true });
+	await shieldDialog.getByRole('button', { name: 'Edit', exact: true }).click();
+	await shieldDialog.getByLabel('Notes', { exact: true }).fill('Priority level-one shield.');
+	await shieldDialog.getByRole('button', { name: 'Save', exact: true }).click();
+	await shieldDialog.getByRole('button', { name: 'Close', exact: true }).click();
+	await expect(levelOneDetail).toBeFocused();
 	await expect(spellSearch).toHaveValue('shield');
-	await levelOneActions.click();
-	await page.getByRole('button', { name: 'Unpin', exact: true }).click();
-	await expect(levelOneActions).toBeFocused();
+	const unpinLevelOneShield = levelOneShield.getByRole('button', { name: /^Unpin Shield/ });
+	await unpinLevelOneShield.click();
+	await expect(levelOneShield.getByRole('button', { name: /^Pin Shield/ })).toBeFocused();
 	await expect(levelOneShield.getByTitle('Pinned')).toHaveCount(0);
 	await expect(spellResults.getByText('Pinned spells', { exact: true })).toBeVisible();
 	await expect(spellResults.getByText('1st-level spells', { exact: true })).toBeVisible();
-	await levelOneActions.click();
-	await page.getByRole('button', { name: 'Pin', exact: true }).click();
-	await expect(levelOneActions).toBeFocused();
+	await levelOneShield.getByRole('button', { name: /^Pin Shield/ }).click();
+	await expect(levelOneShield.getByRole('button', { name: /^Unpin Shield/ })).toBeFocused();
 	await expect(levelOneShield.getByTitle('Pinned')).toBeVisible();
 	await expect(spellResults.getByText('1st-level spells', { exact: true })).toHaveCount(0);
 
@@ -327,21 +314,16 @@ test('Weapons, Armor & Shields, and Spells share scoped discovery and focused id
 		});
 
 	await spellSearch.fill('practice spell 5');
-	const manageSpellPins = spells.getByRole('button', { name: 'Manage Pins' });
-	await manageSpellPins.click();
-	const manageSpellPinsDialog = page.getByRole('dialog', {
-		name: 'Manage Pins · Spells',
-		exact: true
-	});
-	await expect(manageSpellPinsDialog.getByRole('searchbox')).toHaveValue('practice spell 5');
-	await manageSpellPinsDialog.getByRole('checkbox', { name: /Practice spell 5/ }).check();
-	await manageSpellPinsDialog.getByRole('button', { name: 'Save Pins', exact: true }).click();
-	await expect(manageSpellPinsDialog).not.toBeVisible();
-	await expect(manageSpellPins).toBeFocused();
-	await spellSearch.fill('');
 	const higherLevelPinnedSpell = spellResults.locator('[data-row-key="spell:saturated-spell-5"]');
+	await higherLevelPinnedSpell.getByRole('button', { name: /^Pin Practice spell 5/ }).click();
+	await expect(
+		higherLevelPinnedSpell.getByRole('button', { name: /^Unpin Practice spell 5/ })
+	).toBeFocused();
+	await expect(spellSearch).toHaveValue('practice spell 5');
+	await spellSearch.fill('');
 	await expect(higherLevelPinnedSpell.getByTitle('Pinned')).toBeVisible();
-	await expect(higherLevelPinnedSpell).toContainText('Spell level 4 · Not prepared');
+	await expect(higherLevelPinnedSpell).toContainText('Spell level 4');
+	await expect(higherLevelPinnedSpell.getByText('Prepared', { exact: true })).toHaveCount(0);
 	await expect(spellResults.getByText('Pinned spells', { exact: true })).toBeVisible();
 
 	await page.reload();
@@ -354,7 +336,7 @@ test('Weapons, Armor & Shields, and Spells share scoped discovery and focused id
 	await reloadedSpellSearch.fill('practice spell');
 	await runtimeActions.getByRole('button', { name: 'Source actions for Shield reaction' }).click();
 	await runtimeActions.getByRole('button', { name: 'View Spell · Shield' }).click();
-	await expect(reloadedSpells).toBeFocused();
+	await expect(page.getByRole('region', { name: 'Spellcasting section' })).toBeFocused();
 	await expect(reloadedSpellSearch).toHaveValue('');
 });
 
@@ -383,33 +365,21 @@ test('Runtime Actions and supporting collections honor their distinct density li
 	await expect(features.getByText('1 of 18 items', { exact: true }).first()).toBeVisible();
 	await expect(features.getByText('Class feature 10', { exact: true }).first()).toBeVisible();
 
-	const featureActions = features.getByRole('button', { name: 'Card actions' });
-	await featureActions.click();
-	await page.getByRole('button', { name: 'Edit', exact: true }).click();
-	const editDialog = page.getByRole('dialog', { name: 'Edit Fields' });
-	await expect(editDialog).toBeVisible();
-	await editDialog.getByRole('button', { name: 'Cancel', exact: true }).click();
-	await expect(featureActions).toBeFocused();
+	const featureRow = features.getByRole('listitem').filter({ hasText: 'Class feature 10' }).first();
+	const featureDetail = featureRow.getByRole('button', { name: 'View Class feature 10 details' });
+	await featureDetail.click();
+	const featureDialog = page.getByRole('dialog', { name: 'Class feature 10', exact: true });
+	await expect(featureDialog.getByRole('heading', { name: 'Notes' })).toBeVisible();
+	await featureDialog.getByRole('button', { name: 'Edit', exact: true }).click();
+	await featureDialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+	await expect(featureDialog.getByRole('heading', { name: 'Authored information' })).toBeVisible();
+	await featureDialog.getByRole('button', { name: 'Close', exact: true }).click();
+	await expect(featureDetail).toBeFocused();
 	await expect(featureSearch).toHaveValue('class feature 10');
 
-	await featureActions.click();
-	await page.getByRole('button', { name: 'Notes', exact: true }).click();
-	const notesDialog = page.getByRole('dialog', { name: 'Notes' });
-	await notesDialog.getByRole('button', { name: 'Close', exact: true }).click();
-	await expect(featureActions).toBeFocused();
-
-	await featureActions.click();
-	await page
-		.locator('[popover]:popover-open')
-		.getByRole('button', { name: 'Manage Pins', exact: true })
-		.click();
-	const managePinsDialog = page.getByRole('dialog', { name: 'Manage Pins' });
-	await expect(managePinsDialog).toBeVisible();
-	await expect(managePinsDialog.getByRole('searchbox')).toHaveValue('class feature 10');
-	await managePinsDialog.getByRole('checkbox', { name: /Class feature 10/ }).check();
-	await managePinsDialog.getByRole('button', { name: 'Save Pins', exact: true }).click();
-	await expect(managePinsDialog).not.toBeVisible();
-	await expect(featureActions).toBeFocused();
+	await expect(features.getByRole('button', { name: 'Manage Pins' })).toHaveCount(0);
+	await featureRow.getByRole('button', { name: 'Pin Class feature 10' }).click();
+	await expect(featureRow.getByRole('button', { name: 'Unpin Class feature 10' })).toBeFocused();
 	await expect(featureSearch).toHaveValue('class feature 10');
 
 	await featureSearch.fill('');
@@ -421,6 +391,11 @@ test('Runtime Actions and supporting collections honor their distinct density li
 		{ name: 'Prof. Languages', count: 5, target: /Draconic/ },
 		{ name: 'Prof. Tools', count: 7, target: /Tool proficiency 3/ }
 	] as const;
+	for (const name of ['Traits', 'Prof. Languages', 'Prof. Tools']) {
+		await expect(
+			page.getByRole('region', { name, exact: true }).getByRole('button', { name: `Add ${name}` })
+		).toBeVisible();
+	}
 	for (const collection of shortCollections) {
 		const region = page.getByRole('region', { name: collection.name, exact: true });
 		await expect(
@@ -428,28 +403,14 @@ test('Runtime Actions and supporting collections honor their distinct density li
 		).toBeVisible();
 		await expect(region.getByRole('searchbox')).toHaveCount(0);
 		await expect(region.getByRole('button', { name: /Browse all/ })).toHaveCount(0);
-		const cardActions = region.getByRole('button', { name: 'Card actions' });
-		await cardActions.click();
-		await page
-			.locator('[popover]:popover-open')
-			.getByRole('button', { name: 'Manage Pins', exact: true })
-			.click();
-		const dialog = page.getByRole('dialog', {
-			name: `Manage Pins · ${collection.name}`,
-			exact: true
-		});
-		await expect(dialog.getByRole('searchbox')).toHaveCount(0);
-		await dialog.getByRole('checkbox', { name: collection.target }).check();
-		await dialog.getByRole('button', { name: 'Save Pins', exact: true }).click();
-		await expect(dialog).not.toBeVisible();
-		await expect(cardActions).toBeFocused();
-		await expect(
-			region.getByRole('listitem').filter({ hasText: collection.target }).getByTitle('Pinned')
-		).toBeVisible();
+		await expect(region.getByRole('button', { name: 'Manage Pins' })).toHaveCount(0);
+		const row = region.getByRole('listitem').filter({ hasText: collection.target });
+		await row.getByRole('button', { name: /^Pin / }).click();
+		await expect(row.getByTitle('Pinned')).toBeVisible();
 	}
 
 	await page.reload();
-	await expect(page.getByText('Current HP:', { exact: false })).toBeVisible();
+	await expect(page.getByText('Current HP', { exact: true }).first()).toBeVisible();
 	for (const collection of [
 		{ name: 'Features', target: /Class feature 10/ },
 		...shortCollections
@@ -464,7 +425,7 @@ test('Runtime Actions and supporting collections honor their distinct density li
 	}
 });
 
-test('supporting collection actions and Save Pins expose visible keyboard focus', async ({
+test('supporting collection row-level Pin exposes visible keyboard focus', async ({
 	page
 }, testInfo) => {
 	test.skip(
@@ -475,77 +436,20 @@ test('supporting collection actions and Save Pins expose visible keyboard focus'
 
 	const features = page.getByRole('region', { name: 'Features', exact: true });
 	const featureSearch = features.getByRole('searchbox', { name: 'Search Features' });
-	const featureActions = features.getByRole('button', { name: 'Card actions' });
 	await featureSearch.fill('class feature 10');
-
-	await page.keyboard.press('Shift+Tab');
-	await expectVisibleKeyboardFocus(featureActions, 'Supporting Collection Card actions');
+	await expect(features.getByRole('button', { name: 'Manage Pins' })).toHaveCount(0);
+	const featureRow = features.getByRole('listitem').filter({ hasText: 'Class feature 10' });
+	const pin = featureRow.getByRole('button', { name: 'Pin Class feature 10' });
+	await pin.focus();
+	await expectVisibleKeyboardFocus(pin, 'Supporting Collection Pin');
 	await page.keyboard.press('Enter');
-
-	const menu = page.locator('[popover]:popover-open');
-	await page.keyboard.press('Tab');
-	await expect(menu.getByRole('button', { name: 'Edit', exact: true })).toBeFocused();
-	await page.keyboard.press('Tab');
-	await expect(menu.getByRole('button', { name: 'Notes', exact: true })).toBeFocused();
-	await page.keyboard.press('Tab');
-	const managePins = menu.getByRole('button', { name: 'Manage Pins', exact: true });
-	await expect(managePins).toBeFocused();
+	const unpin = featureRow.getByRole('button', { name: 'Unpin Class feature 10' });
+	await expectVisibleKeyboardFocus(unpin, 'Supporting Collection Unpin after movement');
 	await page.keyboard.press('Enter');
-
-	const dialog = page.getByRole('dialog', { name: 'Manage Pins · Features', exact: true });
-	await expect(
-		dialog.getByRole('heading', { name: 'Manage Pins · Features', exact: true })
-	).toBeFocused();
-	await page.keyboard.press('Tab');
-	const dialogSearch = dialog.getByRole('searchbox', { name: 'Search Features' });
-	await expect(dialogSearch).toBeFocused();
-	await page.keyboard.press('Tab');
-	await expect(dialog.getByRole('button', { name: 'Clear search' })).toBeFocused();
-	await page.keyboard.press('Tab');
-	const checkbox = dialog.getByRole('checkbox', { name: /Class feature 10/ });
-	await expect(checkbox).toBeFocused();
-	await page.keyboard.press('Space');
-	await page.keyboard.press('Tab');
-	await expect(dialog.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
-	await page.keyboard.press('Tab');
-	const savePins = dialog.getByRole('button', { name: 'Save Pins', exact: true });
-	await expectVisibleKeyboardFocus(savePins, 'Save Pins');
-	await page.keyboard.press('Enter');
-
-	await expect(dialog).not.toBeVisible();
-	await expectVisibleKeyboardFocus(featureActions, 'Restored Supporting Collection Card actions');
-
-	await page.keyboard.press('Enter');
-	await page.keyboard.press('Tab');
-	await page.keyboard.press('Tab');
-	await page.keyboard.press('Tab');
-	await page.keyboard.press('Enter');
-	const reopenedDialog = page.getByRole('dialog', {
-		name: 'Manage Pins · Features',
-		exact: true
-	});
-	const reopenedCheckbox = reopenedDialog.getByRole('checkbox', { name: /Class feature 10/ });
-	await expect(reopenedCheckbox).toBeChecked();
-	await reopenedCheckbox.focus();
-	await page.keyboard.press('Space');
-	await expect(reopenedCheckbox).not.toBeChecked();
-	await page.keyboard.press('Escape');
-	await expect(reopenedDialog).not.toBeVisible();
-	await expect(featureActions).toBeFocused();
-
-	await featureActions.click();
-	await page
-		.locator('[popover]:popover-open')
-		.getByRole('button', { name: 'Manage Pins', exact: true })
-		.click();
-	const retainedDialog = page.getByRole('dialog', {
-		name: 'Manage Pins · Features',
-		exact: true
-	});
-	await expect(retainedDialog.getByRole('checkbox', { name: /Class feature 10/ })).toBeChecked();
-	await retainedDialog.getByRole('button', { name: 'Cancel', exact: true }).click();
-	await expect(retainedDialog).not.toBeVisible();
-	await expect(featureActions).toBeFocused();
+	await expectVisibleKeyboardFocus(
+		featureRow.getByRole('button', { name: 'Pin Class feature 10' }),
+		'Restored Supporting Collection Pin after movement'
+	);
 });
 
 test('saturated priority state survives application JSON export and replacement restore', async ({
@@ -559,19 +463,8 @@ test('saturated priority state survives application JSON export and replacement 
 	await openSaturatedSheet(page);
 
 	const languages = page.getByRole('region', { name: 'Prof. Languages', exact: true });
-	const languageActions = languages.getByRole('button', { name: 'Card actions' });
-	await languageActions.click();
-	await page
-		.locator('[popover]:popover-open')
-		.getByRole('button', { name: 'Manage Pins', exact: true })
-		.click();
-	let dialog = page.getByRole('dialog', {
-		name: 'Manage Pins · Prof. Languages',
-		exact: true
-	});
-	const draconicChoice = dialog.getByRole('checkbox', { name: /Draconic/ });
-	await draconicChoice.check();
-	await dialog.getByRole('button', { name: 'Save Pins', exact: true }).click();
+	const draconicRow = languages.getByRole('listitem').filter({ hasText: 'Draconic' });
+	await draconicRow.getByRole('button', { name: 'Pin Draconic' }).click();
 	await expect(
 		languages.getByRole('listitem').filter({ hasText: 'Draconic' }).getByTitle('Pinned')
 	).toBeVisible();
@@ -587,17 +480,11 @@ test('saturated priority state survives application JSON export and replacement 
 
 	await page.getByRole('button', { name: 'Open Saturated Playtest Adventurer' }).click();
 	const changedLanguages = page.getByRole('region', { name: 'Prof. Languages', exact: true });
-	await changedLanguages.getByRole('button', { name: 'Card actions' }).click();
-	await page
-		.locator('[popover]:popover-open')
-		.getByRole('button', { name: 'Manage Pins', exact: true })
+	await changedLanguages
+		.getByRole('listitem')
+		.filter({ hasText: 'Draconic' })
+		.getByRole('button', { name: 'Unpin Draconic' })
 		.click();
-	dialog = page.getByRole('dialog', {
-		name: 'Manage Pins · Prof. Languages',
-		exact: true
-	});
-	await dialog.getByRole('checkbox', { name: /Draconic/ }).uncheck();
-	await dialog.getByRole('button', { name: 'Save Pins', exact: true }).click();
 	await expect(
 		changedLanguages.getByRole('listitem').filter({ hasText: 'Draconic' }).getByTitle('Pinned')
 	).toHaveCount(0);
@@ -648,9 +535,7 @@ test('phone previews expose domain-specific limits and focused collections with 
 		await expect(
 			familyRegion.getByRole('button', { name: `Browse all ${family.count} items` })
 		).toBeVisible();
-		await expect(
-			familyRegion.getByRole('button', { name: `Bulk Edit ${family.title}` })
-		).toBeVisible();
+		await expect(familyRegion.getByRole('button', { name: `Add ${family.title}` })).toBeVisible();
 	}
 
 	const region = page.getByRole('region', { name: 'Other inventory' });
@@ -673,14 +558,16 @@ test('phone previews expose domain-specific limits and focused collections with 
 	await search.fill('random rock');
 	await expect(dialog.getByText('1 of 32 items', { exact: true })).toBeVisible();
 	const row = dialog.locator('[data-row-key="item:saturated-gear-3"]');
-	const rowActions = row.getByRole('button', { name: /Row actions for Random rock/ });
-	await expectMinimumTouchTarget(rowActions, 'Other Gear row menu');
-	await rowActions.click();
-	await page.getByRole('button', { name: 'Edit', exact: true }).click();
-	const editDialog = page.getByRole('dialog', { name: 'Edit Random rock' });
-	await editDialog.getByLabel('Detail').fill('Phone rehearsal detail.');
-	await editDialog.getByRole('button', { name: 'Save', exact: true }).click();
-	await expect(rowActions).toBeFocused();
+	const rowDetail = row.getByRole('button', { name: /^View Random rock.*details$/ });
+	await expectMinimumTouchTarget(rowDetail, 'Other Gear row detail');
+	await rowDetail.click();
+	const detailDialog = page.getByRole('dialog', { name: 'Random rock', exact: true });
+	await detailDialog.getByRole('button', { name: 'Edit', exact: true }).click();
+	await detailDialog.getByLabel('Detail').fill('Phone rehearsal detail.');
+	await detailDialog.getByRole('button', { name: 'Save', exact: true }).click();
+	await detailDialog.getByRole('button', { name: 'Back' }).click();
+	await expect(dialog).toBeVisible();
+	await expect(rowDetail).toBeFocused();
 	await expect(search).toHaveValue('random rock');
 
 	const close = dialog.getByRole('button', { name: 'Close Other Gear' });
@@ -696,14 +583,14 @@ test('phone previews expose domain-specific limits and focused collections with 
 	const spellsDialogSearch = spellsDialog.getByRole('searchbox', { name: 'Search Spells' });
 	await spellsDialogSearch.fill('practice spell 5');
 	const higherLevelSpell = spellsDialog.locator('[data-row-key="spell:saturated-spell-5"]');
-	const higherLevelSpellActions = higherLevelSpell.getByRole('button', {
-		name: /Row actions for Practice spell 5/
+	const pinHigherLevelSpell = higherLevelSpell.getByRole('button', {
+		name: /^Pin Practice spell 5/
 	});
-	await higherLevelSpellActions.click();
-	const pinHigherLevelSpell = page.getByRole('button', { name: 'Pin', exact: true });
 	await expectMinimumTouchTarget(pinHigherLevelSpell, 'Spell row Pin command');
 	await pinHigherLevelSpell.click();
-	await expect(higherLevelSpellActions).toBeFocused();
+	await expect(
+		higherLevelSpell.getByRole('button', { name: /^Unpin Practice spell 5/ })
+	).toBeFocused();
 	await expect(higherLevelSpell.getByTitle('Pinned')).toBeVisible();
 	await spellsDialog.getByRole('button', { name: 'Close Spells' }).click();
 	await expect(browseSpells).toBeFocused();
@@ -729,12 +616,17 @@ test('phone previews expose domain-specific limits and focused collections with 
 	await expect(runtimeDialog.getByRole('button', { name: 'Add action' })).toBeVisible();
 	await runtimeDialogSearch.fill('runtime reminder 8');
 	await expect(runtimeDialog.getByText('Custom runtime action 8', { exact: true })).toBeVisible();
-	const focusedRuntimeActions = runtimeDialog.getByRole('button', { name: 'Card actions' });
-	await focusedRuntimeActions.click();
-	await page.getByRole('button', { name: 'Notes', exact: true }).click();
-	const runtimeNotes = page.getByRole('dialog', { name: 'Notes' });
-	await runtimeNotes.getByRole('button', { name: 'Close', exact: true }).click();
-	await expect(focusedRuntimeActions).toBeFocused();
+	const runtimeDetail = runtimeDialog.getByRole('button', {
+		name: 'View Custom runtime action 8 details'
+	});
+	await runtimeDetail.click();
+	const runtimeDetailDialog = page.getByRole('dialog', {
+		name: 'Custom runtime action 8',
+		exact: true
+	});
+	await expect(runtimeDetailDialog.getByRole('heading', { name: 'Notes' })).toBeVisible();
+	await runtimeDetailDialog.getByRole('button', { name: 'Back' }).click();
+	await expect(runtimeDetail).toBeFocused();
 	await expect(runtimeDialogSearch).toHaveValue('runtime reminder 8');
 
 	await runtimeDialogSearch.fill('longsword');
@@ -753,71 +645,75 @@ test('phone previews expose domain-specific limits and focused collections with 
 	const featuresSearch = featuresDialog.getByRole('searchbox', { name: 'Search Features' });
 	await featuresSearch.fill('wizard class feature 10');
 	await expect(featuresDialog.getByText('Class feature 10', { exact: true })).toBeVisible();
-	const focusedFeatureActions = featuresDialog.getByRole('button', { name: 'Card actions' });
-	await focusedFeatureActions.click();
-	await page.getByRole('button', { name: 'Edit', exact: true }).click();
-	const focusedEditDialog = page.getByRole('dialog', { name: 'Edit Fields' });
-	await focusedEditDialog.getByRole('button', { name: 'Cancel', exact: true }).click();
-	await expect(focusedFeatureActions).toBeFocused();
+	const focusedFeatureDetail = featuresDialog.getByRole('button', {
+		name: 'View Class feature 10 details'
+	});
+	await focusedFeatureDetail.click();
+	const focusedFeatureDialog = page.getByRole('dialog', {
+		name: 'Class feature 10',
+		exact: true
+	});
+	await focusedFeatureDialog.getByRole('button', { name: 'Edit', exact: true }).click();
+	await focusedFeatureDialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+	await focusedFeatureDialog.getByRole('button', { name: 'Back' }).click();
+	await expect(focusedFeatureDetail).toBeFocused();
 	await expect(featuresSearch).toHaveValue('wizard class feature 10');
 	await featuresDialog.getByRole('button', { name: 'Close Features' }).click();
 	await expect(browseFeatures).toBeFocused();
 });
 
-test('structured form modal editing supports external form submission, array item addition, and array item removal', async ({
+test('supporting collections add, edit, and remove one focused record at a time', async ({
 	page
 }, testInfo) => {
-	test.skip(testInfo.project.name === 'Mobile Chrome', 'Desktop collection editing behavior.');
+	test.skip(testInfo.project.name === 'Mobile Chrome', 'Desktop focused-record behavior.');
 
 	await openSaturatedSheet(page);
 	const region = page.getByRole('region', { name: 'Prof. Languages', exact: true });
 	await expect(region.getByText('5 items', { exact: true }).first()).toBeVisible();
 
-	const cardActions = region.getByRole('button', { name: 'Card actions' });
-	await cardActions.click();
-	await page
-		.locator('[popover]:popover-open')
-		.getByRole('button', { name: 'Edit', exact: true })
-		.click();
-
-	const editDialog = page.getByRole('dialog', { name: 'Edit Fields' });
-	await expect(editDialog).toBeVisible();
-
-	// Verify external form submission association
-	const saveBtn = editDialog.getByRole('button', { name: 'Save', exact: true });
-	await expect(saveBtn).toHaveAttribute('form', 'structured-edit-form');
-
-	// Verify array item addition
-	const addBtn = editDialog.getByRole('button', { name: 'Add Language' });
-	await expect(addBtn).toBeVisible();
-	const inputs = editDialog.getByRole('textbox', { name: 'Languages Name' });
-	await expect(inputs).toHaveCount(5);
-
-	await addBtn.click();
-	await expect(inputs).toHaveCount(6);
-	await inputs.nth(5).fill('Deep Speech');
-
-	// Save via external form submission button
-	await saveBtn.click();
-	await expect(editDialog).not.toBeVisible();
-	await expect(cardActions).toBeFocused();
+	const addLanguage = region.getByRole('button', { name: 'Add Prof. Languages' });
+	await addLanguage.click();
+	const addDialog = page.getByRole('dialog', { name: 'Add Prof. Languages' });
+	await addDialog.getByLabel('Name', { exact: true }).fill('Deep Speech');
+	await addDialog.getByRole('button', { name: 'Save', exact: true }).click();
+	await expect(addDialog).not.toBeVisible();
+	await expect(addLanguage).toBeFocused();
 	await expect(region.getByText('6 items', { exact: true }).first()).toBeVisible();
 	await expect(region.getByText('Deep Speech', { exact: true }).first()).toBeVisible();
 
-	// Verify array item removal
-	await cardActions.click();
-	await page.getByRole('button', { name: 'Edit', exact: true }).click();
-	await expect(editDialog).toBeVisible();
+	let row = region.getByRole('listitem').filter({ hasText: 'Deep Speech' }).first();
+	let detail = row.getByRole('button', { name: 'View Deep Speech details' });
+	await detail.click();
+	let detailDialog = page.getByRole('dialog', { name: 'Deep Speech', exact: true });
+	await detailDialog.getByRole('button', { name: 'Edit', exact: true }).click();
+	await detailDialog.getByLabel('Name', { exact: true }).fill('Deep Speech Revised');
+	await detailDialog.getByRole('button', { name: 'Save', exact: true }).click();
+	detailDialog = page.getByRole('dialog', { name: 'Deep Speech Revised', exact: true });
+	await detailDialog.getByRole('button', { name: 'Close', exact: true }).click();
 
-	const removeBtns = editDialog.getByRole('button', { name: 'Remove' });
-	await expect(removeBtns).toHaveCount(6);
-	await removeBtns.nth(5).click();
-	await expect(editDialog.getByRole('textbox', { name: 'Languages Name' })).toHaveCount(5);
-
-	// Save again
-	await editDialog.getByRole('button', { name: 'Save', exact: true }).click();
-	await expect(editDialog).not.toBeVisible();
-	await expect(cardActions).toBeFocused();
+	row = region.getByRole('listitem').filter({ hasText: 'Deep Speech Revised' }).first();
+	detail = row.getByRole('button', { name: 'View Deep Speech Revised details' });
+	await expect(detail).toBeFocused();
+	await detail.click();
+	detailDialog = page.getByRole('dialog', { name: 'Deep Speech Revised', exact: true });
+	await detailDialog.getByRole('button', { name: 'Remove Deep Speech Revised' }).click();
+	await detailDialog.getByRole('button', { name: 'Confirm remove' }).click();
+	await expect(detailDialog).not.toBeVisible();
+	await expect(addLanguage).toBeFocused();
 	await expect(region.getByText('5 items', { exact: true }).first()).toBeVisible();
-	await expect(region.getByText('Deep Speech', { exact: true })).toHaveCount(0);
+	await expect(region.getByText('Deep Speech Revised', { exact: true })).toHaveCount(0);
+
+	const traits = page.getByRole('region', { name: 'Traits', exact: true });
+	const addTrait = traits.getByRole('button', { name: 'Add Traits' });
+	await addTrait.click();
+	const addTraitDialog = page.getByRole('dialog', { name: 'Add Traits' });
+	await addTraitDialog.getByLabel('Name', { exact: true }).fill('Keen Senses');
+	await addTraitDialog.getByRole('button', { name: 'Save', exact: true }).click();
+	await expect(addTraitDialog).not.toBeVisible();
+	await expect(addTrait).toBeFocused();
+	await traits.getByRole('searchbox', { name: 'Search Traits' }).fill('Keen Senses');
+	const traitRow = traits.getByRole('listitem').filter({ hasText: 'Keen Senses' });
+	await traitRow.getByRole('button', { name: 'View Keen Senses details' }).click();
+	const traitDialog = page.getByRole('dialog', { name: 'Keen Senses', exact: true });
+	await expect(traitDialog.getByRole('button', { name: /Remove/ })).toHaveCount(0);
 });

@@ -22,14 +22,14 @@
 								value: 24,
 								bindPath: ['hp'],
 								capabilities: { canEditValue: true },
-								interaction: { editAffordance: 'persistent' }
+								interaction: { tier: 'runtime', editAffordance: 'persistent' }
 							},
 							ac: {
 								fieldName: 'AC',
 								value: 16,
 								bindPath: ['ac'],
 								capabilities: { canEditValue: true },
-								interaction: { editAffordance: 'persistent' }
+								interaction: { tier: 'runtime', editAffordance: 'persistent' }
 							}
 						}
 					: mode === 'annotated'
@@ -70,7 +70,7 @@
 											value: 'Oakenshield',
 											bindPath: ['nickname'],
 											capabilities: { canEditValue: true },
-											interaction: { editAffordance: 'hover' }
+											interaction: { tier: 'read-first', editAffordance: 'hover' }
 										}
 									}
 								: {
@@ -79,7 +79,7 @@
 											value: 24,
 											bindPath: ['hp'],
 											capabilities: { canEditValue: true },
-											interaction: { editAffordance: 'persistent' }
+											interaction: { tier: 'runtime', editAffordance: 'persistent' }
 										},
 										class: { fieldName: 'Class', value: 'Fighter' },
 										level: { fieldName: 'Level', value: 3 },

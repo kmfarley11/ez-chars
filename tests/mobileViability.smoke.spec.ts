@@ -36,7 +36,7 @@ async function openSeededCharacter(page: Page) {
 	await expect(openButton).toBeVisible();
 	await openButton.click();
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-character/);
-	await expect(page.getByText('Current HP:', { exact: false })).toBeVisible();
+	await expect(page.getByText('Current HP', { exact: true }).first()).toBeVisible();
 }
 
 async function openSaturatedCharacter(page: Page) {
@@ -189,40 +189,22 @@ test.describe('Document overflow', () => {
 	});
 });
 
-test.describe('Popover menu and dialog lifecycle', () => {
-	test('resets trigger disclosure on dialog open and restores focus on dismissal', async ({
-		page
-	}) => {
+test.describe('Specialized source-menu lifecycle', () => {
+	test('resets trigger disclosure after a source command', async ({ page }) => {
 		await openSeededCharacter(page);
 
-		const rowMenuTrigger = page.getByRole('button', { name: 'Card actions' }).first();
-		await expect(rowMenuTrigger).toBeVisible();
-		await expect(rowMenuTrigger).toHaveAttribute('aria-expanded', 'false');
+		const sourceMenuTrigger = page.getByRole('button', {
+			name: 'Source actions for Longsword attack'
+		});
+		await expect(sourceMenuTrigger).toBeVisible();
+		await expect(sourceMenuTrigger).toHaveAttribute('aria-expanded', 'false');
 
-		// Open popover
-		await rowMenuTrigger.click();
-		await expect(rowMenuTrigger).toHaveAttribute('aria-expanded', 'true');
+		await sourceMenuTrigger.click();
+		await expect(sourceMenuTrigger).toHaveAttribute('aria-expanded', 'true');
 
-		// Click "Edit" command which opens a modal dialog
-		const editMenuItem = page.getByRole('button', { name: 'Edit', exact: true });
-		await expect(editMenuItem).toBeVisible();
-		await editMenuItem.click();
-
-		// Modal dialog opens
-		const editDialog = page.getByRole('dialog', { name: 'Edit Fields' });
-		await expect(editDialog).toBeVisible();
-
-		// Popover trigger must have closed and reset its disclosure state immediately
-		await expect(rowMenuTrigger).toHaveAttribute('aria-expanded', 'false');
-
-		// Dismiss the modal dialog
-		const cancelButton = editDialog.getByRole('button', { name: 'Cancel' });
-		await cancelButton.click();
-		await expect(editDialog).toBeHidden();
-
-		// Focus must return to the closed trigger button
-		await expect(rowMenuTrigger).toBeFocused();
-		await expect(rowMenuTrigger).toHaveAttribute('aria-expanded', 'false');
+		page.once('dialog', async (dialog) => dialog.dismiss());
+		await page.getByRole('button', { name: 'Resync from source' }).click();
+		await expect(sourceMenuTrigger).toHaveAttribute('aria-expanded', 'false');
 	});
 });
 
@@ -252,7 +234,7 @@ test.describe('Mobile typography and zoom', () => {
 			scrollY: window.scrollY
 		}));
 		await editCurrentHp.click();
-		const hpInput = page.getByLabel('Current HP');
+		const hpInput = page.locator('input[aria-label="Current HP"]');
 		await expect(hpInput).toBeVisible();
 		const viewportAfterInlineFocus = await page.evaluate(() => ({
 			scale: window.visualViewport?.scale ?? 1,
@@ -271,7 +253,7 @@ test.describe('Mobile typography and zoom', () => {
 			hpFontSize,
 			`Primitive input font size should be >= 16px, got ${hpFontSize}px`
 		).toBeGreaterThanOrEqual(16);
-		await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+		await page.getByRole('button', { name: 'Cancel editing Current HP' }).click();
 
 		// 2. Add action dialog search input
 		await page.getByRole('button', { name: 'Add action' }).click();
@@ -288,11 +270,16 @@ test.describe('Mobile typography and zoom', () => {
 		await addActionDialog.getByRole('button', { name: 'Cancel' }).click();
 		await expect(addActionDialog).toBeHidden();
 
-		// 3. StructuredForm inputs, textareas, selects inside item edit dialog
-		const rowMenuTrigger = page.getByRole('button', { name: 'Card actions' }).first();
-		await rowMenuTrigger.click();
-		await page.getByRole('button', { name: 'Edit', exact: true }).click();
-		const editDialog = page.getByRole('dialog', { name: 'Edit Fields' });
+		// 3. StructuredForm inputs and selects inside a focused rich-detail editor
+		const identityDetail = page.getByRole('button', {
+			name: 'View Character identity and classes'
+		});
+		await identityDetail.click();
+		const editDialog = page.getByRole('dialog', {
+			name: 'Character identity and classes',
+			exact: true
+		});
+		await editDialog.getByRole('button', { name: 'Edit', exact: true }).click();
 		await expect(editDialog).toBeVisible();
 
 		const formControls = editDialog.locator(
@@ -314,6 +301,9 @@ test.describe('Mobile typography and zoom', () => {
 		}
 
 		await editDialog.getByRole('button', { name: 'Cancel' }).click();
+		await expect(editDialog.getByRole('heading', { name: 'Authored information' })).toBeVisible();
+		await editDialog.getByRole('button', { name: 'Close' }).click();
 		await expect(editDialog).toBeHidden();
+		await expect(identityDetail).toBeFocused();
 	});
 });

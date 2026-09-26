@@ -43,8 +43,10 @@
 			bind:query
 			{denseThreshold}
 			{onAdd}
-			{onEdit}
-			{onNotes}
+			onOpenAction={() => {
+				onEdit();
+				onNotes();
+			}}
 			{onNavigateToSource}
 			{onResyncAction}
 		/>

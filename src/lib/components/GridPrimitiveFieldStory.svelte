@@ -31,7 +31,11 @@
 				? [{ id: 'note-1', origin: 'user', kind: 'note', text: 'Remember the bonus.' }]
 				: [],
 			capabilities: { canEditValue: true, canEditAnnotations: true },
-			interaction: { editAffordance, annotationAffordance: 'persistent' }
+			interaction: {
+				tier: editAffordance === 'persistent' ? 'runtime' : 'read-first',
+				editAffordance,
+				annotationAffordance: 'persistent'
+			}
 		};
 		lastPatch = undefined;
 	});

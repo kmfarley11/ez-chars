@@ -6,6 +6,9 @@
 	import RuntimeActionsCard from './components/RuntimeActionsCard.svelte';
 	import SupportingCollectionCard from './components/SupportingCollectionCard.svelte';
 	import Dnd5e2014DenseCollectionCard from './components/Dnd5e2014DenseCollectionCard.svelte';
+	import Dnd5e2014QuickReference from './components/Dnd5e2014QuickReference.svelte';
+	import Dnd5e2014AbilitiesAndProficiencies from './components/Dnd5e2014AbilitiesAndProficiencies.svelte';
+	import Dnd5e2014Spellcasting from './components/Dnd5e2014Spellcasting.svelte';
 	import ResponsiveGrid from '$components/ResponsiveGrid.svelte';
 	import BaseButton from '$components/BaseButton.svelte';
 	import IconBookOpen from '$components/IconBookOpen.svelte';
@@ -166,19 +169,13 @@
 
 	const {
 		annotationEditorConfig,
-		runtimeActionData,
 		metaPrimaryData,
 		metaSecondaryData,
 		metaTertiaryData,
-		quickRefPrimaryData,
-		quickRefMovementData,
-		quickRefSecondaryData,
+		quickRefLiveData,
+		quickRefReferenceData,
 		proficiencyBonusRuntimeData,
 		abilityRuntimeColumns,
-		traitRuntimeData,
-		proficiencyLanguagesRuntimeData,
-		proficiencyToolsRuntimeData,
-		featuresRuntimeData,
 		inventoryCurrencyRuntimeData,
 		inventoryRuntimeCards,
 		organizationalBackgroundData,
@@ -186,8 +183,7 @@
 		roleplaySecondaryData,
 		scratchpadNotesData,
 		spellcastingRuntimeData,
-		spellSlotRuntimeData,
-		spellCollectionBulkEditData
+		spellSlotRuntimeData
 	} = $derived(project5eSheet(char));
 	const inventoryPins = $derived(new Set(char.systemData.collectionPins?.inventory ?? []));
 	const spellPins = $derived(new Set(char.systemData.collectionPins?.spells ?? []));
@@ -234,18 +230,17 @@
 	};
 
 	const handleSheetIntents = (intents: ReadonlyArray<SheetEditIntent>) => {
+		let saved = true;
 		updateCurrent5eCharacter((entry) => {
 			const result = reduce5eSheetEditIntents(entry, intents);
 			if (!result.ok) {
+				saved = false;
 				reportStructuredEditIssues(result.issues);
 				return entry;
 			}
 			return result.character;
 		});
-	};
-
-	const handleSheetIntent = (intent: SheetEditIntent) => {
-		handleSheetIntents([intent]);
+		return saved;
 	};
 
 	const commitPrioritySave = (
@@ -387,18 +382,21 @@
 		const decoded = decode5eGridPatches(patches);
 		if (!decoded.ok) {
 			reportStructuredEditIssues(decoded.issues);
-			return;
+			return false;
 		}
 
+		let saved = true;
 		updateCurrent5eCharacter((entry) => {
 			const candidate = applyGridPatches(entry, decoded.edits.canonicalPatches);
 			const result = reduce5eSheetEditIntents(candidate, decoded.edits.intents);
 			if (!result.ok) {
+				saved = false;
 				reportStructuredEditIssues(result.issues);
 				return entry;
 			}
 			return result.character;
 		});
+		return saved;
 	};
 </script>
 
@@ -463,6 +461,7 @@
 						<ResponsiveGrid cols={1} colsMd={3} classes="gap-3">
 							<PanelSurface>
 								<GridContentCard
+									detailTitle="Character identity and classes"
 									handleFieldSavePatch={handleFieldPatchSave}
 									handleEditSavePatches={handleGridPatchesSave}
 									{annotationEditorConfig}
@@ -471,6 +470,7 @@
 							</PanelSurface>
 							<PanelSurface>
 								<GridContentCard
+									detailTitle="Ancestry and background"
 									handleFieldSavePatch={handleFieldPatchSave}
 									handleEditSavePatches={handleGridPatchesSave}
 									{annotationEditorConfig}
@@ -479,6 +479,7 @@
 							</PanelSurface>
 							<PanelSurface>
 								<GridContentCard
+									detailTitle="Alignment and appearance"
 									handleFieldSavePatch={handleFieldPatchSave}
 									handleEditSavePatches={handleGridPatchesSave}
 									{annotationEditorConfig}
@@ -491,43 +492,21 @@
 
 				<Dnd5e2014NavigableRegion landmark={landmark('sheet-runtime-heading')}>
 					<Dnd5e2014NavigablePanel landmark={landmark('sheet-quick-reference-heading')}>
-						<ResponsiveGrid cols={1} colsMd={3} classes="gap-3">
-							<PanelSurface>
-								<GridContentCard
-									handleFieldSavePatch={handleFieldPatchSave}
-									handleEditSavePatches={handleGridPatchesSave}
-									{annotationEditorConfig}
-									displayMaxCols={2}
-									data={quickRefPrimaryData}
-								/>
-							</PanelSurface>
-							<PanelSurface>
-								<GridContentCard
-									handleFieldSavePatch={handleFieldPatchSave}
-									handleEditSavePatches={handleGridPatchesSave}
-									{annotationEditorConfig}
-									data={quickRefMovementData}
-								/>
-							</PanelSurface>
-							<PanelSurface>
-								<GridContentCard
-									handleFieldSavePatch={handleFieldPatchSave}
-									handleEditSavePatches={handleGridPatchesSave}
-									{annotationEditorConfig}
-									displayMaxCols={1}
-									data={quickRefSecondaryData}
-								/>
-							</PanelSurface>
-						</ResponsiveGrid>
+						<Dnd5e2014QuickReference
+							liveData={quickRefLiveData}
+							referenceData={quickRefReferenceData}
+							{annotationEditorConfig}
+							onFieldSavePatch={handleFieldPatchSave}
+							onSavePatches={handleGridPatchesSave}
+						/>
 					</Dnd5e2014NavigablePanel>
 					<Dnd5e2014NavigablePanel landmark={landmark('sheet-actions-heading')}>
 						<ResponsiveGrid cols={1} classes="gap-3">
 							<PanelSurface>
 								<RuntimeActionsCard
-									data={runtimeActionData}
 									character={char}
 									{annotationEditorConfig}
-									handleEditSavePatches={handleGridPatchesSave}
+									onIntents={handleSheetIntents}
 									onCreateAction={handleCreateRuntimeAction}
 									onResyncAction={handleResyncRuntimeAction}
 									onNavigateToSource={handleNavigateToSource}
@@ -536,59 +515,21 @@
 						</ResponsiveGrid>
 					</Dnd5e2014NavigablePanel>
 					<Dnd5e2014NavigablePanel landmark={landmark('sheet-abilities-proficiencies-heading')}>
-						<ResponsiveGrid cols={1} classes="gap-3">
-							<PanelSurface>
-								<GridContentCard
-									handleFieldSavePatch={handleFieldPatchSave}
-									handleEditSavePatches={handleGridPatchesSave}
-									{annotationEditorConfig}
-									displayMaxCols={1}
-									displayAlign="center"
-									data={proficiencyBonusRuntimeData}
-								/>
-							</PanelSurface>
-							<ResponsiveGrid cols={1} colsMd={3} colsLg={6} classes="gap-3">
-								{#each abilityRuntimeColumns as column (column.key)}
-									<PanelSurface>
-										<GridContentCard
-											handleFieldSavePatch={handleFieldPatchSave}
-											handleEditSavePatches={handleGridPatchesSave}
-											{annotationEditorConfig}
-											displayMaxCols={1}
-											data={column.data}
-										/>
-									</PanelSurface>
-								{/each}
-							</ResponsiveGrid>
-							<ResponsiveGrid cols={1} colsMd={2} classes="gap-3">
-								<section aria-label="Prof. Languages" class="grid">
-									<PanelSurface>
-										<SupportingCollectionCard
-											title="Prof. Languages"
-											rows={supportingCollectionRows.languages}
-											data={proficiencyLanguagesRuntimeData}
-											{annotationEditorConfig}
-											handleEditSavePatches={handleGridPatchesSave}
-											bind:query={supportingCollectionQueries.languages}
-											onSavePins={(draft) => handlePrioritySave('languages', draft)}
-										/>
-									</PanelSurface>
-								</section>
-								<section aria-label="Prof. Tools" class="grid">
-									<PanelSurface>
-										<SupportingCollectionCard
-											title="Prof. Tools"
-											rows={supportingCollectionRows.tools}
-											data={proficiencyToolsRuntimeData}
-											{annotationEditorConfig}
-											handleEditSavePatches={handleGridPatchesSave}
-											bind:query={supportingCollectionQueries.tools}
-											onSavePins={(draft) => handlePrioritySave('tools', draft)}
-										/>
-									</PanelSurface>
-								</section>
-							</ResponsiveGrid>
-						</ResponsiveGrid>
+						<Dnd5e2014AbilitiesAndProficiencies
+							character={char}
+							proficiencyBonusData={proficiencyBonusRuntimeData}
+							abilityColumns={abilityRuntimeColumns}
+							languageRows={supportingCollectionRows.languages}
+							toolRows={supportingCollectionRows.tools}
+							{annotationEditorConfig}
+							bind:languageQuery={supportingCollectionQueries.languages}
+							bind:toolQuery={supportingCollectionQueries.tools}
+							onFieldSavePatch={handleFieldPatchSave}
+							onSavePatches={handleGridPatchesSave}
+							onIntents={handleSheetIntents}
+							onSaveLanguagePins={(draft) => handlePrioritySave('languages', draft)}
+							onSaveToolPins={(draft) => handlePrioritySave('tools', draft)}
+						/>
 					</Dnd5e2014NavigablePanel>
 					<Dnd5e2014NavigablePanel landmark={landmark('sheet-features-traits-heading')}>
 						<ResponsiveGrid cols={1} colsMd={2} classes="gap-3">
@@ -601,10 +542,11 @@
 								<PanelSurface>
 									<SupportingCollectionCard
 										title="Features"
+										kind="features"
 										rows={supportingCollectionRows.features}
-										data={featuresRuntimeData}
+										character={char}
 										{annotationEditorConfig}
-										handleEditSavePatches={handleGridPatchesSave}
+										onIntents={handleSheetIntents}
 										bind:query={supportingCollectionQueries.features}
 										onSavePins={(draft) => handlePrioritySave('features', draft)}
 									/>
@@ -619,10 +561,11 @@
 								<PanelSurface>
 									<SupportingCollectionCard
 										title="Traits"
+										kind="traits"
 										rows={supportingCollectionRows.traits}
-										data={traitRuntimeData}
+										character={char}
 										{annotationEditorConfig}
-										handleEditSavePatches={handleGridPatchesSave}
+										onIntents={handleSheetIntents}
 										bind:query={supportingCollectionQueries.traits}
 										onSavePins={(draft) => handlePrioritySave('traits', draft)}
 									/>
@@ -644,51 +587,25 @@
 								<IconBookOpen classes="h-4 w-4" />
 							</BaseButton>
 						{/snippet}
-						<ResponsiveGrid cols={1} classes="gap-3">
-							<section aria-label="Spellcasting">
-								<PanelSurface>
-									<GridContentCard
-										handleFieldSavePatch={handleFieldPatchSave}
-										handleEditSavePatches={handleGridPatchesSave}
-										{annotationEditorConfig}
-										displayAlign="center"
-										data={spellcastingRuntimeData}
-									/>
-								</PanelSurface>
-							</section>
-							<section aria-label="Spell slots">
-								<PanelSurface>
-									<GridContentCard
-										handleFieldSavePatch={handleFieldPatchSave}
-										handleEditSavePatches={handleGridPatchesSave}
-										{annotationEditorConfig}
-										displayAlign="center"
-										data={spellSlotRuntimeData}
-									/>
-								</PanelSurface>
-							</section>
-							<section
-								{@attach registerSpellCollection}
-								tabindex="-1"
-								aria-label="Spells collection"
-								class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
-							>
-								<PanelSurface>
-									<Dnd5e2014DenseCollectionCard
-										title="Spells"
-										rows={spellDenseRows}
-										character={char}
-										bulkEditData={spellCollectionBulkEditData}
-										bind:query={spellCollectionQuery}
-										{annotationEditorConfig}
-										emptyText="No spells yet."
-										onIntent={handleSheetIntent}
-										onBulkSave={handleGridPatchesSave}
-										onSavePins={(draft) => handlePrioritySave('spells', draft)}
-									/>
-								</PanelSurface>
-							</section>
-						</ResponsiveGrid>
+						<section
+							{@attach registerSpellCollection}
+							tabindex="-1"
+							aria-label="Spellcasting section"
+							class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-2"
+						>
+							<Dnd5e2014Spellcasting
+								character={char}
+								summaryData={spellcastingRuntimeData}
+								slotData={spellSlotRuntimeData}
+								spellRows={spellDenseRows}
+								{annotationEditorConfig}
+								bind:query={spellCollectionQuery}
+								onFieldSavePatch={handleFieldPatchSave}
+								onSavePatches={handleGridPatchesSave}
+								onIntents={handleSheetIntents}
+								onSavePins={(draft) => handlePrioritySave('spells', draft)}
+							/>
+						</section>
 					</Dnd5e2014NavigablePanel>
 				</Dnd5e2014NavigableRegion>
 
@@ -710,6 +627,7 @@
 						<ResponsiveGrid cols={1} classes="gap-3">
 							<PanelSurface>
 								<GridContentCard
+									detailTitle="Treasure"
 									handleFieldSavePatch={handleFieldPatchSave}
 									handleEditSavePatches={handleGridPatchesSave}
 									{annotationEditorConfig}
@@ -732,12 +650,11 @@
 												title={inventoryCollectionTitles[inventoryCard.key]}
 												rows={inventoryDenseRows[inventoryCard.key]}
 												character={char}
-												bulkEditData={inventoryCard.data}
+												collection={{ kind: 'item', group: inventoryCard.key }}
 												bind:query={inventoryCollectionQueries[inventoryCard.key]}
 												{annotationEditorConfig}
 												emptyText={`No ${inventoryCollectionTitles[inventoryCard.key].toLocaleLowerCase()} yet.`}
-												onIntent={handleSheetIntent}
-												onBulkSave={handleGridPatchesSave}
+												onIntents={handleSheetIntents}
 												onSavePins={(draft) =>
 													handleInventoryPrioritySave(inventoryCard.key, draft)}
 											/>
@@ -752,6 +669,7 @@
 							<ResponsiveGrid cols={1} colsMd={3} classes="gap-3">
 								<PanelSurface>
 									<GridContentCard
+										detailTitle="Background details"
 										handleFieldSavePatch={handleFieldPatchSave}
 										handleEditSavePatches={handleGridPatchesSave}
 										{annotationEditorConfig}
@@ -761,6 +679,7 @@
 								</PanelSurface>
 								<PanelSurface>
 									<GridContentCard
+										detailTitle="Roleplay"
 										handleFieldSavePatch={handleFieldPatchSave}
 										handleEditSavePatches={handleGridPatchesSave}
 										{annotationEditorConfig}
@@ -770,6 +689,7 @@
 								</PanelSurface>
 								<PanelSurface>
 									<GridContentCard
+										detailTitle="Additional character notes"
 										handleFieldSavePatch={handleFieldPatchSave}
 										handleEditSavePatches={handleGridPatchesSave}
 										{annotationEditorConfig}
@@ -780,6 +700,7 @@
 							</ResponsiveGrid>
 							<PanelSurface>
 								<GridContentCard
+									detailTitle="Scratchpad notes"
 									handleFieldSavePatch={handleFieldPatchSave}
 									handleEditSavePatches={handleGridPatchesSave}
 									{annotationEditorConfig}

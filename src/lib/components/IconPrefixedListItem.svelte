@@ -5,15 +5,22 @@
 
 	interface Props {
 		icon: 'pin' | 'bullet';
+		element?: 'li' | 'div';
 		title?: string;
 		paragraphClasses?: string;
 		children: Snippet;
 	}
 
-	let { icon, title = undefined, paragraphClasses = '', children }: Props = $props();
+	let {
+		icon,
+		element = 'li',
+		title = undefined,
+		paragraphClasses = '',
+		children
+	}: Props = $props();
 </script>
 
-<li class="max-w-full min-w-0 relative pl-5">
+<svelte:element this={element} class="max-w-full min-w-0 relative pl-5">
 	<span
 		class="absolute left-0 top-0 flex h-5 w-4 items-center justify-start select-none text-[1em]"
 		aria-hidden="true"
@@ -31,4 +38,4 @@
 		{/if}
 		{@render children()}
 	</p>
-</li>
+</svelte:element>

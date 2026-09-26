@@ -1,4 +1,5 @@
 import type {
+	Annotation,
 	CharacterDocument5e2014,
 	RuntimeAction,
 	RuntimeActionSource
@@ -31,6 +32,7 @@ export type RuntimeActionRow = {
 	sourceCategoryLabel?: string;
 	target?: string;
 	notes?: string;
+	annotations?: Array<Annotation>;
 	source?: {
 		reference: RuntimeActionSource;
 		label: string;
@@ -97,6 +99,7 @@ export const projectRuntimeActionRows = (
 					: {}),
 			...(target ? { target } : {}),
 			...(notes ? { notes } : {}),
+			...(action.annotations ? { annotations: action.annotations } : {}),
 			...(resolvedSource
 				? {
 						source: {

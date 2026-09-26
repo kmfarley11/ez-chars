@@ -293,8 +293,19 @@ export const isDirectEditablePrimitiveField = (field: GridContentField): boolean
 	!isGridNestedFields(field.value) &&
 	(typeof field.value === 'string' || typeof field.value === 'number') &&
 	field.capabilities?.canEditValue === true &&
-	field.interaction?.editAffordance !== undefined &&
+	field.interaction?.tier !== undefined &&
 	(field.binding?.valuePatchPath ?? field.bindPath) !== undefined;
+
+export const isInlineRuntimeField = (field: GridContentField): boolean =>
+	isDirectEditablePrimitiveField(field) && field.interaction?.tier === 'runtime';
+
+export const isInlineRuntimeFieldGroup = (field: GridContentField): boolean =>
+	isGridNestedFields(field.value) &&
+	Object.values(field.value).length > 0 &&
+	Object.values(field.value).every(isInlineRuntimeField);
+
+export const isInlineRuntimeContent = (field: GridContentField): boolean =>
+	isInlineRuntimeField(field) || isInlineRuntimeFieldGroup(field);
 
 // ------------------------------------------------------------
 // Field Normalization + Display Helpers

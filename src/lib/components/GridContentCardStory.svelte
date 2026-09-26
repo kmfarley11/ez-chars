@@ -15,7 +15,7 @@
 						fieldName: 'Character Name',
 						value: 'Thorin',
 						bindPath: ['profile', 'a/b', 'tilde~key'],
-						interaction: { editAffordance: 'persistent' },
+						interaction: { tier: 'runtime', editAffordance: 'persistent' },
 						capabilities: { canEditValue: true }
 					},
 					class: { fieldName: 'Class', value: 'Fighter', readOnly: true },

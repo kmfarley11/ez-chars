@@ -30,7 +30,7 @@ async function openSeededCharacter(page: Page) {
 	await page.goto('/');
 	await page.getByRole('button', { name: `Open ${e2eCharacter.identity.name}` }).click();
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-character/);
-	await expect(page.getByText('Current HP:', { exact: false })).toBeVisible();
+	await expect(page.getByRole('button', { name: 'Edit Current HP' })).toBeVisible();
 }
 
 async function collectTargetFailures(targets: NamedTarget[], failures: string[]) {
@@ -84,7 +84,7 @@ test('representative phone controls expose non-overlapping 44 CSS-pixel targets'
 	);
 	await openCharacter.click();
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-character/);
-	await expect(page.getByText('Current HP:', { exact: false })).toBeVisible();
+	await expect(page.getByRole('button', { name: 'Edit Current HP' })).toBeVisible();
 	const spellsToggle = page.getByRole('button', { name: 'Collapse Spells' });
 	await collectTargetFailures([{ name: 'Spells section', locator: spellsToggle }], failures);
 
@@ -106,7 +106,7 @@ test('representative phone controls expose non-overlapping 44 CSS-pixel targets'
 			{ name: 'Current HP edit', locator: page.getByRole('button', { name: 'Edit Current HP' }) },
 			{
 				name: 'Current HP annotations',
-				locator: page.getByRole('button', { name: 'Add annotations for Current HP' })
+				locator: page.getByRole('button', { name: 'Add notes for Current HP' })
 			},
 			{ name: 'Runtime add action', locator: page.getByRole('button', { name: 'Add action' }) },
 			{
@@ -114,16 +114,16 @@ test('representative phone controls expose non-overlapping 44 CSS-pixel targets'
 				locator: runtimeActions.getByRole('button', { name: 'Source actions for Longsword attack' })
 			},
 			{
-				name: 'Spell collection actions',
+				name: 'Spell collection add',
 				locator: page
 					.getByRole('region', { name: 'Spells collection' })
-					.getByRole('button', { name: 'Bulk Edit Spells' })
+					.getByRole('button', { name: 'Add Spells' })
 			},
 			{
-				name: 'Inventory collection actions',
+				name: 'Inventory collection add',
 				locator: page
 					.getByRole('region', { name: 'Weapons inventory' })
-					.getByRole('button', { name: 'Bulk Edit Weapons' })
+					.getByRole('button', { name: 'Add Weapons' })
 			}
 		],
 		failures
@@ -132,27 +132,46 @@ test('representative phone controls expose non-overlapping 44 CSS-pixel targets'
 	await page.getByRole('button', { name: 'Edit Current HP' }).click();
 	await collectTargetFailures(
 		[
-			{ name: 'Current HP input', locator: page.getByLabel('Current HP') },
-			{ name: 'Primitive save', locator: page.getByRole('button', { name: 'Save', exact: true }) },
+			{
+				name: 'Current HP input',
+				locator: page.getByRole('spinbutton', { name: 'Current HP' })
+			},
+			{
+				name: 'Primitive save',
+				locator: page.getByRole('button', { name: 'Confirm Current HP' })
+			},
 			{
 				name: 'Primitive cancel',
-				locator: page.getByRole('button', { name: 'Cancel', exact: true })
+				locator: page.getByRole('button', { name: 'Cancel editing Current HP' })
 			}
 		],
 		failures
 	);
-	await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+	await page.getByRole('button', { name: 'Cancel editing Current HP' }).click();
 
-	const cardActions = page.getByRole('button', { name: 'Card actions' }).first();
-	await cardActions.click();
+	const focusedDetailTrigger = page.getByRole('button', {
+		name: 'View Character identity and classes'
+	});
+	await collectTargetFailures(
+		[{ name: 'Focused detail trigger', locator: focusedDetailTrigger }],
+		failures
+	);
+	await focusedDetailTrigger.click();
+	const focusedDetail = page.getByRole('dialog', { name: 'Character identity and classes' });
 	await collectTargetFailures(
 		[
-			{ name: 'Card menu edit', locator: page.getByRole('button', { name: 'Edit', exact: true }) },
-			{ name: 'Card menu notes', locator: page.getByRole('button', { name: 'Notes', exact: true }) }
+			{
+				name: 'Focused detail edit',
+				locator: focusedDetail.getByRole('button', { name: 'Edit', exact: true })
+			},
+			{
+				name: 'Focused detail close',
+				locator: focusedDetail.getByRole('button', { name: 'Close', exact: true })
+			}
 		],
 		failures
 	);
-	await page.keyboard.press('Escape');
+	await focusedDetail.getByRole('button', { name: 'Close', exact: true }).click();
 
 	await page.getByRole('button', { name: 'Add action' }).click();
 	const dialog = page.getByRole('dialog', { name: 'Add action' });

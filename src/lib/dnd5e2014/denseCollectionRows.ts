@@ -43,7 +43,7 @@ export const projectInventoryDenseCollectionRows = (
 				label: item.name,
 				pinned: pinnedIdentities.has(item.id),
 				detail: item.notes,
-				context: contextParts.length > 0 ? contextParts.join(' · ') : undefined,
+				badges: contextParts,
 				annotations: item.annotations,
 				searchText: `${inventoryGroupLabels[group]} ${item.value ?? ''}`,
 				source: { kind: 'item', id: item.id, group }
@@ -59,10 +59,7 @@ export const projectSpellDenseCollectionRows = (
 			.filter((spell) => (spell.level ?? 0) === level)
 			.map((spell) => {
 				const levelLabel = level === 0 ? 'Cantrip' : `Spell level ${level}`;
-				const context =
-					spell.prepared === undefined
-						? levelLabel
-						: `${levelLabel} · ${spell.prepared ? 'Prepared' : 'Not prepared'}`;
+				const stateBadges = [levelLabel, ...(spell.prepared === true ? ['Prepared'] : [])];
 
 				return {
 					key: `spell:${spell.spellId}`,
@@ -70,11 +67,10 @@ export const projectSpellDenseCollectionRows = (
 					label: spell.name,
 					pinned: pinnedIdentities.has(spell.spellId),
 					detail: spell.notes,
-					context,
 					groupLabel: getSpellLevelGroupLabel(level),
-					badges: ['Spell'],
+					badges: stateBadges,
 					annotations: spell.annotations,
-					searchText: context,
+					searchText: `${levelLabel} ${spell.prepared ? 'Prepared' : 'Not prepared'}`,
 					source: { kind: 'spell', id: spell.spellId, level }
 				};
 			})

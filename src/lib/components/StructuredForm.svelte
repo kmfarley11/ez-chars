@@ -1,25 +1,56 @@
 <script lang="ts">
+	import BaseButton from '$components/BaseButton.svelte';
+	import GridContentAnnotationsEditor from '$components/GridContentAnnotationsEditor.svelte';
 	import { collectLeafInputs, normalizeData } from '$utils/gridContentHelpers';
 	import {
 		appendGridArrayItemAtPath,
 		removeGridArrayItemAtPath,
+		updateGridAnnotationsAtPath,
 		updateGridDataAtPath
 	} from '$utils/characterGridHelpers';
+	import {
+		findRemovedDraftAnnotation,
+		restoreRemovedDraftAnnotation,
+		type AnnotationRemoval
+	} from '$utils/focusedDraft';
 	import { displayOrPlaceholder } from '$utils/displayHelpers';
 	import { isGridFieldArray } from '$utils/gridFieldGuards';
-	import type { GridContentData, GridContentField } from '$utils/gridContentTypes';
+	import type {
+		GridAnnotationEditorConfig,
+		GridContentAnnotation,
+		GridContentData,
+		GridContentField,
+		GridContentPathSegment
+	} from '$utils/gridContentTypes';
 
 	interface Props {
 		id?: string;
 		data: GridContentData;
+		annotationEditorConfig?: GridAnnotationEditorConfig;
+		showAnnotations?: boolean;
 		// eslint-disable-next-line no-unused-vars
 		onSave?: (_payload: GridContentData) => void;
 	}
 
-	let { id = 'structured-form', data, onSave }: Props = $props();
+	let {
+		id = 'structured-form',
+		data,
+		annotationEditorConfig = undefined,
+		showAnnotations = false,
+		onSave
+	}: Props = $props();
 
 	let draftData = $state<GridContentData>({});
 	let previousDataJson = $state<string | undefined>(undefined);
+	let pendingRemoval = $state<
+		| {
+				path: Array<GridContentPathSegment>;
+				pathKey: string;
+				removal: AnnotationRemoval;
+				remaining: Array<GridContentAnnotation>;
+		  }
+		| undefined
+	>(undefined);
 
 	$effect(() => {
 		if (data) {
@@ -27,6 +58,7 @@
 			if (currentJson !== previousDataJson) {
 				draftData = structuredClone($state.snapshot(normalizeData(data)));
 				previousDataJson = currentJson;
+				pendingRemoval = undefined;
 			}
 		}
 	});
@@ -46,6 +78,32 @@
 
 	const removeArrayItem = (fieldKey: string, itemIdx: number) => {
 		draftData = removeGridArrayItemAtPath(draftData, [fieldKey], itemIdx);
+		pendingRemoval = undefined;
+	};
+
+	const pathKey = (path: ReadonlyArray<GridContentPathSegment>) => path.join('\u001f');
+
+	const updateAnnotations = (
+		path: Array<GridContentPathSegment>,
+		previous: ReadonlyArray<GridContentAnnotation>,
+		next: Array<GridContentAnnotation>
+	) => {
+		const removal = findRemovedDraftAnnotation(previous, next);
+		pendingRemoval = removal
+			? { path: [...path], pathKey: pathKey(path), removal, remaining: next }
+			: undefined;
+		draftData = updateGridAnnotationsAtPath(draftData, path, next);
+	};
+
+	const undoAnnotationRemoval = () => {
+		if (!pendingRemoval) return;
+		const { path, removal, remaining } = pendingRemoval;
+		draftData = updateGridAnnotationsAtPath(
+			draftData,
+			path,
+			restoreRemovedDraftAnnotation(remaining, removal)
+		);
+		pendingRemoval = undefined;
 	};
 
 	const isNumberInput = (field: GridContentField) =>
@@ -179,6 +237,21 @@
 												}}
 											/>
 										{/if}
+										{#if showAnnotations && leaf.field.annotationBindPath}
+											<GridContentAnnotationsEditor
+												annotations={leaf.field.annotations ?? []}
+												referenceTemplates={annotationEditorConfig?.referenceTemplates}
+												defaultKind={annotationEditorConfig?.defaultKind}
+												defaultOrigin={annotationEditorConfig?.defaultOrigin}
+												onChange={(next) =>
+													updateAnnotations(leaf.path, leaf.field.annotations ?? [], next)}
+											/>
+											{#if pendingRemoval?.pathKey === pathKey(leaf.path)}
+												<BaseButton size="sm" onclick={undoAnnotationRemoval}
+													>Undo annotation removal</BaseButton
+												>
+											{/if}
+										{/if}
 									</div>
 								</div>
 							{/each}
@@ -264,6 +337,21 @@
 											);
 										}}
 									/>
+								{/if}
+								{#if showAnnotations && leaf.field.annotationBindPath}
+									<GridContentAnnotationsEditor
+										annotations={leaf.field.annotations ?? []}
+										referenceTemplates={annotationEditorConfig?.referenceTemplates}
+										defaultKind={annotationEditorConfig?.defaultKind}
+										defaultOrigin={annotationEditorConfig?.defaultOrigin}
+										onChange={(next) =>
+											updateAnnotations(leaf.path, leaf.field.annotations ?? [], next)}
+									/>
+									{#if pendingRemoval?.pathKey === pathKey(leaf.path)}
+										<BaseButton size="sm" onclick={undoAnnotationRemoval}
+											>Undo annotation removal</BaseButton
+										>
+									{/if}
 								{/if}
 							</div>
 						</div>

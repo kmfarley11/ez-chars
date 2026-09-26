@@ -8,7 +8,7 @@ Physical-phone rehearsal shows that the current mixture of inline-morphing field
 - Give an individual rich field or record one focused detail path that presents its authored information, provenance, annotations, and references together before offering an explicit Edit action.
 - Remove ordinary record-level Edit and Notes/References overflow shortcuts once the focused detail path owns those actions; preserve only genuinely domain-specific commands such as source navigation and resynchronization.
 - Treat one focused Edit submission as one intentional atomic save: authored and annotation changes validate and commit together, or the target remains unchanged.
-- Keep collection browsing, priority, and record lifecycle distinct. Individual records open focused detail/editing, pinnable rows expose Pin/Unpin as a first-class action beside their detail target, Manage Pins retains the established batch-priority grammar, collection-level Add creates one record, and eligible removal stays with that record rather than a generic batch organizer.
+- Keep collection browsing, priority, and record lifecycle distinct. Individual records open focused detail/editing, pinnable rows expose Pin/Unpin as the first-class priority action beside their detail target, collection-level Add creates one record, and eligible removal stays with that record rather than a generic batch organizer. The rollout omits the redundant batch Pin manager while retaining its reusable implementation for evidence-triggered reconsideration.
 - Retire collection-wide annotation editing and overview surfaces; use quiet note indicators beside each annotated record's own text plus individual focused detail to discover and review annotations in context, without an aggregate collection-note badge.
 - Preserve the user's filtered collection context and a predictable Back/focus-return path while moving between collection browse, record detail, and record editing.
 - Classify direct runtime controls explicitly instead of allowing unclassified reference/profile fields to inherit noisy persistent editing controls.
@@ -23,6 +23,7 @@ Physical-phone rehearsal shows that the current mixture of inline-morphing field
 - Creating a universal cross-system record schema, generic domain reducer, monolithic form engine, or one item-shaped detail payload.
 - Changing annotation storage, character schemas, stable identities, source/resync semantics, local-first persistence, or reference rights behavior solely for this redesign.
 - Folding collection quickfilters, mobile PDF rendering, user-local document connection, or additional game systems into this change.
+- Replacing the approved target-wide atomic focused draft with independently committed piecewise leaf editors; `BL-085` will compare that direction against a compact target-wide editor before any shared-workflow propagation.
 
 ## Capabilities
 

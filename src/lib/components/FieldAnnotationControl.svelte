@@ -4,6 +4,7 @@
 	import DialogShell from '$components/DialogShell.svelte';
 	import GridContentAnnotationsDisplay from '$components/GridContentAnnotationsDisplay.svelte';
 	import GridContentAnnotationsEditor from '$components/GridContentAnnotationsEditor.svelte';
+	import IconButton from '$components/IconButton.svelte';
 	import ReferencePdfViewer, {
 		type CuratedPdfSection
 	} from '$components/ReferencePdfViewer.svelte';
@@ -25,6 +26,7 @@
 		annotationEditorConfig?: GridAnnotationEditorConfig;
 		// eslint-disable-next-line no-unused-vars
 		onSaveAnnotations?: (_annotations: Array<GridContentAnnotation>) => void;
+		compact?: boolean;
 	}
 
 	let {
@@ -32,7 +34,8 @@
 		annotations,
 		annotationAffordance = 'badge',
 		annotationEditorConfig = undefined,
-		onSaveAnnotations = undefined
+		onSaveAnnotations = undefined,
+		compact = false
 	}: Props = $props();
 
 	let triggerEl = $state<HTMLButtonElement>();
@@ -133,31 +136,55 @@
 </script>
 
 {#if shouldRenderControl}
-	<button
-		bind:this={triggerEl}
-		type="button"
-		class="theme-btn-light touch-target btn annotation-trigger inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
-		class:hover-affordance={annotationAffordance === 'hover' && annotationCount === 0}
-		aria-label={`${annotationCount > 0 ? 'View' : 'Add'} annotations for ${fieldLabel}`}
-		title={`${annotationCount > 0 ? 'View' : 'Add'} annotations for ${fieldLabel}`}
-		onclick={openDialog}
-	>
-		<span>Notes</span>
-		{#if annotationCount > 0}
-			<span
-				class="inline-flex min-h-4 min-w-4 items-center justify-center rounded-full border px-1 text-[0.65rem] leading-none"
-				aria-label={`${annotationCount} annotations`}
-			>
-				{annotationCount}
-			</span>
-		{/if}
-	</button>
+	{#if compact}
+		<span
+			class="relative inline-flex"
+			class:hover-affordance={annotationAffordance === 'hover' && annotationCount === 0}
+		>
+			<IconButton
+				bind:buttonEl={triggerEl}
+				variant="notes"
+				size="sm"
+				shadingVariant={annotationCount > 0 ? 'dark' : 'light'}
+				ariaLabel={`${annotationCount > 0 ? 'View' : 'Add'} notes for ${fieldLabel}${annotationCount > 0 ? `, ${annotationCount} ${annotationCount === 1 ? 'note' : 'notes'}` : ''}`}
+				onclick={openDialog}
+			/>
+			{#if annotationCount > 0}
+				<span
+					aria-hidden="true"
+					class="theme-grid-layer pointer-events-none absolute -top-1 -right-1 inline-flex min-h-4 min-w-4 items-center justify-center rounded-full border px-1 text-[0.6rem] font-bold leading-none"
+				>
+					{annotationCount}
+				</span>
+			{/if}
+		</span>
+	{:else}
+		<button
+			bind:this={triggerEl}
+			type="button"
+			class="theme-btn-light touch-target btn annotation-trigger inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
+			class:hover-affordance={annotationAffordance === 'hover' && annotationCount === 0}
+			aria-label={`${annotationCount > 0 ? 'View' : 'Add'} notes for ${fieldLabel}`}
+			title={`${annotationCount > 0 ? 'View' : 'Add'} notes for ${fieldLabel}`}
+			onclick={openDialog}
+		>
+			<span>Notes</span>
+			{#if annotationCount > 0}
+				<span
+					class="inline-flex min-h-4 min-w-4 items-center justify-center rounded-full border px-1 text-[0.65rem] leading-none"
+					aria-label={`${annotationCount} ${annotationCount === 1 ? 'note' : 'notes'}`}
+				>
+					{annotationCount}
+				</span>
+			{/if}
+		</button>
+	{/if}
 {/if}
 
 {#if shouldRenderDialog}
 	<DialogShell
 		bind:open={shouldRenderDialog}
-		title={activeReference ? activeReference.locator.label : `${fieldLabel} Annotations`}
+		title={activeReference ? activeReference.locator.label : `${fieldLabel} Notes`}
 		showBack={activeReference !== undefined}
 		onBack={leaveReference}
 		onCancel={handleCancel}
@@ -212,7 +239,7 @@
 						isEditing = true;
 					}}
 				>
-					{annotationCount > 0 ? 'Edit' : 'Add'}
+					{annotationCount > 0 ? 'Edit notes' : 'Add note'}
 				</button>
 			{/if}
 			{#if !activeReference && canEditAnnotations && isEditing}

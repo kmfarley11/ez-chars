@@ -31,6 +31,8 @@
 		canInspectReference = () => false,
 		onChange
 	}: Props = $props();
+	let pendingFocusAnnotationId = $state<string | undefined>(undefined);
+	let annotationCollectionOpen = $state(false);
 
 	const toAnnotationEditorDomId = (annotationId: string): string =>
 		`annotation-editor-${annotationId}`;
@@ -56,8 +58,10 @@
 			annotations.map((entry, entryIdx) => (entryIdx === annotationIdx ? updater(entry) : entry))
 		);
 
-	const addAnnotation = async () => {
+	const addAnnotation = () => {
 		const newAnnotationId = createId();
+		pendingFocusAnnotationId = newAnnotationId;
+		annotationCollectionOpen = true;
 		onChange([
 			...annotations,
 			{
@@ -67,8 +71,14 @@
 				text: ''
 			}
 		]);
-		await focusNewAnnotationEditor(newAnnotationId);
 	};
+
+	$effect(() => {
+		const annotationId = pendingFocusAnnotationId;
+		if (!annotationId || !annotations.some((annotation) => annotation.id === annotationId)) return;
+		pendingFocusAnnotationId = undefined;
+		void focusNewAnnotationEditor(annotationId);
+	});
 
 	const removeAnnotationAtIndex = (annotationIdx: number) =>
 		onChange(annotations.filter((_, entryIdx) => entryIdx !== annotationIdx));
@@ -185,24 +195,32 @@
 		});
 </script>
 
-<details class="space-y-2 rounded-md border px-2 py-2">
-	<summary class="theme-text-muted touch-target cursor-pointer text-xs font-semibold">
-		Annotations ({annotations.length})
-	</summary>
-	<div class="mt-2 space-y-2">
-		<div class="flex items-center justify-end">
-			<button
-				type="button"
-				class="theme-btn-light touch-target btn rounded-md border px-2 py-0.5 text-xs"
-				onclick={addAnnotation}
-			>
-				Add
-			</button>
-		</div>
+{#if annotations.length === 0}
+	<div class="flex items-center justify-end">
+		<button
+			type="button"
+			class="theme-btn-light touch-target btn rounded-md border px-2 py-0.5 text-xs"
+			onclick={addAnnotation}
+		>
+			Add note
+		</button>
+	</div>
+{:else}
+	<details bind:open={annotationCollectionOpen} class="space-y-2 rounded-md border px-2 py-2">
+		<summary class="theme-text-muted touch-target cursor-pointer text-xs font-semibold">
+			Notes ({annotations.length})
+		</summary>
+		<div class="mt-2 space-y-2">
+			<div class="flex items-center justify-end">
+				<button
+					type="button"
+					class="theme-btn-light touch-target btn rounded-md border px-2 py-0.5 text-xs"
+					onclick={addAnnotation}
+				>
+					Add
+				</button>
+			</div>
 
-		{#if annotations.length === 0}
-			<p class="theme-text-muted text-xs italic">No annotations.</p>
-		{:else}
 			{#each annotations as annotation, annotationIdx (`annotation-${annotation.id ?? annotationIdx}`)}
 				{@const selectedReferenceTemplateKey = getReferenceTemplateKey(annotation)}
 				<details
@@ -210,7 +228,7 @@
 					class="space-y-2 rounded-md border px-2 py-2"
 				>
 					<summary class="theme-text-muted touch-target cursor-pointer text-xs">
-						{annotation.name ?? `Annotation ${annotationIdx + 1}`}
+						{annotation.name ?? `Note ${annotationIdx + 1}`}
 					</summary>
 					<div class="mt-2 space-y-2">
 						<label class="space-y-1">
@@ -345,6 +363,6 @@
 					</div>
 				</details>
 			{/each}
-		{/if}
-	</div>
-</details>
+		</div>
+	</details>
+{/if}

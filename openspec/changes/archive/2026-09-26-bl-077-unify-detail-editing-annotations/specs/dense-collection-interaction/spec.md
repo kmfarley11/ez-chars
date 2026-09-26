@@ -2,7 +2,7 @@
 
 ### Requirement: Collection browsing, priority, and record lifecycle remain distinct
 
-The system SHALL keep scan-first collection browsing, singular-record detail, record lifecycle, and player-authored priority understandable as distinct concerns. An explicit collection-level Add action SHALL create one record using the minimum required authored information, while eligible removal SHALL remain associated with the selected record. Later authored and annotation changes SHALL use that record's focused detail workflow. Pin/Unpin and Manage Pins SHALL remain the baseline for player-authored priority; the system SHALL NOT require a generic collection organizer or reorder workflow.
+The system SHALL keep scan-first collection browsing, singular-record detail, record lifecycle, and player-authored priority understandable as distinct concerns. An explicit collection-level Add action SHALL create one record using the minimum required authored information, while eligible removal SHALL remain associated with the selected record. Later authored and annotation changes SHALL use that record's focused detail workflow. State-sensitive record-level Pin/Unpin SHALL remain the baseline for player-authored priority; the rollout SHALL NOT require a separate batch Pin manager, generic collection organizer, or reorder workflow.
 
 #### Scenario: Opening one record from a collection
 
@@ -15,6 +15,7 @@ The system SHALL keep scan-first collection browsing, singular-record detail, re
 - **WHEN** a user invokes Add for a collection
 - **THEN** the system SHALL collect only the authored information required to create one record
 - **AND** existing records and their annotations SHALL NOT become part of the same editing surface
+- **AND** successful creation SHALL close the Add surface, return focus to its invoking Add control or an equivalent stable destination, and make the new record reachable from the collection
 
 #### Scenario: Creating records from neighboring collection groups
 
@@ -33,7 +34,7 @@ The system SHALL keep scan-first collection browsing, singular-record detail, re
 
 - **WHEN** a collection record contains one or more annotations
 - **THEN** its scan-first presentation SHALL expose a quiet note indicator with that record's own text rather than in the action cluster
-- **AND** where the presentation distinguishes a field or record label from its value or supporting content, it SHALL order the label or title, then the note indicator, then that value or supporting content
+- **AND** where the presentation exposes metadata badges, it SHALL place them inline with the record title when space allows, order descriptive or state metadata before the note indicator, and present supporting content afterward
 - **AND** the record's focused detail SHALL expose the annotations in that record's context
 - **AND** collection browsing or record lifecycle actions SHALL NOT introduce an aggregate collection-note badge or a separate collection-wide annotation overview or editing surface
 
@@ -46,7 +47,7 @@ The system SHALL keep scan-first collection browsing, singular-record detail, re
 
 ### Requirement: Dense sheet collections expose a consistent interaction grammar
 
-The 2014 character sheet SHALL present Weapons, Armor & Shields, Other Gear, Spells, Runtime Actions, and Supporting Collections (Features, Traits, Languages, Tools) with clear collection names, total or filtered counts, semantic list and row structure, predictable collection actions, and explicit empty and no-match states. Runtime Actions SHALL use a five-item simple-list limit because their information-rich rows consume more space, while compact Supporting Collections SHALL use a seven-item simple-list limit. Collections that exceed their applicable limit SHALL expose bounded or focused presentation and search controls. Eligible equipment, spell, and Supporting Collections SHALL expose collection-level Manage Pins while preserving their collection-specific editing grammar. Each pinnable record SHALL provide a state-sensitive, first-class Pin/Unpin action adjacent to its explicit focused-detail target rather than requiring the user to discover priority inside an overflow menu. Once focused detail provides Edit and annotation/reference access, ordinary record rows SHALL NOT retain duplicate Edit or Notes/References overflow accelerators; domain-specific source commands MAY retain an overflow menu when they remain outside focused authored-detail editing. Supporting Collections SHALL retain compact bullet rows and explicit Add and focused-detail paths when applicable rather than adopting either the complete equipment/spell menu grammar or a generic batch organizer.
+The 2014 character sheet SHALL present Weapons, Armor & Shields, Other Gear, Spells, Runtime Actions, and Supporting Collections (Features, Traits, Languages, Tools) with clear collection names, total or filtered counts, semantic list and row structure, predictable collection actions, and explicit empty and no-match states. Runtime Actions SHALL use a five-item simple-list limit because their information-rich rows consume more space, while compact Supporting Collections SHALL use a seven-item simple-list limit. Collections that exceed their applicable limit SHALL expose bounded or focused presentation and search controls. Each pinnable equipment, spell, or Supporting Collection record SHALL provide a state-sensitive, first-class Pin/Unpin action adjacent to its explicit focused-detail target rather than requiring the user to discover priority inside an overflow menu or duplicate the same operation in a collection-level batch manager. Once focused detail provides Edit and annotation/reference access, ordinary record rows SHALL NOT retain duplicate Edit or Notes/References overflow accelerators; domain-specific source commands MAY retain an overflow menu when they remain outside focused authored-detail editing. Supporting Collections SHALL retain compact bullet rows and explicit Add and focused-detail paths when applicable rather than adopting either the complete equipment/spell menu grammar or a generic batch organizer.
 
 #### Scenario: Viewing a populated target collection (Equipment, Spells)
 
@@ -55,7 +56,7 @@ The 2014 character sheet SHALL present Weapons, Armor & Shields, Other Gear, Spe
 - **AND** each record SHALL be exposed as one distinct list item with adjacent explicit focused-detail and state-sensitive Pin or Unpin actions
 - **AND** activating Pin or Unpin SHALL update priority immediately and preserve a useful focus destination when the record moves
 - **AND** the record SHALL NOT retain duplicate Edit or Notes/References overflow accelerators once focused detail exposes those actions
-- **AND** the collection SHALL expose a separately named Manage Pins action
+- **AND** the collection SHALL NOT require a separate batch Pin manager for the same priority operation
 
 #### Scenario: Viewing a populated Runtime Actions collection
 
@@ -76,7 +77,8 @@ The 2014 character sheet SHALL present Weapons, Armor & Shields, Other Gear, Spe
 - **WHEN** a supporting collection (e.g. Features, Traits) contains one or more records
 - **THEN** the collection SHALL retain its compact bullet-list presentation with a quiet marker when pinned
 - **AND** each record SHALL expose adjacent explicit focused-detail and state-sensitive Pin or Unpin actions without adopting the detailed Runtime Action or equipment/spell row-menu treatment
-- **AND** the collection SHALL expose separately named Add and Manage Pins actions when applicable
+- **AND** the collection SHALL expose Add when the collection supports user-authored records
+- **AND** it SHALL NOT duplicate the record-level Pin or Unpin operation in a collection-level batch manager
 
 #### Scenario: Viewing an empty target collection
 
@@ -88,12 +90,13 @@ The 2014 character sheet SHALL present Weapons, Armor & Shields, Other Gear, Spe
 - **WHEN** a character has spellcasting summary data, spell slots, and spell records
 - **THEN** the sheet SHALL present ability, save DC, and attack bonus in a compact full-width Spellcasting group
 - **AND** it SHALL present Spell Slots as a discrete full-width group on the next row before the searchable spell collection
-- **AND** every first- through ninth-level slot SHALL appear once as an editable `used / max` pair, defaulting to `0 / 0` when that level is not yet stored
+- **AND** every first- through ninth-level slot SHALL appear once as a compact `used / max` pair, defaulting to `0 / 0` when that level is not yet stored
+- **AND** each Used and Max value SHALL use the same directly editable Tier 1 row grammar within its level group, with its own field-local Edit and annotation actions and without a redundant Spell Slots group-detail action
 - **AND** it SHALL NOT repeat the same slot usage as a separate `Used` field or level-specific slot card
 
 #### Scenario: Adding a previously absent spell-slot level
 
-- **WHEN** a user edits a `0 / 0` slot level and saves a nonzero used or maximum value
+- **WHEN** a user edits a `0 / 0` slot level through its inline Used-and-Max control and saves a nonzero value
 - **THEN** that level SHALL become part of the character's persisted spell-slot data
 - **AND** untouched `0 / 0` defaults SHALL NOT require persisted placeholder records
 
@@ -118,13 +121,13 @@ The 2014 character sheet SHALL present Weapons, Armor & Shields, Other Gear, Spe
 
 - **WHEN** a Supporting Collection contains 7 or fewer items
 - **THEN** it SHALL be presented as a simple list without search controls or bounded scrolling
-- **AND** it SHALL retain the shared heading, semantic, action-placement, and Manage Pins baseline
+- **AND** it SHALL retain the shared heading, semantic, and action-placement baseline
 
 #### Scenario: Viewing a supporting collection above the simple-list limit
 
 - **WHEN** a Supporting Collection contains 8 or more items
 - **THEN** it SHALL activate a bounded height container or focused view and expose a search bar
-- **AND** Manage Pins SHALL remain available in the applicable presentation
+- **AND** record-level Pin or Unpin SHALL remain available in the applicable presentation
 
 ### Requirement: Focused and bounded collection browsing has one scroll owner
 
@@ -164,7 +167,7 @@ Dense collections SHALL avoid unbounded sheet growth by using bounded browsing o
 
 ### Requirement: Every target row has a complete focused action path
 
-Each target collection record SHALL provide an explicit path to one focused read-first detail and editing workflow. A compact submenu MAY expose accelerators into that same workflow. Collection-level Add, focused eligible removal, and Manage Pins SHALL remain distinct from authored-detail editing; a generic batch organizer SHALL NOT be required as an alternate editing or priority model.
+Each target collection record SHALL provide an explicit path to one focused read-first detail and editing workflow. A compact submenu MAY expose accelerators into that same workflow. Collection-level Add, focused eligible removal, and immediate record-level Pin/Unpin SHALL remain distinct from authored-detail editing; a batch Pin manager or generic batch organizer SHALL NOT be required as an alternate editing or priority model.
 
 #### Scenario: Keeping priority first-class for a pinnable record
 
@@ -195,8 +198,8 @@ Each target collection record SHALL provide an explicit path to one focused read
 - **THEN** the annotations SHALL remain associated with that selected record through the existing local persistence flow
 - **AND** the row SHALL show a quiet persistent annotation indicator when annotations exist
 
-#### Scenario: Distinguishing priority from record lifecycle
+#### Scenario: Distinguishing priority from record creation
 
-- **WHEN** an eligible collection exposes both Manage Pins and Add
-- **THEN** the system SHALL present them as separately named priority and record-creation actions
+- **WHEN** an eligible collection supports both player priority and user-authored creation
+- **THEN** the system SHALL present Pin/Unpin on each record and Add at the collection boundary
 - **AND** any eligible Remove action SHALL remain associated with the selected record rather than a universal collection organizer

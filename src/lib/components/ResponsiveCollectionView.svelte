@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import BaseButton from '$components/BaseButton.svelte';
+	import BoundedCollectionRegion from '$components/BoundedCollectionRegion.svelte';
 	import DialogShell from '$components/DialogShell.svelte';
-	import { createScrollAffordanceAttachment } from '$components/scrollAffordance';
 	import {
 		getGridContentListBrowseLabel,
 		getGridContentListCountLabel
@@ -19,6 +19,7 @@
 		preview: Snippet;
 		results: Snippet;
 		focusedActions?: Snippet;
+		onFocusedOpened?: () => void;
 	}
 
 	let {
@@ -31,7 +32,8 @@
 		emptyText = 'No items yet.',
 		preview,
 		results,
-		focusedActions = undefined
+		focusedActions = undefined,
+		onFocusedOpened = undefined
 	}: Props = $props();
 
 	const uid = $props.id();
@@ -41,12 +43,7 @@
 	const countLabel = $derived(getGridContentListCountLabel(filteredCount, totalCount, hasQuery));
 	const browseLabel = $derived(getGridContentListBrowseLabel(totalCount));
 	let browseTriggerEl = $state<HTMLButtonElement>();
-	let canScrollUp = $state(false);
-	let canScrollDown = $state(false);
-	const trackScrollAffordance = createScrollAffordanceAttachment((state) => {
-		canScrollUp = state.canScrollUp;
-		canScrollDown = state.canScrollDown;
-	});
+	let focusedScrollTop = $state(0);
 
 	const clearSearch = () => {
 		query = '';
@@ -97,34 +94,13 @@
 			or revise the search.
 		</p>
 	{:else if bounded}
-		<div class="relative rounded-md border p-1 shadow-inner">
-			<!-- Keyboard users need to focus the bounded scroll owner. -->
-			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-			<div
-				class="responsive-collection-bounded scroll-affordance-viewport overflow-x-hidden overflow-y-auto px-1 py-1"
-				role="region"
-				aria-label={`${title} scrollable results`}
-				tabindex="0"
-				data-scroll-viewport="bounded-collection"
-				{@attach trackScrollAffordance}
-			>
-				{@render results()}
-			</div>
-			{#if canScrollUp}
-				<div
-					class="scroll-affordance-fade scroll-affordance-fade-top absolute inset-x-1 top-1 h-8"
-					data-scroll-affordance="more-above"
-					aria-hidden="true"
-				></div>
-			{/if}
-			{#if canScrollDown}
-				<div
-					class="scroll-affordance-fade scroll-affordance-fade-bottom absolute inset-x-1 bottom-1 h-8"
-					data-scroll-affordance="more-below"
-					aria-hidden="true"
-				></div>
-			{/if}
-		</div>
+		<BoundedCollectionRegion
+			ariaLabel={`${title} scrollable results`}
+			viewportId="bounded-collection"
+			maxHeight="22rem"
+		>
+			{@render results()}
+		</BoundedCollectionRegion>
 	{:else}
 		{@render results()}
 	{/if}
@@ -161,10 +137,12 @@
 {#if focusedOpen}
 	<DialogShell
 		bind:open={focusedOpen}
+		bind:scrollTop={focusedScrollTop}
 		{title}
 		closeText={`Close ${title}`}
 		fullHeightMobile={true}
 		scrollAffordance={true}
+		onOpened={onFocusedOpened}
 		onClose={closeFocusedView}
 	>
 		<div class="space-y-2">
@@ -180,10 +158,3 @@
 		</div>
 	</DialogShell>
 {/if}
-
-<style>
-	.responsive-collection-bounded {
-		max-height: 22rem;
-		overscroll-behavior-y: auto;
-	}
-</style>

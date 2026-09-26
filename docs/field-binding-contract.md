@@ -1,6 +1,6 @@
 # Field Binding Contract
 
-This document defines the field-scoped binding and mutation contract for `p1-040`. It should be read with [field-interaction-model.md](field-interaction-model.md), which defines the target user interaction model.
+This document defines the field-scoped binding and mutation contract established by `p1-040` and refined by BL-077. It should be read with [field-interaction-model.md](field-interaction-model.md), which defines the current user interaction model.
 
 ## Purpose
 
@@ -36,10 +36,10 @@ For annotations, read and patch paths should be explicit even when they can be d
 Primitive field bindings use raw JSON Patch operations for direct value editing. However, growing character data such as features, spells, inventory, runtime actions, languages, notes, and similar collections are treated as compound containers.
 
 - **Direct Patches**: `GridPrimitiveField` prepares a guarded `JSONPatchDocument`, including RFC 6901 escaping and a preceding `test` operation for replacements. `FieldGroupView` forwards that document unchanged. `GridContentCard` sends it to the route's direct-patch handler when available, falling back to the existing `GridContentPatch[]` compatibility shape only for consumers that do not accept RFC 6902 documents.
-- **Structured Intents**: Complex compound workflows (e.g. dense lists, multi-field edits) emit typed domain intents (e.g., `SheetEditIntent`). The page or store layer receives the typed intent, orchestrates necessary validations or contextual lookups, and reduces it to a validated character shape.
-- **Generic Form Adaptation**: Generic data-driven editing views (e.g. `StructuredForm`) emit unopinionated `GridContentData`. Their orchestration boundary (`GridContentCard` or `GridContentEditDialog`) automatically translates these payload objects into generic `GridContentPatch[]` lists. At the system boundary (e.g., the 5e route), `decode5eGridPatches` intercepts these generic patches and cleanly separates them into canonical schema patches and typed `SheetEditIntent`s for final domain resolution.
+- **Structured Intents**: Focused compound workflows emit typed domain intents (for example, `SheetEditIntent`). The page or store layer receives the typed intent, performs contextual lookup, builds one candidate character, and validates it before commit.
+- **Generic Form Adaptation**: Generic data-driven editors such as `StructuredForm` emit an unopinionated focused draft. Their orchestration boundary translates that one-record payload into generic patches or a domain-owned typed intent. At the 5e boundary, feature-local adapters separate canonical schema patches from typed intents for final domain resolution.
 
-This avoids both extremes: a permanent one-dialog bulk editor for a large list, and fragile anonymous primitive bindings for every array cell.
+This avoids both extremes: a collection-wide bulk editor for rich records, and fragile anonymous primitive bindings for every array cell.
 
 For MVP-simple cases, replacing a full array can remain acceptable. For growing lists, later mutation work should prefer stable item identity over raw array indexes when the schema supports it. Array-index paths may still be used as a current implementation detail, but item-level editing and annotations should move toward stable IDs or durable keys for insert, update, remove, and reorder behavior.
 
@@ -47,32 +47,36 @@ For MVP-simple cases, replacing a full array can remain acceptable. For growing 
 
 The binding should expose computed field capabilities for component-control facilitation. These are presentation-layer facts derived by the binding/projection layer; they are not stored character fields, persisted UI capability flags, or storage adapter rules.
 
+- `interaction.tier`: the explicit semantic classification of an editable target as `runtime` or `read-first`; omission safely means read-first.
 - `canEditValue`: true when the field has a value patch path and the value type has an editor.
 - `canEditAnnotations`: true when the field has an annotation patch path.
 - `isDerived`: true when the displayed value is calculated or assembled from other data.
 - `copyPriority`: a hint for values where selection and copying should take precedence over fast edit activation.
 
-These capabilities support rendering controls, gestures, labels, and affordances without forcing every field component to infer behavior from shape or path presence alone. They should not be used as persistence authority. Save paths and mutation semantics decide what can be submitted; schema and domain validation decide what can actually be applied.
+These capabilities and classifications support rendering controls, gestures, labels, and affordances without forcing every field component to infer behavior from primitive type, shape, path presence, or control styling. `editAffordance` remains a presentation choice within the selected tier rather than a substitute for semantic classification. None of this metadata is persistence authority. Save paths and mutation semantics decide what can be submitted; schema and domain validation decide what can actually be applied.
 
 ## Commit Boundaries
 
-A field edit should have one clear commit boundary.
+A field or focused-record edit should have one clear commit boundary.
 
 - Starting edit creates a local draft from the current field value.
 - Cancel discards the draft and emits no patch.
 - Save emits a patch only when the committed value differs from the current read value.
 - Validation and schema coercion happen in the owning route, store, or domain helper, not inside a generic field display component.
 - If validation fails, the field remains in edit mode or receives an error from the owner; it should not silently write invalid data.
+- Focused Tier 2 and Tier 3 workflows keep eligible authored values and annotations in one local draft. Save validates and commits the complete candidate atomically; Cancel discards both.
+- Record lifecycle and priority commands such as Add, confirmed Remove, and Pin/Unpin are deliberate immediate commands outside the authored-content draft.
 
 For single-line primitive fields, Enter may be a commit action. For multi-line or ambiguous fields, an explicit Save or Done control is preferred.
 
 ## Save Semantics
 
-Value saves and annotation saves are distinct operations even when they are initiated from the same displayed field.
+Value and annotation changes remain distinguishable mutation intent, but their user-visible commit boundary depends on the interaction tier.
 
 - A value save emits a value patch to `valuePatchPath`.
 - An annotation save emits an annotation patch to `annotationPatchPath`.
-- A field component may emit both operations from the same UI surface, but the operations should remain distinguishable.
+- A Tier 1 primitive surface may save a focused value or annotation operation independently.
+- A Tier 2 or Tier 3 focused editor composes eligible authored and annotation operations into one candidate Save. The owner validates the whole candidate and commits all or none.
 - The page or store applies patches immutably, persists them through the existing local-first storage path, and handles validation errors.
 - Field components must not know whether persistence is LocalStorage, import/export, or a future remote transport.
 
@@ -83,8 +87,9 @@ This keeps the contract transport-agnostic and lets the mutation envelope below 
 Field, page, and data/store layers have separate responsibilities:
 
 - Field components own display, local draft state, edit affordance behavior, keyboard/touch/mouse interactions, and emission of standard JSON Patch documents.
-- Field components may choose whether the edit affordance is persistent, hover/focus-driven, or menu-driven, but that choice should be explicit and should follow [field-interaction-model.md](field-interaction-model.md).
-- Field components may display annotation indicators or open annotation UI, but value edits and annotation edits still emit distinguishable patch documents.
+- Projection or feature layers explicitly classify runtime versus read-first intent. Shared field components consume that classification and must not infer it from a primitive type or from whether a persistent-looking affordance was requested.
+- Field components may choose whether the edit affordance is persistent, hover/focus-driven, or menu-driven within that classification, but the choice should be explicit and should follow [field-interaction-model.md](field-interaction-model.md).
+- Field components may display annotation indicators or open focused detail. Domain adapters keep authored and annotation intent distinguishable even when one focused Save commits them atomically.
 - Page or feature layers own domain placement, selected character lookup, local validation errors, and applying patches to the currently edited character.
 - Data/store layers own persistence, migration, storage validation, and eventual transport integration.
 - No field component should import LocalStorage helpers, call HTTP endpoints, know about auth, or assume a future sync strategy.
@@ -219,15 +224,15 @@ The existing grid data still contains useful compatibility pieces:
 - `annotations` is the current annotation display data.
 - `GridContentPatch` is a custom legacy array wrapper for `{ path, value }`. It is NOT an RFC 6902 JSON Patch document.
 
-Direct primitive fields use field-scoped bindings and emit RFC 6902 documents. Compound and card-wide editors still use `handleEditSave` payload structures, or emit structured typed intents.
+Direct primitive fields use field-scoped bindings and emit RFC 6902 documents. Focused compound editors emit a one-record payload through `handleEditSave` or a structured typed intent.
 
 Slice 5 of `p1-040` split current grid patch projection into separate value and annotation collectors:
 
 - `collectValuePatchesFromData` emits only value patches.
 - `collectAnnotationPatchesFromData` emits only annotation patches.
-- `collectPatchesFromData` remains as the legacy combined compatibility bridge for the current card-wide save path.
+- `collectPatchesFromData` remains as the legacy combined compatibility bridge for focused structured saves that have not moved to a dedicated adapter.
 
-This lets field components consume value and annotation intent independently while preserving card-wide fallback editing.
+This lets field components consume value and annotation intent independently while a focused detail workflow can compose both into one atomic candidate commit.
 
 Slice 6 of `p1-040` added the field-scoped `FieldDraft` helper in [fieldDraftHelpers.ts](../src/lib/fieldDraftHelpers.ts):
 
@@ -237,7 +242,7 @@ Slice 6 of `p1-040` added the field-scoped `FieldDraft` helper in [fieldDraftHel
 - `draft.isDirty` reports whether the draft differs from its initial value.
 - `draft.prepareAsPatch` prepares a guarded RFC 6902 JSON Patch document with `test` then `replace`, or an empty patch for unchanged drafts.
 
-The helper is framework-agnostic, immutable-by-convention, and does not open or depend on the card-wide edit dialog. It gives later field components a readable draft-to-patch primitive while leaving actual application, validation, persistence, and state commits with the owning route or store.
+The helper is framework-agnostic, immutable-by-convention, and does not open or depend on a focused detail surface. It gives field components a readable draft-to-patch primitive while leaving actual application, validation, persistence, and state commits with the owning route or store.
 
 Slice 7 of `p1-040` proved the contract on one live runtime sheet field:
 
@@ -264,9 +269,9 @@ These are 5e canonical paths, not additions to the system-neutral field-binding 
 ## Non-Goals For These Contract Slices
 
 - Do not introduce a remote sync layer or HTTP-aware mutation model.
-- Do not force compound/card edits into primitive RFC 6902 operations when domain transformations are clearer as typed intents.
-- Do not remove the card-wide edit dialog.
-- Do not roll the proof surface out to every field until the remaining interaction slices are ready.
+- Do not force compound or record edits into primitive RFC 6902 operations when domain transformations are clearer as typed intents.
+- Do not introduce global or general section-wide editing, collection-wide rich-record editing, or a universal item reducer.
+- Do not make priority and lifecycle commands part of an authored-content draft when an explicit immediate command is clearer.
 
 ## Review Checklist For Implementers
 
@@ -280,7 +285,7 @@ Before implementing later slices, confirm that the proposed API answers:
 - Is this binding a primitive field, a compound container, or an item within a compound container?
 - If this is an item binding, does it have a stable identity or only a current array position?
 - Which JSON Patch operation or operation sequence is emitted on save?
-- If the mutation comes from card-wide editing, which feature-local decoder intent owns its semantics?
+- If the mutation comes from focused structured editing, which feature-local adapter or decoder intent owns its semantics?
 - What action commits a draft, and what action cancels it?
 - Where does validation happen?
 - Can the field preserve selection and copy behavior required by [field-interaction-model.md](field-interaction-model.md)?

@@ -48,3 +48,34 @@ export const getCollectionPriorityPreview = <TRow extends CollectionPriorityRow>
 	canonicalRows: ReadonlyArray<TRow>,
 	limit: number
 ): GridContentListPreview<TRow> => getGridContentListPreview(canonicalRows, limit);
+
+export type CollectionRowPositions = Map<string, DOMRect>;
+
+export const captureCollectionRowPositions = (container: Element | null): CollectionRowPositions =>
+	new Map(
+		[...(container?.querySelectorAll<HTMLElement>('[data-row-key]') ?? [])].flatMap((element) => {
+			const key = element.dataset.rowKey;
+			return key ? [[key, element.getBoundingClientRect()] as const] : [];
+		})
+	);
+
+export const animateCollectionRowMovement = (
+	container: Element | null,
+	previous: CollectionRowPositions,
+	prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+) => {
+	if (prefersReducedMotion) return;
+	for (const element of container?.querySelectorAll<HTMLElement>('[data-row-key]') ?? []) {
+		const key = element.dataset.rowKey;
+		const before = key ? previous.get(key) : undefined;
+		if (!before) continue;
+		const after = element.getBoundingClientRect();
+		const deltaX = before.left - after.left;
+		const deltaY = before.top - after.top;
+		if (deltaX === 0 && deltaY === 0) continue;
+		element.animate(
+			[{ transform: `translate(${deltaX}px, ${deltaY}px)` }, { transform: 'translate(0, 0)' }],
+			{ duration: 160, easing: 'ease-out' }
+		);
+	}
+};

@@ -24,7 +24,7 @@ test('records a scroll-frame baseline for the character sheet', async ({ page },
 		.locator('td')
 		.first()
 		.click();
-	await expect(page.getByText('Current HP:', { exact: false })).toBeVisible();
+	await expect(page.getByRole('button', { name: 'Edit Current HP' })).toBeVisible();
 
 	const frameStats = await page.evaluate(async () => {
 		const scrollTarget = document.scrollingElement;

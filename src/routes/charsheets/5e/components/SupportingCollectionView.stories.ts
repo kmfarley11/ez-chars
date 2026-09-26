@@ -119,21 +119,19 @@ export const SevenFeatureBoundary: Story = {
 	args: { rows: sevenFeatureRows },
 	parameters: manualReview(
 		'Confirm the seven compact rows render without a search control.',
-		'Open Card actions → Manage Pins and confirm the short manager has no search field.',
-		'Toggle a checkbox, Cancel, reopen, and confirm the draft was discarded.',
-		'Repeat with Escape and confirm focus returns visibly to Card actions.'
+		'Use one row-level Pin or Unpin control and confirm the selected identity reorders without opening another surface.',
+		"Confirm focus returns visibly to that record's priority control and no collection-level Manage Pins action competes with it."
 	)
 };
 
 export const EightFeaturesDenseBoundary: Story = {
 	parameters: manualReview(
 		'Confirm the eighth row activates dense search and bounded/focused presentation.',
-		'Enter a query, open Card actions → Manage Pins, and confirm the same query is retained.',
-		'Using only Shift+Tab, Enter, and Tab, move from Search Features to Card actions, then through Edit, Notes, and Manage Pins.',
-		'Tab through the manager to Save Pins; confirm both Card actions and Save Pins have evident focus outlines.',
-		'Save one Pin change and confirm focus returns visibly to Card actions.',
+		'Enter a query, Pin or Unpin a visible record, and confirm the same query is retained.',
+		'Using only Shift+Tab, Enter, and Tab, move between Search Features, Add, the row-level Pin/Unpin control, and the Detail control.',
+		'Confirm the priority and detail controls have evident focus outlines and no redundant batch manager appears.',
 		"Switch Storybook's viewport toolbar to a phone preset and confirm the compact preview shows seven rows plus Browse all 8 items.",
-		'Open Browse all and Manage Pins; confirm checkbox rows, Cancel, and Save Pins are comfortable touch targets with no horizontal scrolling or precision pointer required.'
+		'Open Browse all and confirm Add, row-level Pin/Unpin, Detail, and Close are comfortable touch targets with no horizontal scrolling or precision pointer required.'
 	)
 };
 
@@ -141,8 +139,8 @@ export const EighteenFeaturesSaturated: Story = {
 	args: { rows: eighteenFeatureRows },
 	parameters: manualReview(
 		'Confirm ten pinned entries remain first and every remaining entry is reachable in the bounded list.',
-		'Enter “feature summary 1”, open Manage Pins, and confirm the query and filtered subset are retained.',
-		'Change a visible Pin, clear the manager query, and confirm hidden draft state remains intact.'
+		"Enter “feature summary 1”, change one visible record's Pin state, and confirm the query and filtered subset are retained.",
+		'Clear the query and confirm the changed identity remains in its expected priority tier.'
 	)
 };
 
@@ -168,8 +166,8 @@ export const ShortLanguages: Story = {
 	args: { title: 'Prof. Languages', rows: languageRows },
 	parameters: manualReview(
 		'Confirm Elvish shows the quiet pinned marker without changing the compact row grammar.',
-		'Open Manage Pins and confirm all three Languages are available without a search field.',
-		'Use Tab and Space to change the draft, save it, and confirm focus returns to Card actions.'
+		'Use Tab and Space to toggle one row-level Pin control and confirm focus returns to that record after reordering.',
+		'Confirm the adjacent Detail action remains distinct from priority.'
 	)
 };
 
@@ -177,7 +175,7 @@ export const EmptyFeaturesPriority: Story = {
 	args: { rows: emptyFeatureRows },
 	parameters: manualReview(
 		'Confirm the explicit empty state remains compact.',
-		'Open Card actions and confirm Edit and Notes remain available while Manage Pins is omitted.'
+		'Confirm direct Add remains available while record-level priority and detail actions are naturally absent.'
 	)
 };
 
@@ -185,20 +183,20 @@ export const DuplicateNamePriority: Story = {
 	args: { rows: duplicateFeatureRows },
 	parameters: manualReview(
 		'Confirm the pinned Arcane Recall appears before its identically named unpinned peer.',
-		'Open Manage Pins and use the authored detail to distinguish the two checkbox rows.',
-		'Toggle only one duplicate, save, and confirm the intended identity changes.'
+		"Use the authored detail to distinguish the two rows, then toggle only one duplicate's row-level priority control.",
+		'Confirm the intended stable identity changes without affecting its identically named peer.'
 	)
 };
 
-export const InvalidSaveRetainsDialog: Story = {
+export const InvalidPinRetainsRows: Story = {
 	args: {
 		rows: eightFeatureRows,
 		prioritySaveError:
 			'One selected feature is no longer available. Review the draft and try again.'
 	},
 	parameters: manualReview(
-		'Open Manage Pins, change a checkbox, and choose Save Pins.',
-		'Confirm the dialog remains open and the understandable validation message is announced.',
-		'Change another checkbox and confirm the stale message clears before another save attempt.'
+		'Choose Pin or Unpin on a row and confirm the understandable validation message is announced without reordering the records.',
+		'Confirm focus remains on the same row-level priority control.',
+		'Choose another row-level priority action and confirm the stale message clears before the next result is reported.'
 	)
 };

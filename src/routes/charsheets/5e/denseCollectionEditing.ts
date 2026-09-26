@@ -1,6 +1,8 @@
 import type { Dnd5e2014DenseCollectionRow } from '$lib/dnd5e2014/denseCollectionRows';
+import { getInventoryGroupForItem } from '$lib/dnd5e2014/inventory';
 import type { GridContentData, GridContentPatch } from '$utils/gridContentTypes';
-import type { CharacterDocument5e2014, Item, SpellRef } from '../../../schema';
+import type { Annotation, CharacterDocument5e2014, Item, SpellRef } from '../../../schema';
+import type { InventoryGroup, SpellListLevel } from './sheetConstants';
 import {
 	annotationEditorPayloadSchema,
 	inventoryItemEditorPayloadSchema,
@@ -126,5 +128,110 @@ export const decodeDenseCollectionAnnotationsIntent = (
 				level: row.source.level,
 				spellId: row.source.id,
 				annotations: parsed.data
+			};
+};
+
+export const decodeDenseCollectionSaveIntents = (
+	row: Dnd5e2014DenseCollectionRow,
+	data: GridContentData,
+	annotations: ReadonlyArray<Annotation>
+): Array<SheetEditIntent> | undefined => {
+	const editIntent = decodeDenseCollectionEditIntent(row, data);
+	const annotationIntent = decodeDenseCollectionAnnotationsIntent(row, [
+		{ path: ['annotations'], value: annotations }
+	]);
+	if (!editIntent || !annotationIntent) return undefined;
+	return [editIntent, annotationIntent];
+};
+
+const inventoryPayload = (item: Item) => ({
+	id: item.id,
+	name: item.name,
+	notes: item.notes,
+	quantity: item.quantity,
+	weight: item.weight,
+	value: item.value,
+	equipped: item.equipped
+});
+
+const spellPayload = (spell: SpellRef) => ({
+	spellId: spell.spellId,
+	name: spell.name,
+	prepared: spell.prepared,
+	notes: spell.notes
+});
+
+export const projectDenseCollectionAddData = (
+	rowSource: { kind: 'item'; group: InventoryGroup } | { kind: 'spell'; level?: SpellListLevel }
+): GridContentData => {
+	if (rowSource.kind === 'spell') {
+		return {
+			name: { fieldName: 'Name', value: 'Spell' },
+			level: { fieldName: 'Level', value: rowSource.level ?? 1, inputKind: 'number' },
+			notes: { fieldName: 'Initial detail', value: '', multiline: true }
+		};
+	}
+	return {
+		name: { fieldName: 'Name', value: 'Item' },
+		detail: { fieldName: 'Initial detail', value: '', multiline: true }
+	};
+};
+
+export const decodeDenseCollectionAddIntent = (
+	character: CharacterDocument5e2014,
+	collection: { kind: 'item'; group: InventoryGroup } | { kind: 'spell' },
+	data: GridContentData
+): SheetEditIntent | undefined => {
+	const name = valueAt(data, 'name');
+	if (typeof name !== 'string' || !name.trim()) return undefined;
+	if (collection.kind === 'item') {
+		const detail = valueAt(data, 'detail');
+		return {
+			type: 'replace-inventory-group',
+			group: collection.group,
+			items: [
+				...character.inventory
+					.filter((item) => getInventoryGroupForItem(item) === collection.group)
+					.map(inventoryPayload),
+				{ name: name.trim(), notes: typeof detail === 'string' ? detail : '' }
+			]
+		};
+	}
+	const rawLevel = Number(valueAt(data, 'level'));
+	const level = Number.isInteger(rawLevel) && rawLevel >= 0 && rawLevel <= 9 ? rawLevel : 1;
+	const notes = valueAt(data, 'notes');
+	return {
+		type: 'replace-spell-level',
+		level: level as SpellListLevel,
+		spells: [
+			...(character.systemData.spellcasting?.spells ?? [])
+				.filter((spell) => (spell.level ?? 0) === level)
+				.map(spellPayload),
+			{ name: name.trim(), notes: typeof notes === 'string' ? notes : '' }
+		]
+	};
+};
+
+export const decodeDenseCollectionRemoveIntent = (
+	character: CharacterDocument5e2014,
+	row: Dnd5e2014DenseCollectionRow
+): SheetEditIntent => {
+	const source = row.source;
+	return source.kind === 'item'
+		? {
+				type: 'replace-inventory-group',
+				group: source.group,
+				items: character.inventory
+					.filter(
+						(item) => getInventoryGroupForItem(item) === source.group && item.id !== source.id
+					)
+					.map(inventoryPayload)
+			}
+		: {
+				type: 'replace-spell-level',
+				level: source.level,
+				spells: (character.systemData.spellcasting?.spells ?? [])
+					.filter((spell) => (spell.level ?? 0) === source.level && spell.spellId !== source.id)
+					.map(spellPayload)
 			};
 };

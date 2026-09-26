@@ -8,30 +8,20 @@ import type {
 	GridContentData,
 	GridContentField
 } from '$utils/gridContentTypes';
-import type { AbilityKey, CharacterDocument5e2014, Item, NamedProficiency } from '../../../schema';
+import type { AbilityKey, CharacterDocument5e2014 } from '../../../schema';
 import {
 	abilityMetadata,
 	annotationEditorConfig,
 	currencyPathPrefix,
-	featureListPathPrefix,
-	getInventoryGroupForItem,
 	inventoryCurrencyMetadata,
-	inventoryListPathPrefix,
-	proficiencyLanguagesPathPrefix,
-	proficiencyToolsPathPrefix,
 	roleplayFieldMetadata,
 	roleplayFieldPathPrefix,
-	runtimeActionListPathPrefix,
 	scratchpadNotesPathPrefix,
 	skillMetadata,
-	spellListLevelPathPrefix,
 	spellSlotLevelMetadata,
 	toSystemDataAnnotationPath,
-	traitListPathPrefix,
 	type InventoryGroup,
-	type ProficiencyEditorSource,
-	type RoleplayFieldKey,
-	type SpellListLevel
+	type RoleplayFieldKey
 } from './sheetConstants';
 
 type PrimitiveGridValue = string | number | boolean;
@@ -44,24 +34,17 @@ export type AbilityRuntimeColumn = {
 
 export type InventoryRuntimeCard = {
 	key: InventoryGroup;
-	data: GridContentData;
 };
 
 export type Sheet5eProjection = {
 	annotationEditorConfig: typeof annotationEditorConfig;
-	runtimeActionData: GridContentData;
 	metaPrimaryData: GridContentData;
 	metaSecondaryData: GridContentData;
 	metaTertiaryData: GridContentData;
-	quickRefPrimaryData: GridContentData;
-	quickRefMovementData: GridContentData;
-	quickRefSecondaryData: GridContentData;
+	quickRefLiveData: GridContentData;
+	quickRefReferenceData: GridContentData;
 	proficiencyBonusRuntimeData: GridContentData;
 	abilityRuntimeColumns: Array<AbilityRuntimeColumn>;
-	traitRuntimeData: GridContentData;
-	proficiencyLanguagesRuntimeData: GridContentData;
-	proficiencyToolsRuntimeData: GridContentData;
-	featuresRuntimeData: GridContentData;
 	inventoryCurrencyRuntimeData: GridContentData;
 	inventoryRuntimeCards: Array<InventoryRuntimeCard>;
 	organizationalBackgroundData: GridContentData;
@@ -70,103 +53,16 @@ export type Sheet5eProjection = {
 	scratchpadNotesData: GridContentData;
 	spellcastingRuntimeData: GridContentData;
 	spellSlotRuntimeData: GridContentData;
-	spellCollectionBulkEditData: GridContentData;
 };
-
-const proficiencySourceOptions: Array<ProficiencyEditorSource> = [
-	'ancestry',
-	'background',
-	'class',
-	'feature',
-	'other'
-];
-
-const createProficiencyListField = (
-	withFieldAnnotations: (
-		value: PrimitiveGridValue,
-		bindPath: GridContentBindPath,
-		options?: Pick<GridContentField, 'fieldName' | 'label' | 'multiline' | 'inputKind'>
-	) => GridContentField,
-	fieldName: string,
-	bindPath: GridContentBindPath,
-	groupKey: 'languages' | 'tools',
-	values: Array<NamedProficiency>,
-	itemFieldName: string,
-	defaultSource: ProficiencyEditorSource
-): GridContentField => ({
-	fieldName,
-	addItemLabel: `Add ${itemFieldName}`,
-	addItemTemplate: {
-		fieldName: itemFieldName,
-		value: {
-			name: { fieldName: 'Name', value: itemFieldName },
-			source: {
-				fieldName: 'Source',
-				value: defaultSource,
-				editOnly: true,
-				options: proficiencySourceOptions
-			}
-		}
-	},
-	bindPath,
-	value: values.map((entry, index) => ({
-		fieldName: itemFieldName,
-		value: {
-			name: withFieldAnnotations(
-				entry.name,
-				['systemData', 'proficiencies', groupKey, index, 'name'],
-				{ fieldName: 'Name' }
-			),
-			source: {
-				fieldName: 'Source',
-				value: entry.source?.kind ?? 'other',
-				editOnly: true,
-				options: proficiencySourceOptions
-			},
-			id: { fieldName: 'Proficiency Id', value: entry.id, editOnly: true, hidden: true }
-		}
-	}))
-});
-
-const createInventoryListField = (
-	fieldName: string,
-	items: Array<Item>,
-	group: InventoryGroup,
-	itemPlaceholder: string
-): GridContentField => ({
-	fieldName,
-	addItemLabel: 'Add Item',
-	addItemTemplate: {
-		fieldName: 'Item',
-		value: {
-			name: { fieldName: 'Name', value: itemPlaceholder },
-			notes: { fieldName: 'Detail', value: '', multiline: true },
-			quantity: { fieldName: 'Quantity', value: 1, editOnly: true },
-			weight: { fieldName: 'Weight', value: 0, editOnly: true },
-			value: { fieldName: 'Value', value: '', editOnly: true },
-			equipped: { fieldName: 'Equipped', value: group !== 'other', editOnly: true }
-		}
-	},
-	bindPath: [inventoryListPathPrefix, group],
-	value: items.map((item) => ({
-		fieldName: 'Item',
-		value: {
-			name: { fieldName: 'Name', value: item.name },
-			notes: { fieldName: 'Detail', value: item.notes ?? '', multiline: true },
-			quantity: { fieldName: 'Quantity', value: item.quantity ?? 1, editOnly: true },
-			weight: { fieldName: 'Weight', value: item.weight ?? 0, editOnly: true },
-			value: { fieldName: 'Value', value: item.value ?? '', editOnly: true },
-			equipped: { fieldName: 'Equipped', value: item.equipped ?? false, editOnly: true },
-			id: { fieldName: 'Item Id', value: item.id, editOnly: true, hidden: true }
-		}
-	}))
-});
 
 export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection => {
 	const withFieldAnnotations = (
 		value: PrimitiveGridValue,
 		bindPath: GridContentBindPath,
-		options: Pick<GridContentField, 'fieldName' | 'label' | 'multiline' | 'inputKind'> = {}
+		options: Pick<
+			GridContentField,
+			'fieldName' | 'label' | 'multiline' | 'inputKind' | 'interaction' | 'capabilities'
+		> = {}
 	): GridContentField => {
 		const annotationBindPath = toSystemDataAnnotationPath(bindPath);
 		if (!annotationBindPath) return { ...options, bindPath, value };
@@ -177,61 +73,6 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 			annotations: readGridAnnotationsAtPath(char, annotationBindPath),
 			value
 		};
-	};
-
-	const runtimeActions = char.systemData.runtimeActions;
-	const runtimeActionData: GridContentData = {
-		actions: {
-			fieldName: 'Runtime Actions',
-			addItemLabel: 'Add Action',
-			addItemTemplate: {
-				fieldName: 'Action',
-				value: {
-					name: { fieldName: 'Name', value: 'Action' },
-					timing: {
-						fieldName: 'Timing',
-						value: 'action',
-						options: ['action', 'bonusAction', 'reaction', 'free', 'other']
-					},
-					category: {
-						fieldName: 'Category',
-						value: 'effect',
-						options: ['attack', 'effect', 'other']
-					},
-					target: { fieldName: 'Target', value: '' },
-					notes: { fieldName: 'Notes', value: '', multiline: true, editOnly: true }
-				}
-			},
-			bindPath: [runtimeActionListPathPrefix],
-			value: runtimeActions.map((action, actionIndex) => ({
-				fieldName: 'Action',
-				value: {
-					name: withFieldAnnotations(
-						action.name,
-						['systemData', 'runtimeActions', actionIndex, 'name'],
-						{ fieldName: 'Name' }
-					),
-					timing: {
-						fieldName: 'Timing',
-						value: action.timing ?? 'action',
-						options: ['action', 'bonusAction', 'reaction', 'free', 'other']
-					},
-					category: {
-						fieldName: 'Category',
-						value: action.category ?? 'attack',
-						options: ['attack', 'effect', 'other']
-					},
-					target: { fieldName: 'Target', value: action.target ?? '' },
-					notes: {
-						fieldName: 'Notes',
-						value: action.notes ?? '',
-						multiline: true,
-						editOnly: true
-					},
-					id: { fieldName: 'Action Id', value: action.id, editOnly: true, hidden: true }
-				}
-			}))
-		}
 	};
 
 	const createRoleplayFieldData = (keys: Array<RoleplayFieldKey>): GridContentData =>
@@ -291,111 +132,127 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 		appearance: withFieldAnnotations(char.identity.appearance ?? '', ['identity', 'appearance'])
 	};
 
-	const quickRefPrimaryDescriptors: Array<GridFieldDescriptor> = [
+	const quickRefLiveDescriptors: Array<GridFieldDescriptor> = [
 		{
 			key: 'currentHp',
 			path: ['systemData', 'combat', 'hitPoints', 'current'],
-			interaction: { editAffordance: 'persistent', annotationAffordance: 'persistent' }
+			interaction: {
+				tier: 'runtime',
+				editAffordance: 'persistent',
+				annotationAffordance: 'persistent'
+			}
 		},
 		{
 			key: 'tempHp',
 			path: ['systemData', 'combat', 'hitPoints', 'temp'],
 			valuePatchOperation: char.systemData.combat.hitPoints.temp === undefined ? 'add' : 'replace',
-			interaction: { editAffordance: 'persistent', annotationAffordance: 'persistent' }
+			interaction: {
+				tier: 'runtime',
+				editAffordance: 'persistent',
+				annotationAffordance: 'persistent'
+			}
 		},
-		{ key: 'maxHp', path: ['systemData', 'combat', 'hitPoints', 'max'] },
-		{ key: 'initiative', path: ['systemData', 'combat', 'initiative'] },
-		{ key: 'armorClass', path: ['systemData', 'combat', 'armorClass'] }
+		{
+			key: 'deathSavesOk',
+			fieldName: 'Death Saves OK',
+			path: ['systemData', 'combat', 'deathSaves', 'successes'],
+			defaultValue: 0,
+			interaction: {
+				tier: 'runtime',
+				editAffordance: 'persistent',
+				annotationAffordance: 'persistent'
+			}
+		},
+		{
+			key: 'deathSavesRip',
+			fieldName: 'Death Saves RIP',
+			path: ['systemData', 'combat', 'deathSaves', 'failures'],
+			defaultValue: 0,
+			interaction: {
+				tier: 'runtime',
+				editAffordance: 'persistent',
+				annotationAffordance: 'persistent'
+			}
+		},
+		...(char.systemData.combat.hitDice
+			? [
+					{
+						key: 'hitDiceRemaining',
+						fieldName: 'Hit Dice Remaining',
+						path: ['systemData', 'combat', 'hitDice', 'remaining'] as GridContentBindPath,
+						valuePatchOperation:
+							char.systemData.combat.hitDice.remaining === undefined
+								? ('add' as const)
+								: ('replace' as const),
+						interaction: {
+							tier: 'runtime' as const,
+							editAffordance: 'persistent' as const,
+							annotationAffordance: 'persistent' as const
+						}
+					}
+				]
+			: [])
 	];
-	const quickRefPrimaryData = resolveGridFieldDescriptors(char, quickRefPrimaryDescriptors, {
+	const quickRefLiveData = resolveGridFieldDescriptors(char, quickRefLiveDescriptors, {
 		annotationPathForValuePath: toSystemDataAnnotationPath
 	});
-	const quickRefMovementData: GridContentData = {
-		...resolveGridFieldDescriptors(
-			char,
-			[
-				{
-					key: 'deathSavesOk',
-					fieldName: 'Death Saves OK',
-					path: ['systemData', 'combat', 'deathSaves', 'successes'],
-					defaultValue: 0,
-					interaction: { editAffordance: 'persistent', annotationAffordance: 'persistent' }
-				},
-				{
-					key: 'deathSavesRip',
-					fieldName: 'Death Saves RIP',
-					path: ['systemData', 'combat', 'deathSaves', 'failures'],
-					defaultValue: 0,
-					interaction: { editAffordance: 'persistent', annotationAffordance: 'persistent' }
-				}
-			],
-			{ annotationPathForValuePath: toSystemDataAnnotationPath }
+	const quickRefReferenceData: GridContentData = {
+		maxHp: withFieldAnnotations(
+			char.systemData.combat.hitPoints.max,
+			['systemData', 'combat', 'hitPoints', 'max'],
+			{ fieldName: 'Maximum HP', inputKind: 'number' }
+		),
+		armorClass: withFieldAnnotations(
+			char.systemData.combat.armorClass,
+			['systemData', 'combat', 'armorClass'],
+			{ fieldName: 'Armor Class', inputKind: 'number' }
+		),
+		initiative: withFieldAnnotations(
+			char.systemData.combat.initiative ?? 0,
+			['systemData', 'combat', 'initiative'],
+			{ fieldName: 'Initiative', inputKind: 'number' }
+		),
+		hitDiceTotal: withFieldAnnotations(
+			char.systemData.combat.hitDice?.total ?? '',
+			['systemData', 'combat', 'hitDice', 'total'],
+			{ fieldName: 'Total Hit Dice' }
 		),
 		speed: withFieldAnnotations(
-			char.systemData.combat.speed ?? char.systemData.race?.speed ?? '',
+			char.systemData.combat.speed ?? char.systemData.race?.speed ?? 0,
 			['systemData', 'combat', 'speed'],
-			{ inputKind: 'number', label: 'walking ft' }
+			{ fieldName: 'Walking Speed', label: 'ft', inputKind: 'number' }
 		),
 		climb: withFieldAnnotations(
-			char.systemData.combat.speedClimb ?? char.systemData.race?.speedClimb ?? '',
+			char.systemData.combat.speedClimb ?? char.systemData.race?.speedClimb ?? 0,
 			['systemData', 'combat', 'speedClimb'],
-			{ fieldName: 'Climb', inputKind: 'number', label: 'ft' }
+			{ fieldName: 'Climb Speed', label: 'ft', inputKind: 'number' }
 		),
 		swim: withFieldAnnotations(
-			char.systemData.combat.speedSwim ?? char.systemData.race?.speedSwim ?? '',
+			char.systemData.combat.speedSwim ?? char.systemData.race?.speedSwim ?? 0,
 			['systemData', 'combat', 'speedSwim'],
-			{ fieldName: 'Swim', inputKind: 'number', label: 'ft' }
+			{ fieldName: 'Swim Speed', label: 'ft', inputKind: 'number' }
 		),
 		fly: withFieldAnnotations(
-			char.systemData.combat.speedFly ?? char.systemData.race?.speedFly ?? '',
+			char.systemData.combat.speedFly ?? char.systemData.race?.speedFly ?? 0,
 			['systemData', 'combat', 'speedFly'],
-			{ inputKind: 'number', label: 'ft' }
+			{ fieldName: 'Fly Speed', label: 'ft', inputKind: 'number' }
 		)
-	};
-	const quickRefSecondaryData: GridContentData = {
-		...resolveGridFieldDescriptors(
-			char,
-			char.systemData.combat.hitDice
-				? [
-						{
-							key: 'hitDiceRemaining',
-							fieldName: 'Hit Dice Remaining',
-							path: ['systemData', 'combat', 'hitDice', 'remaining'],
-							valuePatchOperation:
-								char.systemData.combat.hitDice.remaining === undefined ? 'add' : 'replace',
-							interaction: {
-								editAffordance: 'persistent',
-								annotationAffordance: 'persistent'
-							}
-						}
-					]
-				: [],
-			{ annotationPathForValuePath: toSystemDataAnnotationPath }
-		),
-		hitDice: {
-			fieldName: 'Hit Dice',
-			value: {
-				remaining: withFieldAnnotations(char.systemData.combat.hitDice?.remaining ?? '', [
-					'systemData',
-					'combat',
-					'hitDice',
-					'remaining'
-				]),
-				total: withFieldAnnotations(char.systemData.combat.hitDice?.total ?? '', [
-					'systemData',
-					'combat',
-					'hitDice',
-					'total'
-				])
-			}
-		}
 	};
 
 	const proficiencyBonusRuntimeData: GridContentData = {
 		proficiencyBonus: withFieldAnnotations(
 			char.systemData.proficiencyBonus,
 			['systemData', 'proficiencyBonus'],
-			{ fieldName: 'Prof. Bonus' }
+			{
+				fieldName: 'Prof. Bonus',
+				inputKind: 'number',
+				capabilities: { canEditValue: true, canEditAnnotations: true },
+				interaction: {
+					tier: 'read-first',
+					editAffordance: 'hover',
+					annotationAffordance: 'badge'
+				}
+			}
 		)
 	};
 	const abilityRuntimeColumns: Array<AbilityRuntimeColumn> = abilityMetadata.map(
@@ -453,177 +310,27 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 		char.systemData.spellcasting?.ability ??
 		char.systemData.classes.find((entry) => entry.spellcasting?.ability)?.spellcasting?.ability ??
 		'int';
-	const defaultProficiencySource: ProficiencyEditorSource =
-		char.systemData.background?.name !== undefined || char.identity.background !== undefined
-			? 'background'
-			: 'ancestry';
-
-	const traitRuntimeData: GridContentData = {
-		traits: {
-			fieldName: 'Traits',
-			addItemLabel: 'Add Trait',
-			addItemTemplate: {
-				fieldName: 'Trait',
-				value: {
-					name: { fieldName: 'Name', value: 'Trait' }
-				}
-			},
-			bindPath: [traitListPathPrefix],
-			value: (char.systemData.race?.traits ?? []).map((trait, index) => ({
-				fieldName: 'Trait',
-				value: {
-					name: withFieldAnnotations(trait.name, ['systemData', 'race', 'traits', index, 'name'], {
-						fieldName: 'Name'
-					}),
-					featureId: {
-						fieldName: 'Feature Id',
-						value: trait.featureId,
-						editOnly: true,
-						hidden: true
-					}
-				}
-			}))
-		}
-	};
-	const proficiencyLanguagesRuntimeData: GridContentData = {
-		languages: createProficiencyListField(
-			withFieldAnnotations,
-			'Prof. Languages',
-			[proficiencyLanguagesPathPrefix],
-			'languages',
-			char.systemData.proficiencies.languages,
-			'Language',
-			defaultProficiencySource
-		)
-	};
-	const proficiencyToolsRuntimeData: GridContentData = {
-		tools: createProficiencyListField(
-			withFieldAnnotations,
-			'Prof. Tools',
-			[proficiencyToolsPathPrefix],
-			'tools',
-			char.systemData.proficiencies.tools,
-			'Tool',
-			defaultProficiencySource
-		)
-	};
-	const featuresRuntimeData: GridContentData = {
-		features: {
-			fieldName: 'Features',
-			addItemLabel: 'Add Feature',
-			addItemTemplate: {
-				fieldName: 'General',
-				value: {
-					name: { fieldName: 'Name', value: 'Feature' },
-					owner: {
-						fieldName: 'Owner',
-						value: 'general',
-						editOnly: true,
-						hidden: true
-					}
-				}
-			},
-			bindPath: [featureListPathPrefix],
-			value: [
-				...char.features.map((feature, featureIndex) => ({
-					fieldName: 'General',
-					value: {
-						name: withFieldAnnotations(feature.name, ['features', featureIndex, 'name'], {
-							fieldName: 'Name'
-						}),
-						owner: {
-							fieldName: 'Owner',
-							value: 'general',
-							editOnly: true,
-							hidden: true
-						},
-						featureId: {
-							fieldName: 'Feature Id',
-							value: feature.id,
-							editOnly: true,
-							hidden: true
-						}
-					}
-				})),
-				...char.systemData.classes.flatMap((entry, classIndex) =>
-					(entry.features ?? []).map((feature, featureIndex) => ({
-						fieldName: entry.subclass ? `${entry.name} (${entry.subclass})` : entry.name,
-						value: {
-							name: withFieldAnnotations(
-								feature.name,
-								['systemData', 'classes', classIndex, 'features', featureIndex, 'name'],
-								{ fieldName: 'Name' }
-							),
-							owner: {
-								fieldName: 'Owner',
-								value: 'class',
-								editOnly: true,
-								hidden: true
-							},
-							classIndex: {
-								fieldName: 'Class Index',
-								value: classIndex,
-								editOnly: true,
-								hidden: true
-							},
-							featureId: {
-								fieldName: 'Feature Id',
-								value: feature.featureId,
-								editOnly: true,
-								hidden: true
-							}
-						}
-					}))
-				)
-			]
-		}
-	};
-
 	const inventoryCurrencyRuntimeData: GridContentData = Object.fromEntries(
 		inventoryCurrencyMetadata.map(({ key, label }) => [
 			key,
 			{
 				fieldName: label,
 				bindPath: [currencyPathPrefix, key],
+				inputKind: 'number',
+				capabilities: { canEditValue: true, canEditAnnotations: false },
+				interaction: {
+					tier: 'runtime',
+					editAffordance: 'persistent',
+					annotationAffordance: 'badge'
+				},
 				value: char.systemData.currency[key]?.amount ?? 0
 			} satisfies GridContentField
 		])
 	);
-	const inventory = char.inventory;
 	const inventoryRuntimeCards: Array<InventoryRuntimeCard> = [
-		{
-			key: 'weapons',
-			data: {
-				items: createInventoryListField(
-					'Weapons',
-					inventory.filter((item) => getInventoryGroupForItem(item) === 'weapons'),
-					'weapons',
-					'Weapon'
-				)
-			}
-		},
-		{
-			key: 'armorShields',
-			data: {
-				items: createInventoryListField(
-					'Armor & Shields',
-					inventory.filter((item) => getInventoryGroupForItem(item) === 'armorShields'),
-					'armorShields',
-					'Armor'
-				)
-			}
-		},
-		{
-			key: 'other',
-			data: {
-				items: createInventoryListField(
-					'Other Gear',
-					inventory.filter((item) => getInventoryGroupForItem(item) === 'other'),
-					'other',
-					'Gear'
-				)
-			}
-		}
+		{ key: 'weapons' },
+		{ key: 'armorShields' },
+		{ key: 'other' }
 	];
 
 	const organizationalBackgroundData: GridContentData = {
@@ -700,12 +407,30 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 						used: withFieldAnnotations(
 							slot?.used ?? 0,
 							['systemData', 'spellcasting', 'slots', key, 'used'],
-							{ fieldName: 'Used', inputKind: 'number' }
+							{
+								fieldName: 'Used',
+								inputKind: 'number',
+								capabilities: { canEditValue: true, canEditAnnotations: true },
+								interaction: {
+									tier: 'runtime',
+									editAffordance: 'persistent',
+									annotationAffordance: 'persistent'
+								}
+							}
 						),
 						max: withFieldAnnotations(
 							slot?.max ?? 0,
 							['systemData', 'spellcasting', 'slots', key, 'max'],
-							{ fieldName: 'Max', inputKind: 'number' }
+							{
+								fieldName: 'Max',
+								inputKind: 'number',
+								capabilities: { canEditValue: true, canEditAnnotations: true },
+								interaction: {
+									tier: 'runtime',
+									editAffordance: 'persistent',
+									annotationAffordance: 'persistent'
+								}
+							}
 						)
 					}
 				}
@@ -713,97 +438,36 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 		})
 	);
 	const spellcastingRuntimeData: GridContentData = {
-		ability: withFieldAnnotations(
-			char.systemData.spellcasting?.ability ?? defaultSpellcastingAbility,
-			['systemData', 'spellcasting', 'ability'],
-			{ fieldName: 'Ability' }
-		),
-		spellSaveDC: withFieldAnnotations(
-			char.systemData.spellcasting?.spellSaveDC ?? 0,
-			['systemData', 'spellcasting', 'spellSaveDC'],
-			{ fieldName: 'Save DC' }
-		),
-		spellAttackBonus: withFieldAnnotations(
-			char.systemData.spellcasting?.spellAttackBonus ?? 0,
-			['systemData', 'spellcasting', 'spellAttackBonus'],
-			{ fieldName: 'Attack Bonus' }
-		)
-	};
-	const currentSpells = char.systemData.spellcasting?.spells ?? [];
-	const createSpellListField = (level: SpellListLevel): GridContentField => ({
-		fieldName: level === 0 ? 'Cantrips' : 'Spells',
-		addItemLabel: level === 0 ? 'Add Cantrip' : 'Add Spell',
-		addItemTemplate: {
-			fieldName: level === 0 ? 'Cantrip' : 'Spell',
+		spellcastingSummary: {
+			fieldName: 'Spellcasting summary',
 			value: {
-				name: { fieldName: 'Name', value: level === 0 ? 'Cantrip' : 'Spell' },
-				prepared: { fieldName: 'Prepared', value: false, editOnly: true },
-				notes: { fieldName: 'Notes', value: '', editOnly: true, multiline: true }
+				ability: withFieldAnnotations(
+					char.systemData.spellcasting?.ability ?? defaultSpellcastingAbility,
+					['systemData', 'spellcasting', 'ability'],
+					{ fieldName: 'Ability', label: 'ability' }
+				),
+				spellSaveDC: withFieldAnnotations(
+					char.systemData.spellcasting?.spellSaveDC ?? 0,
+					['systemData', 'spellcasting', 'spellSaveDC'],
+					{ fieldName: 'Save DC', label: 'save dc', inputKind: 'number' }
+				),
+				spellAttackBonus: withFieldAnnotations(
+					char.systemData.spellcasting?.spellAttackBonus ?? 0,
+					['systemData', 'spellcasting', 'spellAttackBonus'],
+					{ fieldName: 'Attack Bonus', label: 'attack bonus', inputKind: 'number' }
+				)
 			}
-		},
-		bindPath: [spellListLevelPathPrefix, level],
-		value: currentSpells
-			.flatMap((spell, spellIndex) => ((spell.level ?? 0) === level ? [{ spell, spellIndex }] : []))
-			.map(({ spell, spellIndex }) => ({
-				fieldName: level === 0 ? 'Cantrip' : 'Spell',
-				value: {
-					name: withFieldAnnotations(
-						spell.name,
-						['systemData', 'spellcasting', 'spells', spellIndex, 'name'],
-						{ fieldName: 'Name' }
-					),
-					prepared: { fieldName: 'Prepared', value: spell.prepared ?? false, editOnly: true },
-					notes: {
-						fieldName: 'Notes',
-						value: spell.notes ?? '',
-						editOnly: true,
-						multiline: true
-					},
-					...(spell.spellId
-						? {
-								spellId: {
-									fieldName: 'Spell Id',
-									value: spell.spellId,
-									editOnly: true,
-									hidden: true
-								} satisfies GridContentField
-							}
-						: {})
-				}
-			}))
-	});
-	const spellCollectionLevels: Array<SpellListLevel> = [
-		0,
-		...spellSlotLevelMetadata.map(({ key }) => Number(key) as SpellListLevel)
-	];
-	const spellCollectionBulkEditData: GridContentData = Object.fromEntries(
-		spellCollectionLevels.map((level) => {
-			const label = level === 0 ? 'Cantrips' : spellSlotLevelMetadata[level - 1]?.label;
-			return [
-				`level-${level === 0 ? 'cantrips' : level}`,
-				{
-					...createSpellListField(level),
-					fieldName: level === 0 ? 'Cantrips' : `${label}-level Spells`
-				}
-			];
-		})
-	);
-
+		}
+	};
 	return {
 		annotationEditorConfig,
-		runtimeActionData,
 		metaPrimaryData,
 		metaSecondaryData,
 		metaTertiaryData,
-		quickRefPrimaryData,
-		quickRefMovementData,
-		quickRefSecondaryData,
+		quickRefLiveData,
+		quickRefReferenceData,
 		proficiencyBonusRuntimeData,
 		abilityRuntimeColumns,
-		traitRuntimeData,
-		proficiencyLanguagesRuntimeData,
-		proficiencyToolsRuntimeData,
-		featuresRuntimeData,
 		inventoryCurrencyRuntimeData,
 		inventoryRuntimeCards,
 		organizationalBackgroundData,
@@ -811,7 +475,6 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 		roleplaySecondaryData,
 		scratchpadNotesData,
 		spellcastingRuntimeData,
-		spellSlotRuntimeData,
-		spellCollectionBulkEditData
+		spellSlotRuntimeData
 	};
 };

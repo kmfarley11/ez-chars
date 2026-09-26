@@ -36,7 +36,7 @@ async function openSeededCharacter(page: Page) {
 		.filter({ visible: true })
 		.click();
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-character/);
-	await expect(page.getByText('Current HP:', { exact: false })).toBeVisible();
+	await expect(page.getByText('Current HP', { exact: true }).first()).toBeVisible();
 }
 
 test('navigates to a seeded character, adjusts viewport, collapses a region, and edits Current HP', async ({
@@ -53,9 +53,9 @@ test('navigates to a seeded character, adjusts viewport, collapses a region, and
 	await runtimeToggle.click();
 
 	await page.getByRole('button', { name: 'Edit Current HP' }).click();
-	await page.getByLabel('Current HP').fill('9');
-	await page.getByRole('button', { name: 'Save', exact: true }).click();
-	await expect(page.getByText(/Current HP:\s*9/)).toBeVisible();
+	await page.getByRole('spinbutton', { name: 'Current HP' }).fill('9');
+	await page.getByRole('button', { name: 'Confirm Current HP' }).click();
+	await expect(page.getByText('Current HP', { exact: true }).locator('..')).toContainText('9');
 	await expect
 		.poll(() =>
 			page.evaluate((key) => {
@@ -72,7 +72,7 @@ test('scalar field editing preserves focus restoration, Escape cancellation, and
 	await openSeededCharacter(page);
 
 	const editHpButton = page.getByRole('button', { name: 'Edit Current HP' });
-	const hpInput = page.getByLabel('Current HP');
+	const hpInput = page.locator('input[aria-label="Current HP"]');
 
 	// 1. Enter edit mode and test Escape cancellation with focus restoration
 	await editHpButton.click();
@@ -80,14 +80,14 @@ test('scalar field editing preserves focus restoration, Escape cancellation, and
 	await hpInput.fill('99');
 	await page.keyboard.press('Escape');
 	// Value should revert to original (17) and edit mode should close
-	await expect(page.getByText(/Current HP:\s*17/)).toBeVisible();
+	await expect(page.getByText('Current HP', { exact: true }).locator('..')).toContainText('17');
 	await expect(editHpButton).toBeFocused();
 
 	// 2. Enter edit mode and test unchanged save with focus restoration
 	await editHpButton.click();
 	await expect(hpInput).toBeFocused();
-	await page.getByRole('button', { name: 'Save', exact: true }).click();
-	await expect(page.getByText(/Current HP:\s*17/)).toBeVisible();
+	await page.getByRole('button', { name: 'Confirm Current HP' }).click();
+	await expect(page.getByText('Current HP', { exact: true }).locator('..')).toContainText('17');
 	await expect(editHpButton).toBeFocused();
 
 	// 3. Enter edit mode and test invalid numeric input error alert
@@ -98,13 +98,41 @@ test('scalar field editing preserves focus restoration, Escape cancellation, and
 		el.type = 'text';
 	});
 	await hpInput.fill('not-a-number');
-	await page.getByRole('button', { name: 'Save', exact: true }).click();
+	await page.getByRole('button', { name: 'Confirm Current HP' }).click();
 	await expect(
 		page.getByRole('alert').filter({ hasText: 'Expected a finite number.' })
 	).toBeVisible();
 	// Cancel the invalid edit
-	await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+	await page.getByRole('button', { name: 'Cancel editing Current HP' }).click();
 	await expect(editHpButton).toBeFocused();
+});
+
+test('opens each bounded non-runtime field group through one focused Detail and Edit path', async ({
+	page
+}) => {
+	await openSeededCharacter(page);
+
+	for (const group of [
+		{ title: 'Ancestry and background', field: 'Ancestry' },
+		{ title: 'Alignment and appearance', field: 'Alignment' },
+		{ title: 'Background details', field: 'Background' },
+		{ title: 'Roleplay', field: 'Motives' },
+		{ title: 'Additional character notes', field: 'Other Background/History' }
+	]) {
+		const detail = page.getByRole('button', { name: `View ${group.title}` });
+		await detail.click();
+		const dialog = page.getByRole('dialog', { name: group.title, exact: true });
+		await dialog.getByRole('button', { name: 'Edit', exact: true }).click();
+		await expect(dialog.getByLabel(group.field, { exact: true })).toBeVisible();
+		await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+		await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+		await expect(detail).toBeFocused();
+	}
+
+	await expect(page.getByRole('button', { name: 'View Treasure' })).toHaveCount(0);
+	await expect(page.getByRole('button', { name: 'Edit GP' })).toBeVisible();
+	await expect(page.getByRole('button', { name: 'View Prof. Bonus details' })).toHaveCount(1);
+	await expect(page.getByRole('region', { name: 'Reference stats' })).toContainText('Speeds');
 });
 
 test('starts an empty Spells section expanded and adds a previously absent spell-slot level', async ({
@@ -115,17 +143,17 @@ test('starts an empty Spells section expanded and adds a previously absent spell
 	const spellsToggle = page.getByRole('button', { name: 'Collapse Spells' });
 	await expect(spellsToggle).toHaveAttribute('aria-expanded', 'true');
 
-	await expect(page.getByRole('region', { name: 'Spellcasting' })).toBeVisible();
+	await expect(page.getByRole('region', { name: 'Spellcasting summary' })).toBeVisible();
 	const slots = page.getByRole('region', { name: 'Spell slots' });
-	await expect(slots).toContainText('1st: 0 / 0');
-	await expect(slots).toContainText('9th: 0 / 0');
-
-	await slots.getByRole('button', { name: 'Card actions' }).click();
-	await page.getByRole('button', { name: 'Edit', exact: true }).click();
-	const dialog = page.getByRole('dialog', { name: 'Edit Fields' });
-	await dialog.getByLabel('3rd Max').fill('2');
-	await dialog.getByRole('button', { name: 'Save', exact: true }).click();
-	await expect(slots).toContainText('3rd: 0 / 2');
+	await expect(slots.getByRole('button', { name: 'Edit 1st Used' })).toBeVisible();
+	await expect(slots.getByRole('button', { name: 'Edit 9th Max' })).toBeVisible();
+	await expect(slots.getByRole('button', { name: 'View Spell slots' })).toHaveCount(0);
+	await slots.getByRole('button', { name: 'Edit 3rd Max' }).click();
+	await expect(slots.getByRole('spinbutton', { name: '3rd Used' })).toHaveCount(0);
+	await expect(slots.getByRole('spinbutton', { name: '3rd Max' })).toHaveValue('0');
+	await slots.getByRole('spinbutton', { name: '3rd Max' }).fill('2');
+	await slots.getByRole('button', { name: 'Confirm 3rd Max' }).click();
+	await expect(slots).toContainText('Max 2');
 
 	await expect
 		.poll(() =>
@@ -151,11 +179,10 @@ test('starts an empty Spells section expanded and adds a previously absent spell
 test('adds a D&D Beyond note annotation and exposes its reference link', async ({ page }) => {
 	await openSeededCharacter(page);
 
-	await page.getByRole('button', { name: 'Add annotations for Current HP' }).click();
+	await page.getByRole('button', { name: 'Add notes for Current HP' }).click();
 	const dialog = page.getByRole('dialog');
-	await dialog.getByRole('button', { name: 'Add' }).click();
-	await dialog.getByText('Annotations (0)').click();
-	await dialog.getByRole('button', { name: 'Add' }).click();
+	await dialog.getByRole('button', { name: 'Add note' }).click();
+	await dialog.getByRole('button', { name: 'Add note' }).click();
 	await dialog.locator('input[data-annotation-name-input]').fill('HP rule');
 	await dialog.locator('textarea').fill('Use the current value during play.');
 	await dialog.getByLabel('D&D Beyond Basic Rules (2014)').check();
@@ -178,26 +205,16 @@ test('adds a structured runtime action and preserves it after reload', async ({ 
 		runtimeActionList.getByRole('button', { name: 'Source actions for Improvise' })
 	).toHaveCount(0);
 
-	const actionsGroup = page
-		.getByRole('button', { name: 'Collapse Actions / Runtime Summary' })
-		.locator('../..');
-	const cardActions = actionsGroup.getByRole('button', { name: 'Card actions' });
-	await cardActions.click();
-	await page.getByRole('button', { name: 'Edit', exact: true }).click();
-
-	const dialog = page.getByRole('dialog').filter({ hasText: 'Runtime Actions' });
-	await dialog.getByRole('button', { name: 'Add Action' }).click();
-	await dialog.getByLabel('Runtime Actions Name').last().fill('Dash');
-	await dialog.getByLabel('Runtime Actions Timing').last().selectOption('action');
-	await dialog.getByLabel('Runtime Actions Category').last().selectOption('effect');
-	await dialog.getByRole('button', { name: 'Save', exact: true }).click();
-	await expect(cardActions).toBeFocused();
-
-	await cardActions.click();
-	await page.getByRole('button', { name: 'Notes', exact: true }).click();
-	const notesDialog = page.getByRole('dialog', { name: 'Notes' });
-	await notesDialog.getByRole('button', { name: 'Close' }).click();
-	await expect(cardActions).toBeFocused();
+	const addAction = page.getByRole('button', { name: 'Add action' });
+	await addAction.click();
+	const picker = page.getByRole('dialog', { name: 'Add action' });
+	await picker.getByRole('button', { name: /Create custom action/ }).click();
+	const review = page.getByRole('dialog', { name: 'Review action' });
+	await review.getByLabel('Name').fill('Dash');
+	await review.getByLabel('Timing').selectOption('action');
+	await review.getByLabel('Category').selectOption('effect');
+	await review.getByRole('button', { name: 'Confirm Action' }).click();
+	await expect(addAction).toBeFocused();
 
 	await expect(runtimeActionList.getByText('Dash', { exact: true })).toBeVisible();
 	await expect
@@ -273,14 +290,14 @@ test('links an inventory suggestion through resync and source deletion fallback'
 			source: { kind: 'item', id: 'e2e-longsword' }
 		});
 
-	const actionsGroup = page
-		.getByRole('button', { name: 'Collapse Actions / Runtime Summary' })
-		.locator('../..');
-	await actionsGroup.getByRole('button', { name: 'Card actions' }).click();
-	await page.getByRole('button', { name: 'Notes', exact: true }).click();
-	const notesDialog = page.getByRole('dialog').filter({ hasText: 'Notes' });
-	await expect(notesDialog).toBeVisible();
-	await notesDialog.getByRole('button', { name: 'Close' }).click();
+	const actionDetail = runtimeActionList.getByRole('button', {
+		name: 'View Longsword details'
+	});
+	await actionDetail.click();
+	const actionDetailDialog = page.getByRole('dialog', { name: 'Longsword' });
+	await expect(actionDetailDialog.getByRole('heading', { name: 'Notes' })).toBeVisible();
+	await actionDetailDialog.getByRole('button', { name: 'Close' }).click();
+	await expect(actionDetail).toBeFocused();
 
 	await page.reload();
 	await expect(runtimeActionList.getByText('Original item notes.')).toBeVisible();
@@ -290,15 +307,14 @@ test('links an inventory suggestion through resync and source deletion fallback'
 	await expect(weaponsRegion).toBeFocused();
 
 	const longswordRow = weaponsRegion.locator('[data-row-key="item:e2e-longsword"]');
-	const longswordRowActions = longswordRow.getByRole('button', {
-		name: /Row actions for Longsword/
-	});
-	await longswordRowActions.click();
-	await page.getByRole('button', { name: 'Edit', exact: true }).click();
-	let inventoryDialog = page.getByRole('dialog', { name: 'Edit Longsword' });
+	const longswordDetail = longswordRow.getByRole('button', { name: /^View Longsword.*details$/ });
+	await longswordDetail.click();
+	let inventoryDialog = page.getByRole('dialog', { name: 'Longsword' });
+	await inventoryDialog.getByRole('button', { name: 'Edit', exact: true }).click();
 	await inventoryDialog.getByLabel('Detail', { exact: true }).fill('Updated item notes.');
 	await inventoryDialog.getByRole('button', { name: 'Save', exact: true }).click();
-	await expect(longswordRowActions).toBeFocused();
+	await inventoryDialog.getByRole('button', { name: 'Close' }).click();
+	await expect(longswordDetail).toBeFocused();
 	await expect
 		.poll(() =>
 			page.evaluate((key) => {
@@ -343,12 +359,10 @@ test('links an inventory suggestion through resync and source deletion fallback'
 		)
 		.toBe('Updated item notes.');
 
-	const bulkEditWeapons = weaponsRegion.getByRole('button', { name: 'Bulk Edit Weapons' });
-	await bulkEditWeapons.click();
-	inventoryDialog = page.getByRole('dialog', { name: 'Bulk Edit Weapons' });
-	await inventoryDialog.getByRole('button', { name: 'Remove' }).first().click();
-	await inventoryDialog.getByRole('button', { name: 'Save', exact: true }).click();
-	await expect(bulkEditWeapons).toBeFocused();
+	await longswordDetail.click();
+	inventoryDialog = page.getByRole('dialog', { name: 'Longsword' });
+	await inventoryDialog.getByRole('button', { name: 'Remove item' }).click();
+	await inventoryDialog.getByRole('button', { name: 'Confirm remove' }).click();
 
 	await expect(runtimeActionList.getByText('Updated item notes.')).toBeVisible();
 	await expect(page.getByText('Custom action', { exact: true })).toHaveCount(0);
@@ -452,7 +466,7 @@ test('creates and navigates spell, feature, trait, and custom runtime actions', 
 
 	await actions.getByRole('button', { name: 'Source actions for Shield' }).click();
 	await actions.getByRole('button', { name: 'View Spell · Shield' }).click();
-	await expect(page.getByRole('region', { name: 'Spells collection' })).toBeFocused();
+	await expect(page.getByRole('region', { name: 'Spellcasting section' })).toBeFocused();
 
 	await actions.getByRole('button', { name: 'Source actions for Arcane Recovery' }).click();
 	await actions.getByRole('button', { name: 'View Feature · Arcane Recovery' }).click();

@@ -64,8 +64,8 @@
 			rows={presentedRows}
 			bind:query
 			{denseThreshold}
-			{onEdit}
-			{onNotes}
+			onAdd={onEdit}
+			onOpenRow={() => onNotes()}
 			onSavePins={priorityProof ? savePins : undefined}
 			comparePriorityLabels={priorityProof ? compare5e2014PriorityLabels : undefined}
 		/>

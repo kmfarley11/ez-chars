@@ -84,6 +84,9 @@
 			{:else if variant === 'edit'}
 				<path d="M12 20h9"></path>
 				<path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+			{:else if variant === 'notes'}
+				<path d="M6 3h9l3 3v15H6Z"></path>
+				<path d="M15 3v4h4M9 11h6M9 15h6"></path>
 			{/if}
 		</svg>
 	{/if}

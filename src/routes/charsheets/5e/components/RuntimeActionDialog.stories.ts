@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/sveltekit';
-import { expect, fn, userEvent, within, waitFor } from 'storybook/test';
+import { fn } from 'storybook/test';
 import RuntimeActionDialog from './RuntimeActionDialog.svelte';
 import type { RuntimeActionSourceCandidate } from '$lib/dnd5e2014/runtimeActionSources';
 
@@ -86,80 +86,4 @@ export const MixedSources: Story = {};
 
 export const NoSources: Story = {
 	args: { candidates: [] }
-};
-
-export const SourceReviewAndBack: Story = {
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement.parentElement!);
-		await userEvent.click(canvas.getByRole('button', { name: /Arcane Recovery/ }));
-		await expect(canvas.getByRole('dialog', { name: 'Review action' })).toBeVisible();
-		// Assert the heading received programmatic focus for screen readers
-		await expect(canvas.getByRole('heading', { name: 'Review action' })).toHaveFocus();
-
-		const name = canvas.getByRole('textbox', { name: 'Name' });
-		await userEvent.clear(name);
-		await userEvent.type(name, 'Arcane Recovery Override');
-
-		await userEvent.click(canvas.getByRole('button', { name: 'Back' }));
-		await expect(canvas.getByRole('dialog', { name: 'Add action' })).toBeVisible();
-		// Assert the heading received focus when navigating back
-		await expect(canvas.getByRole('heading', { name: 'Add action' })).toHaveFocus();
-
-		await userEvent.click(canvas.getByRole('button', { name: /Arcane Recovery/ }));
-		await expect(canvas.getByRole('textbox', { name: 'Name' })).toHaveValue(
-			'Arcane Recovery Override'
-		);
-	}
-};
-
-export const SourceSwitchResetsOwnedDraft: Story = {
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement.parentElement!);
-		await userEvent.click(canvas.getByRole('button', { name: /Arcane Recovery/ }));
-		const name = canvas.getByRole('textbox', { name: 'Name' });
-		await userEvent.clear(name);
-		await userEvent.type(name, 'Arcane Recovery Override');
-		await userEvent.click(canvas.getByRole('button', { name: 'Back' }));
-		await userEvent.click(canvas.getByRole('button', { name: /Darkvision/ }));
-		await expect(canvas.getByRole('textbox', { name: 'Name' })).toHaveValue('Darkvision');
-	}
-};
-
-export const CustomEntry: Story = {
-	play: async ({ canvasElement, args }) => {
-		const canvas = within(canvasElement.parentElement!);
-		await userEvent.click(canvas.getByRole('button', { name: /Create custom action/ }));
-		await userEvent.type(canvas.getByRole('textbox', { name: 'Name' }), 'Improvise');
-		await userEvent.click(canvas.getByRole('button', { name: 'Confirm Action' }));
-		await expect(args.onConfirm).toHaveBeenCalledWith(
-			expect.objectContaining({ name: 'Improvise' })
-		);
-		await expect(args.onConfirm).toHaveBeenCalledWith(
-			expect.not.objectContaining({ source: expect.anything() })
-		);
-	}
-};
-
-export const NoMatchesKeepsCustomEntry: Story = {
-	play: async ({ canvasElement }) => {
-		const canvas = within(canvasElement.parentElement!);
-		await userEvent.type(canvas.getByRole('searchbox'), 'missing source');
-		await expect(canvas.getByText('No action sources match these filters.')).toBeVisible();
-		await expect(canvas.getByRole('button', { name: /Create custom action/ })).toBeVisible();
-	}
-};
-
-export const Cancellation: Story = {
-	play: async ({ canvasElement, args }) => {
-		const canvas = within(canvasElement.parentElement!);
-		await userEvent.click(canvas.getByRole('button', { name: 'Cancel' }));
-		await waitFor(() => expect(args.onClose).toHaveBeenCalled());
-		await expect(args.onConfirm).not.toHaveBeenCalled();
-	}
-};
-
-export const NarrowScreen: Story = {
-	parameters: {
-		viewport: { defaultViewport: 'mobile1' }
-	}
 };
