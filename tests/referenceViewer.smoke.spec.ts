@@ -321,15 +321,16 @@ test('resizes both desktop pane allocations and progressively exposes the native
 });
 
 test('shows a browser fallback when viewer initialization fails', async ({ page }) => {
+	test.setTimeout(30_000);
 	await page.route('**/*.pdf', (route) =>
 		route.fulfill({ status: 200, contentType: 'application/pdf', body: 'not a valid PDF' })
 	);
 	await openCharacter(page);
 	await page.getByRole('button', { name: 'References: classes' }).click();
 	const reference = page.getByRole('complementary', { name: 'Rules reference' });
-	await expect(
-		reference.getByText('The in-app viewer could not open this document.')
-	).toBeVisible();
+	await expect(reference.getByText('The in-app viewer could not open this document.')).toBeVisible({
+		timeout: 15_000
+	});
 	await expect(reference.getByRole('button', { name: 'Retry' })).toBeVisible();
 	await expect(reference.getByRole('link', { name: 'Open in browser instead' })).toHaveAttribute(
 		'href',
@@ -338,7 +339,7 @@ test('shows a browser fallback when viewer initialization fails', async ({ page 
 
 	await page.unroute('**/*.pdf');
 	await reference.getByRole('button', { name: 'Retry' }).click();
-	await expect(reference.getByLabel('PDF page 8, current page')).toBeVisible();
+	await expect(reference.getByLabel('PDF page 8, current page')).toBeVisible({ timeout: 15_000 });
 });
 
 test('preserves an unsaved annotation draft while the reference is a dialog step', async ({

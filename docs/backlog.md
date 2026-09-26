@@ -354,6 +354,7 @@ ID:
 Sequencing context:
 
 - Execute after `BL-064`, `BL-069`, `BL-084`, `BL-070`, and `BL-071` deliver their proofs. This item closes readiness gaps; it must not become an umbrella for missing product epics.
+- **Evidence already available (2026-09-26):** The serialized Playwright comparison produced two stable headless Chromium medians of approximately 60 FPS with no intervals over 33.3 ms, while headless Firefox produced medians of 43.18 and 44.92 FPS with 21.67% and 23.33% over-33.3-ms intervals. A same-machine headed comparison materially changed the result: after one cold sample in each engine (Chromium 40.91 FPS; Firefox 51.43 FPS), the next two samples reached approximately 60 FPS with no dropped-frame intervals in both engines. This supports treating the headless Firefox delta as automation-environment and refresh/compositor-scheduling evidence rather than a demonstrated end-user application regression. It does not close the owner-observed rapid-scroll black-region issue: `requestAnimationFrame` cadence cannot prove that Firefox painted or composited every presented frame correctly, and Playwright uses its patched Firefox build rather than branded release Firefox. Retain the compatibility notice and the headed macOS/non-macOS profile, Paint Flashing, screen-recording, and saturated-sheet comparison below until that separate rendering question is resolved.
 
 Refinement outputs:
 

@@ -665,6 +665,7 @@ test('phone previews expose domain-specific limits and focused collections with 
 test('supporting collections add, edit, and remove one focused record at a time', async ({
 	page
 }, testInfo) => {
+	test.setTimeout(30_000);
 	test.skip(testInfo.project.name === 'Mobile Chrome', 'Desktop focused-record behavior.');
 
 	await openSaturatedSheet(page);

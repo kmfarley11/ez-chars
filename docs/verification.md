@@ -106,10 +106,14 @@ Runs the on-demand headless Chromium scroll-frame baseline. It reports frame tim
 For a non-gating Firefox comparison, run:
 
 ```bash
-PLAYWRIGHT_PERF=1 npx playwright test tests/performance.perf.spec.ts --project=firefox
+npm run test:perf:compare
 ```
 
-Treat this as comparative evidence only. Headless Firefox frame timing can help identify a large regression, but it does not replace a headed Firefox Profiler recording for the previously observed subjective scroll jank.
+The comparison runs three serialized samples in both Chromium and Firefox, prints the median frame cadence, and writes a compact local report to `performance-results/scroll-frame-comparison.json`. The report retains the preceding run's timestamp and medians so a later run can expose a directional change without treating different browser engines as interchangeable. Chromium continues to enforce the repository's performance thresholds; Firefox is comparative evidence only.
+
+Interpret a headless Firefox delta as a signal to investigate, not as an end-user slowdown by itself. `requestAnimationFrame` measures content-process callback cadence; it does not establish that each frame was painted and composited correctly, and headless scheduling may differ materially from a warmed visible browser. Conversely, a smooth headed cadence does not disprove a transient black or incomplete frame. Headless Firefox frame timing can help identify a large directional regression, but it does not expose reliable paint, compositor, or GPU evidence and does not replace a headed Firefox Profiler recording for the previously observed subjective scroll jank. Do not promote the Firefox median to a fixed gate without repeatable evidence from the supported execution environment.
+
+The dated calibration evidence and remaining compatibility decision are recorded under [`BL-072`](backlog.md#harden-the-three-system-external-playtest-matrix). Repeat that comparison after meaningful rendering or sheet-density changes; do not treat ordinary run-to-run movement as a durable regression without a warmed headed reproduction or profile.
 
 ## Manual Firefox Performance Checks
 
