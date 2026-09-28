@@ -167,8 +167,15 @@ export type SheetEditIntent =
 	| { type: 'replace-spell-level'; level: SpellListLevel; spells: SpellEditorPayload }
 	| { type: 'replace-spell-slots'; slots: SpellSlotsEditorPayload }
 	| {
+			type: 'update-spell-slot';
+			level: keyof SpellSlotsEditorPayload;
+			field: 'used' | 'max';
+			value: number;
+	  }
+	| {
 			type: 'update-spell';
 			level: SpellListLevel;
+			nextLevel?: SpellListLevel;
 			spellId: string;
 			spell: z.infer<typeof spellItemEditorPayloadSchema>;
 	  }
@@ -333,6 +340,24 @@ export const reduce5eSheetEditIntents = (
 				break;
 			}
 
+			case 'update-spell-slot': {
+				const spellcasting = candidate.systemData.spellcasting;
+				candidate.systemData.spellcasting = {
+					...spellcasting,
+					ability: resolveDefaultSpellcastingAbility(candidate),
+					slots: {
+						...spellcasting?.slots,
+						[intent.level]: {
+							used: 0,
+							max: 0,
+							...spellcasting?.slots?.[intent.level],
+							[intent.field]: intent.value
+						}
+					}
+				};
+				break;
+			}
+
 			case 'replace-spell-slots': {
 				const currentSpellcasting = candidate.systemData.spellcasting;
 				const nextSlots = Object.fromEntries(
@@ -386,6 +411,7 @@ export const reduce5eSheetEditIntents = (
 				candidate.systemData.spellcasting!.spells![spellIndex] = {
 					...currentSpell,
 					name,
+					...(intent.nextLevel !== undefined ? { level: intent.nextLevel } : {}),
 					...(intent.spell.prepared !== undefined ? { prepared: intent.spell.prepared } : {}),
 					...(intent.spell.notes !== undefined ? { notes: intent.spell.notes } : {})
 				};

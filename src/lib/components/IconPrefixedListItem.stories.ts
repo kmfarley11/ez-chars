@@ -4,7 +4,8 @@ import IconPrefixedListItemStory from './IconPrefixedListItemStory.svelte';
 const meta = {
 	title: 'Molecules/IconPrefixedListItem',
 	component: IconPrefixedListItemStory,
-	tags: ['autodocs']
+	tags: ['autodocs'],
+	argTypes: { iconAlign: { control: 'select', options: ['first-line', 'center'] } }
 } satisfies Meta<typeof IconPrefixedListItemStory>;
 
 export default meta;

@@ -79,7 +79,7 @@ _Goal: First External Playtest_
 
 The queues above record strategic priority membership; this list records the dependency-aware action order and may omit blocked or trigger-deferred items.
 
-1. `BL-085`: Refine focused compound editing so concise field controls and on-demand annotations preserve the read-first density without weakening atomic Save behavior
+1. `BL-085`: Make read-first Detail support targeted access and independently saved small field/note edits, retaining atomic validation per deliberate edit and a production-backed human gate before rollout
 2. `BL-078`: Prove collection-scale quickfilters on Runtime Actions and Spells plus persisted Runtime Action priority before later sheets multiply comparable dense-list review
 3. `BL-082`: Refine the shared mobile rules-reader controls and resolve the physical-iPhone PDF/viewer blockers before later systems adopt that presentation
 4. `BL-070`: Establish the smallest multi-system lifecycle/computed-view boundary, add the minimal 2024 D&D sheet, and supply its system-owned navigation and collection behavior
@@ -101,35 +101,41 @@ ID:
 
 Sequencing context:
 
-- Run next, after completed `BL-077` and before the remaining interaction-foundation work or additional systems. Final BL-077 production review found that the read-first sheet presentation is successful, but compound focused Edit surfaces—most visibly Abilities & Proficiencies—still resemble broad forms: every leaf receives a bordered editor and an empty annotation section even when the common task is toggling a few proficiencies. BL-077 compacts the zero-annotation state as a safe baseline; this follow-up decides whether the focused workflow itself should remain one target-wide Edit mode or adopt piecewise field controls inside Detail without losing the approved atomic-draft guarantee.
+- Run next, after completed `BL-077` and before the remaining interaction-foundation work or additional systems. Final BL-077 production review found that the read-first sheet presentation is successful, but compound focused Edit surfaces—most visibly Abilities & Proficiencies—still resemble broad forms. Owner refinement on 2026-09-26 selected independently saved small edits: the readable group may be broad, but changing one field must not involve searching or managing a large target-wide draft. Atomicity applies to each deliberate edit, not every change made while Detail remains open.
+- Active planning: [bl-085-focus-piecewise-detail-editing](../openspec/changes/bl-085-focus-piecewise-detail-editing/proposal.md). Execution and approval gates live in its tasks; the shipped BL-077 contract remains unchanged until implementation.
 
 Refinement outputs:
 
-- **Purpose:** Make compound read-first targets quick and calm to edit on desktop and phone, with concise boolean/value controls and annotations available on demand rather than visually dominating fields that have no notes.
+- **Purpose:** Make the intended read-first field quick to reach and edit during play, with a small explicit save boundary and notes available on demand rather than a broad form or accumulating dialog-wide draft.
 - **Included behavior:**
-  - Compare the current target-wide Edit form with a piecewise presentation inside the focused surface, using the real six Ability/skill groups as the primary saturated proof and at least one mixed prose/value group as a counterexample.
-  - Preserve one explicit local draft and one atomic target Save unless owner-approved proof demonstrates a clearer model that still prevents partial commits, hidden autosave, and annotation/value divergence.
-  - Make boolean proficiency controls semantically clear and compact, with understandable checked/unchecked states, labels, keyboard order, and coarse-pointer targets.
-  - Keep zero-annotation fields visually quiet through one on-demand Add annotation action; reveal counts and full editors only when annotations exist or the user deliberately starts adding one.
-  - Distinguish editable, derived, and unavailable leaves without making read-only values appear disabled or requiring every leaf to expose the same controls.
-  - Preserve Cancel-to-Detail, validation feedback, annotation removal/Undo, focus restoration, phone one-scroll ownership, and selectable read-first content.
-  - Use the smallest production-backed Storybook comparison that makes the target-wide versus piecewise trade-off visible, then stop for owner review before changing all focused structured editors.
+  - Use per-field Edit with adjacent explicit Save/Cancel inside Detail, without a preliminary global Edit mode or an outer Save. Previously saved edits survive later cancellation and closing.
+  - Keep each edit to one field/note or a genuinely coupled small unit. One to five fields is a review heuristic, not an automatic grouping rule; sharing a card is not grounds for coupling.
+  - Prefer one group entry when its small coherent detail view makes fields readily apparent; add targeted entry where it prevents searching unrelated content. Independent edits do not mandate a sheet button beside every leaf. Compare recognizable label controls and selective chevrons where targeting helps, preserving discovery, selectable values, and keyboard/touch operation.
+  - Validate locally for immediate feedback and validate the resulting current character before committing each requested edit atomically. Preserve unrelated fields/notes and reject stale or removed targets rather than overwrite or recreate them.
+  - Keep one active editor per focused surface; dirty switching or dismissal requires explicit Save/Discard/Keep editing resolution. Make repeated boolean proficiency edits concise, clearly labeled, and comfortable on touch/keyboard.
+  - Open existing note counts for reading with individual Edit/Remove and Add note; keep empty eligible fields quiet with a compact Add note action. Preserve references and removal/Undo without entering a whole-record draft.
+  - Restrict optional Clear and eligible Remove by domain ownership; do not delete required fields or expand ancestry-trait removal eligibility. Clearing a value does not implicitly erase its notes.
+  - Keep authored, genuinely derived, and unavailable values distinct through eligible controls. Optional calculated explanations must work beyond hover, without a permanent Calculated label. Badges do not decide editability, and authored modifiers remain authored.
+  - Preserve Tier 1 geometry, explicit creation commits, focus/scroll/browse context, source workflows, and selectable read-first text. The 2026-09-27 owner-requested BL-085 proof separately compares spell-slot Used/Max as read-first per-level detail against the existing runtime layout; adoption awaits the proof gate, without reclassifying other runtime fields.
+  - Use production-backed stories for real six Ability/skill groups, mixed prose/value content, saturated Spells, and a Tier 1 counterexample. Before rollout, also review a provisional whole-sheet composition with representative revised regions beside unchanged content: sparse/saturated read-only scans plus runtime tasks on desktop and narrow phones must establish acceptable cumulative visual/action density, keyboard stops, and touch-target expansion. Isolated story approval alone is insufficient; retain a separate final integrated-sheet approval.
 - **Excluded behavior:**
   - Returning to a global sheet Edit mode, reintroducing collection-wide rich-record forms, or making the whole character sheet permanently form-like.
   - Requiring annotations on every field, changing annotation storage or reference shapes, or adding a character-wide annotation index.
-  - Silently committing each leaf as soon as it changes, introducing nested dialogs, or weakening target-level validation merely to imitate Tier 1 controls.
+  - Silently committing on input/blur, accumulating several unsaved editors, nested dialogs, or weakening candidate validation merely to imitate Tier 1 controls.
+  - New rules calculations/legality enforcement, backend validation infrastructure, or changing persisted character/note shapes.
   - Generalizing 5e Ability/proficiency semantics into a cross-system field schema before later systems supply evidence.
 - **Ambiguities:**
-  - Should Detail contain directly activatable per-leaf Edit controls, or should one explicit Edit mode remain while only the selected leaf expands and the rest stay compact?
-  - If several leaves are changed piecewise, where should dirty state, validation errors, outer Save/Cancel, and focus return remain visible without recreating a long bulk form?
-  - Should an existing annotation count open that leaf's editor directly while an empty field shows only Add annotation, or should annotation editing remain in one target-level disclosure?
-  - Which derived values belong in the focused surface for context, and how should they remain readable without suggesting they can be changed?
+  - Where does group entry already suffice, and where do recognizable label controls or selective chevrons improve targeted access without polluting the full sheet? Assess actual viewport/content length rather than a fixed field-count rule.
+  - Are repeated proficiency Edit/Save operations swift enough, and what local focus flow best supports the next edit?
+  - Which real domain cases require a small coupled editor, rather than merely being grouped for presentation?
+  - Is local note removal with Undo and explicit confirmation clear without excess controls? Refine presentation at the proof, preserving data-loss protection.
 - **Success:**
-  - A player can change several saving-throw or skill proficiencies on a phone without scanning repeated empty annotation boxes or losing track of the active field and final Save boundary.
+  - A player can reach the intended field and change several saving-throw or skill proficiencies on a phone without scanning unrelated dialog content or managing a target-wide draft.
+  - Whole-sheet review before rollout confirms restrained reading and action density without hiding discoverability or transferring the cost into excessive runtime navigation.
   - Empty annotation eligibility consumes no persistent bordered section, while adding, editing, removing, and undoing a real annotation remains evident and accessible.
-  - The owner can explain whether edits commit per leaf or per focused target, and automation proves invalid or cancelled work never partially changes the character.
+  - The owner can explain that Save commits the current small edit, Cancel discards only that edit, and earlier saves remain; automation proves validation failures do not partially commit and unrelated data survives.
   - The accepted presentation works for both boolean-heavy and prose/value compound targets without forcing every system or field through one payload shape.
-- **Recommended workflow:** Full OpenSpec change because this may modify the durable focused-editing and atomic-save requirements and changes a shared structured-form boundary across many sheet groups. Use one production-backed proof-before-propagation checkpoint. Refine the existing three-tier interaction ADR if the accepted result changes the target-wide draft rule; no new ADR is otherwise triggered.
+- **Recommended workflow:** Full OpenSpec change because the agreed independent-edit boundary modifies durable focused-editing and collection requirements across shared components and domain adapters. The proposal is now captured; amend the existing three-tier interaction ADR after proof acceptance, preserving its prior target-wide rule as history. No new standalone ADR, dependency, or schema migration is planned.
 
 ### Add GitHub Actions for quality gates and release orchestration
 
@@ -507,6 +513,7 @@ Refinement outputs:
   - Should responses be anonymous by default, and should optional contact permission or follow-up scheduling be collected in the same instrument or separately?
   - Which external processor and account owns the form and response retention, and what disclosure or deletion language is proportionate for the selected questions and tester group?
   - Do players naturally attach notes to a small set of meaningful fields or records and later rediscover them, or does the current per-field model expose implausible destinations while failing to provide the retrieval path they expect?
+  - Should playtest scope be limited to using the sheet for runtime reasons only? separate from a playtest that involves user-driven character creation? (seems like character creation may deserve its own dedicated playtest / survey? or we could combine and use the playtest as evidence for a character creation / level up wizard?)
 - **Success:**
   - Before the first invitation, the owner has approved the question set and can follow the in-app action on desktop and phone to a live survey with no placeholder URL, broken navigation, or accidental loss of application state.
   - A keyboard, touch, or assistive-technology user can identify that the destination is external, open it, complete the voluntary survey, and understand what information will be sent.
@@ -525,6 +532,11 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
   - _Critical Question_: Will introducing a third-party form helper conflict with our "platform-native first" preference or cause unnecessary bundle size increases, given we only have local-first state storage?
 
 ### Raw Human Ideation, Unsorted
+
+- Explore a user-selected light/dark/system mode for each theme.
+  - _Evidence_: During BL-085 proof approval, the owner noticed that system dark mode gives checkboxes unexpectedly different coloration from light mode. This is a visual exploration request, not a confirmed browser defect.
+  - _Direction_: Compare explicit light/dark choices with following the device preference; refine whether the preference is remembered per theme or globally. Include native checkbox/input color-scheme and accent consistency, readable contrast, and keyboard focus in the proof.
+  - _Priority / trigger_: Lower-priority optional polish, not a playtest prerequisite. Refine when the owner requests it (possibly before or during playtest), or when playtest feedback demonstrates a theme-mode usability problem. Preserve system-following behavior and accessibility while evaluating alternatives.
 
 - Revisit batch collection organization only when more-than-pinning needs are demonstrated.
   - _Why_: The `BL-077` Organize Collection proof produced a clean add/remove/reorder interaction, but adopting it across collections now would add a competing collection-level action, partially duplicate established Pin/Unpin priority, and prematurely assume that general, class-owned, source-owned, and minimal records share lifecycle and ordering rules.

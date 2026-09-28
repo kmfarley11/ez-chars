@@ -162,7 +162,7 @@ test('representative phone controls expose non-overlapping 44 CSS-pixel targets'
 		[
 			{
 				name: 'Focused detail edit',
-				locator: focusedDetail.getByRole('button', { name: 'Edit', exact: true })
+				locator: focusedDetail.getByRole('button', { name: 'Edit Name', exact: true })
 			},
 			{
 				name: 'Focused detail close',

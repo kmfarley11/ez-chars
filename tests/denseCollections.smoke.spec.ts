@@ -92,10 +92,14 @@ test('Other Gear supports bounded search, focused editing, notes, and priority',
 	const secondRopeDetail = secondRope.getByRole('button', { name: /^View Rope.*details$/ });
 	await secondRopeDetail.click();
 	const ropeDialog = page.getByRole('dialog', { name: 'Rope', exact: true });
-	await ropeDialog.getByRole('button', { name: 'Edit', exact: true }).click();
-	await ropeDialog.getByLabel('Detail', { exact: true }).fill('Priority climbing rope.');
-	await ropeDialog.getByRole('button', { name: 'Save', exact: true }).click();
-	await expect(ropeDialog.getByRole('heading', { name: 'Authored information' })).toBeVisible();
+	await ropeDialog.getByRole('button', { name: 'Edit Detail', exact: true }).click();
+	await ropeDialog
+		.getByRole('textbox', { name: 'Detail', exact: true })
+		.fill('Priority climbing rope.');
+	await ropeDialog.getByRole('button', { name: 'Save Detail', exact: true }).click();
+	await expect(ropeDialog.getByRole('region', { name: 'Detail', exact: true })).toContainText(
+		'Priority climbing rope.'
+	);
 	await ropeDialog.getByRole('button', { name: 'Close', exact: true }).click();
 	await expect(secondRopeDetail).toBeFocused();
 	await expect(search).toHaveValue('rope');
@@ -148,14 +152,12 @@ test('Other Gear supports bounded search, focused editing, notes, and priority',
 	const rockDetail = rock.getByRole('button', { name: /^View Random rock.*details$/ });
 	await rockDetail.click();
 	const rockDialog = page.getByRole('dialog', { name: 'Random rock', exact: true });
-	await expect(rockDialog.getByRole('heading', { name: 'Notes' })).toBeVisible();
-	await rockDialog.getByRole('button', { name: 'Edit', exact: true }).click();
-	await rockDialog.getByText('Notes (1)').click();
-	await rockDialog.getByText('Note 1').click();
+	await rockDialog.getByRole('button', { name: '1 note', exact: true }).click();
+	await rockDialog.getByRole('button', { name: /^Edit note/ }).click();
 	await rockDialog
 		.getByRole('textbox', { name: 'Text (optional)' })
 		.fill('Confirmed magical during the saturated rehearsal.');
-	await rockDialog.getByRole('button', { name: 'Save', exact: true }).click();
+	await rockDialog.getByRole('button', { name: 'Save note', exact: true }).click();
 	await expect(
 		rockDialog.getByText('Confirmed magical during the saturated rehearsal.')
 	).toBeVisible();
@@ -220,16 +222,20 @@ test('Weapons, Armor & Shields, and Spells share scoped discovery and focused id
 	}
 
 	const spellcasting = page.getByRole('region', { name: 'Spellcasting summary' });
-	const spellSlots = page.getByRole('region', { name: 'Spell slots' });
+	const spellSlots = page.getByRole('region', { name: 'Spell slots', exact: true });
 	await expect(page.getByRole('heading', { name: 'Spellcasting', exact: true })).toHaveCount(0);
 	await expect(page.getByRole('heading', { name: 'Spell Slots', exact: true })).toHaveCount(0);
-	await expect(spellcasting).toContainText(/int\s+ability.*16\s+save dc.*8\s+attack bonus/i);
-	await expect(spellSlots.getByText('1st', { exact: true })).toBeVisible();
-	await expect(spellSlots.getByText('9th', { exact: true })).toBeVisible();
-	await expect(spellSlots).toContainText('Used 1');
-	await expect(spellSlots).toContainText('Max 4');
-	await expect(spellSlots).toContainText('Used 0');
-	await expect(spellSlots).toContainText('Max 0');
+	await expect(spellcasting).toContainText(/Ability\s+int.*Save DC\s+16.*Attack Bonus\s+8/i);
+	await expect(
+		spellSlots.getByRole('region', { name: '1st spell slots', exact: true })
+	).toBeVisible();
+	await expect(
+		spellSlots.getByRole('region', { name: '9th spell slots', exact: true })
+	).toBeVisible();
+	await expect(spellSlots).toContainText('1 Used');
+	await expect(spellSlots).toContainText('4 Max');
+	await expect(spellSlots).toContainText('0 Used');
+	await expect(spellSlots).toContainText('0 Max');
 	const spellcastingBox = await spellcasting.boundingBox();
 	const spellSlotsBox = await spellSlots.boundingBox();
 	const spellCollectionBox = await spells.boundingBox();
@@ -272,9 +278,11 @@ test('Weapons, Armor & Shields, and Spells share scoped discovery and focused id
 	const levelOneDetail = levelOneShield.getByRole('button', { name: /^View Shield.*details$/ });
 	await levelOneDetail.click();
 	const shieldDialog = page.getByRole('dialog', { name: 'Shield', exact: true });
-	await shieldDialog.getByRole('button', { name: 'Edit', exact: true }).click();
-	await shieldDialog.getByLabel('Notes', { exact: true }).fill('Priority level-one shield.');
-	await shieldDialog.getByRole('button', { name: 'Save', exact: true }).click();
+	await shieldDialog.getByRole('button', { name: 'Edit Authored detail', exact: true }).click();
+	await shieldDialog
+		.getByRole('textbox', { name: 'Authored detail', exact: true })
+		.fill('Priority level-one shield.');
+	await shieldDialog.getByRole('button', { name: 'Save Authored detail', exact: true }).click();
 	await shieldDialog.getByRole('button', { name: 'Close', exact: true }).click();
 	await expect(levelOneDetail).toBeFocused();
 	await expect(spellSearch).toHaveValue('shield');
@@ -369,10 +377,14 @@ test('Runtime Actions and supporting collections honor their distinct density li
 	const featureDetail = featureRow.getByRole('button', { name: 'View Class feature 10 details' });
 	await featureDetail.click();
 	const featureDialog = page.getByRole('dialog', { name: 'Class feature 10', exact: true });
-	await expect(featureDialog.getByRole('heading', { name: 'Notes' })).toBeVisible();
-	await featureDialog.getByRole('button', { name: 'Edit', exact: true }).click();
-	await featureDialog.getByRole('button', { name: 'Cancel', exact: true }).click();
-	await expect(featureDialog.getByRole('heading', { name: 'Authored information' })).toBeVisible();
+	await expect(
+		featureDialog.getByRole('button', { name: 'Add note for Name', exact: true })
+	).toBeVisible();
+	await featureDialog.getByRole('button', { name: 'Edit Name', exact: true }).click();
+	await featureDialog.getByRole('button', { name: 'Cancel Name edit', exact: true }).click();
+	await expect(featureDialog.getByRole('region', { name: 'Name', exact: true })).toContainText(
+		'Class feature 10'
+	);
 	await featureDialog.getByRole('button', { name: 'Close', exact: true }).click();
 	await expect(featureDetail).toBeFocused();
 	await expect(featureSearch).toHaveValue('class feature 10');
@@ -562,9 +574,11 @@ test('phone previews expose domain-specific limits and focused collections with 
 	await expectMinimumTouchTarget(rowDetail, 'Other Gear row detail');
 	await rowDetail.click();
 	const detailDialog = page.getByRole('dialog', { name: 'Random rock', exact: true });
-	await detailDialog.getByRole('button', { name: 'Edit', exact: true }).click();
-	await detailDialog.getByLabel('Detail').fill('Phone rehearsal detail.');
-	await detailDialog.getByRole('button', { name: 'Save', exact: true }).click();
+	await detailDialog.getByRole('button', { name: 'Edit Detail', exact: true }).click();
+	await detailDialog
+		.getByRole('textbox', { name: 'Detail', exact: true })
+		.fill('Phone rehearsal detail.');
+	await detailDialog.getByRole('button', { name: 'Save Detail', exact: true }).click();
 	await detailDialog.getByRole('button', { name: 'Back' }).click();
 	await expect(dialog).toBeVisible();
 	await expect(rowDetail).toBeFocused();
@@ -624,7 +638,9 @@ test('phone previews expose domain-specific limits and focused collections with 
 		name: 'Custom runtime action 8',
 		exact: true
 	});
-	await expect(runtimeDetailDialog.getByRole('heading', { name: 'Notes' })).toBeVisible();
+	await expect(
+		runtimeDetailDialog.getByRole('button', { name: 'Add note for Name', exact: true })
+	).toBeVisible();
 	await runtimeDetailDialog.getByRole('button', { name: 'Back' }).click();
 	await expect(runtimeDetail).toBeFocused();
 	await expect(runtimeDialogSearch).toHaveValue('runtime reminder 8');
@@ -653,8 +669,8 @@ test('phone previews expose domain-specific limits and focused collections with 
 		name: 'Class feature 10',
 		exact: true
 	});
-	await focusedFeatureDialog.getByRole('button', { name: 'Edit', exact: true }).click();
-	await focusedFeatureDialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+	await focusedFeatureDialog.getByRole('button', { name: 'Edit Name', exact: true }).click();
+	await focusedFeatureDialog.getByRole('button', { name: 'Cancel Name edit', exact: true }).click();
 	await focusedFeatureDialog.getByRole('button', { name: 'Back' }).click();
 	await expect(focusedFeatureDetail).toBeFocused();
 	await expect(featuresSearch).toHaveValue('wizard class feature 10');
@@ -686,9 +702,11 @@ test('supporting collections add, edit, and remove one focused record at a time'
 	let detail = row.getByRole('button', { name: 'View Deep Speech details' });
 	await detail.click();
 	let detailDialog = page.getByRole('dialog', { name: 'Deep Speech', exact: true });
-	await detailDialog.getByRole('button', { name: 'Edit', exact: true }).click();
-	await detailDialog.getByLabel('Name', { exact: true }).fill('Deep Speech Revised');
-	await detailDialog.getByRole('button', { name: 'Save', exact: true }).click();
+	await detailDialog.getByRole('button', { name: 'Edit Name', exact: true }).click();
+	await detailDialog
+		.getByRole('textbox', { name: 'Name', exact: true })
+		.fill('Deep Speech Revised');
+	await detailDialog.getByRole('button', { name: 'Save Name', exact: true }).click();
 	detailDialog = page.getByRole('dialog', { name: 'Deep Speech Revised', exact: true });
 	await detailDialog.getByRole('button', { name: 'Close', exact: true }).click();
 
@@ -698,7 +716,7 @@ test('supporting collections add, edit, and remove one focused record at a time'
 	await detail.click();
 	detailDialog = page.getByRole('dialog', { name: 'Deep Speech Revised', exact: true });
 	await detailDialog.getByRole('button', { name: 'Remove Deep Speech Revised' }).click();
-	await detailDialog.getByRole('button', { name: 'Confirm remove' }).click();
+	await detailDialog.getByRole('button', { name: 'Confirm removal', exact: true }).click();
 	await expect(detailDialog).not.toBeVisible();
 	await expect(addLanguage).toBeFocused();
 	await expect(region.getByText('5 items', { exact: true }).first()).toBeVisible();

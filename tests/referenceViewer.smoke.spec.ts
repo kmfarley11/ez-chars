@@ -348,31 +348,25 @@ test('preserves an unsaved annotation draft while the reference is a dialog step
 	test.setTimeout(30_000);
 	await openCharacter(page);
 	await page.getByRole('button', { name: 'Add notes for Current HP' }).click();
-	let dialog = page.getByRole('dialog', { name: 'Current HP Notes' });
-	await dialog.getByRole('button', { name: 'Add note', exact: true }).click();
-	await dialog.getByRole('button', { name: 'Add note', exact: true }).click();
+	const dialog = page.getByRole('dialog').filter({ visible: true });
+	await dialog.getByRole('button', { name: 'Add note for Current HP', exact: true }).click();
 	const draftText = 'Unsaved draft survives reference navigation.';
 	await dialog.getByText('Text (optional)').locator('..').getByRole('textbox').fill(draftText);
 	await dialog.getByLabel('SRD 5.1 (local PDF)').click();
 	await dialog.getByText('Page (optional)').locator('..').getByRole('spinbutton').fill('8');
 	await dialog.getByRole('button', { name: '(view in app)' }).click();
-	dialog = page.getByRole('dialog', { name: 'Page 8' });
 	await expect(dialog.getByLabel('PDF page 8, current page')).toBeVisible();
 	await dialog.getByRole('button', { name: 'Back' }).click();
-	dialog = page.getByRole('dialog', { name: 'Current HP Notes' });
 	await expect(dialog.getByText('Text (optional)').locator('..').getByRole('textbox')).toHaveValue(
 		draftText
 	);
 
-	await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+	await dialog.getByRole('button', { name: 'Save note', exact: true }).click();
 	await expect(dialog.getByText(draftText)).toBeVisible();
 	await dialog.getByRole('button', { name: /Open .* in app/ }).click();
-	dialog = page.getByRole('dialog', { name: 'Page 8' });
 	await expect(dialog.getByLabel('PDF page 8, current page')).toBeVisible();
 	await dialog.getByRole('button', { name: 'Back' }).click();
-	await expect(
-		page.getByRole('dialog', { name: 'Current HP Notes' }).getByText(draftText)
-	).toBeVisible();
+	await expect(dialog.getByText(draftText)).toBeVisible();
 });
 
 test('uses a full-screen surface on phone and keeps primary controls touch-sized', async ({

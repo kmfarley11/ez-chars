@@ -25,7 +25,7 @@ Domain-owned exceptions, such as Runtime Action source commands, remain speciali
 
 ## Tier 1: Stable Inline Runtime Editing
 
-Tier 1 is reserved for values that change repeatedly during play, including current and temporary HP, death saves, remaining hit dice, spell-slot Used and Max values, and carried currency.
+Tier 1 is reserved for values that change repeatedly during play, including current and temporary HP, death saves, remaining hit dice, and carried currency.
 
 - The read state stays compact and exposes a persistent Edit control.
 - Editing replaces the value in the same stable geometry rather than opening another surface.
@@ -39,26 +39,24 @@ Tier 1 is an explicit opt-in. Slowly changing profile data, long prose, rich rec
 
 The projection-owned `interaction.tier` value is the semantic source of truth for this choice. `editAffordance` only selects how an already classified target presents its control; it must not be used to infer Tier 1 behavior. A missing tier therefore remains read-first even when the field is writable or an older projection still supplies an edit-affordance hint.
 
-Neighboring values may still receive different classifications when their play semantics justify it, but the current Spell Slots composition deliberately keeps Used and Max in the same compact Tier 1 level group. Each value uses the familiar field-local runtime row with adjacent Edit and annotation actions; saving either row supplies the complete typed pair without exposing a competing group-detail action.
+Spell Slots deliberately uses the owner-approved read-first compact pair (`1st: 1 Used / 4 Max`) shared with Score/Modifier presentation. Each label opens its own selected field within the level's Detail; a targeted save preserves the sibling, unrelated levels, and annotated zero slots. This is a bounded density trade-off, not a reclassification of other runtime controls.
 
 ## Tier 2: Read-First Focused Detail
 
 Tier 2 covers profile/background values and singular structured cards whose detail, provenance, references, or annotations deserve room to read.
 
 - Sheet content remains selectable and copyable.
-- A compact Detail control opens the focused view; the whole row is not silently converted into an edit gesture.
+- An underlined label button opens and highlights the intended field without automatically editing; the existing group chevron opens an unselected overview. Collection names similarly open their record. Neighboring text remains selectable; whole rows are not hidden activation targets.
 - Detail presents authored content first, followed by provenance/references and per-record annotations where present.
-- Edit is entered from detail and uses one local draft for all eligible authored and annotation changes.
+- Each eligible field or note has its own explicit Edit/Save/Cancel. Only one editor is active; there is no outer Save or whole-dialog rollback for existing data.
 - Save validates one complete candidate and commits atomically. Validation failure commits nothing and keeps the draft available for correction.
 - Cancel while editing returns to detail rather than dismissing the whole workflow.
-- Back or Close from detail returns to the invoking sheet control with useful focus.
+- Dirty switching, Back, Close, or Escape offers Save and continue / Discard and continue / Keep editing in the same surface. Saved edits survive later cancellation. A source preview preserves a note draft while temporarily displaying the PDF in the same dialog.
 - Removing an annotation from the draft remains undoable until Save.
 - A field with no draft annotations shows one compact Add note action rather than an expanded zero-count editor; the full editor appears only after deliberate entry or when annotations already exist.
 - Compact read-first primitives use the shared inline `Label: value` presentation by default. A section may explicitly request the shared stacked label-over-value variant when the additional emphasis is worth its vertical cost.
 
-The focused workflow is not a global or section-wide edit mode. It intentionally scopes one commit to one field, card, or stable record.
-
-P0 `BL-085` will compare the current target-wide Edit form with piecewise leaf controls inside the same focused surface. Until that proof is approved, piecewise controls must not silently become per-leaf immediate commits or weaken the atomic target draft defined here.
+The focused workflow is not a global or section-wide edit mode. Each explicit Save validates the full candidate character but commits only the selected small edit. New-record creation retains one complete draft and final Add. The BL-085 proof was approved for rollout; a separate integrated human review remains required before archival.
 
 ## Tier 3: Scan-First Collections
 
@@ -84,7 +82,7 @@ Desktop and phone use the same view/edit/back state model.
 - Desktop uses a bounded detail surface.
 - Phone uses a full-height surface with one scroll owner and no nested modal.
 - Query and browse context remain intact while a record is inspected or edited.
-- Back returns from edit to detail, then from detail to the collection or sheet.
+- Local Cancel returns to reading. Back/Close resolves any dirty editor before returning to the collection or sheet; source Back restores the prior reading/editor position.
 - Save, Cancel, Close, priority movement, and removal restore focus deterministically when the original trigger still exists, or to a stable equivalent such as Add or the reopened collection.
 
 Generic presentation coordinates view/edit/back/focus behavior. Domain adapters continue to own the actual draft shape, validation, mutation intent, stable identity, and preservation of unexposed data.
@@ -96,7 +94,7 @@ The persisted and engineering model remains an annotation because an entry may i
 - Annotation presence is a quiet record-local badge, not a collection-wide total.
 - The actual annotation text is read in that field or record's focused detail.
 - Per-field attachment is selective rather than an expectation that every value receives notes. `BL-081` will ask whether players find meaningful attachment points and can later rediscover notes; that evidence may trigger a coarser or cross-record discovery path.
-- Eligible authored values and annotations share one local edit draft and one atomic Save.
+- Each note is independently edited and saved, preserving other notes and the authored value. Note text, title, reference, and tags form one coherent note draft.
 - Source/reference links remain readable before entering Edit.
 - Annotation access cannot depend on hover or long-press.
 - Removing a draft annotation is recoverable until Save; persisted annotations are unchanged by Cancel.
@@ -113,7 +111,7 @@ Reading remains the primary sheet behavior outside Tier 1.
 ## Mutation Boundary
 
 - Primitive Tier 1 edits emit focused RFC 6902 patch intent where a direct binding is appropriate.
-- Tier 2 and Tier 3 focused edits build one local authored-plus-annotation draft and submit it to a domain-owned adapter.
+- Tier 2 and Tier 3 focused edits submit one selected value/note operation to a domain-owned adapter, which resolves the latest stable-ID record and rejects a changed or removed target.
 - A domain adapter constructs and validates one candidate character before commit.
 - Lifecycle and priority commands such as Add, confirmed Remove, Pin/Unpin, View Source, and Resync remain explicit commands outside the authored-content draft.
 - Generic components do not infer schema ownership, synthesize 5e annotation paths, or persist data directly.
@@ -130,7 +128,7 @@ Reading remains the primary sheet behavior outside Tier 1.
 
 - Edit and cancel a Tier 1 runtime value without layout jump or mutation.
 - Save a Tier 1 value with keyboard and touch-sized controls.
-- Open a Tier 2 detail, enter Edit, change authored content and an annotation, and confirm they commit together.
+- Open a Tier 2 field by its label, save its value, then cancel a different value/note edit: only the explicit save persists. Try dirty switching and source preview/return.
 - Remove and undo a draft annotation, then verify Cancel leaves persisted data unchanged.
 - Add, inspect, edit, pin, unpin, and remove representative Tier 3 records while preserving search and scroll context.
 - Confirm notes appear only on their own record and no collection-wide Edit/Notes surface competes with focused detail.

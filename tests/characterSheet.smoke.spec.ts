@@ -122,9 +122,9 @@ test('opens each bounded non-runtime field group through one focused Detail and 
 		const detail = page.getByRole('button', { name: `View ${group.title}` });
 		await detail.click();
 		const dialog = page.getByRole('dialog', { name: group.title, exact: true });
-		await dialog.getByRole('button', { name: 'Edit', exact: true }).click();
-		await expect(dialog.getByLabel(group.field, { exact: true })).toBeVisible();
-		await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+		await dialog.getByRole('button', { name: `Edit ${group.field}`, exact: true }).click();
+		await expect(dialog.getByRole('textbox', { name: group.field, exact: true })).toBeVisible();
+		await dialog.getByRole('button', { name: `Cancel ${group.field} edit`, exact: true }).click();
 		await dialog.getByRole('button', { name: 'Close', exact: true }).click();
 		await expect(detail).toBeFocused();
 	}
@@ -144,16 +144,18 @@ test('starts an empty Spells section expanded and adds a previously absent spell
 	await expect(spellsToggle).toHaveAttribute('aria-expanded', 'true');
 
 	await expect(page.getByRole('region', { name: 'Spellcasting summary' })).toBeVisible();
-	const slots = page.getByRole('region', { name: 'Spell slots' });
-	await expect(slots.getByRole('button', { name: 'Edit 1st Used' })).toBeVisible();
-	await expect(slots.getByRole('button', { name: 'Edit 9th Max' })).toBeVisible();
+	const slots = page.getByRole('region', { name: 'Spell slots', exact: true });
+	await expect(slots.getByRole('button', { name: 'View Used', exact: true })).toHaveCount(9);
+	await expect(slots.getByRole('button', { name: 'View Max', exact: true }).last()).toBeVisible();
 	await expect(slots.getByRole('button', { name: 'View Spell slots' })).toHaveCount(0);
-	await slots.getByRole('button', { name: 'Edit 3rd Max' }).click();
-	await expect(slots.getByRole('spinbutton', { name: '3rd Used' })).toHaveCount(0);
-	await expect(slots.getByRole('spinbutton', { name: '3rd Max' })).toHaveValue('0');
-	await slots.getByRole('spinbutton', { name: '3rd Max' }).fill('2');
-	await slots.getByRole('button', { name: 'Confirm 3rd Max' }).click();
-	await expect(slots).toContainText('Max 2');
+	await slots.getByRole('button', { name: 'View Max', exact: true }).nth(2).click();
+	const dialog = page.getByRole('dialog').filter({ visible: true });
+	await dialog.getByRole('button', { name: 'Edit Max', exact: true }).click();
+	await expect(dialog.getByRole('spinbutton', { name: 'Used', exact: true })).toHaveCount(0);
+	await dialog.getByRole('spinbutton', { name: 'Max', exact: true }).fill('2');
+	await dialog.getByRole('button', { name: 'Save Max', exact: true }).click();
+	await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+	await expect(slots).toContainText('2 Max');
 
 	await expect
 		.poll(() =>
@@ -181,12 +183,11 @@ test('adds a D&D Beyond note annotation and exposes its reference link', async (
 
 	await page.getByRole('button', { name: 'Add notes for Current HP' }).click();
 	const dialog = page.getByRole('dialog');
-	await dialog.getByRole('button', { name: 'Add note' }).click();
-	await dialog.getByRole('button', { name: 'Add note' }).click();
+	await dialog.getByRole('button', { name: 'Add note for Current HP', exact: true }).click();
 	await dialog.locator('input[data-annotation-name-input]').fill('HP rule');
 	await dialog.locator('textarea').fill('Use the current value during play.');
 	await dialog.getByLabel('D&D Beyond Basic Rules (2014)').check();
-	await dialog.getByRole('button', { name: 'Save' }).click();
+	await dialog.getByRole('button', { name: 'Save note', exact: true }).click();
 
 	const reference = dialog.getByRole('link', { name: /dndbeyond-basic-rules-2014/ });
 	await expect(reference).toHaveAttribute('href', /dndbeyond\.com/);
@@ -295,7 +296,9 @@ test('links an inventory suggestion through resync and source deletion fallback'
 	});
 	await actionDetail.click();
 	const actionDetailDialog = page.getByRole('dialog', { name: 'Longsword' });
-	await expect(actionDetailDialog.getByRole('heading', { name: 'Notes' })).toBeVisible();
+	await expect(
+		actionDetailDialog.getByRole('button', { name: 'Add note for Name', exact: true })
+	).toBeVisible();
 	await actionDetailDialog.getByRole('button', { name: 'Close' }).click();
 	await expect(actionDetail).toBeFocused();
 
@@ -310,9 +313,11 @@ test('links an inventory suggestion through resync and source deletion fallback'
 	const longswordDetail = longswordRow.getByRole('button', { name: /^View Longsword.*details$/ });
 	await longswordDetail.click();
 	let inventoryDialog = page.getByRole('dialog', { name: 'Longsword' });
-	await inventoryDialog.getByRole('button', { name: 'Edit', exact: true }).click();
-	await inventoryDialog.getByLabel('Detail', { exact: true }).fill('Updated item notes.');
-	await inventoryDialog.getByRole('button', { name: 'Save', exact: true }).click();
+	await inventoryDialog.getByRole('button', { name: 'Edit Detail', exact: true }).click();
+	await inventoryDialog
+		.getByRole('textbox', { name: 'Detail', exact: true })
+		.fill('Updated item notes.');
+	await inventoryDialog.getByRole('button', { name: 'Save Detail', exact: true }).click();
 	await inventoryDialog.getByRole('button', { name: 'Close' }).click();
 	await expect(longswordDetail).toBeFocused();
 	await expect
@@ -362,7 +367,7 @@ test('links an inventory suggestion through resync and source deletion fallback'
 	await longswordDetail.click();
 	inventoryDialog = page.getByRole('dialog', { name: 'Longsword' });
 	await inventoryDialog.getByRole('button', { name: 'Remove item' }).click();
-	await inventoryDialog.getByRole('button', { name: 'Confirm remove' }).click();
+	await inventoryDialog.getByRole('button', { name: 'Confirm removal', exact: true }).click();
 
 	await expect(runtimeActionList.getByText('Updated item notes.')).toBeVisible();
 	await expect(page.getByText('Custom action', { exact: true })).toHaveCount(0);

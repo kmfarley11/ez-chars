@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { asset } from '$app/paths';
 	import { tick } from 'svelte';
 	import DialogShell from '$components/DialogShell.svelte';
 	import GridContentAnnotationsDisplay from '$components/GridContentAnnotationsDisplay.svelte';
 	import GridContentAnnotationsEditor from '$components/GridContentAnnotationsEditor.svelte';
 	import IconButton from '$components/IconButton.svelte';
-	import ReferencePdfViewer, {
-		type CuratedPdfSection
-	} from '$components/ReferencePdfViewer.svelte';
-	import { dnd5e2014ResourceCatalog } from '$lib/resources/dnd5e2014ResourceCatalog';
-	import { resolveResourceLocator, type ResourceDisposition } from '$lib/resources/resourceCatalog';
+	import ReferencePdfViewer from '$components/ReferencePdfViewer.svelte';
+	import {
+		resolveAnnotationReference as findInternalDisposition,
+		annotationReferenceSections,
+		type InternalAnnotationReference
+	} from '$lib/resources/annotationReference';
 	import type {
 		GridAnnotationAffordance,
 		GridAnnotationEditorConfig,
@@ -17,7 +17,7 @@
 		GridContentReference
 	} from '$utils/gridContentTypes';
 
-	type InternalResourceDisposition = Extract<ResourceDisposition, { kind: 'internal' }>;
+	type InternalResourceDisposition = InternalAnnotationReference;
 
 	interface Props {
 		fieldLabel: string;
@@ -27,6 +27,8 @@
 		// eslint-disable-next-line no-unused-vars
 		onSaveAnnotations?: (_annotations: Array<GridContentAnnotation>) => void;
 		compact?: boolean;
+		// eslint-disable-next-line no-unused-vars
+		onOpen?: (invoker: HTMLElement) => boolean;
 	}
 
 	let {
@@ -35,7 +37,8 @@
 		annotationAffordance = 'badge',
 		annotationEditorConfig = undefined,
 		onSaveAnnotations = undefined,
-		compact = false
+		compact = false,
+		onOpen
 	}: Props = $props();
 
 	let triggerEl = $state<HTMLButtonElement>();
@@ -49,42 +52,8 @@
 	const shouldRenderControl = $derived(annotationAffordance !== 'badge' || annotationCount > 0);
 	const canEditAnnotations = $derived(onSaveAnnotations !== undefined);
 	const curatedSections = $derived(
-		activeReference
-			? dnd5e2014ResourceCatalog.locators
-					.filter(
-						(entry) =>
-							entry.resourceId === activeReference?.resource.id &&
-							entry.kind === 'pdf-page' &&
-							entry.health === 'verified' &&
-							entry.page !== undefined
-					)
-					.map((entry): CuratedPdfSection => ({ label: entry.label, page: entry.page! }))
-			: []
+		activeReference ? annotationReferenceSections(activeReference) : []
 	);
-
-	const findInternalDisposition = (
-		reference: GridContentReference
-	): InternalResourceDisposition | undefined => {
-		if (reference.kind !== 'pdf' || reference.locator.page === undefined) return undefined;
-		const locator = dnd5e2014ResourceCatalog.locators.find(
-			(entry) =>
-				entry.resourceId === reference.sourceId &&
-				entry.kind === 'pdf-page' &&
-				entry.health === 'verified'
-		);
-		if (!locator) return undefined;
-		const resolved = resolveResourceLocator(dnd5e2014ResourceCatalog, locator.id, {
-			resolveAssetHref: (path) => asset(path as Parameters<typeof asset>[0])
-		});
-		if (resolved?.kind !== 'internal') return undefined;
-		const page = reference.locator.page;
-		return {
-			...resolved,
-			locator: { ...resolved.locator, label: `Page ${page}`, page },
-			exactHref: `${resolved.generalHref}#page=${page}`,
-			browserHref: `${resolved.generalHref}#page=${page}`
-		};
-	};
 
 	const canInspectReference = (reference: GridContentReference): boolean =>
 		findInternalDisposition(reference) !== undefined;
@@ -110,6 +79,7 @@
 	};
 
 	const openDialog = async () => {
+		if (triggerEl && onOpen?.(triggerEl)) return;
 		draftAnnotations = $state.snapshot(annotations);
 		isEditing = false;
 		activeReference = undefined;

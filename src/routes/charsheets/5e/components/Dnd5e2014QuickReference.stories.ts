@@ -4,12 +4,13 @@ import Dnd5e2014SectionCompositionStory from './Dnd5e2014SectionCompositionStory
 const meta = {
 	title: 'Organisms/Dnd5e2014QuickReference',
 	component: Dnd5e2014SectionCompositionStory,
-	args: { section: 'quick-reference' },
+	args: { section: 'quick-reference', entryStyle: 'label' },
+	argTypes: { entryStyle: { control: 'select', options: ['button', 'label', 'chevron', 'group'] } },
 	parameters: {
 		docs: {
 			description: {
 				component:
-					'Production-backed BL-077 reconciliation surface using the real saturated-character projection and Quick Reference organism.'
+					'Production-backed small-edit sandbox using the real saturated-character projection and Quick Reference organism.'
 			}
 		}
 	}
@@ -28,8 +29,8 @@ export const SaturatedCharacter: Story = {
 - Confirm each live value keeps Edit and the compact note icon together on the right without a full-width Notes row.
 - Confirm Remaining Hit Dice appears only once.
 - Confirm Reference stats use the same compact bold-label-plus-value reading grammar as other read-first sheet groups, with a labeled horizontal Speeds boundary before the movement values.
-- Open Reference stats, then Edit; verify Maximum HP, Armor Class, Initiative, Total Hit Dice, and all movement values are reachable in one focused draft.
-- Cancel back to detail, then Close and confirm focus returns to the Reference stats detail control.
+- Open Walking Speed directly through its label; confirm a steady highlight identifies it. Compare button, label (underlined), chevron, and group in Controls. Edit only that field, Save, and confirm its neighbors stay unchanged with no outer Save.
+- Open Current HP notes; Add or edit one note without changing HP. Cancel the note edit back to reading, then Close and confirm focus returns to the note icon.
 - Repeat with desktop, split-screen, and phone viewports.`
 			}
 		}

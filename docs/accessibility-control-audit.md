@@ -2,13 +2,14 @@
 
 **Status:** Automated implementation resolved; physical-device and screen-reader review retained before external playtesting  
 **Audit date:** 2026-08-02
-**Last reviewed:** 2026-09-12
+**Last reviewed:** 2026-09-28
 **Scope:** Current home-to-character-sheet flow, including dense inventory/spell browsing and 2014 landmark navigation, on the phone-sized, coarse-pointer presentation
 
 This is a bounded audit of control families, not an inventory of every repeated character record. A family is complete only when its accessible name, touch geometry, keyboard order, automated evidence, and any manual-only conclusion are accounted for.
 
 ## Evidence
 
+- **BL-085 focused-editing rollout:** label entry composes `BaseButton`, and local Edit/Save/Cancel reuse `IconButton`. Note, lifecycle, and dirty-resolution actions inherit `touch-target`; shared scalar inputs retain mobile typography. Field headings receive targeted focus with a steady highlight, not auto-edit. `tests/smallEdits.smoke.spec.ts` covers names, geometry, draft resolution, and source/focus return; physical iPhone and assistive-technology comfort remain human review, not inferred from emulation. No new touch-target exception is requested.
 - **Mobile geometry:** `npx playwright test tests/mobileAccessibility.smoke.spec.ts --project="Mobile Chrome"`
 - **Dense collection geometry and modal context:** `npx playwright test tests/denseCollections.smoke.spec.ts --project="Mobile Chrome"`
 - **Component semantics:** Storybook browser checks and Svelte diagnostics

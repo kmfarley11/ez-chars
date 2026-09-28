@@ -3,6 +3,9 @@
 	import Badge from '$components/Badge.svelte';
 	import BaseButton from '$components/BaseButton.svelte';
 	import IconButton from '$components/IconButton.svelte';
+	import DetailLabelButton from '$components/DetailLabelButton.svelte';
+	import { getSmallEditAccess } from '$components/smallEditContext';
+	const smallEdit = getSmallEditAccess();
 	import MenuButton from '$components/MenuButton.svelte';
 	import MenuItemButton from '$components/MenuItemButton.svelte';
 	import ResponsiveCollectionView from '$components/ResponsiveCollectionView.svelte';
@@ -114,7 +117,15 @@
 								: 'text-sm'}
 						>
 							<span class={compact ? 'min-w-0 truncate font-semibold' : 'font-semibold'}
-								>{action.name}</span
+								>{#if smallEdit?.enabled && (smallEdit.entryStyle === 'label' || smallEdit.entryStyle === 'button')}
+									<DetailLabelButton
+										label={action.name}
+										ariaLabel={`Open ${action.name}`}
+										presentation={smallEdit.entryStyle}
+										onclick={(event) =>
+											void openAction(action, event.currentTarget as HTMLButtonElement)}
+									/>
+								{:else}{action.name}{/if}</span
 							>
 							<span class="theme-text-muted shrink-0">
 								<span aria-hidden="true"> · </span>{action.timingLabel}

@@ -3,8 +3,8 @@
 **Status:** Approved
 **Author:** Codex
 **Date:** 2026-09-12
-**Last reviewed:** 2026-09-21
-**Latest refinement:** BL-077's final architecture audit made interaction tier explicit projection metadata, centralized runtime/read-first classification, and made nested runtime groups compose the shared primitive field renderer; the 5e layer now selects semantics and domain adapters without owning a parallel control system.
+**Last reviewed:** 2026-09-28
+**Latest refinement:** [BL-085](../../openspec/changes/bl-085-focus-piecewise-detail-editing/design.md) proof approval replaces existing-target whole-record drafts with independent explicit field/note saves; rollout is in progress.
 
 ## Context & Problem Statement
 
@@ -33,6 +33,8 @@ The product needs one understandable interaction language without turning the ch
 
 ## Decision Outcome
 
+**BL-085 supersession (2026-09-27):** The target-wide draft in item 2 below records the original BL-077 decision. The approved replacement uses independent explicit field/note saves inside readable Detail, with dirty-navigation protection and latest-state validation. Creation remains one coherent draft. See the refinement below; this does not claim every consumer has already migrated.
+
 Adopt the read-first three-tier model validated by the BL-077 human proof:
 
 1. **Runtime state** uses deliberately classified, geometrically stable inline controls.
@@ -58,6 +60,12 @@ This proposal does not authorize a global sheet edit mode, a general section-wid
 - The extra navigation depth makes target discoverability and focus/Back restoration first-class verification concerns.
 
 ## Refinements & Follow-Ups
+
+### 2026-09-27 — Independent edits approved for rollout
+
+The owner approved the production-backed BL-085 proof. A group remains a reading/navigation boundary, not a transaction boundary: one field or note is edited and explicitly saved at a time, earlier saves survive later cancellation, and indirect navigation resolves dirty work in the same logical surface. Latest-target domain adapters validate the complete candidate while preserving unrelated values and notes. New-record creation retains one final Add; ownership restrictions and specialized source workflows remain intact.
+
+Underlined label buttons are the primary targeted entry: reveal and highlight the intended field without automatically editing. Existing group/record chevrons remain available; removing redundant chevrons was discussed but not selected. Compact read-first Used/Max slot pairs share the Score/Modifier renderer, superseding the spell-slot Tier 1 classification from September 20 without changing other runtime controls. This balances runtime density against an extra deliberate entry step accepted in the proof. A separate integrated-sheet approval remains required after rollout.
 
 ### 2026-09-18 — Five-fixture proof awaiting owner review
 

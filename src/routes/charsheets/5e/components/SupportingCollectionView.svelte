@@ -3,6 +3,9 @@
 	import BaseButton from '$components/BaseButton.svelte';
 	import Badge from '$components/Badge.svelte';
 	import IconButton from '$components/IconButton.svelte';
+	import DetailLabelButton from '$components/DetailLabelButton.svelte';
+	import { getSmallEditAccess } from '$components/smallEditContext';
+	const smallEdit = getSmallEditAccess();
 	import IconPrefixedListItem from '$components/IconPrefixedListItem.svelte';
 	import ManagePinsDialog from '$components/ManagePinsDialog.svelte';
 	import ResponsiveCollectionView from '$components/ResponsiveCollectionView.svelte';
@@ -176,13 +179,21 @@
 				<div class="min-w-0 flex-1">
 					<IconPrefixedListItem
 						icon={isPinned ? 'pin' : 'bullet'}
+						iconAlign="center"
 						element="div"
 						title={isPinned ? 'Pinned' : undefined}
 						paragraphClasses={compact
 							? 'supporting-collection-compact'
 							: 'supporting-collection-full'}
 					>
-						<span>{row.label}</span>
+						{#if smallEdit?.enabled && (smallEdit.entryStyle === 'label' || smallEdit.entryStyle === 'button')}
+							<DetailLabelButton
+								label={row.label}
+								ariaLabel={`Open ${row.label}`}
+								presentation={smallEdit.entryStyle}
+								onclick={(event) => void openRow(row, event.currentTarget as HTMLButtonElement)}
+							/>
+						{:else}<span>{row.label}</span>{/if}
 						{#each row.badges ?? [] as badge (`${row.key}-${badge}`)}<Badge label={badge} />{/each}
 						{#if row.context}<Badge label={row.context} />{/if}
 						{#if annotationCount > 0}<Badge

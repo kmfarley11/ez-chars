@@ -84,6 +84,8 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 					{
 						fieldName: title,
 						bindPath: [roleplayFieldPathPrefix, key],
+						annotationBindPath: ['systemData', 'roleplay', key, 'annotations'],
+						annotations: char.systemData.roleplay[key]?.annotations ?? [],
 						value: char.systemData.roleplay[key]?.body ?? '',
 						multiline: true
 					} satisfies GridContentField

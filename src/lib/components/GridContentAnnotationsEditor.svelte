@@ -11,6 +11,7 @@
 
 	// `onChange` receives a full replacement annotation array (immutable update contract).
 	interface Props {
+		singleNote?: boolean;
 		annotations: Array<GridContentAnnotation>;
 		referenceTemplates?: Array<GridAnnotationReferenceTemplate>;
 		defaultKind?: GridContentAnnotation['kind'];
@@ -23,6 +24,7 @@
 	}
 
 	let {
+		singleNote = false,
 		annotations,
 		referenceTemplates = [],
 		defaultKind = 'note',
@@ -33,6 +35,9 @@
 	}: Props = $props();
 	let pendingFocusAnnotationId = $state<string | undefined>(undefined);
 	let annotationCollectionOpen = $state(false);
+	const expandSingleNote = (element: HTMLDetailsElement) => {
+		if (singleNote) element.open = true;
+	};
 
 	const toAnnotationEditorDomId = (annotationId: string): string =>
 		`annotation-editor-${annotationId}`;
@@ -206,28 +211,38 @@
 		</button>
 	</div>
 {:else}
-	<details bind:open={annotationCollectionOpen} class="space-y-2 rounded-md border px-2 py-2">
-		<summary class="theme-text-muted touch-target cursor-pointer text-xs font-semibold">
+	<details
+		open={singleNote || annotationCollectionOpen}
+		ontoggle={(event) => {
+			annotationCollectionOpen = event.currentTarget.open;
+		}}
+		class={singleNote ? 'space-y-2' : 'space-y-2 rounded-md border px-2 py-2'}
+	>
+		<summary
+			hidden={singleNote}
+			class="theme-text-muted touch-target cursor-pointer text-xs font-semibold"
+		>
 			Notes ({annotations.length})
 		</summary>
 		<div class="mt-2 space-y-2">
-			<div class="flex items-center justify-end">
-				<button
-					type="button"
-					class="theme-btn-light touch-target btn rounded-md border px-2 py-0.5 text-xs"
-					onclick={addAnnotation}
-				>
-					Add
-				</button>
-			</div>
+			{#if !singleNote}<div class="flex items-center justify-end">
+					<button
+						type="button"
+						class="theme-btn-light touch-target btn rounded-md border px-2 py-0.5 text-xs"
+						onclick={addAnnotation}
+					>
+						Add
+					</button>
+				</div>{/if}
 
 			{#each annotations as annotation, annotationIdx (`annotation-${annotation.id ?? annotationIdx}`)}
 				{@const selectedReferenceTemplateKey = getReferenceTemplateKey(annotation)}
 				<details
+					{@attach expandSingleNote}
 					id={annotation.id ? toAnnotationEditorDomId(annotation.id) : undefined}
-					class="space-y-2 rounded-md border px-2 py-2"
+					class={singleNote ? 'space-y-2' : 'space-y-2 rounded-md border px-2 py-2'}
 				>
-					<summary class="theme-text-muted touch-target cursor-pointer text-xs">
+					<summary hidden={singleNote} class="theme-text-muted touch-target cursor-pointer text-xs">
 						{annotation.name ?? `Note ${annotationIdx + 1}`}
 					</summary>
 					<div class="mt-2 space-y-2">
@@ -349,17 +364,17 @@
 							{/if}
 						</div>
 
-						<div class="flex justify-end">
-							<button
-								type="button"
-								class="theme-btn-light touch-target btn rounded-md border px-2 py-0.5 text-xs"
-								onclick={() => {
-									removeAnnotationAtIndex(annotationIdx);
-								}}
-							>
-								Remove
-							</button>
-						</div>
+						{#if !singleNote}<div class="flex justify-end">
+								<button
+									type="button"
+									class="theme-btn-light touch-target btn rounded-md border px-2 py-0.5 text-xs"
+									onclick={() => {
+										removeAnnotationAtIndex(annotationIdx);
+									}}
+								>
+									Remove
+								</button>
+							</div>{/if}
 					</div>
 				</details>
 			{/each}

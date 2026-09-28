@@ -270,7 +270,7 @@ test.describe('Mobile typography and zoom', () => {
 		await addActionDialog.getByRole('button', { name: 'Cancel' }).click();
 		await expect(addActionDialog).toBeHidden();
 
-		// 3. StructuredForm inputs and selects inside a focused rich-detail editor
+		// 3. Shared scalar input inside the independently saved rich-detail editor
 		const identityDetail = page.getByRole('button', {
 			name: 'View Character identity and classes'
 		});
@@ -279,7 +279,7 @@ test.describe('Mobile typography and zoom', () => {
 			name: 'Character identity and classes',
 			exact: true
 		});
-		await editDialog.getByRole('button', { name: 'Edit', exact: true }).click();
+		await editDialog.getByRole('button', { name: 'Edit Name', exact: true }).click();
 		await expect(editDialog).toBeVisible();
 
 		const formControls = editDialog.locator(
@@ -300,8 +300,8 @@ test.describe('Mobile typography and zoom', () => {
 			).toBeGreaterThanOrEqual(16);
 		}
 
-		await editDialog.getByRole('button', { name: 'Cancel' }).click();
-		await expect(editDialog.getByRole('heading', { name: 'Authored information' })).toBeVisible();
+		await editDialog.getByRole('button', { name: 'Cancel Name edit', exact: true }).click();
+		await expect(editDialog.getByRole('region', { name: 'Name', exact: true })).toBeVisible();
 		await editDialog.getByRole('button', { name: 'Close' }).click();
 		await expect(editDialog).toBeHidden();
 		await expect(identityDetail).toBeFocused();

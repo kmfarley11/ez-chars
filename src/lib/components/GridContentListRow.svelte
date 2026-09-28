@@ -2,6 +2,9 @@
 	import Badge from '$components/Badge.svelte';
 	import IconPin from '$components/IconPin.svelte';
 	import IconButton from '$components/IconButton.svelte';
+	import DetailLabelButton from './DetailLabelButton.svelte';
+	import { getSmallEditAccess } from './smallEditContext';
+	const smallEdit = getSmallEditAccess();
 	import type { GridContentListRow, GridContentListRowAction } from '$components/gridContentList';
 
 	interface Props {
@@ -51,7 +54,14 @@
 						</span>
 						<span class="sr-only">Pinned</span>
 					{/if}
-					<span>{row.label}</span>
+					{#if onOpenRow && smallEdit?.enabled && (smallEdit.entryStyle === 'label' || smallEdit.entryStyle === 'button')}
+						<DetailLabelButton
+							label={row.label}
+							ariaLabel={`Open ${accessibleRowLabel}`}
+							presentation={smallEdit.entryStyle}
+							onclick={(event) => runCommand(onOpenRow, event.currentTarget as HTMLButtonElement)}
+						/>
+					{:else}<span>{row.label}</span>{/if}
 				</span>
 				{#if row.detail}
 					<span aria-hidden="true" class="shrink-0">:</span>

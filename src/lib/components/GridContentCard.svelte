@@ -2,6 +2,8 @@
 	import FieldGroupView from '$components/FieldGroupView.svelte';
 	import GridContentDetailWorkflow from '$components/GridContentDetailWorkflow.svelte';
 	import IconButton from '$components/IconButton.svelte';
+	import { getSmallEditAccess } from './smallEditContext';
+	import { collectLeafInputs, toGridJsonPointer } from '$utils/gridContentHelpers';
 	import type {
 		GridAnnotationEditorConfig,
 		GridContentAnnotation,
@@ -19,6 +21,7 @@
 		displayAlign?: 'left' | 'center';
 		displayArrayMode?: 'inline' | 'stack';
 		displayPrimitiveMode?: 'inline' | 'stacked';
+		inlineFieldControls?: boolean;
 		displaySectionBreakBefore?: string;
 		displaySectionBreakLabel?: string;
 		detailTitle?: string;
@@ -40,6 +43,7 @@
 		displayAlign = 'left',
 		displayArrayMode = 'inline',
 		displayPrimitiveMode = 'inline',
+		inlineFieldControls = true,
 		displaySectionBreakBefore = undefined,
 		displaySectionBreakLabel = undefined,
 		detailTitle = undefined,
@@ -52,10 +56,40 @@
 	}: Props = $props();
 
 	let focusedOpen = $state(false);
+	const smallEdit = getSmallEditAccess();
+	const openDetail = (field?: GridContentField, invoker?: HTMLElement) => {
+		const leaf = field ? collectLeafInputs(field, [field.fieldName ?? 'field'])[0] : undefined;
+		const path = leaf?.field.binding?.valuePatchPath ?? leaf?.bindPath;
+		if (
+			smallEdit?.openGrid({
+				data,
+				title: focusedTitle,
+				annotationEditorConfig,
+				selectedKey: path ? toGridJsonPointer(path) : undefined,
+				onClosed: invoker ? () => invoker.focus() : restoreCardActionsFocus
+			})
+		)
+			return;
+		if (
+			field &&
+			smallEdit?.openGrid({
+				data: { field },
+				title: field.fieldName ?? focusedTitle,
+				selectedKey: path ? toGridJsonPointer(path) : undefined,
+				annotationEditorConfig,
+				onClosed: invoker ? () => invoker.focus() : restoreCardActionsFocus
+			})
+		)
+			return;
+		legacyInvoker = invoker;
+		focusedOpen = true;
+	};
+	let legacyInvoker: HTMLElement | undefined;
 	let cardActionsTriggerEl = $state<HTMLButtonElement>();
 
 	const restoreCardActionsFocus = () => {
-		cardActionsTriggerEl?.focus();
+		(legacyInvoker ?? cardActionsTriggerEl)?.focus();
+		legacyInvoker = undefined;
 	};
 	const hasFocusedContent = $derived(
 		Object.values(data).length > 0 && !Object.values(data).every(isInlineRuntimeContent)
@@ -99,7 +133,7 @@
 				variant="detail"
 				size="sm"
 				ariaLabel={`View ${focusedTitle}`}
-				onclick={() => (focusedOpen = true)}
+				onclick={() => openDetail()}
 			/>
 		</div>
 	{/if}
@@ -113,12 +147,17 @@
 			{displaySectionBreakBefore}
 			{displaySectionBreakLabel}
 			{annotationEditorConfig}
+			onTargetField={smallEdit?.enabled && smallEdit.entryStyle !== 'group'
+				? openDetail
+				: undefined}
+			interactive={inlineFieldControls}
+			targetEntryStyle={smallEdit?.entryStyle}
 			onFieldSavePatch={savePrimitiveFieldPatch}
 			{handleFieldSaveAnnotations}
 			onFocusedSavePatches={handleEditSavePatches}
 		/>
 	</div>
-	{#if canOpenFocusedDetail}
+	{#if canOpenFocusedDetail && (!smallEdit?.enabled || focusedOpen)}
 		<GridContentDetailWorkflow
 			bind:open={focusedOpen}
 			title={focusedTitle}

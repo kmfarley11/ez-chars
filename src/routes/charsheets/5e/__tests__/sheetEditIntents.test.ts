@@ -9,6 +9,37 @@ const deterministicIds = (...ids: Array<string>) => {
 };
 
 describe('5e sheet edit intent reducer', () => {
+	it('validates single-slot edits and spell level moves against the complete character', () => {
+		const character = createSheetEditCharacter();
+		const spell = character.systemData.spellcasting!.spells![0];
+		expect(
+			reduce5eSheetEditIntents(character, [
+				{ type: 'update-spell-slot', level: '1', field: 'used', value: -1 }
+			])
+		).toMatchObject({ ok: false });
+		expect(
+			reduce5eSheetEditIntents(character, [
+				{
+					type: 'update-spell',
+					spellId: spell.spellId,
+					level: spell.level ?? 0,
+					nextLevel: 10,
+					spell: { name: spell.name }
+				} as unknown as SheetEditIntent
+			])
+		).toMatchObject({ ok: false });
+		delete character.systemData.spellcasting;
+		expect(
+			reduce5eSheetEditIntents(character, [
+				{ type: 'update-spell-slot', level: '3', field: 'max', value: 2 }
+			])
+		).toMatchObject({
+			ok: true,
+			character: {
+				systemData: { spellcasting: { ability: 'int', slots: { '3': { max: 2, used: 0 } } } }
+			}
+		});
+	});
 	it('adds previously absent spell-slot levels and prunes untouched zero defaults', () => {
 		const character = createSheetEditCharacter();
 		delete character.systemData.spellcasting;

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { getSmallEditAccess } from '$components/smallEditContext';
+	const smallEdit = getSmallEditAccess();
 	import { tick } from 'svelte';
 	import GridContentEditDialog from '$components/GridContentEditDialog.svelte';
 	import GridContentList from '$components/GridContentList.svelte';
@@ -98,6 +100,18 @@
 			isFocusedListOpen = false;
 			await tick();
 		}
+		if (
+			smallEdit?.openRecord(
+				row.key,
+				returnFromDetail,
+				() => {
+					if (!selectedRow) return false;
+					return onIntents([decodeDenseCollectionRemoveIntent(character, selectedRow)]);
+				},
+				row.key.startsWith('spell:') ? 'Remove spell' : 'Remove item'
+			)
+		)
+			return;
 		isDetailOpen = true;
 	};
 
@@ -225,7 +239,7 @@
 	</p>
 {/if}
 
-{#if selectedRow}
+{#if selectedRow && (!smallEdit?.enabled || isDetailOpen)}
 	<GridRecordDetailWorkflow
 		bind:open={isDetailOpen}
 		title={selectedRow.label}

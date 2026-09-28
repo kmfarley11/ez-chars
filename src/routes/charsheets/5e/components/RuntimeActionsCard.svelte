@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { getSmallEditAccess } from '$components/smallEditContext';
+	const smallEdit = getSmallEditAccess();
 	import { tick } from 'svelte';
 	import GridRecordDetailWorkflow from '$components/GridRecordDetailWorkflow.svelte';
 	import {
@@ -84,7 +86,7 @@
 		} else requestAnimationFrame(() => addActionTriggerEl?.focus());
 	};
 
-	const openAction = (
+	const openAction = async (
 		row: RuntimeActionRow,
 		restoreFocus: () => boolean,
 		fromFocusedView: boolean
@@ -92,6 +94,23 @@
 		selectedId = row.id;
 		restoreRowFocus = restoreFocus;
 		returnToFocused = fromFocusedView;
+		if (fromFocusedView) {
+			focusedOpen = false;
+			await tick();
+		}
+		if (
+			smallEdit?.openRecord(
+				`runtime-action:${row.id}`,
+				returnFromDetail,
+				() => {
+					if (!character.systemData.runtimeActions.some((action) => action.id === row.id))
+						return false;
+					return onIntents([decodeRuntimeActionRemoveIntent(character, row.id)]);
+				},
+				'Remove action'
+			)
+		)
+			return;
 		detailOpen = true;
 	};
 
@@ -172,7 +191,7 @@
 		bind:focusedOpen
 	/>
 
-	{#if selectedRow}
+	{#if selectedRow && (!smallEdit?.enabled || detailOpen)}
 		<GridRecordDetailWorkflow
 			bind:open={detailOpen}
 			title={selectedRow.name}

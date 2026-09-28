@@ -1,5 +1,6 @@
 <script lang="ts">
 	import BaseButton from '$components/BaseButton.svelte';
+	import ScalarEditInput from './ScalarEditInput.svelte';
 	import GridContentAnnotationsEditor from '$components/GridContentAnnotationsEditor.svelte';
 	import { collectLeafInputs, normalizeData } from '$utils/gridContentHelpers';
 	import {
@@ -174,69 +175,32 @@
 												</span>
 											{/if}
 										</span>
-										{#if typeof leaf.field.value === 'boolean'}
-											<label class="touch-target flex cursor-pointer items-center gap-2">
-												<input
-													class="theme-input h-4 w-4 rounded border"
-													type="checkbox"
-													checked={leaf.field.value}
-													aria-label={field.fieldName === leaf.field.fieldName
-														? field.fieldName
-														: `${field.fieldName} ${leaf.field.fieldName}`}
-													onchange={(event) => {
-														const target = event.currentTarget as HTMLInputElement;
-														draftData = updateGridDataAtPath(draftData, leaf.path, target.checked);
-													}}
-												/>
-												<span class="theme-text-muted text-xs">Enabled</span>
-											</label>
-										{:else if leaf.field.multiline}
-											<textarea
-												class="theme-input w-full rounded-md border px-2 py-1 font-mono text-base md:text-sm"
-												rows="5"
-												aria-label={field.fieldName === leaf.field.fieldName
-													? field.fieldName
-													: `${field.fieldName} ${leaf.field.fieldName}`}
-												oninput={(event) => {
-													const target = event.currentTarget as HTMLTextAreaElement;
-													draftData = updateGridDataAtPath(draftData, leaf.path, target.value);
-												}}>{displayOrPlaceholder(leaf.field.value, '')}</textarea
-											>
-										{:else if leaf.field.options && typeof leaf.field.value === 'string'}
-											<select
-												class="theme-input w-full rounded-md border px-2 py-1 text-base md:text-sm"
-												value={leaf.field.value}
-												aria-label={field.fieldName === leaf.field.fieldName
-													? field.fieldName
-													: `${field.fieldName} ${leaf.field.fieldName}`}
-												onchange={(event) => {
-													const target = event.currentTarget as HTMLSelectElement;
-													draftData = updateGridDataAtPath(draftData, leaf.path, target.value);
-												}}
-											>
-												{#each leaf.field.options as option (option)}
-													<option value={option}>{option}</option>
-												{/each}
-											</select>
-										{:else}
-											<input
-												class="theme-input w-full rounded-md border px-2 py-1 text-base md:text-sm"
-												type={isNumberInput(leaf.field) ? 'number' : 'text'}
-												step={isNumberInput(leaf.field) ? '1' : undefined}
-												value={displayOrPlaceholder(leaf.field.value, '')}
-												aria-label={field.fieldName === leaf.field.fieldName
-													? field.fieldName
-													: `${field.fieldName} ${leaf.field.fieldName}`}
-												oninput={(event) => {
-													const target = event.currentTarget as HTMLInputElement;
-													draftData = updateGridDataAtPath(
-														draftData,
-														leaf.path,
-														toEditedFieldValue(leaf.field, target.value)
-													);
-												}}
-											/>
-										{/if}
+										<ScalarEditInput
+											presentation="structured"
+											label={field.fieldName === leaf.field.fieldName
+												? (field.fieldName ?? '')
+												: `${field.fieldName} ${leaf.field.fieldName}`}
+											kind={typeof leaf.field.value === 'boolean'
+												? 'boolean'
+												: leaf.field.multiline
+													? 'multiline'
+													: leaf.field.options && typeof leaf.field.value === 'string'
+														? 'select'
+														: isNumberInput(leaf.field)
+															? 'number'
+															: 'text'}
+											value={typeof leaf.field.value === 'boolean'
+												? leaf.field.value
+												: displayOrPlaceholder(leaf.field.value, '')}
+											options={leaf.field.options}
+											onChange={(value) => {
+												draftData = updateGridDataAtPath(
+													draftData,
+													leaf.path,
+													typeof value === 'boolean' ? value : toEditedFieldValue(leaf.field, value)
+												);
+											}}
+										/>
 										{#if showAnnotations && leaf.field.annotationBindPath}
 											<GridContentAnnotationsEditor
 												annotations={leaf.field.annotations ?? []}
@@ -275,69 +239,32 @@
 										</span>
 									{/if}
 								</span>
-								{#if typeof leaf.field.value === 'boolean'}
-									<label class="touch-target flex cursor-pointer items-center gap-2">
-										<input
-											class="theme-input h-4 w-4 rounded border"
-											type="checkbox"
-											checked={leaf.field.value}
-											aria-label={field.fieldName === leaf.field.fieldName
-												? field.fieldName
-												: `${field.fieldName} ${leaf.field.fieldName}`}
-											onchange={(event) => {
-												const target = event.currentTarget as HTMLInputElement;
-												draftData = updateGridDataAtPath(draftData, leaf.path, target.checked);
-											}}
-										/>
-										<span class="theme-text-muted text-xs">Enabled</span>
-									</label>
-								{:else if leaf.field.multiline}
-									<textarea
-										class="theme-input w-full rounded-md border px-2 py-1 font-mono text-base md:text-sm"
-										rows="5"
-										aria-label={field.fieldName === leaf.field.fieldName
-											? field.fieldName
-											: `${field.fieldName} ${leaf.field.fieldName}`}
-										oninput={(event) => {
-											const target = event.currentTarget as HTMLTextAreaElement;
-											draftData = updateGridDataAtPath(draftData, leaf.path, target.value);
-										}}>{displayOrPlaceholder(leaf.field.value, '')}</textarea
-									>
-								{:else if leaf.field.options && typeof leaf.field.value === 'string'}
-									<select
-										class="theme-input w-full rounded-md border px-2 py-1 text-base md:text-sm"
-										value={leaf.field.value}
-										aria-label={field.fieldName === leaf.field.fieldName
-											? field.fieldName
-											: `${field.fieldName} ${leaf.field.fieldName}`}
-										onchange={(event) => {
-											const target = event.currentTarget as HTMLSelectElement;
-											draftData = updateGridDataAtPath(draftData, leaf.path, target.value);
-										}}
-									>
-										{#each leaf.field.options as option (option)}
-											<option value={option}>{option}</option>
-										{/each}
-									</select>
-								{:else}
-									<input
-										class="theme-input w-full rounded-md border px-2 py-1 text-base md:text-sm"
-										type={isNumberInput(leaf.field) ? 'number' : 'text'}
-										step={isNumberInput(leaf.field) ? '1' : undefined}
-										value={displayOrPlaceholder(leaf.field.value, '')}
-										aria-label={field.fieldName === leaf.field.fieldName
-											? field.fieldName
-											: `${field.fieldName} ${leaf.field.fieldName}`}
-										oninput={(event) => {
-											const target = event.currentTarget as HTMLInputElement;
-											draftData = updateGridDataAtPath(
-												draftData,
-												leaf.path,
-												toEditedFieldValue(leaf.field, target.value)
-											);
-										}}
-									/>
-								{/if}
+								<ScalarEditInput
+									presentation="structured"
+									label={field.fieldName === leaf.field.fieldName
+										? (field.fieldName ?? '')
+										: `${field.fieldName} ${leaf.field.fieldName}`}
+									kind={typeof leaf.field.value === 'boolean'
+										? 'boolean'
+										: leaf.field.multiline
+											? 'multiline'
+											: leaf.field.options && typeof leaf.field.value === 'string'
+												? 'select'
+												: isNumberInput(leaf.field)
+													? 'number'
+													: 'text'}
+									value={typeof leaf.field.value === 'boolean'
+										? leaf.field.value
+										: displayOrPlaceholder(leaf.field.value, '')}
+									options={leaf.field.options}
+									onChange={(value) => {
+										draftData = updateGridDataAtPath(
+											draftData,
+											leaf.path,
+											typeof value === 'boolean' ? value : toEditedFieldValue(leaf.field, value)
+										);
+									}}
+								/>
 								{#if showAnnotations && leaf.field.annotationBindPath}
 									<GridContentAnnotationsEditor
 										annotations={leaf.field.annotations ?? []}

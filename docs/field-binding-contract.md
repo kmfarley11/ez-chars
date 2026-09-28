@@ -37,11 +37,11 @@ Primitive field bindings use raw JSON Patch operations for direct value editing.
 
 - **Direct Patches**: `GridPrimitiveField` prepares a guarded `JSONPatchDocument`, including RFC 6901 escaping and a preceding `test` operation for replacements. `FieldGroupView` forwards that document unchanged. `GridContentCard` sends it to the route's direct-patch handler when available, falling back to the existing `GridContentPatch[]` compatibility shape only for consumers that do not accept RFC 6902 documents.
 - **Structured Intents**: Focused compound workflows emit typed domain intents (for example, `SheetEditIntent`). The page or store layer receives the typed intent, performs contextual lookup, builds one candidate character, and validates it before commit.
-- **Generic Form Adaptation**: Generic data-driven editors such as `StructuredForm` emit an unopinionated focused draft. Their orchestration boundary translates that one-record payload into generic patches or a domain-owned typed intent. At the 5e boundary, feature-local adapters separate canonical schema patches from typed intents for final domain resolution.
+- **Generic Form Adaptation**: `StructuredForm` retains coherent creation and specialized workflows. Existing-target Detail uses `SmallEditScope`/`SmallEditDialog` with shared `ScalarEditInput`; a domain adapter exposes explicitly eligible fields and resolves their current targets. Canonical scalar/property patches and typed domain intents both undergo full candidate validation before persistence.
 
 This avoids both extremes: a collection-wide bulk editor for rich records, and fragile anonymous primitive bindings for every array cell.
 
-For MVP-simple cases, replacing a full array can remain acceptable. For growing lists, later mutation work should prefer stable item identity over raw array indexes when the schema supports it. Array-index paths may still be used as a current implementation detail, but item-level editing and annotations should move toward stable IDs or durable keys for insert, update, remove, and reorder behavior.
+Records with stable IDs resolve their current array position at each save; a captured index is not an identity. Classes lack IDs in the current epoch, so their adapter conservatively guards the captured class-array snapshot, refreshes it after its own accepted operations, and rejects externally changed arrays. Unrelated character edits remain preserved. Class removal shifts its positional note attachments and reconciles removed feature priority/source links. This does not add a storage epoch or pretend class names are unique keys.
 
 ## Field Capabilities
 
@@ -64,7 +64,7 @@ A field or focused-record edit should have one clear commit boundary.
 - Save emits a patch only when the committed value differs from the current read value.
 - Validation and schema coercion happen in the owning route, store, or domain helper, not inside a generic field display component.
 - If validation fails, the field remains in edit mode or receives an error from the owner; it should not silently write invalid data.
-- Focused Tier 2 and Tier 3 workflows keep eligible authored values and annotations in one local draft. Save validates and commits the complete candidate atomically; Cancel discards both.
+- Focused Tier 2 and Tier 3 workflows keep one field or note draft active. Explicit Save validates the complete candidate atomically; Cancel discards only that draft, never earlier saves. Indirect dirty navigation requires explicit resolution.
 - Record lifecycle and priority commands such as Add, confirmed Remove, and Pin/Unpin are deliberate immediate commands outside the authored-content draft.
 
 For single-line primitive fields, Enter may be a commit action. For multi-line or ambiguous fields, an explicit Save or Done control is preferred.
@@ -76,7 +76,7 @@ Value and annotation changes remain distinguishable mutation intent, but their u
 - A value save emits a value patch to `valuePatchPath`.
 - An annotation save emits an annotation patch to `annotationPatchPath`.
 - A Tier 1 primitive surface may save a focused value or annotation operation independently.
-- A Tier 2 or Tier 3 focused editor composes eligible authored and annotation operations into one candidate Save. The owner validates the whole candidate and commits all or none.
+- A Tier 2 or Tier 3 focused editor saves the selected value or note independently, merging into latest data and preserving unrelated values, optional absence, note identity, and unexposed record properties. Stale/deleted targets are rejected with the draft retained. A genuinely coupled unit or new-record creation retains one coherent commit.
 - The page or store applies patches immutably, persists them through the existing local-first storage path, and handles validation errors.
 - Field components must not know whether persistence is LocalStorage, import/export, or a future remote transport.
 
@@ -252,7 +252,7 @@ Slice 7 of `p1-040` proved the contract on one live runtime sheet field:
 
 `p1-055` replaced the 5e virtual-path normalization layer with a feature-local typed boundary:
 
-- `sheetEditDecoder.ts` is the only 5e module that classifies generic card paths or parses unknown editor values. It emits schema-backed semantic intents, explicit issues, and unchanged canonical compatibility patches.
+- `sheetEditDecoder.ts` classifies generic card paths and parses unknown editor values for coherent creation and legacy whole-target forms. It emits schema-backed semantic intents, explicit issues, and unchanged canonical compatibility patches. BL-085 adds the feature-local `smallEditAdapters.ts` boundary for independent field/note saves; it resolves current ownership and validates each resulting character without routing existing targets back through a bulk form.
 - `sheetEditIntents.ts` exhaustively reduces typed structured intents and validates one final candidate character. It preserves stable IDs and unrelated records and accepts an injectable ID factory for deterministic tests.
 - The 5e route applies canonical compatibility patches to an isolated candidate, reduces typed intents, and commits only a successful validated result. Direct primitive RFC 6902 application remains separate and unchanged.
 - The decoder/reducer vocabulary is feature-local evidence, not a shared multi-system mutation API.

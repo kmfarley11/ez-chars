@@ -1,5 +1,7 @@
 <script lang="ts">
 	import FieldGroupView from './FieldGroupView.svelte';
+	import SmallEditDialog from './SmallEditDialog.svelte';
+	let inspectReadOnly = $state(false);
 	import type { GridContentData } from '$utils/gridContentTypes';
 
 	let { displayMaxCols = 3, mode = 'mixed' } = $props<{
@@ -95,3 +97,40 @@
 		<FieldGroupView data={mockData} {displayMaxCols} displayArrayMode="stack" />
 	{/if}
 </div>
+
+{#if mode === 'readonly'}
+	<p class="theme-text-muted mt-2 text-sm">
+		BL-085 shared-component fixture only: derived and unavailable context, not a new calculated
+		character statistic.
+	</p>
+	<button
+		class="theme-btn-light touch-target rounded-md border px-2 py-1"
+		onclick={() => (inspectReadOnly = true)}>Inspect read-only context</button
+	>
+	{#if inspectReadOnly}
+		<SmallEditDialog
+			request={{
+				model: {
+					title: 'Read-only context',
+					fields: [
+						{
+							key: 'derived',
+							label: 'Derived example',
+							kind: 'number',
+							read: () => 2,
+							explanation:
+								'Illustrative derived result. Its source is edited elsewhere; this value is not directly writable.'
+						},
+						{
+							key: 'unavailable',
+							label: 'Unavailable example',
+							kind: 'text',
+							read: () => undefined
+						}
+					]
+				}
+			}}
+			onClosed={() => (inspectReadOnly = false)}
+		/>
+	{/if}
+{/if}

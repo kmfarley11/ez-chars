@@ -28,7 +28,7 @@ export type HelpAnnotationGroup = {
 	annotationBindPath?: GridContentBindPath;
 };
 
-type DisplayPart = { value: string; label?: string };
+type DisplayPart = { value: string; label?: string; field: GridContentField };
 type PrimitiveGridFieldValue = string | number | boolean;
 type PrimitiveInputKind = 'text' | 'number';
 
@@ -400,7 +400,8 @@ export const getLabeledDisplayParts = (field: GridContentField): DisplayPart[] |
 		.filter((entry) => shouldRenderField(entry))
 		.map((entry) => ({
 			value: formatFieldValue(entry, ''),
-			label: entry.label
+			label: entry.label,
+			field: entry
 		}))
 		.filter((entry) => entry.value.length > 0);
 

@@ -2,6 +2,11 @@
 	import FieldAnnotationControl from '$components/FieldAnnotationControl.svelte';
 	import GridPrimitiveField from '$components/GridPrimitiveField.svelte';
 	import GridRuntimeFieldGroup from '$components/GridRuntimeFieldGroup.svelte';
+	import IconButton from './IconButton.svelte';
+	import DetailLabelButton from './DetailLabelButton.svelte';
+	import type { SmallEditEntryStyle } from './smallEditContext';
+	import { getSmallEditAccess } from './smallEditContext';
+	const smallEdit = getSmallEditAccess();
 	import {
 		formatFieldValue,
 		getLabeledDisplayParts,
@@ -22,6 +27,9 @@
 
 	interface Props {
 		data: GridContentData;
+		// eslint-disable-next-line no-unused-vars
+		onTargetField?: (field: GridContentField, invoker: HTMLElement) => void;
+		targetEntryStyle?: SmallEditEntryStyle;
 		displayMaxCols?: number;
 		displayAlign?: 'left' | 'center';
 		displayArrayMode?: 'inline' | 'stack';
@@ -50,6 +58,8 @@
 
 	let {
 		data,
+		onTargetField,
+		targetEntryStyle = 'label',
 		displayMaxCols = 3,
 		displayAlign = 'left',
 		displayArrayMode = 'inline',
@@ -146,6 +156,9 @@
 										{fieldKey}
 										{field}
 										{annotationEditorConfig}
+										onTargetDetail={onTargetField
+											? (invoker) => onTargetField?.(field, invoker)
+											: undefined}
 										onSavePatch={savePrimitiveFieldPatch}
 										onSaveAnnotations={savePrimitiveFieldAnnotations}
 										onSaveFocusedPatches={onFocusedSavePatches}
@@ -159,19 +172,19 @@
 											aria-label={`${field.fieldName}: ${field.value ? 'enabled' : 'disabled'}`}
 											disabled
 										/>
-										<span class="font-medium">{field.fieldName}</span>
+										{@render fieldHeading(field)}
 									</span>
 								{:else if displayPrimitiveMode === 'stacked' && (typeof field.value === 'string' || typeof field.value === 'number')}
 									<span class="block min-w-0">
 										<span
 											class="theme-text-muted block text-xs font-semibold tracking-wide uppercase"
-											>{fieldLabel}</span
+											>{@render fieldHeading(field, false)}</span
 										>
 										<span class="mt-1 block truncate font-semibold">{formatFieldValue(field)}</span>
 									</span>
 								{:else if labeledParts}
 									<span class="inline-flex flex-wrap items-baseline gap-x-1 gap-y-0.5">
-										<span class="font-medium">{field.fieldName}:</span>
+										{@render fieldHeading(field)}
 										{#each labeledParts as part, idx (`${fieldKey}-${idx}`)}
 											{#if idx > 0}
 												<span aria-hidden="true">/</span>
@@ -179,14 +192,22 @@
 											<span>
 												{part.value}
 												{#if part.label}
-													<span class="theme-text-muted text-xs italic">&nbsp;{part.label}</span>
+													<span class="theme-text-muted text-xs italic">
+														{#if onTargetField && part.field.bindPath}
+															{@render fieldHeading(part.field, false)}
+														{:else}&nbsp;{part.label}{/if}
+													</span>
 												{/if}
+												{#if smallEdit?.enabled}{@render fieldNotes(
+														part.field,
+														part.label ?? ''
+													)}{/if}
 											</span>
 										{/each}
 									</span>
 								{:else if displayArrayMode === 'stack' && isGridFieldArray(field.value)}
 									{@const arrayValue = field.value as GridContentField[]}
-									<span class="font-medium">{field.fieldName}:</span>
+									{@render fieldHeading(field)}
 									<span class="mt-1 block">
 										{#if arrayValue.length === 0}
 											<span class="theme-text-muted text-sm italic">No entries yet.</span>
@@ -199,25 +220,13 @@
 										{/if}
 									</span>
 								{:else}
-									<span class="font-medium">{field.fieldName}:</span>
+									{@render fieldHeading(field)}
 									{formatFieldValue(field)}
 								{/if}
 								{#if field.label}
 									<span class="theme-text-muted text-xs italic"> ({field.label}) </span>
 								{/if}
-								{#if field.annotationBindPath}
-									<span class="ml-1 inline-flex align-middle">
-										<FieldAnnotationControl
-											{fieldLabel}
-											annotations={field.annotations ?? []}
-											annotationAffordance="badge"
-											{annotationEditorConfig}
-											onSaveAnnotations={(nextAnnotations) => {
-												saveFieldAnnotations(field, nextAnnotations);
-											}}
-										/>
-									</span>
-								{/if}
+								{@render fieldNotes(field, fieldLabel)}
 							</div>
 						</div>
 					</div>
@@ -226,3 +235,48 @@
 		</div>
 	{/if}
 </div>
+
+{#snippet fieldNotes(field: GridContentField, fieldLabel: string)}
+	{#if field.annotationBindPath}
+		<span class="ml-1 inline-flex align-middle">
+			<FieldAnnotationControl
+				{fieldLabel}
+				annotations={field.annotations ?? []}
+				annotationAffordance="badge"
+				onOpen={(invoker) =>
+					smallEdit?.openGrid({
+						data: { field },
+						title: fieldLabel,
+						annotationEditorConfig,
+						showNotes: true,
+						onClosed: () => invoker.focus()
+					}) ?? false}
+				{annotationEditorConfig}
+				onSaveAnnotations={(nextAnnotations) => saveFieldAnnotations(field, nextAnnotations)}
+			/>
+		</span>
+	{/if}
+{/snippet}
+
+{#snippet fieldHeading(field: GridContentField, colon = true)}
+	{#if onTargetField && field.bindPath}
+		{#if targetEntryStyle === 'label' || targetEntryStyle === 'button'}
+			<DetailLabelButton
+				label={field.fieldName ?? ''}
+				presentation={targetEntryStyle}
+				onclick={(event) => onTargetField?.(field, event.currentTarget as HTMLElement)}
+			/>
+		{:else}
+			<span class="inline-flex items-center gap-1"
+				><span class="font-medium">{field.fieldName}</span><IconButton
+					variant="detail"
+					size="sm"
+					ariaLabel={`View ${field.fieldName}`}
+					onclick={(event) => onTargetField?.(field, event.currentTarget as HTMLElement)}
+				/></span
+			>
+		{/if}
+	{:else}<span class="font-medium"
+			>{field.fieldName}{typeof field.value === 'boolean' || !colon ? '' : ':'}</span
+		>{/if}
+{/snippet}

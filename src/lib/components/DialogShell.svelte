@@ -55,6 +55,14 @@
 		headingEl?.focus();
 	};
 
+	// Step transitions retain one scroll owner; restore after the new content has rendered.
+	export const restoreScroll = (top: number) => {
+		if (scrollViewportEl) {
+			scrollViewportEl.scrollTop = top;
+			scrollTop = scrollViewportEl.scrollTop;
+		}
+	};
+
 	$effect(() => {
 		if (open && !dialogEl?.open) {
 			dialogEl?.showModal();

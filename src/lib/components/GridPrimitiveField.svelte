@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { tick } from 'svelte';
+	import { getSmallEditAccess } from './smallEditContext';
+	const smallEdit = getSmallEditAccess();
 	import Badge from '$components/Badge.svelte';
+	import DetailLabelButton from './DetailLabelButton.svelte';
 	import { FieldDraft } from '$utils/fieldDraftHelpers';
 	import FieldAnnotationControl from '$components/FieldAnnotationControl.svelte';
 	import FocusedDetailWorkflow, {
@@ -32,6 +35,8 @@
 	interface Props {
 		fieldKey: string;
 		field: GridContentField;
+		// eslint-disable-next-line no-unused-vars
+		onTargetDetail?: (invoker: HTMLElement) => void;
 		jsonPatchPath?: JSONPointer;
 		annotationEditorConfig?: GridAnnotationEditorConfig;
 		contextLabel?: string;
@@ -57,6 +62,7 @@
 	let {
 		fieldKey,
 		field,
+		onTargetDetail,
 		jsonPatchPath = undefined,
 		annotationEditorConfig = undefined,
 		contextLabel = undefined,
@@ -197,9 +203,20 @@
 	};
 
 	const openFocusedDetail = () => {
+		if (onTargetDetail && detailButtonEl) return onTargetDetail(detailButtonEl);
+		if (openSmallDetail(false, detailButtonEl)) return;
 		focusedMode = 'detail';
 		focusedOpen = true;
 	};
+	const openSmallDetail = (showNotes: boolean, invoker?: HTMLElement, targeted = false): boolean =>
+		smallEdit?.openGrid({
+			data: { [fieldKey]: field },
+			title: fieldLabel,
+			annotationEditorConfig,
+			showNotes,
+			selectedKey: targeted && valuePatchPath ? toGridJsonPointer(valuePatchPath) : undefined,
+			onClosed: () => invoker?.focus()
+		}) ?? false;
 
 	const beginFocusedEdit = () => {
 		focusedDraftValue = String(currentValue);
@@ -342,6 +359,7 @@
 						{annotationEditorConfig}
 						fieldLabel={actionLabel}
 						compact={true}
+						onOpen={(invoker) => openSmallDetail(true, invoker)}
 						onSaveAnnotations={(nextAnnotations) => {
 							onSaveAnnotations?.(nextAnnotations, annotationPatchPath);
 						}}
@@ -361,7 +379,17 @@
 		<div class="min-w-0">
 			<div class="flex flex-wrap items-center gap-x-1.5 gap-y-1">
 				<span class="theme-text-muted text-xs font-semibold tracking-wide uppercase"
-					>{fieldLabel}</span
+					>{#if smallEdit?.targeted( { [fieldKey]: field } ) && (smallEdit.entryStyle === 'label' || smallEdit.entryStyle === 'button')}
+						<DetailLabelButton
+							label={fieldLabel}
+							presentation={smallEdit.entryStyle}
+							onclick={(event) => {
+								const invoker = event.currentTarget as HTMLElement;
+								if (onTargetDetail) onTargetDetail(invoker);
+								else openSmallDetail(false, invoker, true);
+							}}
+						/>
+					{:else}{fieldLabel}{/if}</span
 				>
 				{#if annotations.length > 0}<Badge label={noteCountLabel} />{/if}
 			</div>

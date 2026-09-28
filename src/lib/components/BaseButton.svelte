@@ -16,7 +16,7 @@
 		ariaPressed?: boolean;
 		ariaExpanded?: boolean;
 		ariaControls?: string;
-		ariaHaspopup?: 'menu' | boolean;
+		ariaHaspopup?: 'menu' | 'dialog' | boolean;
 		id?: string;
 		title?: string;
 		disabled?: boolean;

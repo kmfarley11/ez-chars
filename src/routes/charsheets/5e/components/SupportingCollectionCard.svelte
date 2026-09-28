@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { getSmallEditAccess } from '$components/smallEditContext';
+	const smallEdit = getSmallEditAccess();
 	import { tick } from 'svelte';
 	import GridContentEditDialog from '$components/GridContentEditDialog.svelte';
 	import GridRecordDetailWorkflow from '$components/GridRecordDetailWorkflow.svelte';
@@ -66,7 +68,7 @@
 	);
 	const addData = $derived(projectSupportingAddData(kind));
 
-	const openRow = (
+	const openRow = async (
 		row: SupportingCollectionRow,
 		restoreFocus: () => boolean,
 		fromFocusedView: boolean
@@ -74,6 +76,26 @@
 		selectedKey = row.key;
 		restoreRowFocus = restoreFocus;
 		returnToFocused = fromFocusedView;
+		if (fromFocusedView) {
+			focusedOpen = false;
+			await tick();
+		}
+		if (
+			smallEdit?.openRecord(
+				row.key,
+				returnFromDetail,
+				isSupportingRecordRemovable(row)
+					? () => {
+							const current = rows.find((candidate) => candidate.identity === row.identity);
+							if (!current) return false;
+							const intent = decodeSupportingRemoveIntent(character, kind, current);
+							return intent ? onIntents([intent]) : false;
+						}
+					: undefined,
+				`Remove ${row.label}`
+			)
+		)
+			return;
 		detailOpen = true;
 	};
 
@@ -167,7 +189,7 @@
 	comparePriorityLabels={compare5e2014PriorityLabels}
 />
 
-{#if selectedRow}
+{#if selectedRow && (!smallEdit?.enabled || detailOpen)}
 	<GridRecordDetailWorkflow
 		bind:open={detailOpen}
 		title={selectedRow.label}
