@@ -3,7 +3,7 @@
 	import IconPin from '$components/IconPin.svelte';
 	import IconButton from '$components/IconButton.svelte';
 	import DetailLabelButton from './DetailLabelButton.svelte';
-	import { getSmallEditAccess } from './smallEditContext';
+	import { getSmallEditAccess, usesDetailLabels } from './smallEditContext';
 	const smallEdit = getSmallEditAccess();
 	import type { GridContentListRow, GridContentListRowAction } from '$components/gridContentList';
 
@@ -15,6 +15,7 @@
 	}
 
 	let { row, compact = false, onOpenRow, onTogglePinRow }: Props = $props();
+	const labelEntry = $derived(!!onOpenRow && usesDetailLabels(smallEdit));
 	let detailTriggerEl = $state<HTMLButtonElement>();
 	let pinTriggerEl = $state<HTMLButtonElement>();
 
@@ -54,11 +55,12 @@
 						</span>
 						<span class="sr-only">Pinned</span>
 					{/if}
-					{#if onOpenRow && smallEdit?.enabled && (smallEdit.entryStyle === 'label' || smallEdit.entryStyle === 'button')}
+					{#if labelEntry}
 						<DetailLabelButton
+							id={`${row.key}-detail-action`}
 							label={row.label}
 							ariaLabel={`Open ${accessibleRowLabel}`}
-							presentation={smallEdit.entryStyle}
+							presentation={smallEdit?.entryStyle === 'button' ? 'button' : 'label'}
 							onclick={(event) => runCommand(onOpenRow, event.currentTarget as HTMLButtonElement)}
 						/>
 					{:else}<span>{row.label}</span>{/if}
@@ -86,28 +88,28 @@
 				</div>
 			{/if}
 		</div>
-		<div class="flex shrink-0 items-center gap-1">
-			{#if onTogglePinRow}
-				<IconButton
-					bind:buttonEl={pinTriggerEl}
-					variant="pin"
-					size="sm"
-					shadingVariant={isPinned ? 'dark' : 'light'}
-					ariaLabel={`${isPinned ? 'Unpin' : 'Pin'} ${accessibleRowLabel}`}
-					ariaPressed={isPinned}
-					onclick={() => runCommand(onTogglePinRow, pinTriggerEl)}
-				/>
-			{/if}
-			{#if onOpenRow}
-				<IconButton
-					id={`${row.key}-detail-action`}
-					bind:buttonEl={detailTriggerEl}
-					variant="detail"
-					size="sm"
-					ariaLabel={`View ${accessibleRowLabel} details`}
-					onclick={() => runCommand(onOpenRow, detailTriggerEl)}
-				/>
-			{/if}
-		</div>
+		{#if onTogglePinRow || (onOpenRow && !labelEntry)}<div class="flex shrink-0 items-center gap-1">
+				{#if onTogglePinRow}
+					<IconButton
+						bind:buttonEl={pinTriggerEl}
+						variant="pin"
+						size="sm"
+						shadingVariant={isPinned ? 'dark' : 'light'}
+						ariaLabel={`${isPinned ? 'Unpin' : 'Pin'} ${accessibleRowLabel}`}
+						ariaPressed={isPinned}
+						onclick={() => runCommand(onTogglePinRow, pinTriggerEl)}
+					/>
+				{/if}
+				{#if onOpenRow && !labelEntry}
+					<IconButton
+						id={`${row.key}-detail-action`}
+						bind:buttonEl={detailTriggerEl}
+						variant="detail"
+						size="sm"
+						ariaLabel={`View ${accessibleRowLabel} details`}
+						onclick={() => runCommand(onOpenRow, detailTriggerEl)}
+					/>
+				{/if}
+			</div>{/if}
 	</div>
 </li>

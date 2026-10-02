@@ -17,9 +17,9 @@ export const SaturatedCharacter: Story = {
 			description: {
 				story: `**Verify manually:**
 
-- Confirm Prof. Bonus fills its full-width bounded row. Its label and field chevron open the same authored detail and highlight the requested value.
+- Confirm Prof. Bonus fills its full-width bounded row. Its label opens authored detail and highlights the requested value without a duplicate chevron.
 - Confirm all six ability cards align in a readable one-, two-, or three-column grid without clipped skill labels or horizontal overflow.
-- BL-085: use Score, Modifier, a skill, and the CON Save labels to open the parent Detail with that field highlighted. Group > opens an unhighlighted overview. In Controls compare button, label (underlined), chevron, and group. Values remain selectable.
+- BL-085: use Score, Modifier, a skill, and the CON Save labels to open the complete parent Detail with that field highlighted. Label mode omits duplicate group/record chevrons. Controls retain button, chevron, and group alternatives for comparison only. Values remain selectable.
 - Edit and save Score, edit Athletics and Cancel; Score remains saved, Athletics stays unchanged, and no outer Save appears.
 - Start a dirty edit, choose another Edit or Close/Back/Escape, and try all three resolution choices. Add/Edit/Remove one note, Undo removal, then confirm it.
 - Confirm Languages and Tools keep compact rows, expose Add at the collection heading, and use only row-level Pin/Unpin for priority.

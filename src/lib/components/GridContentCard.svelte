@@ -2,8 +2,12 @@
 	import FieldGroupView from '$components/FieldGroupView.svelte';
 	import GridContentDetailWorkflow from '$components/GridContentDetailWorkflow.svelte';
 	import IconButton from '$components/IconButton.svelte';
-	import { getSmallEditAccess } from './smallEditContext';
-	import { collectLeafInputs, toGridJsonPointer } from '$utils/gridContentHelpers';
+	import { getSmallEditAccess, usesDetailLabels } from './smallEditContext';
+	import {
+		collectLeafInputs,
+		hasReadFirstLabelTarget,
+		toGridJsonPointer
+	} from '$utils/gridContentHelpers';
 	import type {
 		GridAnnotationEditorConfig,
 		GridContentAnnotation,
@@ -97,6 +101,12 @@
 	const canOpenFocusedDetail = $derived(
 		hasFocusedContent && (handleEditSavePatches !== undefined || handleEditSave !== undefined)
 	);
+	// Any visible label that opens the complete group also provides overview access.
+	// Keep a fallback for standalone/unsupported compositions with no such entry.
+	const hasLabelEntry = $derived(
+		usesDetailLabels(smallEdit) && smallEdit?.targeted(data) && hasReadFirstLabelTarget(data)
+	);
+	const showDetailAction = $derived(!hideActions && canOpenFocusedDetail && !hasLabelEntry);
 	const focusedTitle = $derived(
 		detailTitle ??
 			Object.values(data).find(
@@ -116,17 +126,16 @@
 		compatibilityPatches: Array<GridContentPatch>
 	) => {
 		if (handleFieldSavePatch) {
-			handleFieldSavePatch(patch);
-			return;
+			return handleFieldSavePatch(patch);
 		}
 		if (compatibilityPatches.length > 0) {
-			handleEditSavePatches?.(compatibilityPatches);
+			return handleEditSavePatches?.(compatibilityPatches);
 		}
 	};
 </script>
 
 <div class="grid-content-shell relative min-h-8" role="presentation">
-	{#if !hideActions && canOpenFocusedDetail}
+	{#if showDetailAction}
 		<div class="absolute top-0 right-0">
 			<IconButton
 				bind:buttonEl={cardActionsTriggerEl}
@@ -137,7 +146,7 @@
 			/>
 		</div>
 	{/if}
-	<div class={hideActions || !canOpenFocusedDetail ? '' : 'grid-content-body'}>
+	<div class={showDetailAction ? 'grid-content-body' : ''}>
 		<FieldGroupView
 			{data}
 			{displayMaxCols}

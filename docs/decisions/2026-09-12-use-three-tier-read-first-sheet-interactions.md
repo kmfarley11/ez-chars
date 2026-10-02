@@ -3,8 +3,8 @@
 **Status:** Approved
 **Author:** Codex
 **Date:** 2026-09-12
-**Last reviewed:** 2026-09-28
-**Latest refinement:** [BL-085](../../openspec/changes/bl-085-focus-piecewise-detail-editing/design.md) proof approval replaces existing-target whole-record drafts with independent explicit field/note saves; rollout is in progress.
+**Last reviewed:** 2026-10-01
+**Latest refinement:** [BL-085](../../openspec/changes/archive/2026-10-02-bl-085-focus-piecewise-detail-editing/design.md) final-review revision removes duplicate detail chevrons where label/name entry provides full access; independent saves and fallback access remain.
 
 ## Context & Problem Statement
 
@@ -65,7 +65,11 @@ This proposal does not authorize a global sheet edit mode, a general section-wid
 
 The owner approved the production-backed BL-085 proof. A group remains a reading/navigation boundary, not a transaction boundary: one field or note is edited and explicitly saved at a time, earlier saves survive later cancellation, and indirect navigation resolves dirty work in the same logical surface. Latest-target domain adapters validate the complete candidate while preserving unrelated values and notes. New-record creation retains one final Add; ownership restrictions and specialized source workflows remain intact.
 
-Underlined label buttons are the primary targeted entry: reveal and highlight the intended field without automatically editing. Existing group/record chevrons remain available; removing redundant chevrons was discussed but not selected. Compact read-first Used/Max slot pairs share the Score/Modifier renderer, superseding the spell-slot Tier 1 classification from September 20 without changing other runtime controls. This balances runtime density against an extra deliberate entry step accepted in the proof. A separate integrated-sheet approval remains required after rollout.
+Underlined label buttons are the primary targeted entry: reveal and highlight the intended field without automatically editing. Existing group/record chevrons remained available at the September proof gate; that retention is superseded by the October 1 refinement below. Compact read-first Used/Max slot pairs share the Score/Modifier renderer, superseding the spell-slot Tier 1 classification from September 20 without changing other runtime controls. This balances runtime density against an extra deliberate entry step accepted in the proof. A separate integrated-sheet approval remains required after rollout.
+
+### 2026-10-01 — Prefer label entry without duplicate detail buttons
+
+The owner approved removing duplicate group, single-field, and record chevrons wherever clickable labels/names already open the complete focused context. The unselected-overview distinction did not justify another control, reserved whitespace, or keyboard stop. Retain a fallback only without usable label entry; empty collection labels and direct Add keep creation reachable. Field targeting/highlighting and separate Pin/source commands are unchanged. Stable focus restoration now targets the record name when that replaces the icon. This refines the entry presentation, not the save boundary; final integrated approval remains pending.
 
 ### 2026-09-18 — Five-fixture proof awaiting owner review
 

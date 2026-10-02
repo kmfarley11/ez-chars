@@ -2,12 +2,16 @@
 
 **Status:** Automated implementation resolved; physical-device and screen-reader review retained before external playtesting  
 **Audit date:** 2026-08-02
-**Last reviewed:** 2026-09-28
+**Last reviewed:** 2026-10-02
 **Scope:** Current home-to-character-sheet flow, including dense inventory/spell browsing and 2014 landmark navigation, on the phone-sized, coarse-pointer presentation
 
 This is a bounded audit of control families, not an inventory of every repeated character record. A family is complete only when its accessible name, touch geometry, keyboard order, automated evidence, and any manual-only conclusion are accounted for.
 
 ## Evidence
+
+- **BL-085 alignment/geometry refinement (2026-10-02):** centered stat groups reuse shared presentation; runtime action clusters reserve two 44px controls plus a 4px gap in both modes, preventing the currency value column from shrinking on Edit. The 20 focused-editing/mobile-accessibility checks pass, including currency alignment, save/reload and unchanged HP alignment. No hit-area reduction or exception; broader phone spacing is deferred to the backlog's responsive-density exploration.
+
+- **BL-085 label-only entry refinement (2026-10-01):** duplicate detail chevrons and their keyboard stops are removed when label/name entry already opens complete context. Record names retain the stable focus-return target formerly owned by the icon. Empty class/scratchpad labels retain Add access; compositions without usable labels retain fallback controls. Mobile Chrome touch geometry, modal return, and renamed/filtered collection-return checks pass without a new exception.
 
 - **BL-085 focused-editing rollout:** label entry composes `BaseButton`, and local Edit/Save/Cancel reuse `IconButton`. Note, lifecycle, and dirty-resolution actions inherit `touch-target`; shared scalar inputs retain mobile typography. Field headings receive targeted focus with a steady highlight, not auto-edit. `tests/smallEdits.smoke.spec.ts` covers names, geometry, draft resolution, and source/focus return; physical iPhone and assistive-technology comfort remain human review, not inferred from emulation. No new touch-target exception is requested.
 - **Mobile geometry:** `npx playwright test tests/mobileAccessibility.smoke.spec.ts --project="Mobile Chrome"`

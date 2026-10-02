@@ -58,7 +58,7 @@ The system SHALL classify editable character-sheet information as frequently cha
 #### Scenario: Opening a bounded group of rich information
 
 - **WHEN** multiple non-runtime fields share one visually bounded sheet group
-- **THEN** the group SHALL retain explicit overview access to its complete detail
+- **THEN** the group SHALL retain explicit access to its complete detail through a displayed field label or a fallback group control
 - **AND** eligible fields SHALL be individually editable within that detail without putting unrelated fields into an edit mode
 - **AND** entry SHALL make the intended field readily reachable without searching unrelated dialog content
 - **AND** independent editing SHALL NOT by itself require an additional sheet control beside every leaf
@@ -97,6 +97,18 @@ The system SHALL expose an explicit keyboard-, pointer-, touch-, and assistive-t
 - **WHEN** a read-first rich field has annotations and its compact presentation distinguishes a field label from its displayed value
 - **THEN** the field SHALL present its quiet note indicator inline with its label when space allows, followed by its displayed value
 - **AND** the indicator SHALL remain separate from the field's detail action cluster
+
+#### Scenario: Avoiding redundant detail controls
+
+- **WHEN** visible field labels provide access to the complete containing detail
+- **THEN** the sheet SHALL omit a separate duplicate group or field detail button
+- **AND** label entry SHALL retain the requested field's highlight and the surrounding group's context
+
+#### Scenario: Preserving access without a usable label
+
+- **WHEN** a supported detail target has no usable displayed label entry
+- **THEN** an explicit fallback detail control SHALL remain available
+- **AND** empty collections SHALL retain their eligible creation path
 
 #### Scenario: Reading compact rich fields consistently
 

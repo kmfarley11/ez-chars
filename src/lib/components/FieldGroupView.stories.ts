@@ -6,7 +6,19 @@ const meta = {
 	component: FieldGroupViewStory,
 	args: {
 		displayMaxCols: 3,
+		displayAlign: 'left',
 		mode: 'mixed'
+	},
+	argTypes: {
+		displayAlign: { control: 'inline-radio', options: ['left', 'center'] }
+	},
+	parameters: {
+		docs: {
+			description: {
+				component:
+					'Reuse Mixed, Editable, and QuietEdit to compare displayAlign in Controls at desktop and phone widths. Centering should apply to labels/values and runtime inputs without moving the separate action controls or changing edit behavior. Left remains the default; no separate alignment story is needed.'
+			}
+		}
 	}
 } satisfies Meta<typeof FieldGroupViewStory>;
 

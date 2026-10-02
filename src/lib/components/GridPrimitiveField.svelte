@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { getSmallEditAccess } from './smallEditContext';
+	import { getSmallEditAccess, usesDetailLabels } from './smallEditContext';
 	const smallEdit = getSmallEditAccess();
 	import Badge from '$components/Badge.svelte';
 	import DetailLabelButton from './DetailLabelButton.svelte';
@@ -41,6 +41,7 @@
 		annotationEditorConfig?: GridAnnotationEditorConfig;
 		contextLabel?: string;
 		surfaceVariant?: 'standalone' | 'nested';
+		displayAlign?: 'left' | 'center';
 		onSavePatch?: (
 			// eslint-disable-next-line no-unused-vars
 			_patch: JSONPatchDocument,
@@ -67,6 +68,7 @@
 		annotationEditorConfig = undefined,
 		contextLabel = undefined,
 		surfaceVariant = 'standalone',
+		displayAlign = 'left',
 		onSavePatch = undefined,
 		onSaveAnnotations = undefined,
 		onSaveFocusedPatches = undefined
@@ -86,6 +88,9 @@
 	let focusedError = $state('');
 
 	const fieldLabel = $derived(field.fieldName ?? fieldKey);
+	const labelEntry = $derived(
+		usesDetailLabels(smallEdit) && smallEdit?.targeted({ [fieldKey]: field })
+	);
 	const actionLabel = $derived(contextLabel ? `${contextLabel} ${fieldLabel}` : fieldLabel);
 	const valuePatchPath = $derived(field.binding?.valuePatchPath ?? field.bindPath);
 	const effectiveJsonPatchPath = $derived(
@@ -296,7 +301,7 @@
 			: 'theme-panel grid min-h-16 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg border p-2'}
 	>
 		{#if draft}
-			<label class="min-w-0">
+			<label class={['min-w-0', displayAlign === 'center' ? 'text-center' : 'text-left']}>
 				<span class="theme-text-muted block text-xs font-semibold tracking-wide uppercase"
 					>{fieldLabel}</span
 				>
@@ -307,7 +312,10 @@
 							if (inputEl === element) inputEl = undefined;
 						};
 					}}
-					class="theme-input touch-target mt-1 h-8 w-full max-w-24 rounded-md border px-2 py-1 text-base font-bold"
+					class={[
+						'theme-input touch-target mt-1 h-8 w-full max-w-24 rounded-md border px-2 py-1 text-base font-bold',
+						displayAlign === 'center' ? 'text-center' : 'text-left'
+					]}
 					type={inputKind}
 					value={draftValue}
 					aria-label={actionLabel}
@@ -318,7 +326,7 @@
 					<span class="theme-text-muted text-xs italic">({field.label})</span>
 				{/if}
 			</label>
-			<div class="flex min-w-[3.75rem] items-center justify-end gap-1">
+			<div class="runtime-field-actions flex min-w-[3.75rem] items-center justify-end gap-1">
 				<IconButton
 					variant="confirm"
 					size="sm"
@@ -333,18 +341,21 @@
 				/>
 			</div>
 		{:else}
-			<div class="min-w-0">
+			<div class={['min-w-0', displayAlign === 'center' ? 'text-center' : 'text-left']}>
 				<span class="theme-text-muted block text-xs font-semibold tracking-wide uppercase"
 					>{fieldLabel}</span
 				>
-				<span class="runtime-field-value mt-1 flex h-8 items-center text-2xl font-bold tabular-nums"
-					>{displayValue}</span
+				<span
+					class={[
+						'runtime-field-value mt-1 flex h-8 items-center text-2xl font-bold tabular-nums',
+						displayAlign === 'center' && 'justify-center'
+					]}>{displayValue}</span
 				>
 				{#if field.label}
 					<span class="theme-text-muted text-xs italic">({field.label})</span>
 				{/if}
 			</div>
-			<div class="flex min-w-[3.75rem] items-center justify-end gap-1">
+			<div class="runtime-field-actions flex min-w-[3.75rem] items-center justify-end gap-1">
 				<IconButton
 					bind:buttonEl={editButtonEl}
 					variant="edit"
@@ -374,15 +385,20 @@
 	</div>
 {:else}
 	<div
-		class="grid min-h-16 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg border p-2"
+		class={`grid min-h-16 w-full ${labelEntry ? 'grid-cols-1' : 'grid-cols-[minmax(0,1fr)_auto]'} items-center gap-2 rounded-lg border p-2`}
 	>
-		<div class="min-w-0">
-			<div class="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+		<div class={['min-w-0', displayAlign === 'center' ? 'text-center' : 'text-left']}>
+			<div
+				class={[
+					'flex flex-wrap items-center gap-x-1.5 gap-y-1',
+					displayAlign === 'center' && 'justify-center'
+				]}
+			>
 				<span class="theme-text-muted text-xs font-semibold tracking-wide uppercase"
-					>{#if smallEdit?.targeted( { [fieldKey]: field } ) && (smallEdit.entryStyle === 'label' || smallEdit.entryStyle === 'button')}
+					>{#if labelEntry}
 						<DetailLabelButton
 							label={fieldLabel}
-							presentation={smallEdit.entryStyle}
+							presentation={smallEdit?.entryStyle === 'button' ? 'button' : 'label'}
 							onclick={(event) => {
 								const invoker = event.currentTarget as HTMLElement;
 								if (onTargetDetail) onTargetDetail(invoker);
@@ -395,13 +411,13 @@
 			</div>
 			<span class="mt-1 block truncate font-semibold">{displayValue}</span>
 		</div>
-		<IconButton
-			bind:buttonEl={detailButtonEl}
-			variant="detail"
-			size="sm"
-			ariaLabel={`View ${fieldLabel} details`}
-			onclick={openFocusedDetail}
-		/>
+		{#if !labelEntry}<IconButton
+				bind:buttonEl={detailButtonEl}
+				variant="detail"
+				size="sm"
+				ariaLabel={`View ${fieldLabel} details`}
+				onclick={openFocusedDetail}
+			/>{/if}
 	</div>
 
 	<FocusedDetailWorkflow
@@ -475,6 +491,11 @@
 
 <style>
 	@media (pointer: coarse), (max-width: 767px) {
+		.runtime-field-actions {
+			/* Reserve two 44px controls plus their gap in both read and edit states. */
+			min-inline-size: 92px;
+		}
+
 		.runtime-field-value {
 			min-block-size: 44px;
 		}

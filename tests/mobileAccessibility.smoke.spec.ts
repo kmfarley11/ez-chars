@@ -150,7 +150,7 @@ test('representative phone controls expose non-overlapping 44 CSS-pixel targets'
 	await page.getByRole('button', { name: 'Cancel editing Current HP' }).click();
 
 	const focusedDetailTrigger = page.getByRole('button', {
-		name: 'View Character identity and classes'
+		name: 'View Name'
 	});
 	await collectTargetFailures(
 		[{ name: 'Focused detail trigger', locator: focusedDetailTrigger }],

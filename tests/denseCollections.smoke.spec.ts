@@ -89,7 +89,7 @@ test('Other Gear supports bounded search, focused editing, notes, and priority',
 	const secondRope = results.locator('[data-row-key="item:saturated-gear-9"]');
 	await expect(firstRope).toBeVisible();
 	await expect(secondRope).toBeVisible();
-	const secondRopeDetail = secondRope.getByRole('button', { name: /^View Rope.*details$/ });
+	const secondRopeDetail = secondRope.getByRole('button', { name: /^Open Rope.*$/ });
 	await secondRopeDetail.click();
 	const ropeDialog = page.getByRole('dialog', { name: 'Rope', exact: true });
 	await ropeDialog.getByRole('button', { name: 'Edit Detail', exact: true }).click();
@@ -149,7 +149,7 @@ test('Other Gear supports bounded search, focused editing, notes, and priority',
 
 	await search.fill('random rock');
 	const rock = results.locator('[data-row-key="item:saturated-gear-3"]');
-	const rockDetail = rock.getByRole('button', { name: /^View Random rock.*details$/ });
+	const rockDetail = rock.getByRole('button', { name: /^Open Random rock.*$/ });
 	await rockDetail.click();
 	const rockDialog = page.getByRole('dialog', { name: 'Random rock', exact: true });
 	await rockDialog.getByRole('button', { name: '1 note', exact: true }).click();
@@ -275,7 +275,7 @@ test('Weapons, Armor & Shields, and Spells share scoped discovery and focused id
 	await expect(spellResults.getByText('Spell level 1', { exact: true })).toBeVisible();
 
 	const levelOneShield = spellResults.locator('[data-row-key="spell:saturated-spell-12"]');
-	const levelOneDetail = levelOneShield.getByRole('button', { name: /^View Shield.*details$/ });
+	const levelOneDetail = levelOneShield.getByRole('button', { name: /^Open Shield.*$/ });
 	await levelOneDetail.click();
 	const shieldDialog = page.getByRole('dialog', { name: 'Shield', exact: true });
 	await shieldDialog.getByRole('button', { name: 'Edit Authored detail', exact: true }).click();
@@ -374,7 +374,7 @@ test('Runtime Actions and supporting collections honor their distinct density li
 	await expect(features.getByText('Class feature 10', { exact: true }).first()).toBeVisible();
 
 	const featureRow = features.getByRole('listitem').filter({ hasText: 'Class feature 10' }).first();
-	const featureDetail = featureRow.getByRole('button', { name: 'View Class feature 10 details' });
+	const featureDetail = featureRow.getByRole('button', { name: 'Open Class feature 10' });
 	await featureDetail.click();
 	const featureDialog = page.getByRole('dialog', { name: 'Class feature 10', exact: true });
 	await expect(
@@ -570,7 +570,7 @@ test('phone previews expose domain-specific limits and focused collections with 
 	await search.fill('random rock');
 	await expect(dialog.getByText('1 of 32 items', { exact: true })).toBeVisible();
 	const row = dialog.locator('[data-row-key="item:saturated-gear-3"]');
-	const rowDetail = row.getByRole('button', { name: /^View Random rock.*details$/ });
+	const rowDetail = row.getByRole('button', { name: /^Open Random rock.*$/ });
 	await expectMinimumTouchTarget(rowDetail, 'Other Gear row detail');
 	await rowDetail.click();
 	const detailDialog = page.getByRole('dialog', { name: 'Random rock', exact: true });
@@ -631,7 +631,7 @@ test('phone previews expose domain-specific limits and focused collections with 
 	await runtimeDialogSearch.fill('runtime reminder 8');
 	await expect(runtimeDialog.getByText('Custom runtime action 8', { exact: true })).toBeVisible();
 	const runtimeDetail = runtimeDialog.getByRole('button', {
-		name: 'View Custom runtime action 8 details'
+		name: 'Open Custom runtime action 8'
 	});
 	await runtimeDetail.click();
 	const runtimeDetailDialog = page.getByRole('dialog', {
@@ -662,7 +662,7 @@ test('phone previews expose domain-specific limits and focused collections with 
 	await featuresSearch.fill('wizard class feature 10');
 	await expect(featuresDialog.getByText('Class feature 10', { exact: true })).toBeVisible();
 	const focusedFeatureDetail = featuresDialog.getByRole('button', {
-		name: 'View Class feature 10 details'
+		name: 'Open Class feature 10'
 	});
 	await focusedFeatureDetail.click();
 	const focusedFeatureDialog = page.getByRole('dialog', {
@@ -699,7 +699,7 @@ test('supporting collections add, edit, and remove one focused record at a time'
 	await expect(region.getByText('Deep Speech', { exact: true }).first()).toBeVisible();
 
 	let row = region.getByRole('listitem').filter({ hasText: 'Deep Speech' }).first();
-	let detail = row.getByRole('button', { name: 'View Deep Speech details' });
+	let detail = row.getByRole('button', { name: 'Open Deep Speech' });
 	await detail.click();
 	let detailDialog = page.getByRole('dialog', { name: 'Deep Speech', exact: true });
 	await detailDialog.getByRole('button', { name: 'Edit Name', exact: true }).click();
@@ -711,7 +711,7 @@ test('supporting collections add, edit, and remove one focused record at a time'
 	await detailDialog.getByRole('button', { name: 'Close', exact: true }).click();
 
 	row = region.getByRole('listitem').filter({ hasText: 'Deep Speech Revised' }).first();
-	detail = row.getByRole('button', { name: 'View Deep Speech Revised details' });
+	detail = row.getByRole('button', { name: 'Open Deep Speech Revised' });
 	await expect(detail).toBeFocused();
 	await detail.click();
 	detailDialog = page.getByRole('dialog', { name: 'Deep Speech Revised', exact: true });
@@ -732,7 +732,7 @@ test('supporting collections add, edit, and remove one focused record at a time'
 	await expect(addTrait).toBeFocused();
 	await traits.getByRole('searchbox', { name: 'Search Traits' }).fill('Keen Senses');
 	const traitRow = traits.getByRole('listitem').filter({ hasText: 'Keen Senses' });
-	await traitRow.getByRole('button', { name: 'View Keen Senses details' }).click();
+	await traitRow.getByRole('button', { name: 'Open Keen Senses' }).click();
 	const traitDialog = page.getByRole('dialog', { name: 'Keen Senses', exact: true });
 	await expect(traitDialog.getByRole('button', { name: /Remove/ })).toHaveCount(0);
 });

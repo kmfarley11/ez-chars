@@ -43,7 +43,7 @@
 			_patch: JSONPatchDocument,
 			_compatibilityPatches: Array<GridContentPatch>
 			/* eslint-enable no-unused-vars */
-		) => void;
+		) => boolean | void;
 		handleFieldSaveAnnotations?: (
 			/* eslint-disable no-unused-vars */
 			_path: GridContentBindPath,
@@ -96,13 +96,11 @@
 		patch: JSONPatchDocument,
 		compatibilityPatches: Array<GridContentPatch>
 	) => {
-		onFieldSavePatch?.(patch, compatibilityPatches);
+		return onFieldSavePatch?.(patch, compatibilityPatches);
 	};
 
 	const displayItemClass = $derived(
-		displayAlign === 'center'
-			? 'flex w-full items-center justify-center text-center'
-			: 'block w-full'
+		displayAlign === 'center' ? 'block w-full text-center' : 'block w-full text-left'
 	);
 
 	const inlineNestedFields = (field: GridContentField) =>
@@ -147,6 +145,7 @@
 									<GridRuntimeFieldGroup
 										label={fieldLabel}
 										fields={runtimeFields}
+										{displayAlign}
 										{annotationEditorConfig}
 										onSavePatches={onFocusedSavePatches}
 										onSaveAnnotations={savePrimitiveFieldAnnotations}
@@ -155,6 +154,7 @@
 									<GridPrimitiveField
 										{fieldKey}
 										{field}
+										{displayAlign}
 										{annotationEditorConfig}
 										onTargetDetail={onTargetField
 											? (invoker) => onTargetField?.(field, invoker)
@@ -183,7 +183,12 @@
 										<span class="mt-1 block truncate font-semibold">{formatFieldValue(field)}</span>
 									</span>
 								{:else if labeledParts}
-									<span class="inline-flex flex-wrap items-baseline gap-x-1 gap-y-0.5">
+									<span
+										class={[
+											'inline-flex flex-wrap items-baseline gap-x-1 gap-y-0.5',
+											displayAlign === 'center' && 'justify-center'
+										]}
+									>
 										{@render fieldHeading(field)}
 										{#each labeledParts as part, idx (`${fieldKey}-${idx}`)}
 											{#if idx > 0}

@@ -363,6 +363,18 @@ export const normalizeData = (source: GridContentData): GridContentData =>
 		Object.entries(source).map(([fieldKey, field]) => [fieldKey, normalizeField(fieldKey, field)])
 	);
 
+// Mirrors the visible label paths in FieldGroupView, including compact nested pairs.
+// An empty collection can still have a usable label; an empty/unbound group cannot.
+export const hasReadFirstLabelTarget = (data: GridContentData): boolean =>
+	Object.values(normalizeData(data)).some(
+		(field) =>
+			!field.hidden &&
+			!field.editOnly &&
+			!isInlineRuntimeContent(field) &&
+			(!!field.bindPath ||
+				!!getLabeledDisplayParts(field)?.some((part) => part.label && part.field.bindPath))
+	);
+
 // Render any field shape generically: primitives, nested objects, and arrays of nested entries.
 export const formatFieldValue = (
 	field: GridContentField,

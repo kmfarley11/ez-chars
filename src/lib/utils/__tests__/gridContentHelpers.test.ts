@@ -7,6 +7,7 @@ import {
 	isInlineRuntimeContent,
 	isInlineRuntimeField,
 	isInlineRuntimeFieldGroup,
+	hasReadFirstLabelTarget,
 	readGridAnnotationsAtPath,
 	resolveGridFieldDescriptor,
 	resolveGridFieldDescriptors,
@@ -74,6 +75,29 @@ const createPatchProjectionData = (): GridContentData => ({
 });
 
 describe('grid interaction classification', () => {
+	it('keeps detail fallback for groups without a visible read-first label target', () => {
+		expect(hasReadFirstLabelTarget({})).toBe(false);
+		expect(hasReadFirstLabelTarget({ prose: { value: 'Context only' } })).toBe(false);
+		expect(hasReadFirstLabelTarget({ hidden: { value: 3, bindPath: ['x'], hidden: true } })).toBe(
+			false
+		);
+		expect(
+			hasReadFirstLabelTarget({ editOnly: { value: 3, bindPath: ['x'], editOnly: true } })
+		).toBe(false);
+	});
+	it('uses empty collection headings and compact-pair child labels as detail entry', () => {
+		expect(hasReadFirstLabelTarget({ classes: { value: [], bindPath: ['classes'] } })).toBe(true);
+		expect(
+			hasReadFirstLabelTarget({
+				slots: {
+					value: {
+						used: { fieldName: 'Used', label: 'used', value: 0, bindPath: ['used'] },
+						max: { fieldName: 'Max', label: 'max', value: 1, bindPath: ['max'] }
+					}
+				}
+			})
+		).toBe(true);
+	});
 	const runtimeField = {
 		fieldName: 'Current',
 		value: 1,
@@ -86,6 +110,10 @@ describe('grid interaction classification', () => {
 		fieldName: 'Maximum',
 		interaction: { tier: 'read-first' as const, editAffordance: 'menu' as const }
 	};
+	it('does not count an inline runtime control as a group detail label', () => {
+		expect(hasReadFirstLabelTarget({ hp: runtimeField })).toBe(false);
+		expect(hasReadFirstLabelTarget({ max: readFirstField })).toBe(true);
+	});
 
 	it('requires an explicit runtime tier for Tier 1 fields', () => {
 		expect(isInlineRuntimeField(runtimeField)).toBe(true);

@@ -53,6 +53,7 @@ Character data created during this phase is experimental and is not guaranteed t
 
 This is a capability summary for the completed 2014 baseline, not a chronological changelog. Recent implementation history remains in the backlog, archived OpenSpec changes, and Git history.
 
+- completed `BL-085`: owner-approved label-targeted Detail and independently saved field/note edits across the 2014 sheet, with shared UI, full candidate validation, dirty-work protection, compact read-first spell slots, and explicit class/scratchpad lifecycle; final integrated approval recorded 2026-10-02
 - SvelteKit application, theme, local character management, validated localStorage recovery, and versioned JSON import/export are established.
 - The substantial D&D 5e 2014 sheet covers runtime and organizational regions, direct and structured editing, annotations, features/traits, spells, inventory, notes, and action-economy summaries.
 - Strict `dnd5e-2014.schema.v0` validation, typed feature-local projections/edit intents, deterministic persistence boundaries, and non-destructive unsupported-data handling protect the intentionally unstable pre-playtest epoch.
@@ -80,10 +81,9 @@ This is a capability summary for the completed 2014 baseline, not a chronologica
 - 2024 D&D and Shadowdark system schemas, creation choices, routes, sheets, and fixtures
 - a system-dispatch and computed-summary boundary that does not require the home list to inspect 5e fields
 - explicit collection-owned quickfilters beyond text search, including Runtime Action timing and Spell level/Prepared state, plus Runtime Action player priority; P0 `BL-078` owns that proof and persisted action Pin/Unpin before external handoff
-- final integrated review of BL-085's approved focused-editing rollout: targeted labels and independently saved field/note edits now use shared UI and full candidate validation across the 2014 sheet; class/scratchpad lifecycle remains explicit, and final user approval is still required before later sheets inherit the completed baseline
 - final mobile rules-reader control refinement beyond the acceptable default-collapsed `BL-069` navigation baseline; P0 `BL-082` owns the evidence-driven toolbar, disclosure, and auto-hide decision before matrix hardening
 - an owner-approved external-playtest question set and verified in-app feedback path; the final P0 `BL-081` gate owns delivery before invitations are sent
-- continued owner solo-play rehearsals and external evidence across the PRD matrix; saturated 2014 rehearsal validated the revised spell, inventory, Runtime Action, supporting-collection, and whole-sheet navigation surfaces, while completed `BL-084` and `BL-077` resolved core mobile viability and the read-first interaction baseline, and P0 `BL-085` and `BL-082` own the remaining compound-editor polish and rules-reader blockers found during final review.
+- continued owner solo-play rehearsals and external evidence across the PRD matrix; saturated 2014 rehearsal validated the revised spell, inventory, Runtime Action, supporting-collection, and whole-sheet navigation surfaces, while completed `BL-084` and `BL-077` resolved core mobile viability and the read-first interaction baseline, completed `BL-085` resolved the compound-editor follow-up, and P0 `BL-082` owns the remaining rules-reader blockers found during final review.
 
 ### Deferred
 

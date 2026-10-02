@@ -2,20 +2,37 @@
 
 ## Status
 
+Archived 2026-10-02 after final approval. Both capability deltas are synced; all 29 tasks are complete. The backlog and author-vision sequence now start with BL-078.
+
+2026-10-02 final approval: the owner explicitly approved the integrated result, including label-only detail entry and selective centering, and authorized completion. The dated revision statuses below are historical; task 5.1 is complete.
+
+2026-10-02 revision: trial selective centering for spellcasting summary, compact slot text, Proficiency Bonus, and currency using the shared alignment option. Other groups stay left-aligned; no touch sizes or responsive breakpoints change. Implementation verification is complete; final visual approval remains pending.
+
+2026-10-01 revision: the owner approved removing redundant `>` entry controls wherever clickable labels/names already provide complete detail access. The September retention decision below is historical. This revision is implemented and verified; final integrated approval remains pending.
+
 2026-09-28: The owner approved the proof on September 27 and authorized rollout (task 2.1). Accepted: underlined label entry, selected-field highlighting, independent value/note saves, compact read-first spell slots, centered collection glyphs, and retained group/record chevrons. The normal sheet now uses this flow without a proof query parameter. Implementation, strategic self-review, and final automated verification are complete; integrated approval (5.1) and archival remain pending. The lower-priority per-theme light/dark preference exploration is captured in the backlog.
 
-This is supplemental review evidence, not a normative specification or duplicate task checklist. See [tasks](tasks.md), [design](design.md), and the [local command guide](../../../docs/verification.md).
+This is supplemental review evidence, not a normative specification or duplicate task checklist. See [tasks](tasks.md), [design](design.md), and the [local command guide](../../../../docs/verification.md).
 
-## Integrated Rollout Review — Current
+### Archival Checks — 2026-10-02
+
+- Both affected main specs passed individual strict validation; `openspec validate --all --strict` passed 19/19. The previous total included this now-archived change; no capability was removed from the validation set.
+- Reconciled stale main-spec spell-slot prose with the approved read-first Used/Max detail workflow and the existing default-expanded Spells section before syncing. Archived deltas retain their operation headings; main specs retain Purpose and Requirements.
+- Repaired the relocated verification links and the interaction ADR's change link. Documentation formatting and whitespace checks passed; `openspec list --json` reports no active changes.
+- Preserved BL-078 quickfilters/Runtime Action priority, BL-072 browser/platform evidence, and the lower-priority responsive-density and theme-mode exploration in the backlog. No application code changed during archival; application suites were not rerun beyond the dated evidence below.
+- The archive command reported the three archive-time tasks incomplete while moving the change; those tasks were completed afterward. Its non-blocking proposal warnings did not prevent successful strict spec validation.
+
+## Integrated Rollout Review — Approved
 
 Use the ordinary app URL with your existing character ID; remove old `proof`, `entry`, and `slots` query parameters. Seeded saturated example: `/ez-chars/charsheets/5e?id=char-5e-2014-saturated`. Use a disposable character or export a backup before destructive checks. Review in the app; Storybook is optional for focused comparison, not an additional required round.
 
-- Click a skill, Reference Stats label, roleplay label, Name, and Class Levels. Confirm targeted highlighting, independent Save/Cancel, and retained group overview. Try save A/cancel B and dirty Close/Escape. Class Add uses a short coherent form; confirmed class removal includes its owned features, so use disposable data.
+- Click a skill, Reference Stats label, roleplay label, Name, and Class Levels. Confirm targeted highlighting, independent Save/Cancel, and access to the complete group without a duplicate `>` button or its reserved whitespace. Try save A/cancel B and dirty Close/Escape. Class Add uses a short coherent form; confirmed class removal includes its owned features, so use disposable data. Empty Class Levels and Misc. Notes & Scratchpad labels must still expose Add.
 - Check Used/Max slots use the compact Score/Modifier grammar, with independently saved values and note badges. Current HP, death saves, hit dice, and currency retain their established inline controls.
-- Open one weapon/gear item, spell, feature, language/tool, trait, and Runtime Action by name. Edit one field and one note independently; verify the record stays correct after renaming with a search active. Spell Level is editable; trait/class-feature removal remains unavailable. Pin/Prepared/source commands remain distinct; Runtime Action pinning/filtering is still BL-078.
+- Open one weapon/gear item, spell, feature, language/tool, trait, and Runtime Action by name; there should be no second detail button. Edit one field and one note independently; verify the record stays correct after renaming with a search active, and closing returns focus to the name or stable browse destination. Spell Level is editable; trait/class-feature removal remains unavailable. Pin/Prepared/source commands remain distinct; Runtime Action pinning/filtering is still BL-078.
 - Create then remove a disposable scratchpad note and collection item. Add remains a complete creation operation; existing values never require an outer Save. Test the dirty-navigation choices while creating a scratchpad note.
 - While editing a note, preview its local SRD source, then Back: draft, focus, and reading position should remain. Also inspect a saved source. Only one modal should be visible.
 - On a real phone, check label/icon density, wrapping, focus zoom, touch targets, collection browse return, and keyboard/scroll behavior. Scan light/dark appearance; theme-mode settings are deferred rather than part of this approval.
+- Alignment trial: on the normal sheet at phone and desktop widths, compare centered Ability / Save DC / Attack Bonus, Used / Max pairs, Proficiency Bonus, and coinage with unchanged left-aligned HP, prose, and ability/skill content. Edit GP and cancel/save: the label/value/input should stay centered within the value column, with actions remaining separate on the right. Check slot wrapping and note badges. Rejecting the visual preference only requires changing the affected groups' alignment option; no data or editing contract changes. Broader phone spacing and wide-window column reflow are deferred in the backlog.
 
 The isolated story sandboxes below remain available if a specific interaction needs closer inspection. Final review should judge the integrated sheet rather than repeat every historical proof comparison.
 
@@ -118,7 +135,7 @@ Mid-apply gate: **Focused editing and save-boundary approval — explicitly appr
 
 Earlier September 27 revision requests are superseded by that explicit approval. The unrelated checkbox/theme observation was reconciled into the backlog's lower-priority Ideation Sandbox.
 
-Final integrated-sheet review: **pending**. After rollout, provide exact application entry/fixture instructions and a short review list covering real groups, collections, Tier 1, and specialized Runtime Action/source behavior. Production review is required even if the isolated stories looked correct.
+Final integrated-sheet review: **explicitly approved 2026-10-02**. Following integrated application review and the final alignment revision, the owner stated: “everything looks great! lets proceed. consider this my formal approval”. This closes task 5.1 and authorizes archival; it does not claim new physical-device or browser-matrix evidence beyond the results recorded below.
 
 ## Rollout And Exception Matrix
 
@@ -139,6 +156,23 @@ No new genuine coupled value editor is required by the inspected proof fields. A
 2026-09-27 matrix amendment: spellcasting now trials read-first per-level Used/Max with a targeted slot intent, and exposes recorded spell Level as independently editable. Runtime Actions and Class Levels have label entry but retain their old editors with visible notices. Name has a canonical one-field fallback when its containing group includes the unmigrated class array. These are explicit proof boundaries, not omissions or full rollout.
 
 ## Automated Evidence
+
+### Selective alignment revision — 2026-10-02
+
+- `npm run verify:smoke`: passed, with **0 diagnostic errors/warnings**, clean lint, **231 unit tests**, **54 Chromium passes / 5 unchanged phone-only skips**, and **103 Storybook checks**. The new application regression covers centered currency read/edit geometry, Save/reload persistence, focus restoration, and unchanged left-aligned HP input.
+- `smallEdits.smoke.spec.ts` plus `mobileAccessibility.smoke.spec.ts` on Mobile Chrome: **20 passed**. The targeted alignment test also passed again for screenshot inspection. Existing phone targets remain at least 44px; no target-policy exception was introduced.
+- Focused WebKit suite: **17 passed with one worker**. The first four-worker run had **16 passes / 1 timeout** in the existing multi-step class-removal regression, exceeding its 10-second overall deadline; the same case completed in **2.3 seconds** in the serial rerun without code, timeout, or assertion changes. This is not proof of a specific browser defect or a general absence of timing sensitivity.
+- Production build passed. Official Svelte tooling reported no issues; retained ESLint directives match the repository configuration, and `FieldDraft.update` is an existing class method. Desktop and phone screenshots were inspected; subjective centering preference and physical-device comfort remain for the owner.
+- The new check first exposed a pre-existing currency save error (`/__currency/gp` incorrectly sent to canonical JSON Patch) and a 32px phone value-column shift when the second action appeared. Currency now uses its existing typed decoder, callback rejection results propagate, and the shared runtime action cluster reserves 92px for two 44px controls plus their gap. No data-model or currency-rule change was made.
+- Initial browser execution was blocked by sandbox port-binding permissions; it ran after permission to start the local server. No new dependency or story was added. Full Firefox/performance, coverage, and static Storybook builds were not repeated for this scoped revision; earlier results above/below retain their original dates.
+
+### Label-only entry revision — 2026-10-01
+
+- `npm run verify:smoke`: passed; diagnostics **0/0**, formatting/ESLint clean, **231 unit tests**, **53 Chromium passes / 5 intentional phone-only skips**, and **103 Storybook checks**. Three new pure contracts cover fallback eligibility, empty-collection/compact-pair entry, and the distinction from inline runtime controls.
+- `npm run build`: passed. `npm run test:e2e:all`: **205 passed / 27 unchanged project-specific skips**. Existing lifecycle, dirty editing, source return, query preservation, and renamed-row focus checks now use label/name entry. Negative assertions guard against duplicate group, Proficiency Bonus, and spell-detail controls. Phone checks continue to enforce non-overlapping 44px targets and focus return.
+- `npm run test:perf:compare`: **6 passed**. Median Chromium **60.00 FPS / 0% dropped-frame intervals**; Firefox **46.16 FPS / 20%**. Chromium passes its gate; Firefox remains comparable diagnostic cadence, not a paint-quality conclusion.
+- Strict change validation and `git diff --check` passed. Official Svelte tooling found no issues; its existing ESLint-directive suggestions conflict with the clean repository lint configuration, and the existing `FieldDraft.update` call is a class method, not a rune mutation error.
+- Desktop targeted-field screenshot inspected. Physical phone comfort and the visual preference for label-only access still require the owner. No new stories, play functions, dependency, or persistence change; the earlier full coverage/static-Storybook-build evidence remains dated September 28 rather than being claimed as a new run.
 
 ### Final rollout — 2026-09-28
 
@@ -205,4 +239,4 @@ Performance comparison is callback-cadence evidence, not proof of painted-frame 
 
 Strategic review: the route only wires the shared editing scope. `SmallEditDialog`, `ScalarEditInput`, existing note components, and shared label/pair/list primitives own presentation and draft/focus behavior; `smallEditAdapters.ts` owns explicit 5e path/identity resolution and validated commits. Class/scratchpad lifecycle uses the same shared operation renderer, not in-page forms. Coherent record creation and Runtime Action source selection/resync intentionally retain specialized workflows. Legacy detail components remain available to standalone consumers, but are not mounted behind migrated sheet content. There is no new multi-system registry, schema migration, dependency, Storybook story, or play function.
 
-Existing BL-078 owns collection quickfilters and Runtime Action priority; BL-072 owns compatibility evidence. The owner-requested per-theme light/dark/system preference exploration, including native checkbox coloration, is now in the [backlog](../../../docs/backlog.md) Ideation Sandbox with a lower-priority owner/playtest trigger. No theme-setting implementation or new playtest prerequisite is included here.
+Existing BL-078 owns collection quickfilters and Runtime Action priority; BL-072 owns compatibility evidence. The owner-requested per-theme light/dark/system preference exploration, including native checkbox coloration, is now in the [backlog](../../../../docs/backlog.md) Ideation Sandbox with a lower-priority owner/playtest trigger. No theme-setting implementation or new playtest prerequisite is included here.

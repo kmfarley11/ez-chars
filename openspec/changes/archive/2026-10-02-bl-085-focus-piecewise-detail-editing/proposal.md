@@ -12,7 +12,7 @@ The read-first sheet is useful during play, but changing one value can still req
 
 ## What Changes
 
-- Make the intended read-first field easy to reach without searching unrelated dialog content. Retain group entry where a small coherent detail view makes its fields readily apparent; add targeted entry where it materially reduces navigation, without mandating a separate sheet button for every leaf.
+- Make the intended read-first field easy to reach without searching unrelated dialog content. Clickable field labels and record names open the full focused context without redundant detail buttons; retain a separate entry only where no usable label provides that access.
 - Replace broad existing-target Edit sessions with directly activatable field-local editors and explicit local Save/Cancel. Permit a small coupled editor only when the values form one meaningful edit, not merely because they share a card.
 - Change the save boundary: each deliberate edit commits independently; cancelling a later edit or closing Detail does not undo earlier saves. A focused view has no additional outer Save.
 - Preserve atomic validation for each requested edit against the resulting character, with actionable local errors and no partial mutation on failure.

@@ -119,7 +119,10 @@ test('opens each bounded non-runtime field group through one focused Detail and 
 		{ title: 'Roleplay', field: 'Motives' },
 		{ title: 'Additional character notes', field: 'Other Background/History' }
 	]) {
-		const detail = page.getByRole('button', { name: `View ${group.title}` });
+		await expect(
+			page.getByRole('button', { name: `View ${group.title}`, exact: true })
+		).toHaveCount(0);
+		const detail = page.getByRole('button', { name: `View ${group.field}`, exact: true }).last();
 		await detail.click();
 		const dialog = page.getByRole('dialog', { name: group.title, exact: true });
 		await dialog.getByRole('button', { name: `Edit ${group.field}`, exact: true }).click();
@@ -131,7 +134,8 @@ test('opens each bounded non-runtime field group through one focused Detail and 
 
 	await expect(page.getByRole('button', { name: 'View Treasure' })).toHaveCount(0);
 	await expect(page.getByRole('button', { name: 'Edit GP' })).toBeVisible();
-	await expect(page.getByRole('button', { name: 'View Prof. Bonus details' })).toHaveCount(1);
+	await expect(page.getByRole('button', { name: 'View Prof. Bonus details' })).toHaveCount(0);
+	await expect(page.getByRole('button', { name: 'View Prof. Bonus', exact: true })).toBeVisible();
 	await expect(page.getByRole('region', { name: 'Reference stats' })).toContainText('Speeds');
 });
 
@@ -292,7 +296,7 @@ test('links an inventory suggestion through resync and source deletion fallback'
 		});
 
 	const actionDetail = runtimeActionList.getByRole('button', {
-		name: 'View Longsword details'
+		name: 'Open Longsword'
 	});
 	await actionDetail.click();
 	const actionDetailDialog = page.getByRole('dialog', { name: 'Longsword' });
@@ -310,7 +314,7 @@ test('links an inventory suggestion through resync and source deletion fallback'
 	await expect(weaponsRegion).toBeFocused();
 
 	const longswordRow = weaponsRegion.locator('[data-row-key="item:e2e-longsword"]');
-	const longswordDetail = longswordRow.getByRole('button', { name: /^View Longsword.*details$/ });
+	const longswordDetail = longswordRow.getByRole('button', { name: /^Open Longsword.*$/ });
 	await longswordDetail.click();
 	let inventoryDialog = page.getByRole('dialog', { name: 'Longsword' });
 	await inventoryDialog.getByRole('button', { name: 'Edit Detail', exact: true }).click();

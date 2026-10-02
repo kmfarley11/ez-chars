@@ -80,7 +80,7 @@
 				handleFieldSavePatch={onFieldSavePatch}
 				handleEditSavePatches={onSavePatches}
 				{annotationEditorConfig}
-				displayAlign={smallEdit?.enabled ? 'left' : 'center'}
+				displayAlign="center"
 				inlineFieldControls={!smallEdit?.enabled}
 				data={proofSummary}
 			/>
@@ -100,6 +100,7 @@
 								data={{ [key]: { ...slot, value: slotFields(slot.value) } }}
 								inlineFieldControls={false}
 								displayMaxCols={1}
+								displayAlign="center"
 								{annotationEditorConfig}
 								handleEditSavePatches={onSavePatches}
 							/>

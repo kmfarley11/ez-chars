@@ -4,8 +4,9 @@
 	import Badge from '$components/Badge.svelte';
 	import IconButton from '$components/IconButton.svelte';
 	import DetailLabelButton from '$components/DetailLabelButton.svelte';
-	import { getSmallEditAccess } from '$components/smallEditContext';
+	import { getSmallEditAccess, usesDetailLabels } from '$components/smallEditContext';
 	const smallEdit = getSmallEditAccess();
+	const labelEntry = $derived(usesDetailLabels(smallEdit));
 	import IconPrefixedListItem from '$components/IconPrefixedListItem.svelte';
 	import ManagePinsDialog from '$components/ManagePinsDialog.svelte';
 	import ResponsiveCollectionView from '$components/ResponsiveCollectionView.svelte';
@@ -186,11 +187,12 @@
 							? 'supporting-collection-compact'
 							: 'supporting-collection-full'}
 					>
-						{#if smallEdit?.enabled && (smallEdit.entryStyle === 'label' || smallEdit.entryStyle === 'button')}
+						{#if labelEntry}
 							<DetailLabelButton
+								id={`${row.key}-detail-action`}
 								label={row.label}
 								ariaLabel={`Open ${row.label}`}
-								presentation={smallEdit.entryStyle}
+								presentation={smallEdit?.entryStyle === 'button' ? 'button' : 'label'}
 								onclick={(event) => void openRow(row, event.currentTarget as HTMLButtonElement)}
 							/>
 						{:else}<span>{row.label}</span>{/if}
@@ -202,26 +204,26 @@
 					</IconPrefixedListItem>
 					{#if row.detail}<p class="theme-text-muted mt-1 truncate text-xs">{row.detail}</p>{/if}
 				</div>
-				<div class="flex shrink-0 items-center gap-1">
-					{#if priorityEnabled}
-						<IconButton
-							id={`${row.key}-pin-action`}
-							variant="pin"
-							size="sm"
-							shadingVariant={row.pinned ? 'dark' : 'light'}
-							ariaLabel={`${row.pinned ? 'Unpin' : 'Pin'} ${row.label}`}
-							ariaPressed={row.pinned}
-							onclick={(event) => void togglePin(row, event.currentTarget as HTMLButtonElement)}
-						/>
-					{/if}
-					<IconButton
-						id={`${row.key}-detail-action`}
-						variant="detail"
-						size="sm"
-						ariaLabel={`View ${row.label} details`}
-						onclick={(event) => void openRow(row, event.currentTarget as HTMLButtonElement)}
-					/>
-				</div>
+				{#if priorityEnabled || !labelEntry}<div class="flex shrink-0 items-center gap-1">
+						{#if priorityEnabled}
+							<IconButton
+								id={`${row.key}-pin-action`}
+								variant="pin"
+								size="sm"
+								shadingVariant={row.pinned ? 'dark' : 'light'}
+								ariaLabel={`${row.pinned ? 'Unpin' : 'Pin'} ${row.label}`}
+								ariaPressed={row.pinned}
+								onclick={(event) => void togglePin(row, event.currentTarget as HTMLButtonElement)}
+							/>
+						{/if}
+						{#if !labelEntry}<IconButton
+								id={`${row.key}-detail-action`}
+								variant="detail"
+								size="sm"
+								ariaLabel={`View ${row.label} details`}
+								onclick={(event) => void openRow(row, event.currentTarget as HTMLButtonElement)}
+							/>{/if}
+					</div>{/if}
 			</li>
 		{/each}
 	</ul>

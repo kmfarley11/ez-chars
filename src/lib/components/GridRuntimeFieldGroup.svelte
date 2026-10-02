@@ -13,6 +13,7 @@
 	interface Props {
 		label: string;
 		fields: Array<[string, GridContentField]>;
+		displayAlign?: 'left' | 'center';
 		annotationEditorConfig?: GridAnnotationEditorConfig;
 		// eslint-disable-next-line no-unused-vars
 		onSavePatches?: (_patches: Array<GridContentPatch>) => boolean | void;
@@ -27,6 +28,7 @@
 	let {
 		label,
 		fields,
+		displayAlign = 'left',
 		annotationEditorConfig = undefined,
 		onSavePatches = undefined,
 		onSaveAnnotations = undefined
@@ -53,7 +55,10 @@
 </script>
 
 <section
-	class="theme-panel h-full min-h-20 w-full min-w-0 self-stretch rounded-lg border p-2 text-left"
+	class={[
+		'theme-panel h-full min-h-20 w-full min-w-0 self-stretch rounded-lg border p-2',
+		displayAlign === 'center' ? 'text-center' : 'text-left'
+	]}
 	aria-label={label}
 >
 	<p class="theme-text-muted text-xs font-semibold tracking-wide uppercase">{label}</p>
@@ -62,6 +67,7 @@
 			<GridPrimitiveField
 				fieldKey={key}
 				{field}
+				{displayAlign}
 				contextLabel={label}
 				surfaceVariant="nested"
 				{annotationEditorConfig}

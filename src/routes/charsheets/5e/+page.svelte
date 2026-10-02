@@ -652,7 +652,6 @@
 								<PanelSurface>
 									<GridContentCard
 										detailTitle="Treasure"
-										handleFieldSavePatch={handleFieldPatchSave}
 										handleEditSavePatches={handleGridPatchesSave}
 										{annotationEditorConfig}
 										displayAlign="center"

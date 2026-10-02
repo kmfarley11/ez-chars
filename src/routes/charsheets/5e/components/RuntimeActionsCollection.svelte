@@ -4,8 +4,9 @@
 	import BaseButton from '$components/BaseButton.svelte';
 	import IconButton from '$components/IconButton.svelte';
 	import DetailLabelButton from '$components/DetailLabelButton.svelte';
-	import { getSmallEditAccess } from '$components/smallEditContext';
+	import { getSmallEditAccess, usesDetailLabels } from '$components/smallEditContext';
 	const smallEdit = getSmallEditAccess();
+	const labelEntry = $derived(usesDetailLabels(smallEdit));
 	import MenuButton from '$components/MenuButton.svelte';
 	import MenuItemButton from '$components/MenuItemButton.svelte';
 	import ResponsiveCollectionView from '$components/ResponsiveCollectionView.svelte';
@@ -117,11 +118,12 @@
 								: 'text-sm'}
 						>
 							<span class={compact ? 'min-w-0 truncate font-semibold' : 'font-semibold'}
-								>{#if smallEdit?.enabled && (smallEdit.entryStyle === 'label' || smallEdit.entryStyle === 'button')}
+								>{#if labelEntry}
 									<DetailLabelButton
+										id={`runtime-action-${action.id}-detail`}
 										label={action.name}
 										ariaLabel={`Open ${action.name}`}
-										presentation={smallEdit.entryStyle}
+										presentation={smallEdit?.entryStyle === 'button' ? 'button' : 'label'}
 										onclick={(event) =>
 											void openAction(action, event.currentTarget as HTMLButtonElement)}
 									/>
@@ -158,34 +160,35 @@
 							</p>
 						{/if}
 					</div>
-					<div class="flex shrink-0 items-center gap-1">
-						{#if action.source}
-							{@const source = action.source}
-							<MenuButton
-								text="Source"
-								iconVariant="chevron"
-								buttonSize="sm"
-								ariaLabel={`Source actions for ${action.name}`}
-								title={`Source actions for ${action.name}`}
-							>
-								<MenuItemButton onclick={() => void navigateToSource(source.reference)}>
-									View {source.label}
-								</MenuItemButton>
-								<MenuItemButton
-									onclick={() => onResyncAction(action.id, action.name, source.label)}
+					{#if action.source || !labelEntry}<div class="flex shrink-0 items-center gap-1">
+							{#if action.source}
+								{@const source = action.source}
+								<MenuButton
+									text="Source"
+									iconVariant="chevron"
+									buttonSize="sm"
+									ariaLabel={`Source actions for ${action.name}`}
+									title={`Source actions for ${action.name}`}
 								>
-									Resync from source
-								</MenuItemButton>
-							</MenuButton>
-						{/if}
-						<IconButton
-							id={`runtime-action-${action.id}-detail`}
-							variant="detail"
-							size="sm"
-							ariaLabel={`View ${action.name} details`}
-							onclick={(event) => void openAction(action, event.currentTarget as HTMLButtonElement)}
-						/>
-					</div>
+									<MenuItemButton onclick={() => void navigateToSource(source.reference)}>
+										View {source.label}
+									</MenuItemButton>
+									<MenuItemButton
+										onclick={() => onResyncAction(action.id, action.name, source.label)}
+									>
+										Resync from source
+									</MenuItemButton>
+								</MenuButton>
+							{/if}
+							{#if !labelEntry}<IconButton
+									id={`runtime-action-${action.id}-detail`}
+									variant="detail"
+									size="sm"
+									ariaLabel={`View ${action.name} details`}
+									onclick={(event) =>
+										void openAction(action, event.currentTarget as HTMLButtonElement)}
+								/>{/if}
+						</div>{/if}
 				</div>
 			</li>
 		{/each}

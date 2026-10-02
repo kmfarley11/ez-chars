@@ -1,16 +1,18 @@
 <script lang="ts">
 	import BaseButton from './BaseButton.svelte';
 	interface Props {
+		id?: string;
 		label: string;
 		ariaLabel?: string;
 		presentation?: 'label' | 'button';
 		// eslint-disable-next-line no-unused-vars
 		onclick: (event: MouseEvent) => void;
 	}
-	let { label, ariaLabel = `View ${label}`, presentation = 'label', onclick }: Props = $props();
+	let { id, label, ariaLabel = `View ${label}`, presentation = 'label', onclick }: Props = $props();
 </script>
 
 <BaseButton
+	{id}
 	size="sm"
 	{ariaLabel}
 	ariaHaspopup="dialog"

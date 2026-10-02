@@ -272,7 +272,7 @@ test.describe('Mobile typography and zoom', () => {
 
 		// 3. Shared scalar input inside the independently saved rich-detail editor
 		const identityDetail = page.getByRole('button', {
-			name: 'View Character identity and classes'
+			name: 'View Name'
 		});
 		await identityDetail.click();
 		const editDialog = page.getByRole('dialog', {

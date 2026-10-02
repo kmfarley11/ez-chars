@@ -21,7 +21,19 @@ The active interaction and binding documentation and the approved three-tier ADR
 
 ## Decisions
 
+### Final-review alignment — accepted 2026-10-02
+
+The owner formally approved the integrated result on 2026-10-02, including this alignment trial and the October 1 label-only entry revision. Historical proof decisions below retain their original context; the final review gate is complete.
+
+Reuse the existing `displayAlign` presentation option rather than add a stat-only renderer. Center the spellcasting summary, compact Used/Max slot pairs, Proficiency Bonus, and currency; keep other groups left-aligned. `FieldGroupView` carries alignment to standalone/nested primitive controls, including runtime read values and inputs. Center runtime content within its value column while preserving the separate trailing action column and track allocation. Compact pairs center their wrapped lines without changing label targeting or notes. Existing FieldGroupView story controls allow the same fixtures to compare left/center; no new story is needed. This is a reversible visual trial at the existing final review gate, not a new save contract or persistence setting.
+
+Defer broader narrow-phone spacing and wide-window column reflow to the backlog's responsive sheet-density exploration. The observed phone spacing includes the required 44px label targets plus shared grid gaps; do not reduce hit areas just to match mouse-oriented desktop density. No breakpoints or touch-target dimensions change in this revision.
+
+The alignment regression uncovered two existing currency gaps: the route sent its virtual display path through canonical JSON Patch instead of the existing currency decoder, and phone actions expanded from 60px to 92px when entering Edit. Currency now uses the existing domain patch decoder, shared field/card callbacks preserve rejection results, and runtime action clusters reserve the two-control width in both states. This repairs the established save/geometry contract rather than introducing a new currency mutation model.
+
 ### Accepted rollout — 2026-09-27 approval, 2026-09-28 reconciliation
+
+**Superseded entry decision — 2026-10-01:** The owner approved removing duplicate group/record chevrons where clickable labels already open the complete context. The September retention statements below are historical, not the current rule. Keep targeted highlighting, independent edits, selectable values, and separate Pin/Add/source controls. Shared cards remove reserved action padding along with the duplicate button; standalone/unsupported compositions without usable label entry retain a fallback. Empty class/scratchpad labels still open their creation controls. Record names inherit the former detail action's stable DOM identity for focus return after renaming or row replacement. Storybook comparison modes remain alternatives, not production behavior.
 
 The owner explicitly approved the proof as presented: underlined label entry, persistent selected-field highlighting, independent field/note saves, compact read-first Used/Max slot pairs, and centered supporting-collection glyphs. Existing group/record chevrons remain; their proposed removal was not adopted. Comparison controls remain available in existing stories, not as production URL modes. The normal sheet now uses the accepted flow without a proof flag or coverage banner. Final integrated approval is still separate.
 

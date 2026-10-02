@@ -59,6 +59,7 @@
 				handleEditSavePatches={onSavePatches}
 				{annotationEditorConfig}
 				displayMaxCols={1}
+				displayAlign="center"
 				hideActions={true}
 				data={proficiencyBonusData}
 			/>

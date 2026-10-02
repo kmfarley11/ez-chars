@@ -4,8 +4,13 @@
 	let inspectReadOnly = $state(false);
 	import type { GridContentData } from '$utils/gridContentTypes';
 
-	let { displayMaxCols = 3, mode = 'mixed' } = $props<{
+	let {
+		displayMaxCols = 3,
+		displayAlign = 'left',
+		mode = 'mixed'
+	} = $props<{
 		displayMaxCols?: number;
+		displayAlign?: 'left' | 'center';
 		mode?: 'mixed' | 'readonly' | 'editable' | 'annotated' | 'multiline' | 'empty' | 'quiet';
 	}>();
 
@@ -94,7 +99,7 @@
 	{#if Object.keys(mockData).length === 0}
 		<p class="theme-text-muted text-sm italic">No projected fields.</p>
 	{:else}
-		<FieldGroupView data={mockData} {displayMaxCols} displayArrayMode="stack" />
+		<FieldGroupView data={mockData} {displayMaxCols} {displayAlign} displayArrayMode="stack" />
 	{/if}
 </div>
 

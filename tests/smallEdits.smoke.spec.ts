@@ -50,6 +50,53 @@ test.beforeEach(async ({ page }) => {
 });
 test.afterEach(({ page }) => expectNoBrowserErrors(page));
 
+test('selective centered currency keeps its read and edit alignment without changing HP', async ({
+	page
+}, testInfo) => {
+	const goldLabel = page.getByText('GP', { exact: true });
+	await goldLabel.scrollIntoViewIfNeeded();
+	await expect(goldLabel).toHaveCSS('text-align', 'center');
+	const before = await goldLabel.boundingBox();
+	await page.getByRole('button', { name: 'Edit GP', exact: true }).click();
+	const goldInput = page.getByRole('spinbutton', { name: 'GP', exact: true });
+	await expect(goldInput).toHaveCSS('text-align', 'center');
+	const inputBox = await goldInput.boundingBox();
+	const editing = await goldLabel.boundingBox();
+	expect(before).not.toBeNull();
+	expect(inputBox).not.toBeNull();
+	expect(editing).not.toBeNull();
+	if (before && editing && inputBox) {
+		expect(Math.abs(before.width - editing.width)).toBeLessThanOrEqual(1);
+		expect(Math.abs(before.x - editing.x)).toBeLessThanOrEqual(1);
+		expect(
+			Math.abs(editing.x + editing.width / 2 - inputBox.x - inputBox.width / 2)
+		).toBeLessThanOrEqual(1);
+	}
+	await goldInput.fill('23');
+	await page.getByRole('button', { name: 'Confirm GP', exact: true }).click();
+	await expect(page.getByRole('button', { name: 'Edit GP', exact: true })).toBeFocused();
+	await page.reload();
+	await page.getByRole('button', { name: 'Edit GP', exact: true }).click();
+	await expect(goldInput).toHaveValue('23');
+	await page.getByRole('button', { name: 'Cancel editing GP', exact: true }).click();
+	await testInfo.attach('centered-currency', {
+		body: await page.screenshot({ path: testInfo.outputPath('centered-currency.png') }),
+		contentType: 'image/png'
+	});
+	await page.getByRole('button', { name: 'Edit Current HP', exact: true }).click();
+	await expect(page.getByRole('spinbutton', { name: 'Current HP', exact: true })).toHaveCSS(
+		'text-align',
+		'left'
+	);
+	await page.getByRole('button', { name: 'Cancel editing Current HP', exact: true }).click();
+	const summary = page.getByRole('region', { name: 'Spellcasting summary', exact: true });
+	await summary.scrollIntoViewIfNeeded();
+	await testInfo.attach('centered-spellcasting', {
+		body: await page.screenshot({ path: testInfo.outputPath('centered-spellcasting.png') }),
+		contentType: 'image/png'
+	});
+});
+
 test('name and class labels expose independent editing and coherent creation', async ({ page }) => {
 	await page.getByRole('button', { name: 'View Name', exact: true }).click();
 	const dialog = page.getByRole('dialog').filter({ visible: true });
@@ -222,16 +269,19 @@ test('label buttons consistently reveal and identify their field without startin
 		await dialog.getByRole('button', { name: 'Close', exact: true }).click();
 		await expect(trigger).toBeFocused();
 	}
-	await page.getByRole('button', { name: 'View STR ability and skills', exact: true }).click();
-	await expect(dialog.getByRole('region', { name: 'Score', exact: true })).not.toHaveAttribute(
-		'aria-current'
-	);
+	await expect(
+		page.getByRole('button', { name: 'View STR ability and skills', exact: true })
+	).toHaveCount(0);
+	await expect(
+		page.getByRole('button', { name: 'View Prof. Bonus details', exact: true })
+	).toHaveCount(0);
 });
 
 test('collection name opens the same record while Pin remains a separate command', async ({
 	page
 }) => {
 	const name = page.getByRole('button', { name: /^Open Proof Spell/ });
+	await expect(page.getByRole('button', { name: /^View Proof Spell.*details/ })).toHaveCount(0);
 	await name.click();
 	const dialog = page.getByRole('dialog').filter({ visible: true });
 	await expect(dialog).toContainText('Remember this detail');
@@ -242,7 +292,7 @@ test('collection name opens the same record while Pin remains a separate command
 	await expect(page.getByRole('button', { name: /^Unpin Proof Spell/ })).toBeVisible();
 });
 
-test('Tier 1 notes stay independent of HP and group overview remains available', async ({
+test('Tier 1 notes stay independent of HP and label entry retains complete group detail', async ({
 	page
 }) => {
 	const notes = page.getByRole('button', { name: 'Add notes for Current HP', exact: true });
@@ -254,14 +304,14 @@ test('Tier 1 notes stay independent of HP and group overview remains available',
 	await expect(dialog).not.toContainText('Unsaved');
 	await dialog.getByRole('button', { name: 'Close', exact: true }).click();
 	await expect(notes).toBeFocused();
-	await page.getByRole('button', { name: 'View STR ability and skills', exact: true }).click();
+	await page.getByRole('button', { name: 'View Score', exact: true }).first().click();
 	await expect(dialog.getByRole('button', { name: 'Edit Athletics', exact: true })).toBeVisible();
 });
 
 test('scratchpad lifecycle and roleplay notes use independent edits without nested dialogs', async ({
 	page
 }) => {
-	await page.getByRole('button', { name: 'View Scratchpad notes', exact: true }).click();
+	await page.getByRole('button', { name: 'View Misc. Notes & Scratchpad', exact: true }).click();
 	const dialog = page.getByRole('dialog').filter({ visible: true });
 	await dialog.getByRole('button', { name: 'Add Note', exact: true }).click();
 	const creation = dialog.getByRole('group', { name: 'Add Note', exact: true });
@@ -279,7 +329,7 @@ test('scratchpad lifecycle and roleplay notes use independent edits without nest
 	await expect(dialog).toContainText('Look under the bridge.');
 	await dialog.getByRole('button', { name: 'Close', exact: true }).click();
 	await page.reload();
-	await page.getByRole('button', { name: 'View Scratchpad notes', exact: true }).click();
+	await page.getByRole('button', { name: 'View Misc. Notes & Scratchpad', exact: true }).click();
 	await expect(dialog).toContainText('Look under the bridge.');
 	await dialog.getByRole('button', { name: 'Remove Note 1: Session clue', exact: true }).click();
 	await dialog.getByRole('button', { name: 'Confirm removal', exact: true }).click();
@@ -342,7 +392,7 @@ test('saturated collection keeps query and identity when a local rename stops ma
 		query = collection.getByRole('searchbox', { name: 'Search Spells', exact: true });
 	}
 	await query.fill('Practice spell 5');
-	await collection.getByRole('button', { name: /View Practice spell 5.*details/ }).click();
+	await collection.getByRole('button', { name: /Open Practice spell 5.*/ }).click();
 	const dialog = page.getByRole('dialog').filter({ visible: true });
 	await dialog.getByRole('button', { name: 'Edit Name', exact: true }).click();
 	await dialog.getByRole('textbox', { name: 'Name', exact: true }).fill('Unmatched rename');
@@ -360,15 +410,13 @@ test('saturated collection keeps query and identity when a local rename stops ma
 		await expect(collection.getByRole('button', { name: /Close Spells/ })).toBeVisible();
 	else await expect(spells.getByRole('button', { name: 'Add Spells', exact: true })).toBeFocused();
 	await query.fill('Unmatched rename');
-	await expect(
-		collection.getByRole('button', { name: /View Unmatched rename.*details/ })
-	).toBeVisible();
+	await expect(collection.getByRole('button', { name: /Open Unmatched rename.*/ })).toBeVisible();
 });
 
 test('group entry and explicit optional clearing keep the other field unchanged', async ({
 	page
 }) => {
-	await page.getByRole('button', { name: 'View Alignment and appearance', exact: true }).click();
+	await page.getByRole('button', { name: 'View Alignment', exact: true }).click();
 	const dialog = page.getByRole('dialog', { name: 'Alignment and appearance', exact: true });
 	await dialog.getByRole('button', { name: 'Edit Alignment', exact: true }).click();
 	await dialog.getByRole('button', { name: 'Clear Alignment', exact: true }).click();
@@ -378,16 +426,14 @@ test('group entry and explicit optional clearing keep the other field unchanged'
 		'Travel-worn'
 	);
 	await dialog.getByRole('button', { name: 'Close', exact: true }).click();
-	await expect(
-		page.getByRole('button', { name: 'View Alignment and appearance', exact: true })
-	).toBeFocused();
+	await expect(page.getByRole('button', { name: 'View Alignment', exact: true })).toBeFocused();
 });
 
 test('spell renaming preserves detail, note source inspection returns within one dialog', async ({
 	page
 }) => {
 	test.setTimeout(25_000);
-	await page.getByRole('button', { name: /View Proof Spell.*details/ }).click();
+	await page.getByRole('button', { name: /Open Proof Spell.*/ }).click();
 	const dialog = page.getByRole('dialog').filter({ visible: true });
 	await dialog.getByRole('button', { name: 'Edit Name', exact: true }).click();
 	await dialog.getByRole('textbox', { name: 'Name', exact: true }).fill('Renamed proof');
@@ -409,7 +455,7 @@ test('spell renaming preserves detail, note source inspection returns within one
 		'Renamed proof'
 	);
 	await dialog.getByRole('button', { name: 'Close', exact: true }).click();
-	await expect(page.getByRole('button', { name: /View Renamed proof.*details/ })).toBeFocused();
+	await expect(page.getByRole('button', { name: /Open Renamed proof.*/ })).toBeFocused();
 });
 
 test('targeted skill entry and independent saves protect dirty Close, Back and Escape', async ({

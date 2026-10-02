@@ -41,12 +41,14 @@ The projection-owned `interaction.tier` value is the semantic source of truth fo
 
 Spell Slots deliberately uses the owner-approved read-first compact pair (`1st: 1 Used / 4 Max`) shared with Score/Modifier presentation. Each label opens its own selected field within the level's Detail; a targeted save preserves the sibling, unrelated levels, and annotated zero slots. This is a bounded density trade-off, not a reclassification of other runtime controls.
 
+Alignment is a shared presentation option, independent of interaction tier. `displayAlign` defaults to left and propagates through field groups and primitive read/edit controls; the owner-approved BL-085 presentation centers spellcasting summary, compact slot pairs, Proficiency Bonus, and currency only. Runtime content centers within its value column, not underneath its separate trailing actions; that action column reserves room for both Save and Cancel on phones to avoid shifting the value when editing. Reverting a group's alignment does not change its mutation or focus behavior.
+
 ## Tier 2: Read-First Focused Detail
 
 Tier 2 covers profile/background values and singular structured cards whose detail, provenance, references, or annotations deserve room to read.
 
 - Sheet content remains selectable and copyable.
-- An underlined label button opens and highlights the intended field without automatically editing; the existing group chevron opens an unselected overview. Collection names similarly open their record. Neighboring text remains selectable; whole rows are not hidden activation targets.
+- An underlined label button opens the full detail and highlights the intended field without automatically editing. Collection names similarly open their record. Do not duplicate usable label entry with a group/field/record chevron; retain a fallback only when there is no usable label entry. Neighboring text remains selectable; whole rows are not hidden activation targets.
 - Detail presents authored content first, followed by provenance/references and per-record annotations where present.
 - Each eligible field or note has its own explicit Edit/Save/Cancel. Only one editor is active; there is no outer Save or whole-dialog rollback for existing data.
 - Save validates one complete candidate and commits atomically. Validation failure commits nothing and keeps the draft available for correction.
@@ -56,7 +58,7 @@ Tier 2 covers profile/background values and singular structured cards whose deta
 - A field with no draft annotations shows one compact Add note action rather than an expanded zero-count editor; the full editor appears only after deliberate entry or when annotations already exist.
 - Compact read-first primitives use the shared inline `Label: value` presentation by default. A section may explicitly request the shared stacked label-over-value variant when the additional emphasis is worth its vertical cost.
 
-The focused workflow is not a global or section-wide edit mode. Each explicit Save validates the full candidate character but commits only the selected small edit. New-record creation retains one complete draft and final Add. The BL-085 proof was approved for rollout; a separate integrated human review remains required before archival.
+The focused workflow is not a global or section-wide edit mode. Each explicit Save validates the full candidate character but commits only the selected small edit. New-record creation retains one complete draft and final Add. The BL-085 proof and final integrated application review are approved; final approval was recorded on 2026-10-02.
 
 ## Tier 3: Scan-First Collections
 
@@ -64,7 +66,7 @@ Tier 3 covers repeatable collections such as equipment, spells, Features, Traits
 
 - The sheet preserves compact browsing, search where density requires it, bounded scrolling, and useful saturation behavior.
 - Add is a direct collection-level action that asks only for the initial authored data needed to create a record.
-- Eligible records expose a compact Detail control and first-class Pin/Unpin beside it.
+- Eligible records use their clickable name for Detail, with first-class Pin/Unpin as a separate action. A fallback Detail control remains only where name entry is unavailable.
 - Detail opens the selected record through the Tier 2 view/edit workflow.
 - Eligible Remove is scoped to the selected record, requires confirmation, and returns focus to a stable nearby destination after the record disappears.
 - Pinning is immediate, preserves stable record identity, and may reorder the collection with a brief reduced-motion-aware transition.
