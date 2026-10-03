@@ -364,7 +364,9 @@ test('Runtime Actions and supporting collections honor their distinct density li
 	).toBeVisible();
 	await runtimeSearch.fill('runtime reminder 8');
 	await expect(runtimeActions.getByText('1 of 10 items', { exact: true }).first()).toBeVisible();
-	await expect(runtimeActions.getByText('Custom runtime action 8', { exact: true })).toBeVisible();
+	await expect(
+		runtimeActions.getByRole('button', { name: 'Open Custom runtime action 8', exact: true })
+	).toBeVisible();
 
 	const features = page.getByRole('region', { name: 'Features', exact: true });
 	const featureSearch = features.getByRole('searchbox', { name: 'Search Features' });
@@ -475,6 +477,9 @@ test('saturated priority state survives application JSON export and replacement 
 	await openSaturatedSheet(page);
 
 	const languages = page.getByRole('region', { name: 'Prof. Languages', exact: true });
+	const actions = page.getByRole('region', { name: 'Runtime actions', exact: true });
+	await actions.getByRole('button', { name: 'Pin Shield reaction', exact: true }).click();
+	await actions.getByRole('button', { name: 'Reaction', exact: true }).click();
 	const draconicRow = languages.getByRole('listitem').filter({ hasText: 'Draconic' });
 	await draconicRow.getByRole('button', { name: 'Pin Draconic' }).click();
 	await expect(
@@ -492,6 +497,7 @@ test('saturated priority state survives application JSON export and replacement 
 
 	await page.getByRole('button', { name: 'Open Saturated Playtest Adventurer' }).click();
 	const changedLanguages = page.getByRole('region', { name: 'Prof. Languages', exact: true });
+	await actions.getByRole('button', { name: 'Unpin Shield reaction', exact: true }).click();
 	await changedLanguages
 		.getByRole('listitem')
 		.filter({ hasText: 'Draconic' })
@@ -515,6 +521,13 @@ test('saturated priority state survives application JSON export and replacement 
 	await importDialog.getByRole('button', { name: 'Done' }).click();
 
 	await page.getByRole('button', { name: 'Open Saturated Playtest Adventurer' }).click();
+	await expect(
+		actions.getByRole('button', { name: 'Unpin Shield reaction', exact: true })
+	).toBeVisible();
+	await expect(actions.getByRole('button', { name: 'Reaction', exact: true })).toHaveAttribute(
+		'aria-pressed',
+		'false'
+	);
 	await expect(
 		page
 			.getByRole('region', { name: 'Prof. Languages', exact: true })
@@ -607,7 +620,10 @@ test('phone previews expose domain-specific limits and focused collections with 
 	).toBeFocused();
 	await expect(higherLevelSpell.getByTitle('Pinned')).toBeVisible();
 	await spellsDialog.getByRole('button', { name: 'Close Spells' }).click();
-	await expect(browseSpells).toBeFocused();
+	await expect(spellsRegion.getByRole('button', { name: 'Browse 1 matching items' })).toBeFocused();
+	await expect(spellsRegion.getByRole('searchbox', { name: 'Search Spells' })).toHaveValue(
+		'practice spell 5'
+	);
 	await expect(
 		spellsRegion
 			.getByRole('list', { name: 'Spells preview' })
@@ -617,7 +633,10 @@ test('phone previews expose domain-specific limits and focused collections with 
 
 	const runtimeActions = page.getByRole('region', { name: 'Runtime actions', exact: true });
 	await expect(
-		runtimeActions.getByRole('list', { name: 'Runtime actions preview' }).getByRole('listitem')
+		runtimeActions
+			.getByRole('list', { name: 'Runtime actions preview' })
+			.getByRole('listitem')
+			.filter({ has: page.getByRole('button', { name: /^Open / }) })
 	).toHaveCount(5);
 	const browseRuntimeActions = runtimeActions.getByRole('button', {
 		name: 'Browse all 10 items'

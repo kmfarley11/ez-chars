@@ -11,7 +11,17 @@
 	import MenuItemButton from '$components/MenuItemButton.svelte';
 	import ResponsiveCollectionView from '$components/ResponsiveCollectionView.svelte';
 	import type { RuntimeActionSource } from '../../../../schema';
-	import { filterRuntimeActionRows, type RuntimeActionRow } from './runtimeActionRows';
+	import type { RuntimeActionRow } from './runtimeActionRows';
+	import CollectionQuickfilters from '$components/CollectionQuickfilters.svelte';
+	import {
+		actionTimingOptions,
+		retrieveRuntimeActions,
+		type PrioritizedActionRow
+	} from '$lib/dnd5e2014/collectionQuickfilters';
+	import {
+		captureCollectionRowPositions,
+		animateCollectionRowMovement
+	} from '$components/collectionPriority';
 
 	// eslint-disable-next-line no-unused-vars
 	type ActionCallback = (..._args: [boolean?]) => void;
@@ -39,6 +49,11 @@
 		addActionTriggerEl?: HTMLButtonElement;
 		focusedOpen?: boolean;
 		onFocusedOpened?: () => void;
+		timings?: string[];
+		pins?: ReadonlySet<string>;
+		showTimingHeadings?: boolean;
+		// eslint-disable-next-line no-unused-vars
+		onTogglePin?: (id: string) => boolean | void;
 	}
 
 	let {
@@ -51,12 +66,33 @@
 		onResyncAction,
 		addActionTriggerEl = $bindable(),
 		focusedOpen = $bindable(false),
-		onFocusedOpened = undefined
+		onFocusedOpened = undefined,
+		timings = $bindable([]),
+		pins = new Set(),
+		showTimingHeadings = true,
+		onTogglePin
 	}: Props = $props();
 
 	const uid = $props.id();
-	const filteredRows = $derived(filterRuntimeActionRows(rows, query));
-	const previewRows = $derived(rows.slice(0, denseThreshold));
+	const retrieval = $derived(
+		retrieveRuntimeActions(rows, { query, timings }, pins, showTimingHeadings)
+	);
+	const filteredRows = $derived(retrieval.rows);
+	const previewRows = $derived(filteredRows.slice(0, denseThreshold));
+	let pinError = $state('');
+	const clearAll = () => {
+		query = '';
+		timings = [];
+	};
+	const togglePin = async (id: string, button: HTMLButtonElement) => {
+		const list = button.closest('ul');
+		const before = captureCollectionRowPositions(list);
+		pinError = onTogglePin?.(id) === false ? 'Pins could not be saved. Try again.' : '';
+		await tick();
+		animateCollectionRowMovement(list, before);
+		if (button.isConnected) button.focus();
+		else addActionTriggerEl?.focus();
+	};
 
 	const navigateToSource = async (source: RuntimeActionSource) => {
 		focusedOpen = false;
@@ -94,6 +130,16 @@
 	};
 </script>
 
+{#snippet filters()}
+	<CollectionQuickfilters
+		title="Runtime actions"
+		label="Timing"
+		options={actionTimingOptions}
+		bind:selected={timings}
+		bind:query
+	/>
+{/snippet}
+
 {#snippet actions(focused = false)}
 	{#if focused}
 		<BaseButton size="sm" onclick={() => void addAction()} bind:buttonEl={addActionTriggerEl}
@@ -106,9 +152,18 @@
 	{/if}
 {/snippet}
 
-{#snippet actionRows(items: ReadonlyArray<RuntimeActionRow>, compact: boolean, label: string)}
+{#snippet actionRows(
+	items: ReadonlyArray<RuntimeActionRow | PrioritizedActionRow>,
+	compact: boolean,
+	label: string
+)}
 	<ul class="space-y-2" aria-label={label}>
-		{#each items as action (action.id)}
+		{#each items as action, index (action.id)}
+			{@const group = 'groupLabel' in action ? action.groupLabel : undefined}
+			{@const previous = items[index - 1] as PrioritizedActionRow | undefined}
+			{#if group && group !== previous?.groupLabel}
+				<li class="theme-text-muted text-xs font-bold"><h4>{group}</h4></li>
+			{/if}
 			<li class="rounded-md border px-3 py-2" data-row-key={action.id}>
 				<div class="flex min-w-0 items-start justify-between gap-3">
 					<div class="min-w-0 flex-1">
@@ -129,12 +184,10 @@
 									/>
 								{:else}{action.name}{/if}</span
 							>
-							<span class="theme-text-muted shrink-0">
-								<span aria-hidden="true"> · </span>{action.timingLabel}
-								<span aria-hidden="true"> · </span>{action.categoryLabel}
-							</span>
 						</p>
 						<div class="mt-1 flex flex-wrap items-center gap-1.5">
+							<Badge label={action.timingLabel} />
+							{#if action.categoryLabel}<Badge label={action.categoryLabel} />{/if}
 							{#if action.sourceCategoryLabel}
 								<Badge label={action.sourceCategoryLabel} />
 							{/if}
@@ -160,7 +213,20 @@
 							</p>
 						{/if}
 					</div>
-					{#if action.source || !labelEntry}<div class="flex shrink-0 items-center gap-1">
+					{#if action.source || !labelEntry || onTogglePin}<div
+							class="flex shrink-0 items-center gap-1"
+						>
+							{#if onTogglePin}
+								<IconButton
+									variant="pin"
+									size="sm"
+									ariaPressed={pins.has(action.id)}
+									shadingVariant={pins.has(action.id) ? 'dark' : 'light'}
+									ariaLabel={`${pins.has(action.id) ? 'Unpin' : 'Pin'} ${action.name}`}
+									onclick={(event) =>
+										void togglePin(action.id, event.currentTarget as HTMLButtonElement)}
+								/>
+							{/if}
 							{#if action.source}
 								{@const source = action.source}
 								<MenuButton
@@ -204,6 +270,9 @@
 	</div>
 
 	<ResponsiveCollectionView
+		controls={rows.length > 0 || retrieval.narrowed ? filters : undefined}
+		narrowed={retrieval.narrowed}
+		onClearAll={clearAll}
 		title="Runtime actions"
 		totalCount={rows.length}
 		filteredCount={filteredRows.length}
@@ -223,4 +292,5 @@
 			{@render actions(true)}
 		{/snippet}
 	</ResponsiveCollectionView>
+	{#if pinError}<p role="alert" class="text-sm">{pinError}</p>{/if}
 </section>

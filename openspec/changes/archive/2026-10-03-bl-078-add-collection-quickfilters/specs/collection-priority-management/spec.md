@@ -1,10 +1,4 @@
-# Collection Priority Management
-
-## Purpose
-
-Define how eligible identity-owned character collections let players express at-a-glance priority through a familiar accessible Pin/Unpin workflow while each game system or domain retains ownership of record identity, validation, and persistence.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Eligible collections expose one familiar priority-management language
 
@@ -139,25 +133,7 @@ Eligible collection entries SHALL communicate persisted Pin state and expose sta
 - **THEN** the control SHALL have an evident accessible name, conforming activation target, visible focus, and logical navigation order
 - **AND** no pointer-only, drag-only, right-click-only, or long-press-only path SHALL be required
 
-### Requirement: Priority persistence remains system-owned and round-trippable
-
-Pin state SHALL belong to the character and SHALL survive validated local persistence and JSON backup/restore. A system or domain SHALL opt into the familiar priority-management interaction by supplying durable entry identity, current Pin state, and validated mutation behavior; adoption SHALL NOT require unrelated game systems to persist one universal Pin property or collection schema.
-
-#### Scenario: Reopening a prioritized character
-
-- **WHEN** a character with pinned entries is saved and reopened
-- **THEN** every valid Pin state and resulting canonical presentation SHALL be preserved
-
-#### Scenario: Exporting and restoring a prioritized character
-
-- **WHEN** a character with pinned entries is exported and restored through the supported JSON workflow
-- **THEN** Pin state, stable identities, annotations, source context, and authored content SHALL remain semantically equivalent
-
-#### Scenario: A future system adopts priority management
-
-- **WHEN** another game system adopts the shared Pin/Unpin experience for one of its identity-owned collections
-- **THEN** it SHALL be permitted to retain a system-native record shape and priority storage strategy
-- **AND** users SHALL receive the same observable Pin/Unpin and priority-ordering language where that capability is offered
+## ADDED Requirements
 
 ### Requirement: Runtime Action priority follows action identity through its lifecycle
 

@@ -46,6 +46,7 @@
 		value={String(value)}
 		onchange={(event) => onChange(event.currentTarget.value)}
 	>
+		{#if value === '' && !options.includes('')}<option value="" disabled>Not set</option>{/if}
 		{#each options as option (option)}<option value={option}>{option}</option>{/each}
 	</select>
 {:else}

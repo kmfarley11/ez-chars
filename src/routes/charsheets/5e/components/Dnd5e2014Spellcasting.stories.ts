@@ -20,6 +20,9 @@ export const SaturatedCharacter: Story = {
 			description: {
 				story: `**Verify manually:**
 
+- BL-078: select multiple levels plus Prepared only, combine with search, and reset each independently. A no-match result offers Clear all; ordinary results do not add a redundant reset-all pill. All chips stay visible under Quick filters: Spell level & preparedness; review wrapping at phone width.
+- Pin a matching spell, filter it out, then reset: its pin must survive. Edit Prepared or Level out of the current results, then return with restrictions intact.
+
 - Confirm Ability, Save DC, and Attack Bonus appear as distinct responsive fields; click a label to highlight it in Detail and edit it independently.
 - Compare the read-first Used/Max fields for each spell-slot level with the existing Tier 1 layout by toggling readFirstSlots in Controls. Is the reduced sheet footprint worth opening Detail during play? Save Used, cancel Max, and verify Used stays saved.
 - Confirm the saturated spell collection remains scan-first with search, level groups, Prepared metadata, row-level Pin/Unpin, Detail, and Add.

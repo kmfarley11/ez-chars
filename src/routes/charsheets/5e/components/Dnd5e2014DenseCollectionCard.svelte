@@ -1,4 +1,7 @@
 <script lang="ts">
+	import CollectionQuickfilters from '$components/CollectionQuickfilters.svelte';
+	import ChipButton from '$components/ChipButton.svelte';
+	import { retrieveSpells, spellLevelOptions } from '$lib/dnd5e2014/collectionQuickfilters';
 	import { getSmallEditAccess } from '$components/smallEditContext';
 	const smallEdit = getSmallEditAccess();
 	import { tick } from 'svelte';
@@ -67,6 +70,33 @@
 	}: Props = $props();
 
 	let selectedKey = $state<string | undefined>(undefined);
+	let levels = $state<string[]>([]);
+	let preparation = $state<string[]>([]);
+	let retrievalOwner = $state<string>();
+	// Mutable session input survives record edits; only a different character resets it.
+	$effect(() => {
+		if (retrievalOwner !== character.meta.id) {
+			if (retrievalOwner !== undefined) {
+				query = '';
+				levels = [];
+				preparation = [];
+			}
+			retrievalOwner = character.meta.id;
+		}
+	});
+	const filtering = $derived(collection.kind === 'spell');
+	const matches = $derived(
+		retrieveSpells(rows, character.systemData.spellcasting?.spells ?? [], {
+			query,
+			levels,
+			preparedOnly: preparation.includes('prepared')
+		})
+	);
+	const clearAll = () => {
+		query = '';
+		levels = [];
+		preparation = [];
+	};
 	let isDetailOpen = $state(false);
 	let isAddOpen = $state(false);
 	let isFocusedListOpen = $state(false);
@@ -148,7 +178,7 @@
 	const restorePriorityActionFocus = async (restoreFocus: GridContentListFocusRestore) => {
 		await tick();
 		requestAnimationFrame(() => {
-			if (!restoreFocus()) managePinsTriggerEl?.focus();
+			if (!restoreFocus()) (managePinsTriggerEl ?? addTriggerEl)?.focus();
 		});
 	};
 
@@ -218,9 +248,32 @@
 	};
 </script>
 
+{#snippet filters()}
+	<CollectionQuickfilters
+		title="Spells"
+		label="Level"
+		heading="Spell level & preparedness"
+		options={spellLevelOptions}
+		bind:selected={levels}
+		bind:query
+	>
+		{#snippet extra()}
+			<ChipButton
+				label="Prepared only"
+				selected={preparation.includes('prepared')}
+				onclick={() => (preparation = preparation.includes('prepared') ? [] : ['prepared'])}
+			/>
+		{/snippet}
+	</CollectionQuickfilters>
+{/snippet}
+
 <GridContentList
 	{title}
-	{rows}
+	rows={filtering ? matches.rows : rows}
+	controls={filtering && (rows.length > 0 || matches.narrowed) ? filters : undefined}
+	retrieval={filtering
+		? { total: rows.length, narrowed: matches.narrowed, clear: clearAll }
+		: undefined}
 	{emptyText}
 	bind:query
 	bind:focusedOpen={isFocusedListOpen}

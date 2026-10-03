@@ -468,6 +468,7 @@ export const reduce5eSheetEditIntents = (
 					];
 				});
 				candidate.systemData.runtimeActions = nextActions;
+				priorityCollectionsToReconcile.add('runtimeActions');
 				break;
 			}
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import BaseButton from '$components/BaseButton.svelte';
 	import DialogShell from '$components/DialogShell.svelte';
 	import GridContentListRow from '$components/GridContentListRow.svelte';
@@ -25,6 +26,8 @@
 		addTriggerEl?: HTMLButtonElement;
 		managePinsTriggerEl?: HTMLButtonElement;
 		focusedOpen?: boolean;
+		controls?: Snippet;
+		retrieval?: { total: number; narrowed: boolean; clear: () => void };
 	}
 
 	let {
@@ -39,15 +42,21 @@
 		onFocusedOpened,
 		addTriggerEl = $bindable(),
 		managePinsTriggerEl = $bindable(),
-		focusedOpen = $bindable(false)
+		focusedOpen = $bindable(false),
+		controls,
+		retrieval
 	}: Props = $props();
 
 	const uid = $props.id();
 	let browseTriggerEl = $state<HTMLButtonElement>();
 
 	const preview = $derived(getGridContentListPreview(rows));
-	const isDense = $derived(rows.length > GRID_CONTENT_LIST_PREVIEW_LIMIT);
-	const browseLabel = $derived(getGridContentListBrowseLabel(rows.length));
+	const isDense = $derived((retrieval?.total ?? rows.length) > GRID_CONTENT_LIST_PREVIEW_LIMIT);
+	const browseLabel = $derived(
+		retrieval?.narrowed
+			? `Browse ${rows.length} matching items`
+			: getGridContentListBrowseLabel(retrieval?.total ?? rows.length)
+	);
 
 	const openFocusedView = () => {
 		focusedOpen = true;
@@ -86,6 +95,8 @@
 		<GridContentListView
 			{title}
 			{rows}
+			{controls}
+			{retrieval}
 			bind:query
 			bounded={isDense}
 			searchEnabled={isDense}
@@ -96,7 +107,24 @@
 	</div>
 
 	<div class="space-y-2 sm:hidden">
-		{#if rows.length === 0}
+		{#if isDense && controls}
+			{@render controls()}
+			<p class="theme-text-muted text-xs" role="status">
+				{rows.length} of {retrieval?.total ?? rows.length} items
+			</p>
+		{/if}
+		{#if rows.length === 0 && retrieval}
+			<GridContentListView
+				{title}
+				{rows}
+				{retrieval}
+				controls={isDense ? undefined : controls}
+				searchEnabled={false}
+				{emptyText}
+				{onOpenRow}
+				{onTogglePinRow}
+			/>
+		{:else if rows.length === 0}
 			<p class="theme-text-muted rounded-md border px-3 py-3 text-sm italic">{emptyText}</p>
 		{:else if isDense}
 			<ul class="space-y-2" aria-label={`${title} preview`}>
@@ -123,6 +151,8 @@
 			<GridContentListView
 				{title}
 				{rows}
+				{controls}
+				{retrieval}
 				bind:query
 				searchEnabled={false}
 				{emptyText}
@@ -142,5 +172,15 @@
 	onOpened={onFocusedOpened}
 	onClose={closeFocusedView}
 >
-	<GridContentListView {title} {rows} bind:query {emptyText} {onOpenRow} {onTogglePinRow} />
+	<div class="theme-dialog sticky top-0 z-10">{@render controls?.()}</div>
+	<GridContentListView
+		{title}
+		{rows}
+		{retrieval}
+		searchEnabled={!controls}
+		bind:query
+		{emptyText}
+		{onOpenRow}
+		{onTogglePinRow}
+	/>
 </DialogShell>

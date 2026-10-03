@@ -534,6 +534,7 @@ export const create5eSmallRecordModel = (
 		kind?: SmallEditField['kind'];
 		options?: string[];
 		fallback?: ScalarValue;
+		canClear?: boolean;
 	};
 	const name: Property = { path: ['name'], label: 'Name' };
 	let properties: Property[];
@@ -626,7 +627,7 @@ export const create5eSmallRecordModel = (
 				path: ['category'],
 				label: 'Category',
 				kind: 'select',
-				fallback: 'effect',
+				canClear: true,
 				options: ['attack', 'effect', 'other']
 			},
 			{ path: ['target'], label: 'Target' },
@@ -672,7 +673,7 @@ export const create5eSmallRecordModel = (
 				return row
 					? [
 							row.timingLabel,
-							row.categoryLabel,
+							...(row.categoryLabel ? [row.categoryLabel] : []),
 							row.source ? `Source: ${row.source.label}` : (row.sourceCategoryLabel ?? 'Custom')
 						]
 					: [];
@@ -705,13 +706,15 @@ export const create5eSmallRecordModel = (
 				label: property.label,
 				kind: property.kind ?? 'text',
 				options: property.options,
+				canClear: property.canClear,
 				read,
 				display: () => read() ?? property.fallback,
 				notes: property === name ? notes : undefined,
 				commit: (before, after) => {
 					const path = resolve();
 					if (!path || !sameEditValue(read(), before)) return stale();
-					if (after === undefined) return { ok: false, message: 'This field cannot be cleared.' };
+					if (after === undefined && !property.canClear)
+						return { ok: false, message: 'This field cannot be cleared.' };
 					if (property === name && (typeof after !== 'string' || !after.trim()))
 						return { ok: false, message: 'Name cannot be empty.' };
 					return commitCandidate(

@@ -221,7 +221,16 @@ Route work by required capability, reasoning depth, tools, and context—not age
 Use provider-neutral task labels such as:
 
 - Minimum capability tier: Standard | Advanced | Frontier
-- Reasoning depth: Medium | High
+- Reasoning depth: Low | Medium | High
+- Task complexity: Simple | Moderate | Complex (workload assessment, not a model setting)
+
+### Phase-Based Executor Recommendations
+
+- In proposals and task-plan revisions, end `tasks.md` with `## Executor Recommendation`. Give the minimum capability tier and a compact table with working phase, actual task/gate boundary, one default reasoning level, task complexity, and a brief risk-based rationale.
+- Map the owner's working sessions: initial apply to proof; discuss/evaluate proof feedback; implement ordinary proof revisions; resume apply after approval; final strategic review; and approved cleanup/archival. Combine or omit phases only when the change genuinely lacks them; do not invent human gates merely to populate the table.
+- Recommend once per phase instead of mixing Medium/High across individual subtasks. Calibrate to the actual change: High may suit coupled persistence, ownership, or cross-view integration; Medium usually suits bounded feedback and revisions; Low may suit isolated settled edits. Do not mechanically prescribe High for all implementation or infer required capability from a provider/model name.
+- State concrete escalation triggers, such as changed save boundaries, identity/source ownership, persistence, state/focus transitions, or difficult regressions. Ordinary visual feedback must not automatically inherit the highest effort. If final feedback reopens implementation, reclassify it instead of calling it archival cleanup.
+- At proof/final-review handoffs, briefly state the recommended effort for the next phase and keep this table current when scope changes. This is advisory routing guidance, not a measured model-quality or quota guarantee; it never authorizes automatic model switching, delegation, or bypassing approval gates.
 
 ## Workflow & Communication Style
 

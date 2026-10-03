@@ -379,13 +379,13 @@ test('saturated collection keeps query and identity when a local rename stops ma
 	let collection = spells;
 	let query = collection.getByRole('searchbox', { name: 'Search Spells', exact: true });
 	const browse = spells.getByRole('button', { name: /Browse all/ });
-	// Wait for the responsive collection to render before choosing its visible entry.
-	await expect(query.or(browse)).toBeVisible();
+	// Search is present in both layouts; a visible Browse distinguishes the phone workflow.
+	await expect(query).toBeVisible();
 	await testInfo.attach('whole-sheet-proof', {
 		body: await page.screenshot({ fullPage: true, path: testInfo.outputPath('whole-sheet.png') }),
 		contentType: 'image/png'
 	});
-	const browsing = !(await query.isVisible());
+	const browsing = await browse.isVisible();
 	if (browsing) {
 		await browse.click();
 		collection = page.getByRole('dialog', { name: 'Spells', exact: true });

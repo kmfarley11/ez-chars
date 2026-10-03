@@ -282,6 +282,7 @@ test('links an inventory suggestion through resync and source deletion fallback'
 		runtimeActionList.getByRole('button', { name: 'Source actions for Longsword' })
 	).toBeVisible();
 	await expect(page.getByText('Linked to Longsword')).toHaveCount(0);
+	await runtimeActionList.getByRole('button', { name: 'Pin Longsword', exact: true }).click();
 	await expect
 		.poll(() =>
 			page.evaluate((key) => {
@@ -374,6 +375,9 @@ test('links an inventory suggestion through resync and source deletion fallback'
 	await inventoryDialog.getByRole('button', { name: 'Confirm removal', exact: true }).click();
 
 	await expect(runtimeActionList.getByText('Updated item notes.')).toBeVisible();
+	await expect(
+		runtimeActionList.getByRole('button', { name: 'Unpin Longsword', exact: true })
+	).toBeVisible();
 	await expect(page.getByText('Custom action', { exact: true })).toHaveCount(0);
 	await expect(
 		runtimeActionList.getByRole('button', { name: 'Source actions for Longsword' })

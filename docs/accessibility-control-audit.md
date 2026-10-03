@@ -2,12 +2,14 @@
 
 **Status:** Automated implementation resolved; physical-device and screen-reader review retained before external playtesting  
 **Audit date:** 2026-08-02
-**Last reviewed:** 2026-10-02
+**Last reviewed:** 2026-10-03
 **Scope:** Current home-to-character-sheet flow, including dense inventory/spell browsing and 2014 landmark navigation, on the phone-sized, coarse-pointer presentation
 
 This is a bounded audit of control families, not an inventory of every repeated character record. A family is complete only when its accessible name, touch geometry, keyboard order, automated evidence, and any manual-only conclusion are accounted for.
 
 ## Evidence
+
+- **BL-078 default quickfilters (2026-10-03):** Following explicit proof approval, `CollectionQuickfilters` and Prepared-only compose native `aria-pressed` ChipButton controls over BaseButton on ordinary sheets, inheriting themed text, keyboard activation/focus, and the 44px `touch-target` policy. Search/reset and action Pin reuse existing input/button families. The five quickfilter checks plus three named Mobile Chrome accessibility checks pass, including measured 44px level/preparation targets, stable selected geometry, no horizontal overflow, retained filters, one-modal return, and stable focus when an unpinned row leaves the preview. Selected shading replaces checkmark slots; named groups and pressed states preserve assistive semantics. Independent resets stay reachable without a permanent Clear all pill; no-match recovery retains Clear all. Empty collections retain active resets until cleared. No new exception; final integrated owner approval was received 2026-10-03. This is not a claim of unreported physical-device or assistive-technology measurements; the external-playtest matrix retains that evidence boundary.
 
 - **BL-085 alignment/geometry refinement (2026-10-02):** centered stat groups reuse shared presentation; runtime action clusters reserve two 44px controls plus a 4px gap in both modes, preventing the currency value column from shrinking on Edit. The 20 focused-editing/mobile-accessibility checks pass, including currency alignment, save/reload and unchanged HP alignment. No hit-area reduction or exception; broader phone spacing is deferred to the backlog's responsive-density exploration.
 

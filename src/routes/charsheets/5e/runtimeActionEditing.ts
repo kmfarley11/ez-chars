@@ -22,8 +22,8 @@ export const projectRuntimeActionEditData = (
 		},
 		category: {
 			fieldName: 'Category',
-			value: action.category ?? 'effect',
-			options: ['attack', 'effect', 'other']
+			value: action.category ?? '',
+			options: action.category ? ['attack', 'effect', 'other'] : ['', 'attack', 'effect', 'other']
 		},
 		target: { fieldName: 'Target', value: action.target ?? '' },
 		notes: { fieldName: 'Detail', value: action.notes ?? '', multiline: true }
@@ -56,9 +56,9 @@ export const decodeRuntimeActionSaveIntent = (
 					timing: String(valueAt(data, 'timing') ?? action.timing ?? 'action') as NonNullable<
 						RuntimeAction['timing']
 					>,
-					category: String(valueAt(data, 'category') ?? action.category ?? 'effect') as NonNullable<
-						RuntimeAction['category']
-					>,
+					category: (valueAt(data, 'category') ||
+						action.category ||
+						undefined) as RuntimeAction['category'],
 					target: String(valueAt(data, 'target') ?? ''),
 					notes: String(valueAt(data, 'notes') ?? ''),
 					annotations: [...annotations]

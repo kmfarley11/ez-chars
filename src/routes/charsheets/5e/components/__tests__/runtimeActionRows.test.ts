@@ -26,6 +26,7 @@ describe('runtime action row projection', () => {
 			{
 				id: 'longsword-action',
 				name: 'Longsword attack',
+				timing: 'bonusAction',
 				timingLabel: 'Bonus action',
 				categoryLabel: 'Attack',
 				sourceCategoryLabel: 'Inventory',
@@ -58,8 +59,8 @@ describe('runtime action row projection', () => {
 			{
 				id: 'custom-action',
 				name: 'Improvise',
+				timing: 'action',
 				timingLabel: 'Action',
-				categoryLabel: 'Attack',
 				sourceCategoryLabel: 'Custom'
 			}
 		]);

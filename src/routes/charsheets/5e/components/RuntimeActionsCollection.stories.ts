@@ -1,9 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/sveltekit';
-import { fn } from 'storybook/test';
 import { saturatedCharacter5e2014 } from '../../../../fixtures/saturatedCharacter.5e2014';
 import type { CharacterDocument5e2014 } from '../../../../schema';
 import RuntimeActionsCollectionStoryHarness from './RuntimeActionsCollectionStoryHarness.svelte';
-import { projectRuntimeActionRows } from './runtimeActionRows';
 
 const denseCharacter: CharacterDocument5e2014 = {
 	...saturatedCharacter5e2014,
@@ -28,32 +26,41 @@ const denseCharacter: CharacterDocument5e2014 = {
 	}
 };
 
-const denseActionRows = projectRuntimeActionRows(
-	denseCharacter.systemData.runtimeActions,
-	denseCharacter
-);
-const fiveActionRows = denseActionRows.slice(0, 5);
-const sixActionRows = [...denseActionRows.slice(0, 5), ...denseActionRows.slice(-1)];
+const boundedCharacter = (count: number): CharacterDocument5e2014 => ({
+	...denseCharacter,
+	systemData: {
+		...denseCharacter.systemData,
+		runtimeActions: denseCharacter.systemData.runtimeActions
+			.slice(0, count)
+			.map((action, index) => ({
+				...action,
+				timing: (['action', 'bonusAction', 'reaction', 'action', 'reaction', 'action'] as const)[
+					index
+				],
+				category: index === 0 ? undefined : action.category
+			})),
+		collectionPins: {
+			...denseCharacter.systemData.collectionPins,
+			runtimeActions: denseCharacter.systemData.runtimeActions
+				.slice(0, 2)
+				.map((action) => action.id)
+		}
+	}
+});
 
 const meta = {
 	title: 'Organisms/RuntimeActionsCollection',
 	component: RuntimeActionsCollectionStoryHarness,
 	args: {
-		rows: sixActionRows,
-		onAdd: fn(),
-		onEdit: fn(),
-		onNotes: fn(),
-		onNavigateToSource: fn(),
-		onResyncAction: fn(),
-		denseThreshold: 5,
+		initialCharacter: boundedCharacter(6),
 		withScrollRunway: false,
-		requiresPhoneViewport: false
+		showTimingHeadings: true
 	},
 	parameters: {
 		docs: {
 			description: {
 				component:
-					'BL-076 isolated proof. Review the five-item Runtime Action boundary, desktop inline scroll ownership, phone focused dialog, search scope, and preserved commands before route integration.'
+					'BL-078 production-backed proof: timing plus text, saved pins, independent detail edits, and filtered phone browsing. Toggle showTimingHeadings to compare scanning density.'
 			}
 		}
 	}
@@ -63,7 +70,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const FiveActionBoundary: Story = {
-	args: { rows: fiveActionRows }
+	args: { initialCharacter: boundedCharacter(5) }
 };
 
 export const SixActionsDesktopInlineScroll: Story = {};

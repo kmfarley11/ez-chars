@@ -20,6 +20,9 @@
 		results: Snippet;
 		focusedActions?: Snippet;
 		onFocusedOpened?: () => void;
+		controls?: Snippet;
+		narrowed?: boolean;
+		onClearAll?: () => void;
 	}
 
 	let {
@@ -33,15 +36,22 @@
 		preview,
 		results,
 		focusedActions = undefined,
-		onFocusedOpened = undefined
+		onFocusedOpened = undefined,
+		controls,
+		narrowed = false,
+		onClearAll
 	}: Props = $props();
 
 	const uid = $props.id();
 	const isDense = $derived(totalCount > threshold);
 	const hasQuery = $derived(query.trim().length > 0);
 	const searchLabel = $derived(`Search ${title}`);
-	const countLabel = $derived(getGridContentListCountLabel(filteredCount, totalCount, hasQuery));
-	const browseLabel = $derived(getGridContentListBrowseLabel(totalCount));
+	const countLabel = $derived(
+		getGridContentListCountLabel(filteredCount, totalCount, hasQuery || narrowed)
+	);
+	const browseLabel = $derived(
+		narrowed ? `Browse ${filteredCount} matching items` : getGridContentListBrowseLabel(totalCount)
+	);
 	let browseTriggerEl = $state<HTMLButtonElement>();
 	let focusedScrollTop = $state(0);
 
@@ -61,21 +71,25 @@
 
 {#snippet searchControls(suffix: string)}
 	<div class="space-y-2">
-		<div class="flex flex-wrap items-end gap-2">
-			<label class="min-w-48 flex-1" for={`${uid}-${suffix}-search`}>
-				<span class="sr-only">{searchLabel}</span>
-				<input
-					id={`${uid}-${suffix}-search`}
-					type="search"
-					class="theme-input touch-target w-full rounded-md border px-3 py-1.5 text-base md:text-sm"
-					placeholder={`Search ${title.toLocaleLowerCase()}`}
-					bind:value={query}
-				/>
-			</label>
-			{#if hasQuery}
-				<BaseButton size="sm" onclick={clearSearch}>Clear search</BaseButton>
-			{/if}
-		</div>
+		{#if controls}
+			{@render controls()}
+		{:else}
+			<div class="flex flex-wrap items-end gap-2">
+				<label class="min-w-48 flex-1" for={`${uid}-${suffix}-search`}>
+					<span class="sr-only">{searchLabel}</span>
+					<input
+						id={`${uid}-${suffix}-search`}
+						type="search"
+						class="theme-input touch-target w-full rounded-md border px-3 py-1.5 text-base md:text-sm"
+						placeholder={`Search ${title.toLocaleLowerCase()}`}
+						bind:value={query}
+					/>
+				</label>
+				{#if hasQuery}
+					<BaseButton size="sm" onclick={clearSearch}>Clear search</BaseButton>
+				{/if}
+			</div>
+		{/if}
 		<p class="theme-text-muted text-xs" role="status" aria-live="polite">{countLabel}</p>
 	</div>
 {/snippet}
@@ -85,13 +99,18 @@
 		<p class="theme-text-muted rounded-md border px-3 py-3 text-sm italic">{emptyText}</p>
 	{:else if filteredCount === 0}
 		<p class="theme-text-muted rounded-md border px-3 py-3 text-sm" role="status">
-			No {title.toLocaleLowerCase()} match “{query.trim()}”.
-			<button
-				type="button"
-				class="theme-link cursor-pointer font-semibold underline underline-offset-2"
-				onclick={clearSearch}>Clear</button
-			>
-			or revise the search.
+			{#if controls}
+				No {title.toLocaleLowerCase()} match the current search and filters.
+				<BaseButton size="sm" onclick={onClearAll}>Clear all</BaseButton>
+			{:else}
+				No {title.toLocaleLowerCase()} match “{query.trim()}”.
+				<button
+					type="button"
+					class="theme-link cursor-pointer font-semibold underline underline-offset-2"
+					onclick={clearSearch}>Clear</button
+				>
+				or revise the search.
+			{/if}
 		</p>
 	{:else if bounded}
 		<BoundedCollectionRegion
@@ -107,7 +126,7 @@
 {/snippet}
 
 <div class="hidden space-y-2 sm:block">
-	{#if isDense}
+	{#if isDense || controls}
 		{@render searchControls('desktop')}
 	{:else if totalCount > 0}
 		<p class="theme-text-muted text-xs">{countLabel}</p>
@@ -116,10 +135,11 @@
 </div>
 
 <div class="space-y-2 sm:hidden">
+	{#if controls}{@render searchControls('phone')}{/if}
 	{#if totalCount === 0}
 		{@render collectionResults(false)}
 	{:else if isDense}
-		{@render preview()}
+		{#if filteredCount > 0}{@render preview()}{:else}{@render collectionResults(false)}{/if}
 		<BaseButton
 			size="sm"
 			onclick={openFocusedView}
@@ -129,7 +149,7 @@
 			{browseLabel}
 		</BaseButton>
 	{:else}
-		<p class="theme-text-muted text-xs">{countLabel}</p>
+		{#if !controls}<p class="theme-text-muted text-xs">{countLabel}</p>{/if}
 		{@render collectionResults(false)}
 	{/if}
 </div>

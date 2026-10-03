@@ -11,4 +11,4 @@ context: |
 rules:
   tasks:
     - "Always include a final section group 'Backlog Updates & Reconciliation' (e.g. group ## 4) containing tasks to: 1) Prune the matching backlog ID from docs/backlog.md and move it to 'Done Recently' with a summary, 2) Reconcile the 'Next recommended target' header in docs/backlog.md, and 3) Update active goals in docs/active-goals.md if applicable."
-    - "Always include a brief section '## Executor Recommendation' at the very end of the file capturing the recommended executor reasoning level (low vs. medium vs. high) and model complexity (simple vs. complex) needed to execute the tasks, along with a brief rationale."
+    - "End tasks.md with '## Executor Recommendation' following AGENTS.md's Phase-Based Executor Recommendations: minimum capability tier, then a compact table mapping actual working phases and task/gate boundaries to one default reasoning level, task complexity, and rationale. Cover proof creation, feedback evaluation, ordinary revisions, approved rollout, strategic review, and approved closure where applicable; include concrete escalation triggers rather than mixed per-subtask effort guidance."

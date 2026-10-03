@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import BaseButton from '$components/BaseButton.svelte';
 	import BoundedCollectionRegion from '$components/BoundedCollectionRegion.svelte';
 	import GridContentListRow from '$components/GridContentListRow.svelte';
@@ -18,6 +19,8 @@
 		emptyText?: string;
 		onOpenRow?: GridContentListRowAction;
 		onTogglePinRow?: GridContentListRowAction;
+		controls?: Snippet;
+		retrieval?: { total: number; narrowed: boolean; clear: () => void };
 	}
 
 	let {
@@ -28,21 +31,29 @@
 		searchEnabled = true,
 		emptyText = 'No items yet.',
 		onOpenRow,
-		onTogglePinRow
+		onTogglePinRow,
+		controls,
+		retrieval
 	}: Props = $props();
 
 	const uid = $props.id();
 	const searchLabel = $derived(`Search ${title}`);
 	const effectiveQuery = $derived(searchEnabled ? query : '');
 	const hasQuery = $derived(effectiveQuery.trim().length > 0);
-	const filteredRows = $derived(filterGridContentListRows(rows, effectiveQuery));
+	const filteredRows = $derived(retrieval ? rows : filterGridContentListRows(rows, effectiveQuery));
 	const countLabel = $derived(
-		getGridContentListCountLabel(filteredRows.length, rows.length, hasQuery)
+		getGridContentListCountLabel(
+			filteredRows.length,
+			retrieval?.total ?? rows.length,
+			retrieval?.narrowed ?? hasQuery
+		)
 	);
 </script>
 
 <div class="space-y-2">
-	{#if searchEnabled}
+	{#if controls}
+		{@render controls()}
+	{:else if searchEnabled}
 		<div class="flex flex-wrap items-end gap-2">
 			<label class="min-w-48 flex-1 space-y-1" for={`${uid}-search`}>
 				<span class="sr-only">{searchLabel}</span>
@@ -62,17 +73,22 @@
 
 	<p class="theme-text-muted text-xs" role="status" aria-live="polite">{countLabel}</p>
 
-	{#if rows.length === 0}
+	{#if (retrieval?.total ?? rows.length) === 0}
 		<p class="theme-text-muted rounded-md border px-3 py-3 text-sm italic">{emptyText}</p>
 	{:else if filteredRows.length === 0}
 		<p class="theme-text-muted rounded-md border px-3 py-3 text-sm" role="status">
-			No {title.toLocaleLowerCase()} match “{query.trim()}”.
-			<button
-				type="button"
-				class="theme-link cursor-pointer font-semibold underline underline-offset-2"
-				onclick={() => (query = '')}>Clear</button
-			>
-			or revise the search.
+			{#if retrieval}
+				No {title.toLocaleLowerCase()} match the current search and filters.
+				<BaseButton size="sm" onclick={retrieval.clear}>Clear all</BaseButton>
+			{:else}
+				No {title.toLocaleLowerCase()} match “{query.trim()}”.
+				<button
+					type="button"
+					class="theme-link cursor-pointer font-semibold underline underline-offset-2"
+					onclick={() => (query = '')}>Clear</button
+				>
+				or revise the search.
+			{/if}
 		</p>
 	{:else if bounded}
 		<BoundedCollectionRegion

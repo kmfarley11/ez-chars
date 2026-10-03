@@ -18,6 +18,8 @@ export const get5e2014PriorityIdentities = (
 	collection: CollectionPriorityKind5e2014
 ): Array<string> => {
 	switch (collection) {
+		case 'runtimeActions':
+			return character.systemData.runtimeActions.map((action) => action.id);
 		case 'inventory':
 			return character.inventory.map((item) => item.id);
 		case 'spells':

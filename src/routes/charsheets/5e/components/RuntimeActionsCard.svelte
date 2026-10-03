@@ -27,6 +27,7 @@
 
 	interface Props {
 		character: CharacterDocument5e2014;
+		showTimingHeadings?: boolean;
 		annotationEditorConfig?: GridAnnotationEditorConfig;
 		// eslint-disable-next-line no-unused-vars
 		onIntents: (_intents: ReadonlyArray<SheetEditIntent>) => boolean | void;
@@ -42,6 +43,7 @@
 
 	let {
 		character,
+		showTimingHeadings = true,
 		annotationEditorConfig = undefined,
 		onIntents,
 		onCreateAction,
@@ -54,6 +56,30 @@
 	}: Props = $props();
 
 	let isSuggestionPanelOpen = $state(false);
+	let query = $state('');
+	let timings = $state<string[]>([]);
+	let retrievalOwner = $state<string>();
+	// Reset editable session input on identity changes, never on ordinary character edits.
+	$effect(() => {
+		if (retrievalOwner !== character.meta.id) {
+			if (retrievalOwner !== undefined) {
+				query = '';
+				timings = [];
+			}
+			retrievalOwner = character.meta.id;
+		}
+	});
+	const togglePin = (id: string) => {
+		if (!character.systemData.runtimeActions.some((action) => action.id === id)) return false;
+		const pins = character.systemData.collectionPins?.runtimeActions ?? [];
+		return onIntents([
+			{
+				type: 'replace-collection-pins',
+				collection: 'runtimeActions',
+				identities: pins.includes(id) ? pins.filter((pin) => pin !== id) : [...pins, id]
+			}
+		]);
+	};
 	let detailOpen = $state(false);
 	let focusedOpen = $state(false);
 	let returnToFocused = $state(false);
@@ -181,6 +207,11 @@
 
 <div class="space-y-4">
 	<RuntimeActionsCollection
+		{showTimingHeadings}
+		bind:query
+		bind:timings
+		pins={new Set(character.systemData.collectionPins?.runtimeActions ?? [])}
+		onTogglePin={togglePin}
 		rows={actionRows}
 		onAdd={requestSuggestions}
 		onOpenAction={openAction}

@@ -294,7 +294,8 @@ export const collectionPriorityKindSchema = z.enum([
 	'features',
 	'traits',
 	'languages',
-	'tools'
+	'tools',
+	'runtimeActions'
 ]);
 
 const uniquePriorityIdentitiesSchema = z
@@ -321,7 +322,8 @@ export const collectionPinsSchema = z
 		features: uniquePriorityIdentitiesSchema.optional(),
 		traits: uniquePriorityIdentitiesSchema.optional(),
 		languages: uniquePriorityIdentitiesSchema.optional(),
-		tools: uniquePriorityIdentitiesSchema.optional()
+		tools: uniquePriorityIdentitiesSchema.optional(),
+		runtimeActions: uniquePriorityIdentitiesSchema.optional()
 	})
 	.strict();
 
@@ -552,7 +554,8 @@ export const characterDocument5e2014Schema = z
 			features: countPriorityIdentities([...generalFeatureIdentities, ...classFeatureIdentities]),
 			traits: countPriorityIdentities(traitIdentities),
 			languages: countPriorityIdentities(languageIdentities),
-			tools: countPriorityIdentities(toolIdentities)
+			tools: countPriorityIdentities(toolIdentities),
+			runtimeActions: countPriorityIdentities(character.systemData.runtimeActions)
 		};
 		const priorityKinds = collectionPriorityKindSchema.options;
 		for (const kind of priorityKinds) {

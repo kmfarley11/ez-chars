@@ -19,6 +19,21 @@ const fixture = () => {
 };
 
 describe('small-edit proof domain adapters', () => {
+	it('leaves a missing runtime category unset until chosen and permits clearing it', () => {
+		const owner = fixture();
+		delete owner.read().systemData.runtimeActions[0].category;
+		const model = create5eSmallRecordModel(owner, 'runtime-action:action-1')!;
+		const category = model.fields.find((field) => field.label === 'Category')!;
+		expect(category.display?.()).toBeUndefined();
+		expect(model.badges?.()).not.toContain('Attack');
+		expect(model.badges?.()).not.toContain('Effect');
+		expect(model.fields[0].commit!(model.fields[0].read(), 'Renamed')).toEqual({ ok: true });
+		expect(category.read()).toBeUndefined();
+		expect(category.commit!(undefined, 'attack')).toEqual({ ok: true });
+		expect(category.read()).toBe('attack');
+		expect(category.commit!('attack', undefined)).toEqual({ ok: true });
+		expect(category.read()).toBeUndefined();
+	});
 	it.each([
 		'item:weapon-1',
 		'general-feature:general-feature',

@@ -3,8 +3,8 @@
 - **Status:** Approved
 - **Author:** Codex with project owner direction
 - **Date:** 2026-08-28
-- **Last reviewed:** 2026-09-20
-- **Latest refinement:** [Archived `BL-077`](../../openspec/changes/archive/2026-09-26-bl-077-unify-detail-editing-annotations/proposal.md) promotes immediate record-level Pin/Unpin beside Detail across eligible collections and leaves the reusable batch manager dormant unless playtest evidence justifies restoring it.
+- **Last reviewed:** 2026-10-03
+- **Latest refinement:** [BL-078](../../openspec/changes/archive/2026-10-03-bl-078-add-collection-quickfilters/proposal.md) adopts Runtime Action pins, system-owned display ordering, and ephemeral quickfilters after explicit proof approval; shared chip controls do not impose a cross-system taxonomy.
 
 ## Context & Problem Statement
 
@@ -48,6 +48,8 @@ The reusable batch workflow uses a local draft and submits one complete set on S
 
 **Operative refinement:** BL-077 retains the narrow data and mutation boundary but changes the rollout presentation. Eligible repeatable records now expose first-class row-level Pin/Unpin beside Detail, including Supporting Collections, while the batch manager remains dormant. This supersedes the earlier placement guidance below without changing identity ownership, complete-set mutation semantics, validation, or persistence.
 
+**BL-078 extension:** Runtime Actions now adopt that boundary as well. The prior exclusion above is historical: stable action IDs own their pins independently of source IDs. Filtering and timing/name presentation do not rewrite the canonical action array. The refinement below is the operative retrieval and ordering policy.
+
 ### Local primitive reuse audit
 
 - Reuse `DialogShell.svelte` for native modal lifecycle, cancellation interception, scroll ownership, and close behavior.
@@ -85,3 +87,15 @@ The completed boundary preserves the existing composition taxonomy: `ManagePinsD
 ### 2026-09-20 — Prefer the record-local priority action during BL-077
 
 Production-composition review found that exposing both Manage Pins and a promoted Pin/Unpin control duplicated the same operation and crowded collection headings. BL-077 therefore uses row-level Pin/Unpin as the only visible priority path for eligible records. The reusable batch dialog and complete-set callback remain available in the component layer, but no rollout consumer exposes them. Reconsider a batch surface only if owner or external-playtest evidence shows that repeated individual priority changes are materially slow or confusing.
+
+### 2026-10-03 — Adopt Runtime Action priority and explicit collection quickfilters
+
+The owner approved the production-backed BL-078 proof and requested default rollout. Runtime Action membership lives in the optional 2014 `collectionPins.runtimeActions` set and commits through the existing latest-state validated reducer. Rename, resync, and source deletion preserve a surviving action's identity and pin; deleting the action removes membership atomically. Source pins remain independent. External duplicate, dangling, ambiguous, or wrong-collection identities are rejected rather than silently repaired.
+
+Matching pins form a global alphabetical tier. Unpinned actions display in Action, Bonus action, Reaction, Free, Other timing order then name; unpinned spells remain level/name ordered. Prepared is a restriction, not another sort key. Category and timestamps do not influence order. These are pure display projections, not mutations of authored arrays or a promise that other systems share 2014 semantics.
+
+Collection controllers retain query and facet selections across browsing, Detail, Add, and source navigation in the same mounted session; a different character or fresh session resets them. Temporary retrieval state is not exported or persisted. Filtering applies equally to pinned and unpinned records and precedes phone preview slicing. A detail edit may exclude its record without closing Detail or clearing the user's restrictions.
+
+The shared ChipButton atom composes native BaseButton keyboard/focus/touch behavior; CollectionQuickfilters groups system-supplied keys and labels with search/reset controls and a supplementary-control snippet. Selected shading and `aria-pressed` replace the rejected checkbox proof. All spell choices remain visible. Neither component parses passive badges, owns character data, nor defines a universal facet registry. The independent molecule playground demonstrates system-neutral labels and long-label wrapping; the existing organism stories retain real-domain review coverage.
+
+Current-v0 documents without action pins stay valid; adding the optional key does not introduce a new compatibility epoch. Older binaries may reject exports containing the new key. Preserve backups for rollback rather than stripping priority data. The earlier batch/menu guidance remains superseded, not restored by this extension.
