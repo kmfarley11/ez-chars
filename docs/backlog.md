@@ -83,7 +83,7 @@ The queues above record strategic priority membership; this list records the dep
 4. `BL-072`: Rehearse and harden the full three-system representative, sparse-GM, and saturated-sheet matrix after required interaction work is present
 5. `BL-081`: Finalize the survey questions and verify the voluntary in-app feedback path immediately before inviting external playtesters
 
-The completed `BL-064` proof established the inventory and spell baseline, `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams, `BL-076` added proportionate density behavior for Runtime Actions and supporting collections without flattening their distinct interaction grammars, `BL-075` added a reusable player-facing pinning grammar while keeping identity, persistence, and system nuance domain-owned, `BL-073` established sheet-scale navigation, `BL-084` resolved core mobile viability, and `BL-077` established the three-tier read-first interaction language across runtime values, rich detail, and collections. Completed `BL-085` extended that baseline with label-targeted detail, independently saved field/note edits, and compact read-first spell slots. Completed `BL-078` adds shared collection quickfilters and persisted Runtime Action priority with system-owned semantics. Rules-reader refinement (`BL-082`) now leads the sequence before multi-system expansion (`BL-070`, `BL-071`) multiplies the human-review surface. Later system changes must audit, adopt, adapt, or decline those patterns using system-native landmarks and categories rather than inheriting 2014 semantics. This ordering does not make arbitrary UI polish a prerequisite; it advances known physical-phone blockers and the remaining known P0 retrieval problems with existing representative proofs. `BL-066` remains an early P1, export-first interoperability proof after `BL-070` stabilizes a target schema and template-delivery rights, not a first-playtest prerequisite. `BL-072` rehearses the resulting interaction and system matrix and gathers any evidence that could trigger the separate, P1 `BL-083` scene-aware investigation. `BL-081` remains the final readiness gate before external invitations.
+The completed `BL-064` proof established the inventory and spell baseline, `BL-074` established the focused list, field, form, dialog, layout, panel, and domain-orchestration seams, `BL-076` added proportionate density behavior for Runtime Actions and supporting collections without flattening their distinct interaction grammars, `BL-075` added a reusable player-facing pinning grammar while keeping identity, persistence, and system nuance domain-owned, `BL-073` established sheet-scale navigation, `BL-084` resolved core mobile viability, and `BL-077` established the three-tier read-first interaction language across runtime values, rich detail, and collections. Completed `BL-085` extended that baseline with label-targeted detail, independently saved field/note edits, and compact read-first spell slots. Completed `BL-078` adds shared collection quickfilters and persisted Runtime Action priority with system-owned semantics. Rules-reader refinement (`BL-082`) now leads the sequence before multi-system expansion (`BL-070`, `BL-071`) multiplies the human-review surface. Later system changes must audit, adopt, adapt, or decline those patterns using system-native landmarks and categories rather than inheriting 2014 semantics. This ordering does not make arbitrary UI polish a prerequisite; it advances known physical-phone blockers and the remaining known P0 retrieval problems with existing representative proofs. `BL-066` remains an early P1, export-only interoperability proof gated by exact-template processing/output rights, not a first-playtest prerequisite; its bounded 2014 scope does not technically depend on `BL-070`. `BL-072` rehearses the resulting interaction and system matrix and gathers any evidence that could trigger the separate, P1 `BL-083` scene-aware investigation. `BL-081` remains the final readiness gate before external invitations.
 
 ## Refined Backlog Catalog
 
@@ -122,31 +122,32 @@ ID:
 
 Sequencing context:
 
-- The three-system form audit is complete in `docs/fillable-pdf-interoperability-audit.md`. Start an export-first proof after `BL-070` stabilizes one target schema and the exact template-delivery rights are resolved. This is an early P1 improvement, not a first-playtest readiness gate.
+- The three-system form audit is complete in `docs/fillable-pdf-interoperability-audit.md`. The proposed [export-first change](../openspec/changes/bl-066-export-supported-character-pdf/proposal.md) targets the existing 2014 schema after exact-template processing/output rights are resolved. BL-070 is not a technical prerequisite for that bounded proof; coordinate mapping changes if system expansion lands first. This remains P1, not a first-playtest readiness gate or a replacement for BL-082 at the head of the P0 sequence.
 
 Refinement outputs:
 
 - **Purpose:** Make it easier to move between ez-chars and publisher-provided fillable sheets without allowing a lossy page layout to become canonical character storage.
 - **Included behavior:**
-  - Resolve whether each exact supported template may be bundled/fetched or must be selected by the user, then pin the adapter to a reviewed artifact signature.
-  - Prove export first against one exact form, with a visible fidelity/omission statement, overflow behavior, common-viewer checks, and canonical JSON unchanged.
-  - Follow with a reviewed, non-destructive scalar import proof only if the form supplies a reliable map; unknown or changed forms fail without altering local data.
-  - Keep mappings system-specific and allocate deterministic test identities for imported records that do not carry stable IDs.
-  - Treat the 2014 form as the simplest initial semantic map; defer 2024's opaque 411-field map until manually verified and Shadowdark until the expansion gate covers exact form interoperability.
+  - Export one selected 2014 character into one exact user-selected official blank form, without bundling, automatic fetching, or retention. Resolve processing and filled-output permission first; user selection is not a rights workaround.
+  - Keep original form fields editable; review Included / Continued / Not represented before download, with acknowledgment for omitted authored content or meaningful game information. Internal IDs and app-only presentation state receive a compact limitations disclosure rather than forcing acknowledgment. JSON remains the full-fidelity backup.
+  - Preserve mapped overflow on readable, app-authored continuation pages, explicitly non-fillable, with clear originating-section references. Move overflowing prose in full and continue excess records intact without duplicate content; disclose that later PDF edits do not regenerate continuations. Reject output that cannot be faithfully rendered within documented, proof-measured limits instead of silently clipping or substituting text.
+  - Keep the mapping system-specific and export all mapped data regardless of sheet filtering, density limits, or pinning. Unknown/revised templates and failed/cancelled export leave stored characters unchanged.
+  - Require an actual sparse/saturated PDF proof, including edit/reopen, print, and phone download checks before app rollout. Defer 2024's opaque field map and Shadowdark's separate rights gate.
 - **Excluded behavior:**
+  - PDF import in this change; reviewed scalar import is captured separately in raw ideation below.
+  - Bundled/fetched publisher forms, hidden embedded character backups, arbitrary user-upload processing, and server processing.
   - Treating PDF as the full-fidelity persistence or backup model.
   - Arbitrary, homebrew, scanned, image-only, or unrecognized PDF layouts; OCR and inferred extraction.
   - Pretending annotations, references, source links, unlimited collections, or stable IDs can round-trip when the form cannot represent them.
 - **Ambiguities:**
-  - What permission basis covers template delivery and filled-derivative output for the first target?
-  - Should first export overflow be rejected, summarized, clipped with warning, or written to a separately designed continuation page?
-  - Does import create a new reviewed character only, or can a later workflow compare against an existing export manifest?
+  - What exact permission basis clears this bounded local filling/output workflow under the resource policy? This remains an execution prerequisite, not an assumption.
+  - Which exact fields, glyphs, resource limits, and viewer combinations pass the real-output proof? Material coverage reductions require explicit reconciliation.
 - **Success:**
   - A representative character exports to the exact supported form and remains usable in the project's declared PDF viewers, with every lossy field disclosed.
   - Export does not mutate or reduce the validated system document or JSON backup.
-  - Any import presents mapped values for review and rejects an unsupported artifact non-destructively.
+  - Sparse and saturated output remains useful and original fields remain editable; continuation pages and unsupported data have explicit, reviewed limits.
   - Automated fixtures detect field-map or template-signature drift.
-- **Recommended workflow:** Full OpenSpec change because it introduces observable import/export behavior, external-format compatibility, and non-destructive failure requirements. Add or refine an ADR if template delivery, manifest identity, or PDF-library adoption creates a durable architecture/dependency decision.
+- **Recommended workflow:** Full OpenSpec change because it adds durable PDF-export requirements and needs coordinated mapping, UI, privacy, and output-verification work. Record an ADR for the projection/dependency boundary. Named human PDF proof precedes rollout, followed by separate final integrated approval.
 
 ### Refine mobile rules-reader navigation
 
@@ -439,6 +440,11 @@ This content is a work in progress to dump rough thoughts, brainstorms, and refa
   - _Critical Question_: Will introducing a third-party form helper conflict with our "platform-native first" preference or cause unnecessary bundle size increases, given we only have local-first state storage?
 
 ### Raw Human Ideation, Unsorted
+
+- Reviewed scalar import from a supported fillable PDF after BL-066 export is proven.
+  - _Direction_: Preview reliable mapped values and create a new validated character only; do not overwrite or match an existing character. Generate fresh identities through existing domain creation paths, with deterministic allocation in tests.
+  - _Constraints_: No arbitrary/scanned forms, OCR, inferred prose-to-structured-data conversion, or claim of full-fidelity round-trip. Filled PDFs differ from the blank template hash, so import needs separately reviewed structural recognition and validation; filenames or a future manifest are not trusted identity. Recheck processing rights for import and preserve JSON as the canonical backup.
+  - _Refinement trigger_: The supported export and mapping are accepted, and an actual user need for inbound PDF data warrants a separate proposal. Review reliable scalar coverage and a non-destructive preview before expanding to collections or additional systems. Keep this outside BL-066's current export-only scope and the P0 playtest gate.
 
 - Explore additional collection facets and optional badge-to-filter shortcuts after BL-078.
   - _Context_: The 2026-10-02 owner refinement approved explicit Runtime Action timing and Spell level/Prepared-only controls while recognizing that category/source badges could invite similar retrieval. The first proof deliberately keeps row badges passive to avoid restoring per-row action clutter.
