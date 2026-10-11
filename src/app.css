@@ -234,8 +234,9 @@
 	}
 }
 
-html:has(dialog[open]),
-body:has(dialog[open]) {
+/* Non-modal workspaces must leave the sheet's scrolling and sticky landmarks intact. */
+html:has(dialog:modal),
+body:has(dialog:modal) {
 	overflow: hidden;
 }
 

@@ -4,6 +4,8 @@ import type {
 	TextItem
 } from 'pdfjs-dist/types/src/display/api';
 import { pdfJsAssetUrls } from './pdfJsAssets';
+import { readPdfText } from './pdfText';
+import { createPdfFindPreview, type PdfPreviewPart } from './pdfFindPreview';
 
 type PdfJsModule = typeof import('pdfjs-dist');
 
@@ -72,9 +74,8 @@ export type PdfFindResult = {
 	page: number;
 	occurrences: number;
 	preview: string;
+	previewParts: PdfPreviewPart[];
 };
-
-const normalizeFindText = (value: string): string => value.normalize('NFKC').toLocaleLowerCase();
 
 export const findPdfText = async (
 	document: PDFDocumentProxy,
@@ -86,8 +87,7 @@ export const findPdfText = async (
 		startPage?: number;
 	} = {}
 ): Promise<Array<PdfFindResult>> => {
-	const normalizedQuery = normalizeFindText(query.trim());
-	if (normalizedQuery.length === 0) return [];
+	if (query.trim().length === 0) return [];
 	const results: Array<PdfFindResult> = [];
 	const startPage = clampPdfPage(options.startPage ?? 1, document.numPages);
 	const pageNumbers = [
@@ -97,51 +97,60 @@ export const findPdfText = async (
 	let nextPageIndex = 0;
 	let completedPages = 0;
 	const workerCount = Math.min(6, document.numPages);
+	const controller = new AbortController();
+	const abort = () => controller.abort();
+	options.signal?.addEventListener('abort', abort, { once: true });
+	if (options.signal?.aborted) abort();
 
 	const inspectPages = async () => {
 		while (nextPageIndex < pageNumbers.length) {
-			if (options.signal?.aborted) throw new DOMException('Find cancelled', 'AbortError');
+			controller.signal.throwIfAborted();
 			const pageNumber = pageNumbers[nextPageIndex];
 			nextPageIndex += 1;
 			const page = await document.getPage(pageNumber);
 			try {
-				if (options.signal?.aborted) throw new DOMException('Find cancelled', 'AbortError');
-				const textContent = await page.getTextContent();
+				controller.signal.throwIfAborted();
+				const textContent = await readPdfText(page, controller.signal);
+				controller.signal.throwIfAborted();
 				const text = textContent.items
 					.filter((item): item is TextItem => 'str' in item)
 					.map((item) => item.str)
 					.join(' ')
 					.replace(/\s+/g, ' ')
 					.trim();
-				const normalizedText = normalizeFindText(text);
-				let occurrences = 0;
-				let matchIndex = normalizedText.indexOf(normalizedQuery);
-				while (matchIndex !== -1) {
-					occurrences += 1;
-					matchIndex = normalizedText.indexOf(normalizedQuery, matchIndex + normalizedQuery.length);
-				}
-				if (occurrences > 0) {
-					const firstMatch = normalizedText.indexOf(normalizedQuery);
-					const previewStart = Math.max(0, firstMatch - 45);
-					const previewEnd = Math.min(text.length, firstMatch + normalizedQuery.length + 75);
+				const preview = createPdfFindPreview(text, query);
+				if (preview) {
 					const result = {
 						page: pageNumber,
-						occurrences,
-						preview: `${previewStart > 0 ? '…' : ''}${text.slice(previewStart, previewEnd)}${previewEnd < text.length ? '…' : ''}`
+						...preview
 					};
 					results.push(result);
 					options.onResult?.(result);
 				}
-			} finally {
-				page.cleanup();
 				completedPages += 1;
 				options.onProgress?.(completedPages, document.numPages);
+			} finally {
+				page.cleanup();
 			}
 		}
 	};
 
-	await Promise.all(Array.from({ length: workerCount }, inspectPages));
-	return results.sort((left, right) => left.page - right.page);
+	try {
+		await Promise.all(
+			Array.from({ length: workerCount }, async () => {
+				try {
+					await inspectPages();
+				} catch (error) {
+					// Stop sibling publication/scheduling before Promise.all's rejection is observed.
+					abort();
+					throw error;
+				}
+			})
+		);
+		return results.sort((left, right) => left.page - right.page);
+	} finally {
+		options.signal?.removeEventListener('abort', abort);
+	}
 };
 
 export const clampPdfPage = (page: number, totalPages: number): number =>

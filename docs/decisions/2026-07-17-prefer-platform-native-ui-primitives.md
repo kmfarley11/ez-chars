@@ -4,6 +4,10 @@
 **Author:** Codex  
 **Date:** 2026-07-17
 
+**Last reviewed:** 2026-10-09
+
+**Latest refinement:** BL-082 retains a measured viewport fallback when supported native menu anchors place an open menu outside the viewport.
+
 ## Context & Problem Statement
 
 The local-first sheet needs menus, dialogs, and responsive layouts that remain accessible and responsive on phone-sized viewports. Custom JavaScript used to simulate browser overlay behavior adds event and layout work that the platform can often provide directly.
@@ -59,3 +63,7 @@ Cross-browser Playwright verification found that WebKit correctly dismisses nati
 ### 2026-08-13 — Focused dialog, panel, and layout boundaries
 
 BL-074 centralized reusable modal lifecycle in `DialogShell.svelte`, including a narrow cancellation hook for editors that must discard a draft before the dialog closes. It also replaced the multi-purpose `GridContainer` with `CollapsiblePanel`, `PanelSurface`, and `ResponsiveGrid`. These are responsibility splits, not new native substitutes: the dialog remains platform-native, collapse remains intentionally stateful, and responsive layout remains CSS-owned.
+
+### 2026-10-09 — Offscreen native anchor recovery
+
+BL-082's normal-host regression reproducibly placed the More menu at approximately y=-2603 in desktop WebKit while its fixed reader trigger remained at y=69 after the sheet scrolled 2704 CSS pixels. The engine reported anchor support, so the existing unsupported-feature fallback did not activate. Keep native anchoring as the default, but measure placement once on opening; if the menu lies outside the viewport, use the existing viewport-edge fallback presentation. Reset the override on close so future opens try native placement again. This is shared MenuButton behavior, not reader-specific positioning or user-agent sniffing. Native Popover API light dismissal and focus semantics remain authoritative; no scroll-measurement loop, custom overlay engine, or dependency is added. The scrolled-sheet application regression asserts viewport reachability, Escape/focus restoration, reopening, and command handoff.

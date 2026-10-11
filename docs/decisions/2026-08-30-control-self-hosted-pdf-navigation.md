@@ -3,8 +3,8 @@
 - **Status:** Approved
 - **Author:** Codex with project owner direction
 - **Date:** 2026-08-30
-- **Last reviewed:** 2026-09-07
-- **Latest refinement:** [`BL-069`](../../openspec/changes/archive/2026-09-08-bl-069-rights-classified-reference-navigation/proposal.md) accepts the compact viewer baseline with a temporary Firefox/macOS rapid-scroll notice, defaults stacked phone navigation closed, and delegates supported-platform classification and broader mobile toolbar optimization to `BL-072` and `BL-082`.
+- **Last reviewed:** 2026-10-10
+- **Latest refinement:** [`BL-082`](../../openspec/changes/archive/2026-10-10-bl-082-refine-mobile-rules-reader/design.md) rolls out the owner-approved shared compact reader and bounded stream-text compatibility adapter. Explicit Close preserves sheet position; browser Back restores invocation context. Final integrated approval was recorded 2026-10-09; physical Android coverage is an explicitly accepted gap owned by BL-072. On 2026-10-10 the owner approved the narrowly scoped temporary development-advisory exception recorded in the bounded security overrides decision; audit failure remains visible and BL-072 owns reassessment.
 
 ## Context & Problem Statement
 
@@ -52,6 +52,8 @@ Resolve every PDF.js worker and supporting resource through explicit build-manag
 
 Use SvelteKit shallow routing for sheet-owned reference state: `pushState('', state)` creates a dismissible history entry, and Close converges on browser Back. Read the state through `$app/state`; direct entry and reload cannot rely on history state and must retain a browser-PDF fallback. This follows the current [SvelteKit shallow-routing guidance](https://svelte.dev/docs/kit/shallow-routing) and its documented first-load/JavaScript caveats.
 
+The 2026-10-08 refinements below supersede the Close/Back equivalence: retain **one entry per open reader**, but explicit Close replaces that entry in place so it does not undo independent sheet navigation. Browser Back retains invocation-context restoration.
+
 Present a sheet reference as a non-modal side panel at desktop width and as a full-viewport reference mode at phone width. When reference inspection begins inside an existing native edit dialog, render it as a back-navigable step inside that dialog rather than opening a second modal. Keep the underlying draft mounted, unchanged, and focus-confined; returning restores focus to the invoking control.
 
 Resource discovery searches only registered titles, versions, project-owned topics, curated labels, and independently authored descriptions. Find inside an open PDF may process that document transiently, but extracted text is not cataloged, persisted, exported, or reused as a cross-document corpus. A bounded app-owned index requires separate evidence-triggered backlog work. User-selected or user-local PDFs remain independently scoped as `BL-080` because they require source verification, browser storage, privacy, removal, and rights decisions.
@@ -61,8 +63,8 @@ Resolve delivery rights, user access, locator health, runtime availability, and 
 ### Local primitive reuse audit
 
 - Reuse `BaseButton.svelte` for viewer, navigation, fallback, retry, and dismissal controls so visible focus and coarse-pointer sizing inherit the shared contract.
-- Reuse `PanelSurface.svelte` for the desktop reference shell. Add a focused viewer surface inside it because no existing panel owns PDF canvas/text layers, a bounded rendered-page window, outline state, or document lifecycle.
-- Reuse `DialogShell.svelte` for the existing annotation/editor modal and its Back-step, scroll, cancellation, and focus-confinement behavior. Do not use a second `DialogShell` for the nested reference because simultaneous modal focus traps would be invalid and confusing. Do not use it for the desktop panel because that presentation is intentionally non-modal.
+- Reuse `PanelSurface.svelte` for the desktop reference shell inside the shared modal/non-modal workspace (see the 2026-10-09 refinement). Add a focused viewer surface inside it because no existing panel owns PDF canvas/text layers, a bounded rendered-page window, outline state, or document lifecycle.
+- Reuse `DialogShell.svelte` for the existing annotation/editor modal and its Back-step, scroll, cancellation, and focus-confinement behavior. Do not use a second `DialogShell` for the nested reference because simultaneous modal focus traps would be invalid and confusing. The original exclusion of `DialogShell` from desktop presentation is superseded below: its opt-in workspace now supports a genuinely non-modal desktop shell.
 - Reuse `createScrollAffordanceAttachment` for bounded textual side regions such as a long outline when the visual cue is useful. Do not use it as the PDF virtualization mechanism: page visibility and render cancellation require page-aware `IntersectionObserver` ownership rather than only top/bottom overflow state.
 - Reuse `asset(...)` and extend the existing URL helpers for adopted document links. PDF.js worker/support assets use build-managed module URLs because they come from the pinned package rather than the repository's static asset inventory.
 - Reuse established labeled search-input, result-count, clear-query, no-match, and empty-state language. No generic search component currently exists, and dense collection views own unrelated row, dialog, and mutation behavior, so they are not embedded in the resource proof.
@@ -107,6 +109,8 @@ Treat the outer desktop divider's terminal right-edge snap as another way to dis
 
 ### 2026-09-07 — Firefox paint stability and phone navigation baseline
 
+The stacked-phone disclosure rule below is superseded by the 2026-10-09 compact reader refinement; the paint evidence remains applicable.
+
 Physical Firefox review found black-region corruption during fast sheet scrolling after the lag-heavy translucent row had already been replaced. Retain the compact opaque fixed tab, but remove layout/paint containment and the forced 3D transform from its wrapper; a control this small does not justify compositor promotion, and physical Firefox remains the acceptance boundary because frame-rate automation cannot observe paint corruption.
 
 On stacked phone/tablet layouts, default document navigation closed behind a full-width, visibly named `Outline & find` button with a directional chevron. Preserve the icon-only minimized rail on desktop and keep the global page toolbar visible for this accepted baseline. P0 `BL-082` will compare persistent, disclosed, sticky, and scroll-aware phone tools across the complete source presentations before external playtest hardening; it may refine this ADR if that proof changes the durable presentation boundary.
@@ -114,3 +118,25 @@ On stacked phone/tablet layouts, default document navigation closed behind a ful
 ### 2026-09-07 — Accepted Firefox/macOS limitation pending matrix evidence
 
 The owner's final headed review still reproduces transient black or unpainted regions during rapid sheet scrolling in Firefox on macOS after the translucent row and explicit compositor hints were removed. Slow scrolling is usable, automated Firefox behavior passes, and no equivalent physical non-macOS Firefox result is yet available. Accept the interaction implementation without another speculative browser-specific workaround. During the pre-release period, identify the observed Firefox/macOS combination and recommend another current browser when the artifact disrupts play; do not describe Firefox generally as unsupported or attribute the root cause without evidence. `BL-072` owns the headed macOS/non-macOS comparison, profiling, supported-platform decision, and the eventual removal or revision of the notice.
+
+### 2026-10-08 — One dismissible reference history entry
+
+BL-082's restored independent desktop sheet interaction exposed sheet-outline jumps copying open-reader state into multiple pushed entries. Close consequently stepped backward through still-open readers instead of dismissing once. Keep the existing shallow-history ownership, but replace the active reader entry for sheet landmarks and subsequent source choices. Preserve the first invocation's origin and focus owner. Direct-link entry must not manufacture a sheet-origin Back step when its source changes. Ordinary sheet jumps with the reader closed still push entries; PDF page/Find navigation remains viewer-local.
+
+This deliberately treats background sheet jumps during an open reader as part of that temporary workspace: they are not individually Back-navigable. Close and browser Back dismiss to the pre-reader invocation context in one action; Forward can revisit the single reader entry. No custom history traversal loop, private SvelteKit history indexes, or persisted reader state is introduced. The separately accepted resume-position idea remains backlogged.
+
+### 2026-10-08 — Explicit Close preserves the current sheet position
+
+The owner's next review rejects the remaining return-to-origin effect of Close: opening at Quick Reference and then jumping to Inventory must not send the sheet back to Quick Reference on dismissal. Supersede the Close portion of the preceding refinement while retaining one-entry browser-Back dismissal. Explicit Close, resize-to-close, and shell cancellation replace the current entry with reader state removed, preserving its full URL/fragment and current scroll position. Restore invocation focus without scrolling to an offscreen trigger. Browser Back remains genuine history traversal and can restore the pre-reader context; Forward may reopen a reader left through Back, but not an explicitly dismissed entry.
+
+This accepts possible same-URL closed entries after repeated open/Close without sheet navigation. Avoiding those duplicates would require asynchronous traversal/restoration or a broader history model; neither is justified for this bounded correction. No private router state, global scroll override, persistence, or annotation-draft change is needed.
+
+### 2026-10-09 — Shared compact reader and bounded text compatibility
+
+The owner approved persistent labeled Find/Outline/page access with secondary actions in the shared action popover. Compact tools temporarily replace the document area and return in one step, retaining the mounted document and same-document search/scroll state. This supersedes the earlier stacked-phone `Outline & find` rule; no scroll auto-hide is introduced. Expanded readers retain resizing and place page controls above the document. Find previews highlight literal matches and results can collapse independently of the input/status; highlighting inside the PDF remains deferred.
+
+`ReferenceReaderLayout` owns the shared composition, selected from available reader width, while `ReferencePdfViewer` owns PDF/search lifecycle. The sheet uses `DialogShell`'s workspace mode: modal on phones, non-modal on desktop. Global scroll locking applies only to actual modal dialogs. Annotation readers fill the existing editor shell rather than creating another modal or stacking a fixed viewport-height wrapper. No proof switches remain in normal operation.
+
+Controlled missing-stream-iteration tests reproduced the reported text failure in both pinned modern and legacy builds. Retain the current pinned modern engine/worker rather than switching unproven bundles or patching globals. The shared `readPdfText` adapter consumes the public stream reader, preserves PDF text aggregation, and supplies the engine-required Error on cancellation. Find guards request identity and terminal state so late sibling work cannot overwrite failure or a retry. No new dependency or support-floor increase is adopted. Page paint, selectable text, and completed Find are separately verified; actionable late failures retain a direct browser fallback without changing a draft.
+
+The owner reports successful review on iPhone 16 Pro Max with the latest installed Safari, Firefox, and Chrome as of 2026-10-09 (previously reported iOS 26.6.2; numeric app versions not supplied). Physical Android is unavailable, and the owner explicitly authorized rollout with that evidence gap. Working in-app reading and Find remain required on current iOS/Safari and Android/Chrome; emulation and fallback are not physical certification. BL-072 owns additional device/version evidence and the practical older-device boundary. The earlier Firefox/macOS rapid-scroll caveat remains independent. See the change-local verify.md for exact reproduction and results.

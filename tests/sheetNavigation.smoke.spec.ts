@@ -127,7 +127,11 @@ test('deduplicates explicit fragments and resolves Back, Forward, and Rules hist
 	await expect(reference).not.toBeVisible();
 	await expect(rules).toBeFocused();
 	await expect(page).toHaveURL(/#sheet-features-traits-heading$/);
-	await page.evaluate(() => history.back());
+	// Explicit Close keeps a closed current entry rather than consuming browser Back.
+	await page.goBack();
+	await expect(page).toHaveURL(/#sheet-features-traits-heading$/);
+	await expect(reference).not.toBeVisible();
+	await page.goBack();
 	await expect(page).toHaveURL(/#sheet-quick-reference-heading$/);
 	await expect(page.getByRole('button', { name: 'Collapse Quick Reference' })).toBeFocused();
 });

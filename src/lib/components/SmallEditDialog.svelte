@@ -264,6 +264,7 @@
 	fullHeightMobile
 	wide={!!reference}
 	scrollAffordance={!reference}
+	contentFillsSpace={!!reference}
 	onClose={onClosed}
 	onOpened={opened}
 	onCancel={handleCancel}
@@ -455,7 +456,7 @@
 		{/if}
 	</div>
 	{#if reference}
-		<div class="flex h-[min(64dvh,44rem)] min-h-[18rem]">
+		<div class="flex min-h-0 flex-1">
 			<ReferencePdfViewer
 				title={reference.resource.title}
 				url={reference.generalHref}

@@ -42,6 +42,7 @@
 	}: Props = $props();
 
 	let triggerEl = $state<HTMLButtonElement>();
+	let shell = $state<ReturnType<typeof DialogShell>>();
 	let shouldRenderDialog = $state(false);
 	let isEditing = $state(false);
 	let draftAnnotations = $state<Array<GridContentAnnotation>>([]);
@@ -63,6 +64,7 @@
 		if (!resolved) return;
 		referenceInvoker = invoker;
 		activeReference = resolved;
+		void tick().then(() => shell?.focusHeading());
 	};
 
 	const leaveReference = async () => {
@@ -153,6 +155,7 @@
 
 {#if shouldRenderDialog}
 	<DialogShell
+		bind:this={shell}
 		bind:open={shouldRenderDialog}
 		title={activeReference ? activeReference.locator.label : `${fieldLabel} Notes`}
 		showBack={activeReference !== undefined}
@@ -163,6 +166,7 @@
 		fullHeightMobile={activeReference !== undefined}
 		wide={activeReference !== undefined}
 		scrollAffordance={activeReference === undefined}
+		contentFillsSpace={activeReference !== undefined}
 	>
 		<div hidden={activeReference !== undefined} inert={activeReference !== undefined}>
 			<p class="theme-text-muted text-xs mb-3">{fieldLabel}</p>
@@ -188,7 +192,7 @@
 		</div>
 
 		{#if activeReference}
-			<div class="flex h-[min(64dvh,44rem)] min-h-[18rem]">
+			<div class="flex min-h-0 flex-1">
 				<ReferencePdfViewer
 					title={activeReference.resource.title}
 					url={activeReference.generalHref}

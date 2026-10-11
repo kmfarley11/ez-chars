@@ -26,7 +26,7 @@ const openCharacter = async (page: Page) => {
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-character/);
 };
 
-test('opens a contextual SRD locator at the exact page and converges Close and browser Back', async ({
+test('opens a contextual SRD locator at the exact page and supports Close and browser Back', async ({
 	page,
 	context
 }) => {
@@ -38,10 +38,6 @@ test('opens a contextual SRD locator at the exact page and converges Close and b
 	const reference = page.getByRole('complementary', { name: 'Rules reference' });
 	await expect(reference).toBeVisible();
 	await expect(page).toHaveURL(initialUrl);
-	const expandNavigation = reference.getByRole('button', {
-		name: 'Expand document navigation'
-	});
-	if (await expandNavigation.isVisible()) await expandNavigation.click();
 	const documentRegion = reference.getByRole('region', { name: /PDF document pages/ });
 	const currentPage = reference.getByLabel('PDF page 8, current page');
 	await expect(currentPage).toBeVisible();
@@ -51,11 +47,13 @@ test('opens a contextual SRD locator at the exact page and converges Close and b
 	expect(currentPageBox).not.toBeNull();
 	expect(currentPageBox!.y).toBeGreaterThanOrEqual(documentBox!.y);
 	expect(currentPageBox!.y - documentBox!.y).toBeLessThanOrEqual(48);
+	await reference.getByRole('button', { name: 'Outline', exact: true }).click();
 	const curatedSection = reference.getByRole('button', { name: /Equipment — page 62/ });
 	await expect(curatedSection).toBeVisible();
 	expect(await curatedSection.evaluate((element) => getComputedStyle(element).cursor)).toBe(
 		'pointer'
 	);
+	await reference.getByRole('button', { name: 'More reference actions' }).click();
 	await expect(reference.getByRole('link', { name: 'Open in browser' })).toHaveAttribute(
 		'href',
 		/#page=8$/
@@ -94,14 +92,18 @@ test('scrolls progressively through the full PDF while mounting only nearby page
 		element.scrollTop = element.scrollHeight;
 	});
 	await expect(reference.getByLabel('PDF page 403, current page')).toBeVisible();
-	await expect(reference.getByRole('spinbutton')).toHaveValue('403');
+	await expect(reference.getByRole('button', { name: 'Page tools', exact: true })).toHaveText(
+		'403 / 403'
+	);
 	expect(await reference.getByLabel(/^PDF page \d/).count()).toBeLessThanOrEqual(3);
 
 	await documentRegion.evaluate((element) => {
 		element.scrollTop = 0;
 	});
 	await expect(reference.getByLabel('PDF page 1, current page')).toBeVisible();
-	await expect(reference.getByRole('spinbutton')).toHaveValue('1');
+	await expect(reference.getByRole('button', { name: 'Page tools', exact: true })).toHaveText(
+		'1 / 403'
+	);
 });
 
 test('keeps general Rules reachable while scrolled and exposes bounded resource discovery', async ({
@@ -135,6 +137,14 @@ test('keeps general Rules reachable while scrolled and exposes bounded resource 
 	await rulesTrigger.click();
 	const reference = page.getByRole('complementary', { name: 'Rules reference' });
 	await expect(reference.getByLabel('PDF page 1, current page')).toBeVisible();
+	await reference.getByRole('button', { name: 'More reference actions' }).click();
+	await expect(reference.getByRole('button', { name: 'Browse resources' })).toBeInViewport();
+	await reference.getByRole('button', { name: 'Browse resources' }).focus();
+	await page.keyboard.press('Escape');
+	await expect(reference.getByRole('button', { name: 'More reference actions' })).toBeFocused();
+	await expect(reference.getByRole('button', { name: 'Browse resources' })).not.toBeVisible();
+	await reference.getByRole('button', { name: 'More reference actions' }).click();
+	await expect(reference.getByRole('button', { name: 'Browse resources' })).toBeInViewport();
 	await reference.getByRole('button', { name: 'Browse resources' }).click();
 	const search = reference.getByRole('searchbox', { name: 'Search rules resources' });
 	await expect(search).toBeFocused();
@@ -205,12 +215,9 @@ test('finds text inside only the open PDF and navigates to the matching page', a
 	await openCharacter(page);
 	await page.getByRole('button', { name: 'References: classes' }).click();
 	const reference = page.getByRole('complementary', { name: 'Rules reference' });
-	const expandNavigation = reference.getByRole('button', {
-		name: 'Expand document navigation'
-	});
-	if (await expandNavigation.isVisible()) await expandNavigation.click();
+	await reference.getByRole('button', { name: 'Find', exact: true }).first().click();
 	await reference.getByRole('searchbox').fill('Barbarian');
-	await reference.getByRole('button', { name: 'Find', exact: true }).click();
+	await reference.getByRole('button', { name: 'Find', exact: true }).last().click();
 	const firstResult = reference.getByRole('button', { name: /^Page \d+ \(/ }).first();
 	await expect(firstResult).toBeVisible({ timeout: 20_000 });
 	await expect(reference.getByText(/Found \d+ matches? so far/)).toBeVisible();
@@ -380,50 +387,35 @@ test('uses a full-screen surface on phone and keeps primary controls touch-sized
 	await openCharacter(page);
 	await page.getByRole('button', { name: 'Rules', exact: true }).click();
 	const reference = page.getByRole('complementary', { name: 'Rules reference' });
-	const expandNavigation = reference.getByRole('button', {
-		name: 'Expand document navigation'
-	});
-	await expect(expandNavigation).toBeVisible();
-	await expect(expandNavigation).toContainText('Outline & find');
+	await expect(reference.getByRole('button', { name: 'Find', exact: true })).toBeVisible();
 	await expect(reference.getByText('Document outline', { exact: true })).not.toBeVisible();
-	const box = await reference.boundingBox();
-	const viewport = page.viewportSize();
-	expect(box).not.toBeNull();
-	expect(viewport).not.toBeNull();
-	expect(box!.x).toBeLessThanOrEqual(1);
-	expect(box!.y).toBeLessThanOrEqual(1);
-	expect(Math.abs(box!.width - viewport!.width)).toBeLessThanOrEqual(1);
-	expect(Math.abs(box!.height - viewport!.height)).toBeLessThanOrEqual(1);
-
-	for (const control of [
-		reference.getByRole('button', { name: 'Close rules reference' }),
-		reference.getByRole('button', { name: 'Previous PDF page' }),
-		reference.getByRole('button', { name: 'Next PDF page' }),
-		expandNavigation
+	const box = (await reference.boundingBox())!;
+	const viewport = page.viewportSize()!;
+	expect(box.x).toBeLessThanOrEqual(1);
+	expect(box.y).toBeLessThanOrEqual(1);
+	expect(Math.abs(box.width - viewport.width)).toBeLessThanOrEqual(1);
+	expect(Math.abs(box.height - viewport.height)).toBeLessThanOrEqual(1);
+	for (const name of [
+		'Close rules reference',
+		'Find',
+		'Outline',
+		'Page tools',
+		'More reference actions'
 	]) {
-		const controlBox = await control.boundingBox();
-		expect(controlBox?.width).toBeGreaterThanOrEqual(44);
-		expect(controlBox?.height).toBeGreaterThanOrEqual(44);
+		const bounds = (await reference.getByRole('button', { name, exact: true }).boundingBox())!;
+		expect(bounds.width).toBeGreaterThanOrEqual(44);
+		expect(bounds.height).toBeGreaterThanOrEqual(44);
 	}
-
-	await expandNavigation.click();
-	const collapseNavigation = reference.getByRole('button', {
-		name: 'Collapse document navigation'
-	});
-	await expect(collapseNavigation).toBeVisible();
-	await expect(collapseNavigation).toContainText('Outline & find');
-	const collapseBox = await collapseNavigation.boundingBox();
-	expect(collapseBox?.width).toBeGreaterThanOrEqual(44);
-	expect(collapseBox?.height).toBeGreaterThanOrEqual(44);
-
-	const navigationBox = await reference.getByLabel('PDF navigation details').boundingBox();
-	const documentBox = await reference
-		.getByRole('region', { name: /PDF document pages/ })
-		.boundingBox();
-	expect(navigationBox?.height).toBeGreaterThanOrEqual(180);
-	expect(documentBox?.height).toBeGreaterThanOrEqual(180);
-
-	await collapseNavigation.click();
-	await expect(expandNavigation).toBeVisible();
+	await reference.getByRole('button', { name: 'Page tools', exact: true }).click();
+	for (const name of ['Previous PDF page', 'Next PDF page', 'Back to document']) {
+		const bounds = (await reference.getByRole('button', { name, exact: true }).boundingBox())!;
+		expect(bounds.width).toBeGreaterThanOrEqual(44);
+		expect(bounds.height).toBeGreaterThanOrEqual(44);
+	}
+	await reference.getByRole('button', { name: 'Back to document', exact: true }).click();
+	await reference.getByRole('button', { name: 'Outline', exact: true }).click();
+	await expect(reference.getByText('Document outline', { exact: true })).toBeVisible();
+	await reference.getByRole('button', { name: 'Back to document', exact: true }).click();
 	await expect(reference.getByText('Document outline', { exact: true })).not.toBeVisible();
+	await expect(reference.getByRole('region', { name: /PDF document pages/ })).toBeVisible();
 });

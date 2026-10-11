@@ -5,6 +5,22 @@ import { clampPdfPage, findPdfText, nearbyPdfPages, readPdfOutline } from '../pd
 const asDocument = (value: Partial<PDFDocumentProxy>): PDFDocumentProxy =>
 	value as PDFDocumentProxy;
 
+const textStream = (text: string) =>
+	new ReadableStream({
+		start(controller) {
+			controller.enqueue({ items: [{ str: text }], styles: {}, lang: null });
+			controller.close();
+		}
+	});
+
+const deferredPage = () => {
+	let resolve!: (page: PDFPageProxy) => void;
+	const promise = new Promise<PDFPageProxy>((accept) => {
+		resolve = accept;
+	});
+	return { promise, resolve };
+};
+
 describe('PDF viewer projections', () => {
 	it('clamps exact pages and mounts only the current page with immediate neighbors', () => {
 		expect(clampPdfPage(0, 403)).toBe(1);
@@ -43,7 +59,7 @@ describe('PDF viewer projections', () => {
 		const pages = textByPage.map(
 			(text, index) =>
 				({
-					getTextContent: vi.fn().mockResolvedValue({ items: [{ str: text }] }),
+					streamTextContent: () => textStream(text),
 					cleanup: cleanup[index]
 				}) as unknown as PDFPageProxy
 		);
@@ -68,7 +84,7 @@ describe('PDF viewer projections', () => {
 			getPage: vi.fn(async () => {
 				controller.abort();
 				return {
-					getTextContent: vi.fn().mockResolvedValue({ items: [{ str: 'first page' }] }),
+					streamTextContent: () => textStream('first page'),
 					cleanup: vi.fn()
 				} as unknown as PDFPageProxy;
 			})
@@ -79,5 +95,50 @@ describe('PDF viewer projections', () => {
 		).rejects.toMatchObject({
 			name: 'AbortError'
 		});
+	});
+
+	it('stops failed-search callbacks and scheduling while a retry completes independently', async () => {
+		const first = deferredPage();
+		const late = deferredPage();
+		const lateCleanup = vi.fn();
+		const document = asDocument({
+			numPages: 7,
+			getPage: vi
+				.fn()
+				.mockImplementationOnce(() => first.promise)
+				.mockImplementation(() => late.promise)
+		});
+		const progress = vi.fn();
+		const result = vi.fn();
+		const failed = findPdfText(document, 'armor', { onProgress: progress, onResult: result });
+		const rejected = expect(failed).rejects.toThrow('broken text');
+		first.resolve({
+			streamTextContent: () =>
+				new ReadableStream({
+					start(controller) {
+						controller.error(new Error('broken text'));
+					}
+				}),
+			cleanup: vi.fn()
+		} as unknown as PDFPageProxy);
+		await rejected;
+		const retry = asDocument({
+			numPages: 1,
+			getPage: vi.fn().mockResolvedValue({
+				streamTextContent: () => textStream('armor'),
+				cleanup: vi.fn()
+			})
+		});
+		await expect(findPdfText(retry, 'armor')).resolves.toHaveLength(1);
+		late.resolve({
+			streamTextContent: () => textStream('armor'),
+			cleanup: lateCleanup
+		} as unknown as PDFPageProxy);
+		await late.promise;
+		await Promise.resolve();
+		expect(document.getPage).toHaveBeenCalledTimes(6);
+		expect(lateCleanup).toHaveBeenCalledTimes(5);
+		expect(progress).not.toHaveBeenCalled();
+		expect(result).not.toHaveBeenCalled();
 	});
 });

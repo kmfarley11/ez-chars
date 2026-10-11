@@ -34,16 +34,34 @@
 		triggerEl = $bindable<HTMLButtonElement>()
 	}: Props = $props();
 	let isMenuOpen = $state(false);
+	let useViewportFallback = $state(false);
 	const componentId = $props.id();
 	const menuButtonId = `menu-button-${componentId}`;
 	const menuId = `menu-${componentId}`;
 	const anchorName = `--menu-anchor-${componentId}`;
 
 	const handlePopoverToggle = (event: ToggleEvent) => {
+		const menu = event.currentTarget as HTMLElement;
 		if ('newState' in event && typeof event.newState === 'string') {
 			isMenuOpen = event.newState === 'open';
 		} else {
 			isMenuOpen = (event.currentTarget as HTMLElement).matches(':popover-open');
+		}
+		if (!isMenuOpen) {
+			useViewportFallback = false;
+			return;
+		}
+		// Some engines accept anchors but misplace a top-layer menu from a fixed
+		// dialog after document scrolling. Reuse the viewport fallback only when
+		// measured placement is offscreen; native popover dismissal stays authoritative.
+		const bounds = menu.getBoundingClientRect();
+		if (
+			bounds.top < 0 ||
+			bounds.left < 0 ||
+			bounds.bottom > window.innerHeight ||
+			bounds.right > window.innerWidth
+		) {
+			useViewportFallback = true;
 		}
 	};
 
@@ -94,6 +112,7 @@
 	<div
 		id={menuId}
 		popover="auto"
+		data-position-fallback={useViewportFallback ? '' : undefined}
 		class="menu-popover {align === 'right'
 			? 'menu-popover-right'
 			: ''} min-w-36 divide-y rounded-lg p-1 {colors} shadow-sm ring-1"
@@ -123,6 +142,16 @@
 	.menu-popover-right {
 		inset-inline-start: auto;
 		inset-inline-end: anchor(right);
+	}
+
+	.menu-popover[data-position-fallback] {
+		position-anchor: auto;
+		position-try-fallbacks: none;
+		inset: auto 1rem 1rem auto;
+	}
+
+	.menu-popover[data-position-fallback]:not(.menu-popover-right) {
+		inset: auto auto 1rem 1rem;
 	}
 
 	@supports not (position-anchor: --menu-anchor) {

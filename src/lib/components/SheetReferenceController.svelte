@@ -6,6 +6,7 @@
 	import BaseButton from '$components/BaseButton.svelte';
 	import HorizontalResizeHandle from '$components/HorizontalResizeHandle.svelte';
 	import PanelSurface from '$components/PanelSurface.svelte';
+	import DialogShell from '$components/DialogShell.svelte';
 	import RulesResourceLibrary from '$components/RulesResourceLibrary.svelte';
 	import ReferencePdfViewer, {
 		type CuratedPdfSection
@@ -13,6 +14,7 @@
 	import { clampResizablePaneSize } from '$components/horizontalResize';
 	import { dnd5e2014ResourceCatalog } from '$lib/resources/dnd5e2014ResourceCatalog';
 	import { resolveResourceLocator } from '$lib/resources/resourceCatalog';
+	import { closeSheetReference } from '$lib/resources/sheetReferenceNavigation';
 
 	let headingEl = $state<HTMLHeadingElement>();
 	let librarySearchEl = $state<HTMLInputElement>();
@@ -105,20 +107,7 @@
 		headingEl?.focus();
 	};
 
-	const closeReference = () => {
-		if (page.state.referenceOrigin === 'sheet' && page.state.referenceLocatorId) {
-			history.back();
-			return;
-		}
-		const rest = { ...page.state };
-		delete rest.referenceLocatorId;
-		delete rest.referenceOrigin;
-		const sheetUrl = `/charsheets/5e${page.url.search}${window.location.hash}`;
-		replaceState(resolve(sheetUrl as '/charsheets/5e'), {
-			...rest,
-			referenceDirectDismissed: true
-		});
-	};
+	const closeReference = closeSheetReference;
 
 	$effect(() => {
 		if (isOpen && !wasOpen) {
@@ -131,7 +120,7 @@
 			void tick().then(() => {
 				if (!focusId) return;
 				const target = document.getElementById(focusId);
-				if (target instanceof HTMLElement) target.focus();
+				if (target instanceof HTMLElement) target.focus({ preventScroll: true });
 			});
 		}
 		wasOpen = isOpen;
@@ -140,9 +129,9 @@
 
 <svelte:window bind:innerWidth={viewportWidth} />
 
-{#if isOpen}
+{#snippet referenceContent()}
 	<aside
-		class="reference-sheet-surface fixed inset-y-0 right-0 z-40 flex"
+		class="reference-sheet-surface z-40 flex"
 		aria-label="Rules reference"
 		style:width={`${referenceSurfaceWidth}px`}
 	>
@@ -166,25 +155,18 @@
 		<PanelSurface
 			classes="reference-panel m-0 flex h-full min-h-0 min-w-0 flex-1 flex-col rounded-none p-3 shadow-2xl"
 		>
-			<header class="mb-3 flex shrink-0 items-center gap-3 border-b pb-3">
+			<header class="mb-2 flex shrink-0 items-center gap-2 border-b pb-2">
 				<div class="min-w-0 flex-1">
-					<p class="theme-text-muted text-xs font-semibold uppercase tracking-wide">
-						Rules reference
-					</p>
 					<h2 bind:this={headingEl} tabindex="-1" class="truncate text-lg font-bold outline-none">
 						{isLibraryOpen
 							? 'Resource library'
-							: (disposition?.locator.label ?? 'Reference unavailable')}
+							: (disposition?.resource.title ?? 'Reference unavailable')}
 					</h2>
 				</div>
 				<div class="flex shrink-0 flex-wrap justify-end gap-2">
 					{#if isLibraryOpen}
 						<BaseButton size="sm" onclick={() => void closeResourceLibrary()}>
 							Back to document
-						</BaseButton>
-					{:else}
-						<BaseButton size="sm" onclick={() => void openResourceLibrary()}>
-							Browse resources
 						</BaseButton>
 					{/if}
 					<BaseButton size="sm" ariaLabel="Close rules reference" onclick={closeReference}>
@@ -201,56 +183,71 @@
 					bind:searchInputEl={librarySearchEl}
 					onOpenInternal={(locatorId) => void openLibraryReference(locatorId)}
 				/>
-			{:else if disposition && internalViewerConfig}
-				{#if internalViewerConfig.staleLocator}
-					<p class="theme-muted-surface mb-3 rounded-md border p-2 text-sm" role="status">
-						The exact page needs review. The verified document opened at its beginning instead.
-					</p>
-				{/if}
-				<ReferencePdfViewer
-					title={disposition.resource.title}
-					url={disposition.generalHref}
-					browserHref={internalViewerConfig.browserHref}
-					initialPage={internalViewerConfig.initialPage}
-					{curatedSections}
-				/>
-			{:else}
-				<div class="space-y-3" role="alert">
-					<p class="font-semibold">This reference cannot open in the in-app viewer.</p>
-					{#if disposition}
-						<a
-							class="theme-link touch-target inline-flex items-center underline"
-							href={disposition.generalHref}
-							target="_blank"
-							rel="external noopener noreferrer"
-						>
-							Open source details
-						</a>
-					{/if}
-				</div>
 			{/if}
+			<div
+				class="min-h-0 flex-1 flex-col"
+				class:flex={!isLibraryOpen}
+				hidden={isLibraryOpen}
+				inert={isLibraryOpen}
+			>
+				{#if disposition && internalViewerConfig}
+					{#if internalViewerConfig.staleLocator}
+						<p class="theme-muted-surface mb-3 rounded-md border p-2 text-sm" role="status">
+							The exact page needs review. The verified document opened at its beginning instead.
+						</p>
+					{/if}
+					<ReferencePdfViewer
+						onBrowseResources={openResourceLibrary}
+						title={disposition.resource.title}
+						url={disposition.generalHref}
+						browserHref={internalViewerConfig.browserHref}
+						initialPage={internalViewerConfig.initialPage}
+						{curatedSections}
+					/>
+				{:else}
+					<div class="space-y-3" role="alert">
+						<p class="font-semibold">This reference cannot open in the in-app viewer.</p>
+						{#if disposition}
+							<a
+								class="theme-link touch-target inline-flex items-center underline"
+								href={disposition.generalHref}
+								target="_blank"
+								rel="external noopener noreferrer"
+							>
+								Open source details
+							</a>
+						{/if}
+					</div>
+				{/if}
+			</div>
 		</PanelSurface>
 	</aside>
+{/snippet}
+
+{#if isOpen}
+	<DialogShell
+		open
+		workspace
+		modal={viewportWidth < 640}
+		workspaceWidth={referenceSurfaceWidth}
+		title="Rules reference"
+		onOpened={() => headingEl?.focus()}
+		onCancel={() => {
+			closeReference();
+			return false;
+		}}
+	>
+		{@render referenceContent()}
+	</DialogShell>
 {/if}
 
 <style>
 	.reference-sheet-surface {
 		background: var(--color-surface);
+		height: 100%;
+		max-width: 100%;
 	}
-
 	.reference-sheet-surface :global(.reference-panel) {
 		border-width: 0;
-	}
-
-	@media (max-width: 639px) {
-		.reference-sheet-surface {
-			inset: 0;
-			width: 100%;
-			height: 100dvh;
-		}
-
-		.reference-sheet-surface :global(.reference-panel) {
-			border-width: 0;
-		}
 	}
 </style>

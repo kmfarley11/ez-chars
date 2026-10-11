@@ -1,7 +1,5 @@
 <script lang="ts">
-	import { pushState } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { page } from '$app/state';
 	import SmallEditScope from '$components/SmallEditScope.svelte';
 	import {
 		create5eSmallGridModel,
@@ -61,7 +59,10 @@
 		DND5E_2014_GENERAL_LOCATOR_ID,
 		DND5E_2014_SPELLCASTING_LOCATOR_ID
 	} from '$lib/resources/dnd5e2014ResourceCatalog';
-	import { openSheetReference } from '$lib/resources/sheetReferenceNavigation';
+	import {
+		navigateSheetLandmark,
+		openSheetReference
+	} from '$lib/resources/sheetReferenceNavigation';
 	import Dnd5e2014NavigablePanel from './components/Dnd5e2014NavigablePanel.svelte';
 	import Dnd5e2014NavigableRegion from './components/Dnd5e2014NavigableRegion.svelte';
 	import Dnd5e2014SheetNavigation from './components/Dnd5e2014SheetNavigation.svelte';
@@ -118,8 +119,7 @@
 		getCurrentFragment: readFragment,
 		pushFragment: (fragmentId) => {
 			currentHistoryFragment = fragmentId;
-			const sheetUrl = `/charsheets/5e${page.url.search}#${fragmentId}`;
-			pushState(resolve(sheetUrl as '/charsheets/5e'), page.state);
+			navigateSheetLandmark(fragmentId);
 		}
 	});
 	setDnd5e2014SheetLandmarkCoordinator(landmarkCoordinator);
