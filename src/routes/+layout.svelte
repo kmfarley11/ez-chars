@@ -1,5 +1,5 @@
 <script>
-	import NavBar from '$components/NavBar.svelte';
+	import NavBar from '$lib/components/NavBar.svelte';
 	import { onMount } from 'svelte';
 	import { initializeTheme } from '$utils/theme';
 	import { charsStorageIssue, clearRejectedStoredCharacters } from '$storage/store.js';

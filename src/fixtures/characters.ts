@@ -5,7 +5,7 @@ import {
 } from '../schema';
 import { saturatedCharacter5e2014 } from './saturatedCharacter.5e2014';
 
-const bryltin: CharacterDocument5e2014 = create5e2014Character({
+export const bryltin: CharacterDocument5e2014 = create5e2014Character({
 	name: 'Bryltin Brewhammer',
 	meta: {
 		id: 'char-bryltin'
@@ -27,7 +27,7 @@ const bryltin: CharacterDocument5e2014 = create5e2014Character({
 	}
 });
 
-const zindra: CharacterDocument5e2014 = create5e2014Character({
+export const zindra: CharacterDocument5e2014 = create5e2014Character({
 	name: 'Zindra Winterbow',
 	meta: {
 		id: 'char-zindra'

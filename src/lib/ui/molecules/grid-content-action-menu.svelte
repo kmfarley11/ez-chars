@@ -1,0 +1,34 @@
+<script lang="ts">
+	import MenuButton from '$lib/ui/molecules/menu-button.svelte';
+	import MenuItemButton from '$lib/ui/molecules/menu-item-button.svelte';
+
+	interface Props {
+		canEdit: boolean;
+		onEdit: () => void;
+		onNotes: () => void;
+		onManagePins?: () => void;
+		triggerEl?: HTMLButtonElement;
+	}
+
+	let { canEdit, onEdit, onNotes, onManagePins, triggerEl = $bindable() }: Props = $props();
+</script>
+
+<div class="touch-target relative h-7 w-7 shrink-0">
+	<MenuButton
+		iconVariant="ellipsis"
+		buttonSize="sm"
+		buttonIconOnly
+		buttonClasses="rounded-md"
+		ariaLabel="Card actions"
+		title="Card actions"
+		bind:triggerEl
+	>
+		{#if canEdit}
+			<MenuItemButton onclick={onEdit}>Edit</MenuItemButton>
+		{/if}
+		<MenuItemButton onclick={onNotes}>Notes</MenuItemButton>
+		{#if onManagePins}
+			<MenuItemButton onclick={onManagePins}>Manage Pins</MenuItemButton>
+		{/if}
+	</MenuButton>
+</div>

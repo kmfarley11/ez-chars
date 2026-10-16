@@ -41,6 +41,10 @@ export default defineConfig({
 				],
 				test: {
 					name: 'storybook',
+					setupFiles: ['.storybook/vitest.setup.ts'],
+					// Whole-sheet canonical examples retain the full axe audit. The saturated
+					// fixture measured ~19s locally; do not disable rules to fit the 15s default.
+					testTimeout: 30_000,
 					fileParallelism: false,
 					browser: {
 						enabled: true,

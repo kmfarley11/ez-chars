@@ -3,10 +3,10 @@
 	import { tick } from 'svelte';
 	import { charsArray, createNew5eCharacter, deleteCharacterById } from '$storage/store.js';
 
-	import BaseButton from '$components/BaseButton.svelte';
+	import BaseButton from '$lib/ui/atoms/base-button.svelte';
 	import CharacterList from './components/CharacterList.svelte';
-	import MenuItemButton from '$components/MenuItemButton.svelte';
-	import MenuButton from '$components/MenuButton.svelte';
+	import MenuItemButton from '$lib/ui/molecules/menu-item-button.svelte';
+	import MenuButton from '$lib/ui/molecules/menu-button.svelte';
 	import CharacterImportDialog from './components/CharacterImportDialog.svelte';
 	import CharacterExportDialog from './components/CharacterExportDialog.svelte';
 	import {

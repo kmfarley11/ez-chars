@@ -3,7 +3,7 @@ import CharacterExportDialog from './CharacterExportDialog.svelte';
 import { fn } from 'storybook/test';
 
 const meta = {
-	title: 'Organisms/CharacterExportDialog',
+	title: 'Application/CharacterExportDialog',
 	component: CharacterExportDialog,
 	args: {
 		open: true,

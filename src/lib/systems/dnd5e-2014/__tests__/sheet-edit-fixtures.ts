@@ -1,0 +1,103 @@
+import { create5e2014Character, type CharacterDocument5e2014 } from '../../../../schema/index';
+
+export const createSheetEditCharacter = (): CharacterDocument5e2014 =>
+	create5e2014Character({
+		name: 'Edit Tester',
+		meta: { id: 'edit-tester' },
+		identity: { ancestryLineage: 'Elf', background: 'Sage' },
+		features: [
+			{
+				id: 'general-feature',
+				name: 'Keen Mind',
+				summary: 'Recall details accurately.',
+				annotations: [
+					{ id: 'general-feature-note', origin: 'user', kind: 'note', text: 'Manual feature' }
+				]
+			}
+		],
+		inventory: [
+			{
+				id: 'weapon-1',
+				name: 'Longsword',
+				notes: 'Fresh item notes.',
+				tags: ['inventory:weapon'],
+				equipped: true,
+				annotations: [{ id: 'weapon-note', origin: 'user', kind: 'note', text: 'Silvered' }]
+			},
+			{ id: 'gear-1', name: 'Rope', quantity: 1 }
+		],
+		notes: [{ id: 'scratch-1', title: 'Scratch', body: 'Old scratch', kind: 'quick' }],
+		systemData: {
+			race: {
+				name: 'Elf',
+				traits: [
+					{
+						featureId: 'darkvision',
+						name: 'Darkvision',
+						annotations: [
+							{ id: 'trait-note', origin: 'source', kind: 'summary', text: 'See in darkness' }
+						]
+					}
+				]
+			},
+			background: { name: 'Sage' },
+			currency: { gp: { amount: 5 } },
+			roleplay: {
+				motives: {
+					body: 'Old motive',
+					annotations: [{ id: 'motive-note', origin: 'user', kind: 'note', text: 'Secret' }]
+				}
+			},
+			proficiencies: {
+				languages: [
+					{ id: 'language-common', name: 'Common', source: { kind: 'ancestry' } },
+					{ id: 'language-draconic', name: 'Draconic', source: { kind: 'background' } }
+				],
+				tools: [
+					{
+						id: 'tool-calligrapher',
+						name: 'Calligrapher supplies',
+						source: { kind: 'background', sourceId: 'sage' },
+						annotations: [
+							{ id: 'tool-note', origin: 'user', kind: 'note', text: 'From background' }
+						]
+					}
+				]
+			},
+			classes: [
+				{
+					name: 'Fighter',
+					level: 1,
+					features: [
+						{
+							name: 'Second Wind',
+							featureId: 'second-wind',
+							annotations: [
+								{ id: 'feature-note', origin: 'source', kind: 'summary', text: 'Recover HP' }
+							]
+						}
+					]
+				}
+			],
+			runtimeActions: [
+				{
+					id: 'action-1',
+					name: 'Longsword',
+					timing: 'action',
+					category: 'attack',
+					target: 'One creature',
+					notes: 'Old snapshot notes.',
+					source: { kind: 'item', id: 'weapon-1' },
+					annotations: [{ id: 'action-note', origin: 'user', kind: 'note', text: 'Reach 5 ft.' }]
+				}
+			],
+			spellcasting: {
+				ability: 'int',
+				slots: { '1': { max: 2, used: 0 } },
+				spells: [
+					{ spellId: 'fire-bolt', name: 'Fire Bolt', level: 0 },
+					{ spellId: 'shield', name: 'Shield', level: 1, prepared: true }
+				]
+			}
+		}
+	});

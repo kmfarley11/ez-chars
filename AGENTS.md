@@ -46,7 +46,7 @@ For current product scope, in/out-of-scope decisions, and success criteria, use 
 - If a task changes tested behavior or a stable data boundary, add or update the relevant Vitest contract tests in the same change
 - If a task affects current goals, update [docs/active-goals.md](docs/active-goals.md) or [docs/backlog.md](docs/backlog.md) in the same change
 - Keep redistributed document paths, official downloads, checksums, review dates, modification statuses, licenses, and exact attribution centralized in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); other docs should link to that user-facing inventory instead of duplicating its metadata.
-- When adding or reclassifying component stories, follow the [component composition taxonomy](docs/decisions/2026-07-25-classify-ui-component-composition.md): atoms are primitives, molecules are focused groupings of primitives, and organisms compose molecules into cohesive regions or workflows; templates and pages remain deferred.
+- When adding or reclassifying components/stories, follow the [component maintenance guide](docs/component-maintenance.md) and [composition taxonomy](docs/decisions/2026-07-25-classify-ui-component-composition.md). Use kebab-case for new/moved files, colocated stories and nearby tests. Shared atoms/molecules/organisms live in `src/lib/ui`; system-owned UI and concrete Pages live in `src/lib/systems`. Keep app-owned controls and neutral subsystems in their documented homes. Templates remain deferred; do not duplicate domain mutations in story hosts or hide system selection inside shared UI.
 
 ## Git Constraints
 
@@ -59,6 +59,9 @@ For current product scope, in/out-of-scope decisions, and success criteria, use 
 
 - [src/routes/](src/routes/): app routes and page composition
 - [src/lib/](src/lib/): reusable UI components and grid helpers
+- [src/lib/ui/README.md](src/lib/ui/README.md): shared design-system components and colocated stories
+- [src/lib/systems/README.md](src/lib/systems/README.md): system-owned composition, editing and canonical Page examples
+- [docs/component-maintenance.md](docs/component-maintenance.md): source/catalog navigation and contribution practices
 - [src/schema/](src/schema/): shared and system-specific data models
 - [src/test-utils/](src/test-utils/): shared Vitest scaffolding such as browser globals and memory-backed `localStorage`
 - [src/data.ts](src/data.ts): temporary character store, seed data, and localStorage baseline

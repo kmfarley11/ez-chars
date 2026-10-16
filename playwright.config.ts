@@ -3,7 +3,7 @@ import { env } from 'node:process';
 
 export default defineConfig({
 	testDir: './tests',
-	testIgnore: env.PLAYWRIGHT_PERF === '1' ? undefined : '**/*.perf.spec.ts',
+	testIgnore: ['**/catalog/**', ...(env.PLAYWRIGHT_PERF === '1' ? [] : ['**/*.perf.spec.ts'])],
 	fullyParallel: true,
 	timeout: 10_000,
 	use: {

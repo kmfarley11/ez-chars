@@ -53,6 +53,7 @@ Character data created during this phase is experimental and is not guaranteed t
 
 This is a capability summary for the completed 2014 baseline, not a chronological changelog. Recent implementation history remains in the backlog, archived OpenSpec changes, and Git history.
 
+- completed `BL-086`: shared UI and system-owned composition now back both the application and isolated Bryltin/Zindra/Saturated catalog Pages. Generic Tier 1/2/3 sandboxes, evidence-preserving prototype retirement, and [component maintenance guidance](component-maintenance.md) establish reuse and navigation boundaries without a universal system renderer; final approval and archival recorded 2026-10-16.
 - completed `BL-078`: owner-approved collection quickfilters compose text with Runtime Action timings or Spell levels/Prepared-only through shared chips, independent resets, no-match recovery, and matching phone previews. Global action pins survive source resync/detachment and JSON round trips; filters remain session-local. Final integrated approval and archival recorded 2026-10-03.
 - completed `BL-085`: owner-approved label-targeted Detail and independently saved field/note edits across the 2014 sheet, with shared UI, full candidate validation, dirty-work protection, compact read-first spell slots, and explicit class/scratchpad lifecycle; final integrated approval recorded 2026-10-02
 - SvelteKit application, theme, local character management, validated localStorage recovery, and versioned JSON import/export are established.

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import DialogShell from './DialogShell.svelte';
+	import DialogShell from '$lib/ui/molecules/dialog-shell.svelte';
 	import type { Snippet } from 'svelte';
 
 	interface Props {

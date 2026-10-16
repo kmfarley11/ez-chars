@@ -1,5 +1,5 @@
 <script lang="ts">
-	import DialogShell from '$components/DialogShell.svelte';
+	import DialogShell from '$lib/ui/molecules/dialog-shell.svelte';
 
 	interface Props {
 		open: boolean;

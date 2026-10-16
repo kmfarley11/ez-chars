@@ -1,11 +1,14 @@
 <script lang="ts">
 	/* eslint-disable no-unused-vars */
 	import { tick } from 'svelte';
-	import BaseButton from '$components/BaseButton.svelte';
-	import DialogShell from '$components/DialogShell.svelte';
-	import TableHeader from '$components/TableHeader.svelte';
-	import MenuButton from '$components/MenuButton.svelte';
-	import MenuItemButton from '$components/MenuItemButton.svelte';
+	import BaseButton from '$lib/ui/atoms/base-button.svelte';
+	import DialogShell from '$lib/ui/molecules/dialog-shell.svelte';
+	import Table from '$lib/ui/molecules/table.svelte';
+	import TableRow from '$lib/ui/atoms/table-row.svelte';
+	import TableCell from '$lib/ui/atoms/table-cell.svelte';
+	import TableHeader from '$lib/ui/molecules/table-header.svelte';
+	import MenuButton from '$lib/ui/molecules/menu-button.svelte';
+	import MenuItemButton from '$lib/ui/molecules/menu-item-button.svelte';
 	import { capitalizeFirstLetter } from '$utils/stringFormatters';
 	import type { CharacterWithSystemData } from '../../schema/index.js';
 	import { toCharacterSummary, type CharacterSummary } from '../characterSummary.js';
@@ -63,30 +66,24 @@
 {:else}
 	<!-- Desktop View: Semantic HTML <table> (>= 768px / md) -->
 	<div class="hidden md:block max-w-full overflow-x-auto p-0">
-		<table
-			aria-label="Characters"
-			class="theme-table border-tools-table-outline w-full table-auto border-separate justify-between rounded-sm border-2 text-left"
-		>
+		<Table aria-label="Characters">
 			<TableHeader {headers} formatHeader={capitalizeFirstLetter} align="left" />
 			<tbody>
 				{#each summaries as summary (summary.id)}
-					<tr class="theme-table-row cursor-pointer" onclick={() => onSelect(summary.raw)}>
-						<td class="rounded-sm border p-2 text-left align-top font-semibold wrap-break-word">
+					<TableRow class="cursor-pointer" onclick={() => onSelect(summary.raw)}>
+						<TableCell class="font-semibold">
 							{summary.name}
-						</td>
-						<td class="rounded-sm border p-2 text-left align-top wrap-break-word">
+						</TableCell>
+						<TableCell>
 							{summary.systemLabel}
-						</td>
-						<td class="rounded-sm border p-2 text-left align-top wrap-break-word">
+						</TableCell>
+						<TableCell>
 							{summary.classSummary}
-						</td>
-						<td class="rounded-sm border p-2 text-left align-top wrap-break-word">
+						</TableCell>
+						<TableCell>
 							{summary.updatedAt}
-						</td>
-						<td
-							class="w-px whitespace-nowrap rounded-sm border p-2 text-left align-top"
-							onclick={(event) => event.stopPropagation()}
-						>
+						</TableCell>
+						<TableCell class="w-px whitespace-nowrap" onclick={(event) => event.stopPropagation()}>
 							<div class="flex items-center justify-start gap-2">
 								<BaseButton
 									size="sm"
@@ -108,11 +105,11 @@
 									</BaseButton>
 								{/if}
 							</div>
-						</td>
-					</tr>
+						</TableCell>
+					</TableRow>
 				{/each}
 			</tbody>
-		</table>
+		</Table>
 	</div>
 
 	<!-- Mobile View: Semantic Card List (< 768px / md) -->

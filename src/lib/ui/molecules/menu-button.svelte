@@ -1,0 +1,166 @@
+<script lang="ts">
+	import { type Snippet } from 'svelte';
+	import type { Action } from 'svelte/action';
+	import OpenCloseToggleButton from '$lib/ui/atoms/open-close-toggle-button.svelte';
+	import type { ButtonIconVariant, ButtonShadingVariant, ButtonSize } from '$lib/utils/buttonTypes';
+
+	type MenuAlign = 'left' | 'right';
+
+	interface Props {
+		children?: Snippet;
+		text?: string;
+		shadingVariant?: ButtonShadingVariant;
+		align?: MenuAlign;
+		iconVariant?: ButtonIconVariant;
+		buttonSize?: ButtonSize;
+		buttonIconOnly?: boolean;
+		buttonClasses?: string;
+		ariaLabel?: string;
+		title?: string;
+		triggerEl?: HTMLButtonElement;
+	}
+
+	let {
+		children = undefined,
+		text = undefined,
+		shadingVariant = 'light',
+		align = 'right',
+		iconVariant = 'hamburger',
+		buttonSize = 'md',
+		buttonIconOnly = false,
+		buttonClasses = undefined,
+		ariaLabel = undefined,
+		title = undefined,
+		triggerEl = $bindable<HTMLButtonElement>()
+	}: Props = $props();
+	let isMenuOpen = $state(false);
+	let useViewportFallback = $state(false);
+	const componentId = $props.id();
+	const menuButtonId = `menu-button-${componentId}`;
+	const menuId = `menu-${componentId}`;
+	const anchorName = `--menu-anchor-${componentId}`;
+
+	const handlePopoverToggle = (event: ToggleEvent) => {
+		const menu = event.currentTarget as HTMLElement;
+		if ('newState' in event && typeof event.newState === 'string') {
+			isMenuOpen = event.newState === 'open';
+		} else {
+			isMenuOpen = (event.currentTarget as HTMLElement).matches(':popover-open');
+		}
+		if (!isMenuOpen) {
+			useViewportFallback = false;
+			return;
+		}
+		// Some engines accept anchors but misplace a top-layer menu from a fixed
+		// dialog after document scrolling. Reuse the viewport fallback only when
+		// measured placement is offscreen; native popover dismissal stays authoritative.
+		const bounds = menu.getBoundingClientRect();
+		if (
+			bounds.top < 0 ||
+			bounds.left < 0 ||
+			bounds.bottom > window.innerHeight ||
+			bounds.right > window.innerWidth
+		) {
+			useViewportFallback = true;
+		}
+	};
+
+	let colors = $derived(shadingVariant === 'dark' ? 'theme-btn-dark' : 'theme-btn-light');
+
+	const webkitFocusFallback: Action<HTMLElement> = (node) => {
+		let rafId: number;
+
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') {
+				rafId = requestAnimationFrame(() => {
+					if (!node.matches(':popover-open')) {
+						triggerEl?.focus();
+					}
+				});
+			}
+		};
+
+		node.addEventListener('keydown', handleKeyDown);
+
+		return {
+			destroy() {
+				node.removeEventListener('keydown', handleKeyDown);
+				if (rafId) cancelAnimationFrame(rafId);
+			}
+		};
+	};
+</script>
+
+<div class="flex {align === 'right' ? 'justify-end' : 'justify-start'} text-left">
+	<OpenCloseToggleButton
+		bind:buttonEl={triggerEl}
+		id={menuButtonId}
+		{text}
+		isOpen={isMenuOpen}
+		{iconVariant}
+		{shadingVariant}
+		size={buttonSize}
+		iconOnly={buttonIconOnly}
+		classes={buttonClasses}
+		{ariaLabel}
+		{title}
+		ariaControls={menuId}
+		ariaHaspopup={true}
+		popoverTarget={menuId}
+		{anchorName}
+	/>
+	<div
+		id={menuId}
+		popover="auto"
+		data-position-fallback={useViewportFallback ? '' : undefined}
+		class="menu-popover {align === 'right'
+			? 'menu-popover-right'
+			: ''} min-w-36 divide-y rounded-lg p-1 {colors} shadow-sm ring-1"
+		style={`--menu-anchor: ${anchorName}`}
+		ontoggle={handlePopoverToggle}
+		use:webkitFocusFallback
+	>
+		<ul class="w-full">
+			{@render children?.()}
+		</ul>
+	</div>
+</div>
+
+<style>
+	.menu-popover {
+		position: fixed;
+		position-anchor: var(--menu-anchor);
+		inset: auto;
+		inset-block-start: anchor(bottom);
+		inset-inline-start: anchor(left);
+		margin: 0.25rem 0 0;
+		border: 0;
+		background: transparent;
+		position-try-fallbacks: flip-block, flip-inline;
+	}
+
+	.menu-popover-right {
+		inset-inline-start: auto;
+		inset-inline-end: anchor(right);
+	}
+
+	.menu-popover[data-position-fallback] {
+		position-anchor: auto;
+		position-try-fallbacks: none;
+		inset: auto 1rem 1rem auto;
+	}
+
+	.menu-popover[data-position-fallback]:not(.menu-popover-right) {
+		inset: auto auto 1rem 1rem;
+	}
+
+	@supports not (position-anchor: --menu-anchor) {
+		.menu-popover {
+			inset: auto 1rem 1rem auto;
+		}
+
+		.menu-popover:not(.menu-popover-right) {
+			inset: auto auto 1rem 1rem;
+		}
+	}
+</style>

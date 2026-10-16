@@ -1,0 +1,248 @@
+<script lang="ts">
+	import { tick } from 'svelte';
+	import DialogShell from '$lib/ui/molecules/dialog-shell.svelte';
+	import GridContentAnnotationsDisplay from '$lib/ui/molecules/grid-content-annotations-display.svelte';
+	import GridContentAnnotationsEditor from '$lib/ui/molecules/grid-content-annotations-editor.svelte';
+	import IconButton from '$lib/ui/atoms/icon-button.svelte';
+	import ReferencePdfViewer from '$lib/ui/organisms/reference-pdf-viewer.svelte';
+	import {
+		getAnnotationReferenceProvider,
+		type InternalAnnotationReference
+	} from '$lib/resources/annotation-reference-context';
+	const { resolve: findInternalDisposition, sections: annotationReferenceSections } =
+		getAnnotationReferenceProvider();
+	import type {
+		GridAnnotationAffordance,
+		GridAnnotationEditorConfig,
+		GridContentAnnotation,
+		GridContentReference
+	} from '$lib/utils/gridContentTypes';
+
+	type InternalResourceDisposition = InternalAnnotationReference;
+
+	interface Props {
+		fieldLabel: string;
+		annotations: Array<GridContentAnnotation>;
+		annotationAffordance?: GridAnnotationAffordance;
+		annotationEditorConfig?: GridAnnotationEditorConfig;
+		// eslint-disable-next-line no-unused-vars
+		onSaveAnnotations?: (_annotations: Array<GridContentAnnotation>) => void;
+		compact?: boolean;
+		// eslint-disable-next-line no-unused-vars
+		onOpen?: (invoker: HTMLElement) => boolean;
+	}
+
+	let {
+		fieldLabel,
+		annotations,
+		annotationAffordance = 'badge',
+		annotationEditorConfig = undefined,
+		onSaveAnnotations = undefined,
+		compact = false,
+		onOpen
+	}: Props = $props();
+
+	let triggerEl = $state<HTMLButtonElement>();
+	let shell = $state<ReturnType<typeof DialogShell>>();
+	let shouldRenderDialog = $state(false);
+	let isEditing = $state(false);
+	let draftAnnotations = $state<Array<GridContentAnnotation>>([]);
+	let activeReference = $state<InternalResourceDisposition>();
+	let referenceInvoker = $state<HTMLElement>();
+
+	const annotationCount = $derived(annotations.length);
+	const shouldRenderControl = $derived(annotationAffordance !== 'badge' || annotationCount > 0);
+	const canEditAnnotations = $derived(onSaveAnnotations !== undefined);
+	const curatedSections = $derived(
+		activeReference ? annotationReferenceSections(activeReference) : []
+	);
+
+	const canInspectReference = (reference: GridContentReference): boolean =>
+		findInternalDisposition(reference) !== undefined;
+
+	const inspectReference = (reference: GridContentReference, invoker: HTMLElement) => {
+		const resolved = findInternalDisposition(reference);
+		if (!resolved) return;
+		referenceInvoker = invoker;
+		activeReference = resolved;
+		void tick().then(() => shell?.focusHeading());
+	};
+
+	const leaveReference = async () => {
+		activeReference = undefined;
+		await tick();
+		referenceInvoker?.focus();
+	};
+
+	const closeDialog = () => {
+		shouldRenderDialog = false;
+		activeReference = undefined;
+		if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+		triggerEl?.focus();
+	};
+
+	const openDialog = async () => {
+		if (triggerEl && onOpen?.(triggerEl)) return;
+		draftAnnotations = $state.snapshot(annotations);
+		isEditing = false;
+		activeReference = undefined;
+		shouldRenderDialog = true;
+	};
+
+	const handleCancel = () => {
+		if (activeReference) {
+			void leaveReference();
+			return false;
+		}
+		if (isEditing) {
+			draftAnnotations = $state.snapshot(annotations);
+			isEditing = false;
+			return false; // Prevent closing the dialog
+		}
+		return true;
+	};
+
+	const onSubmit = () => {
+		onSaveAnnotations?.(draftAnnotations);
+		isEditing = false;
+	};
+</script>
+
+{#if shouldRenderControl}
+	{#if compact}
+		<span
+			class="relative inline-flex"
+			class:hover-affordance={annotationAffordance === 'hover' && annotationCount === 0}
+		>
+			<IconButton
+				bind:buttonEl={triggerEl}
+				variant="notes"
+				size="sm"
+				shadingVariant={annotationCount > 0 ? 'dark' : 'light'}
+				ariaLabel={`${annotationCount > 0 ? 'View' : 'Add'} notes for ${fieldLabel}${annotationCount > 0 ? `, ${annotationCount} ${annotationCount === 1 ? 'note' : 'notes'}` : ''}`}
+				onclick={openDialog}
+			/>
+			{#if annotationCount > 0}
+				<span
+					aria-hidden="true"
+					class="theme-grid-layer pointer-events-none absolute -top-1 -right-1 inline-flex min-h-4 min-w-4 items-center justify-center rounded-full border px-1 text-[0.6rem] font-bold leading-none"
+				>
+					{annotationCount}
+				</span>
+			{/if}
+		</span>
+	{:else}
+		<button
+			bind:this={triggerEl}
+			type="button"
+			class="theme-btn-light touch-target btn annotation-trigger inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs"
+			class:hover-affordance={annotationAffordance === 'hover' && annotationCount === 0}
+			aria-label={`${annotationCount > 0 ? 'View' : 'Add'} notes for ${fieldLabel}`}
+			title={`${annotationCount > 0 ? 'View' : 'Add'} notes for ${fieldLabel}`}
+			onclick={openDialog}
+		>
+			<span>Notes</span>
+			{#if annotationCount > 0}
+				<span
+					class="inline-flex min-h-4 min-w-4 items-center justify-center rounded-full border px-1 text-[0.65rem] leading-none"
+					aria-label={`${annotationCount} ${annotationCount === 1 ? 'note' : 'notes'}`}
+				>
+					{annotationCount}
+				</span>
+			{/if}
+		</button>
+	{/if}
+{/if}
+
+{#if shouldRenderDialog}
+	<DialogShell
+		bind:this={shell}
+		bind:open={shouldRenderDialog}
+		title={activeReference ? activeReference.locator.label : `${fieldLabel} Notes`}
+		showBack={activeReference !== undefined}
+		onBack={leaveReference}
+		onCancel={handleCancel}
+		onClose={closeDialog}
+		closeText={isEditing ? 'Cancel' : 'Close'}
+		fullHeightMobile={activeReference !== undefined}
+		wide={activeReference !== undefined}
+		scrollAffordance={activeReference === undefined}
+		contentFillsSpace={activeReference !== undefined}
+	>
+		<div hidden={activeReference !== undefined} inert={activeReference !== undefined}>
+			<p class="theme-text-muted text-xs mb-3">{fieldLabel}</p>
+			{#if isEditing && canEditAnnotations}
+				<GridContentAnnotationsEditor
+					annotations={draftAnnotations}
+					referenceTemplates={annotationEditorConfig?.referenceTemplates}
+					defaultKind={annotationEditorConfig?.defaultKind}
+					defaultOrigin={annotationEditorConfig?.defaultOrigin}
+					onInspectReference={inspectReference}
+					{canInspectReference}
+					onChange={(nextAnnotations) => {
+						draftAnnotations = nextAnnotations;
+					}}
+				/>
+			{:else}
+				<GridContentAnnotationsDisplay
+					{annotations}
+					onInspectReference={inspectReference}
+					{canInspectReference}
+				/>
+			{/if}
+		</div>
+
+		{#if activeReference}
+			<div class="flex min-h-0 flex-1">
+				<ReferencePdfViewer
+					title={activeReference.resource.title}
+					url={activeReference.generalHref}
+					browserHref={activeReference.browserHref}
+					initialPage={activeReference.locator.page!}
+					{curatedSections}
+				/>
+			</div>
+		{/if}
+
+		{#snippet actions()}
+			{#if !activeReference && canEditAnnotations && !isEditing}
+				<button
+					type="button"
+					class="theme-btn-light touch-target btn rounded-md border px-3 py-1 font-semibold"
+					onclick={() => {
+						draftAnnotations = $state.snapshot(annotations);
+						isEditing = true;
+					}}
+				>
+					{annotationCount > 0 ? 'Edit notes' : 'Add note'}
+				</button>
+			{/if}
+			{#if !activeReference && canEditAnnotations && isEditing}
+				<button
+					type="button"
+					class="theme-btn-light touch-target btn rounded-md border px-3 py-1 font-semibold"
+					onclick={onSubmit}
+				>
+					Save
+				</button>
+			{/if}
+		{/snippet}
+	</DialogShell>
+{/if}
+
+<style>
+	.hover-affordance {
+		opacity: 0;
+	}
+
+	.hover-affordance:hover,
+	.hover-affordance:focus {
+		opacity: 1;
+	}
+
+	@media (hover: none) {
+		.hover-affordance {
+			opacity: 1;
+		}
+	}
+</style>

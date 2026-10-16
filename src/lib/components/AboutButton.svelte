@@ -1,5 +1,5 @@
 <script lang="ts">
-	import DialogButton from '$components/DialogButton.svelte';
+	import DialogButton from '$lib/components/DialogButton.svelte';
 	interface Props {
 		shadingVariant?: 'light' | 'dark';
 	}

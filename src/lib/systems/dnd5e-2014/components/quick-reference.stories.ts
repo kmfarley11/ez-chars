@@ -1,0 +1,38 @@
+import type { Meta, StoryObj } from '@storybook/sveltekit';
+import SectionCompositionStory from '$lib/systems/dnd5e-2014/components/section-composition-story.svelte';
+
+const meta = {
+	title: 'Systems/D&D 2014/Quick Reference',
+	component: SectionCompositionStory,
+	args: { section: 'quick-reference', entryStyle: 'label' },
+	argTypes: { entryStyle: { control: 'select', options: ['button', 'label', 'chevron', 'group'] } },
+	parameters: {
+		docs: {
+			description: {
+				component:
+					'Production-backed small-edit sandbox using the real saturated-character projection and Quick Reference organism.'
+			}
+		}
+	}
+} satisfies Meta<typeof SectionCompositionStory>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const SaturatedCharacter: Story = {
+	parameters: {
+		docs: {
+			description: {
+				story: `**Verify manually:**
+
+- Confirm Current HP, Temporary HP, both Death Save values, and Remaining Hit Dice form one stable live-state grid whose bordered tiles fill their grid tracks rather than shrinking to their content.
+- Confirm each live value keeps Edit and the compact note icon together on the right without a full-width Notes row.
+- Confirm Remaining Hit Dice appears only once.
+- Confirm Reference stats use the same compact bold-label-plus-value reading grammar as other read-first sheet groups, with a labeled horizontal Speeds boundary before the movement values.
+- Open Walking Speed directly through its label; confirm a steady highlight identifies it. Compare button, label (underlined), chevron, and group in Controls. Edit only that field, Save, and confirm its neighbors stay unchanged with no outer Save.
+- Open Current HP notes; Add or edit one note without changing HP. Cancel the note edit back to reading, then Close and confirm focus returns to the note icon.
+- Repeat with desktop, split-screen, and phone viewports.`
+			}
+		}
+	}
+};

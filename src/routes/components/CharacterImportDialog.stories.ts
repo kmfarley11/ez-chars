@@ -3,7 +3,7 @@ import CharacterImportDialog from './CharacterImportDialog.svelte';
 import { fn } from 'storybook/test';
 
 const meta = {
-	title: 'Organisms/CharacterImportDialog',
+	title: 'Application/CharacterImportDialog',
 	component: CharacterImportDialog,
 	args: {
 		open: true,

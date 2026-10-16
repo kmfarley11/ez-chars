@@ -23,6 +23,7 @@ Everything else is long-term vision, not the immediate build target. For roadmap
 
 ## Docs
 
+- component/source/catalog navigation and contribution guide: [docs/component-maintenance.md](docs/component-maintenance.md)
 - coding-agent guide: [AGENTS.md](AGENTS.md)
 - current active goals: [docs/active-goals.md](docs/active-goals.md)
 - prioritized backlog: [docs/backlog.md](docs/backlog.md)

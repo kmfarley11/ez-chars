@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import AboutButton from '$components/AboutButton.svelte';
-	import GitButton from '$components/GitButton.svelte';
-	import HomeButton from '$components/HomeButton.svelte';
-	import MenuButton from '$components/MenuButton.svelte';
-	import MenuItemButton from '$components/MenuItemButton.svelte';
+	import AboutButton from '$lib/components/AboutButton.svelte';
+	import GitButton from '$lib/components/GitButton.svelte';
+	import HomeButton from '$lib/components/HomeButton.svelte';
+	import MenuButton from '$lib/ui/molecules/menu-button.svelte';
+	import MenuItemButton from '$lib/ui/molecules/menu-item-button.svelte';
 	import { setTheme, theme, THEME_OPTIONS } from '$utils/theme';
 
 	const appVersion = __APP_VERSION__;

@@ -21,6 +21,7 @@ Use these docs for near-term implementation work:
 
 ## Maintenance And Reference
 
+- [component-maintenance.md](component-maintenance.md): shared UI vs. system/application ownership, source/story/test navigation, naming and contribution checklist
 - [theme-visual-checklist.md](theme-visual-checklist.md): UI and theme smoke checklist
 - [ext/Readme.md](ext/Readme.md): notes for bundled third-party reference docs/assets
 - [../THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md): licensing and attribution for third-party materials

@@ -1,0 +1,264 @@
+import type { GridContentBindPath, GridContentPatch } from '$lib/utils/gridContentTypes';
+import { spellLevelSchema } from '../../../../schema/index';
+import {
+	annotationEditorPayloadSchema,
+	currencyAmountEditorPayloadSchema,
+	featureEditorPayloadSchema,
+	inventoryEditorPayloadSchema,
+	proficiencyEditorPayloadSchema,
+	roleplayFieldEditorPayloadSchema,
+	runtimeActionEditorPayloadSchema,
+	scratchpadEditorPayloadSchema,
+	spellEditorPayloadSchema,
+	spellSlotsEditorPayloadSchema,
+	traitEditorPayloadSchema,
+	type SheetEditIntent,
+	type SheetEditIssue
+} from '$lib/systems/dnd5e-2014/editing/sheet-edit-intents';
+import {
+	currencyPathPrefix,
+	featureListPathPrefix,
+	inventoryListPathPrefix,
+	isCurrencyDenomination,
+	isSpellSlotLevelKey,
+	proficiencyLanguagesPathPrefix,
+	proficiencyToolsPathPrefix,
+	roleplayFieldMetadata,
+	roleplayFieldPathPrefix,
+	runtimeActionListPathPrefix,
+	scratchpadNotesPathPrefix,
+	spellListLevelPathPrefix,
+	traitListPathPrefix,
+	type CurrencyDenomination,
+	type InventoryGroup,
+	type RoleplayFieldKey,
+	type SpellListLevel
+} from '$lib/systems/dnd5e-2014/sheet-constants';
+
+export type Decoded5eSheetEdits = {
+	intents: Array<SheetEditIntent>;
+	canonicalPatches: Array<GridContentPatch>;
+};
+
+export type Decode5eSheetEditsResult =
+	{ ok: true; edits: Decoded5eSheetEdits } | { ok: false; issues: ReadonlyArray<SheetEditIssue> };
+
+const isSystemDataAnnotationPath = (path: GridContentBindPath): boolean =>
+	path.length >= 3 &&
+	path[0] === 'systemData' &&
+	path[1] === 'annotations' &&
+	path[path.length - 1] === '_annotations';
+
+const isVirtualPath = (path: GridContentBindPath): boolean =>
+	typeof path[0] === 'string' && path[0].startsWith('__');
+
+const payloadIssue = (
+	patch: GridContentPatch,
+	family: string,
+	message: string
+): SheetEditIssue => ({
+	code: 'malformed-payload',
+	message: `Invalid ${family} editor payload: ${message}`,
+	path: patch.path
+});
+
+const unsupportedIssue = (patch: GridContentPatch): SheetEditIssue => ({
+	code: 'unsupported-target',
+	message: `Unsupported structured 5e edit target: ${patch.path.join('.') || '(empty path)'}.`,
+	path: patch.path
+});
+
+const formatParseIssue = (issues: ReadonlyArray<{ message: string }>): string =>
+	issues.map((issue) => issue.message).join('; ');
+
+export const decode5eGridPatches = (
+	patches: ReadonlyArray<GridContentPatch>
+): Decode5eSheetEditsResult => {
+	const intents: Array<SheetEditIntent> = [];
+	const canonicalPatches: Array<GridContentPatch> = [];
+	const issues: Array<SheetEditIssue> = [];
+	const currencyAmounts: Partial<Record<CurrencyDenomination, number>> = {};
+	const roleplayBodies: Partial<Record<RoleplayFieldKey, string>> = {};
+	const spellSlotValues: Record<string, { used?: unknown; max?: unknown }> = {};
+	let sawCurrency = false;
+	let sawOrganizationalNotes = false;
+	let sawSpellSlots = false;
+	let firstSpellSlotPatch: GridContentPatch | undefined;
+	let scratchpad: ReturnType<typeof scratchpadEditorPayloadSchema.parse> | undefined;
+
+	for (const patch of patches) {
+		const [root, target] = patch.path;
+
+		if (root === 'systemData' && target === 'spellcasting' && patch.path[2] === 'slots') {
+			const level = patch.path[3];
+			const field = patch.path[4];
+			if (
+				patch.path.length !== 5 ||
+				!isSpellSlotLevelKey(level) ||
+				(field !== 'used' && field !== 'max')
+			) {
+				issues.push(unsupportedIssue(patch));
+				continue;
+			}
+			sawSpellSlots = true;
+			firstSpellSlotPatch ??= patch;
+			spellSlotValues[level] ??= {};
+			spellSlotValues[level][field] = patch.value;
+			continue;
+		}
+
+		if (
+			root === currencyPathPrefix &&
+			patch.path.length === 2 &&
+			typeof target === 'string' &&
+			isCurrencyDenomination(target)
+		) {
+			sawCurrency = true;
+			const parsed = currencyAmountEditorPayloadSchema.safeParse(patch.value);
+			if (parsed.success) currencyAmounts[target] = parsed.data;
+			else issues.push(payloadIssue(patch, 'currency', formatParseIssue(parsed.error.issues)));
+			continue;
+		}
+
+		if (
+			root === roleplayFieldPathPrefix &&
+			patch.path.length === 2 &&
+			typeof target === 'string' &&
+			roleplayFieldMetadata.some((entry) => entry.key === target)
+		) {
+			sawOrganizationalNotes = true;
+			const parsed = roleplayFieldEditorPayloadSchema.safeParse(patch.value);
+			if (parsed.success) roleplayBodies[target as RoleplayFieldKey] = parsed.data;
+			else issues.push(payloadIssue(patch, 'roleplay note', formatParseIssue(parsed.error.issues)));
+			continue;
+		}
+
+		if (root === scratchpadNotesPathPrefix && patch.path.length === 1) {
+			sawOrganizationalNotes = true;
+			const parsed = scratchpadEditorPayloadSchema.safeParse(patch.value);
+			if (parsed.success) scratchpad = parsed.data;
+			else issues.push(payloadIssue(patch, 'scratchpad', formatParseIssue(parsed.error.issues)));
+			continue;
+		}
+
+		if (root === spellListLevelPathPrefix && patch.path.length === 2) {
+			const parsedLevel = spellLevelSchema.safeParse(target);
+			const parsedPayload = spellEditorPayloadSchema.safeParse(patch.value);
+			if (!parsedLevel.success) {
+				issues.push(unsupportedIssue(patch));
+			} else if (!parsedPayload.success) {
+				issues.push(
+					payloadIssue(patch, 'spell list', formatParseIssue(parsedPayload.error.issues))
+				);
+			} else {
+				intents.push({
+					type: 'replace-spell-level',
+					level: parsedLevel.data as SpellListLevel,
+					spells: parsedPayload.data
+				});
+			}
+			continue;
+		}
+
+		if (root === runtimeActionListPathPrefix && patch.path.length === 1) {
+			const parsed = runtimeActionEditorPayloadSchema.safeParse(patch.value);
+			if (parsed.success) intents.push({ type: 'replace-runtime-actions', actions: parsed.data });
+			else
+				issues.push(payloadIssue(patch, 'runtime action', formatParseIssue(parsed.error.issues)));
+			continue;
+		}
+
+		if (root === proficiencyLanguagesPathPrefix && patch.path.length === 1) {
+			const parsed = proficiencyEditorPayloadSchema.safeParse(patch.value);
+			if (parsed.success) {
+				intents.push({ type: 'replace-proficiency-languages', languages: parsed.data });
+			} else {
+				issues.push(
+					payloadIssue(patch, 'proficiency language', formatParseIssue(parsed.error.issues))
+				);
+			}
+			continue;
+		}
+
+		if (root === proficiencyToolsPathPrefix && patch.path.length === 1) {
+			const parsed = proficiencyEditorPayloadSchema.safeParse(patch.value);
+			if (parsed.success) {
+				intents.push({ type: 'replace-proficiency-tools', tools: parsed.data });
+			} else {
+				issues.push(payloadIssue(patch, 'tool proficiency', formatParseIssue(parsed.error.issues)));
+			}
+			continue;
+		}
+
+		if (root === featureListPathPrefix && patch.path.length === 1) {
+			const parsed = featureEditorPayloadSchema.safeParse(patch.value);
+			if (parsed.success) intents.push({ type: 'replace-features', features: parsed.data });
+			else issues.push(payloadIssue(patch, 'feature', formatParseIssue(parsed.error.issues)));
+			continue;
+		}
+
+		if (root === traitListPathPrefix && patch.path.length === 1) {
+			const parsed = traitEditorPayloadSchema.safeParse(patch.value);
+			if (parsed.success) intents.push({ type: 'replace-traits', traits: parsed.data });
+			else issues.push(payloadIssue(patch, 'trait', formatParseIssue(parsed.error.issues)));
+			continue;
+		}
+
+		if (
+			root === inventoryListPathPrefix &&
+			patch.path.length === 2 &&
+			(target === 'weapons' || target === 'armorShields' || target === 'other')
+		) {
+			const parsed = inventoryEditorPayloadSchema.safeParse(patch.value);
+			if (parsed.success) {
+				intents.push({
+					type: 'replace-inventory-group',
+					group: target as InventoryGroup,
+					items: parsed.data
+				});
+			} else {
+				issues.push(payloadIssue(patch, 'inventory', formatParseIssue(parsed.error.issues)));
+			}
+			continue;
+		}
+
+		if (isSystemDataAnnotationPath(patch.path)) {
+			const parsed = annotationEditorPayloadSchema.safeParse(patch.value);
+			if (parsed.success) {
+				intents.push({
+					type: 'replace-annotations',
+					targetPath: [...patch.path],
+					annotations: parsed.data
+				});
+			} else {
+				issues.push(payloadIssue(patch, 'annotation', formatParseIssue(parsed.error.issues)));
+			}
+			continue;
+		}
+
+		if (isVirtualPath(patch.path)) issues.push(unsupportedIssue(patch));
+		else canonicalPatches.push({ path: [...patch.path], value: patch.value });
+	}
+
+	if (sawCurrency) intents.push({ type: 'update-currency', amounts: currencyAmounts });
+	if (sawSpellSlots && firstSpellSlotPatch) {
+		const parsed = spellSlotsEditorPayloadSchema.safeParse(spellSlotValues);
+		if (parsed.success) intents.push({ type: 'replace-spell-slots', slots: parsed.data });
+		else {
+			issues.push(
+				payloadIssue(firstSpellSlotPatch, 'spell slots', formatParseIssue(parsed.error.issues))
+			);
+		}
+	}
+	if (sawOrganizationalNotes) {
+		intents.push({
+			type: 'replace-organizational-notes',
+			roleplayBodies,
+			...(scratchpad !== undefined ? { scratchpad } : {})
+		});
+	}
+
+	return issues.length > 0
+		? { ok: false, issues }
+		: { ok: true, edits: { intents, canonicalPatches } };
+};

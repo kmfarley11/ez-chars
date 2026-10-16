@@ -5,8 +5,8 @@
 - **Status:** Approved
 - **Author:** User and Codex
 - **Date:** 2026-07-25
-- **Last reviewed:** 2026-08-16
-- **Latest refinement:** Completed `BL-074` establishes concrete boundaries for field, form, annotation, layout, panel, and organism primitives.
+- **Last reviewed:** 2026-10-12
+- **Latest refinement:** BL-086 establishes ownership-based source/catalog homes and production-backed canonical Pages; see the final refinement and [maintenance guide](../component-maintenance.md).
 
 ## Context & Problem Statement
 
@@ -43,6 +43,8 @@ The guided runtime-action templating workflow needs reusable dialog, navigation,
 ## Decision Outcome
 
 Choose Option 2. Use compositional responsibility—not file location or feature specificity—to classify cataloged UI:
+
+**Operative refinement (BL-086):** The Pages deferral below is superseded for concrete production-backed character sheets. Templates remain deferred. Shared UI, system-owned UI, application controls and deferred concepts now have explicit homes; the historical decisions below preserve the original rationale.
 
 This is staged adoption, not rejection of the complete hierarchy. At the time of this decision, the repository has concrete atoms and molecules, emerging organisms, one real character-sheet route, and no repeated page-level composition from which to derive a durable template. Templates and pages will be defined when product structure supplies that evidence.
 
@@ -125,3 +127,13 @@ BL-074 implemented a cohesive set of boundaries replacing the legacy `GridConten
 - **Focused form boundary:** `StructuredForm` remains a molecule. It performs one reusable form-rendering job and does not own dialog lifecycle, domain decoding, or a product workflow.
 
 The typed-edit-intents architecture remains authoritative for complex mutations; this classification only establishes the structural composition of the UI.
+
+### 2026-10-12: BL-086 ownership and canonical Pages
+
+Concrete maintenance pressure—not a hypothetical second renderer—justifies extracting the actual 2014 sheet for both the application host and isolated Bryltin, Zindra and Saturated Page stories. Both hosts use the same composition and concrete edit session. The app retains persistence/history; the story host supplies cloned/resettable state and local navigation. Canonical fixtures remain unchanged.
+
+Use `src/lib/ui/{atoms,molecules,organisms}` for shared presentation and `src/lib/systems/dnd5e-2014/{components,pages,editing}` for the concrete system. Composition level and domain ownership are separate axes: a system organism need not become a generic design-system component. Application list/navigation/import/export controls retain their documented homes. Neutral schema, resource, storage and utility roots remain intact.
+
+Colocate stories and nearby tests; use kebab-case for new/moved files while preserving framework names and retained subsystem conventions. Storybook distinguishes Design System, Systems, Application and Concepts; canonical Pages live under Systems / D&D 2014 / Character Sheet, not a forced fourth generic tier. Visible provenance and host limitations accompany full-sheet examples. Generic organism fixtures demonstrate behaviors without cloning system binding logic; retire obsolete proofs only after mapping their unique evidence to retained contracts and sandboxes.
+
+This supersedes BL-070's ownership of the initial catalog/hierarchy cleanup. BL-070 still evaluates actual second-system reuse; no universal template or adapter contract is established. Shared table/row/cell presentation remains small and semantic, while CharacterList owns its columns, responsive cards and actions. The trade-off is more explicit directories/imports in exchange for discoverable ownership and fewer misleading generic stories. Operational practices live in the linked maintenance guide rather than an exhaustive component registry here.

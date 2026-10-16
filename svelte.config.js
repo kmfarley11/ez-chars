@@ -12,7 +12,6 @@ const config = {
 			base: baseDir
 		},
 		alias: {
-			$components: 'src/lib/components',
 			$storage: 'src/lib/storage',
 			$utils: 'src/lib/utils',
 			$fixtures: 'src/fixtures'

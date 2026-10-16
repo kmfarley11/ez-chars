@@ -4,7 +4,7 @@ import { seedChars } from '../../fixtures/characters.js';
 import { fn } from 'storybook/test';
 
 const meta = {
-	title: 'Organisms/CharacterList',
+	title: 'Application/CharacterList',
 	component: CharacterList,
 	parameters: {
 		layout: 'padded'

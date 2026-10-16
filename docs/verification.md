@@ -70,13 +70,29 @@ The first command builds the local static catalog into the ignored `storybook-st
 
 Automated accessibility checks report supported machine-detectable findings only. They do not replace keyboard, focus, screen-reader, touch-target, responsive-layout, or table-play review; retain those checks for the relevant application work, including `p1-020`.
 
+The Storybook project allows 30 seconds per check: the production-backed saturated Page takes roughly 19 seconds to render and audit locally. This preserves the full accessibility audit rather than disabling rules to meet the former 15-second default. It is a catalog-check timeout, not an application interaction-performance budget.
+
+Canonical Character Sheet stories use on-demand accessibility scans in the human Canvas: open Accessibility and choose Run test. Automatic full-sheet scans previously blocked interaction for roughly 19 seconds. The normal CLI gate still audits these stories, with a setup guard requiring an accessibility report for every story; no rules are disabled. The Storybook test panel's explicit component-only mode is respected, without requiring an audit report for a scan the reviewer disabled. Other stories retain automatic Canvas scans.
+
 ## Browser E2E Commands
+
+For changes to the production-backed catalog hosts, also run the opt-in catalog regression suite:
+
+```bash
+npx playwright test --config playwright.catalog.config.ts
+```
+
+It starts/reuses Storybook on port 6006 and exercises real sandbox edits and reset in Chromium with light and dark browser preferences. It also resets with Rules open, reopens the reader, and checks that the browser URL/history and a sentinel application-storage value stay unchanged. It checks the app-themed host foreground as well as DOM visibility: DOM-visible text can still be unreadable against a mismatched host background. This suite uses existing Playwright dependencies, is excluded from application test discovery, and is not included in `verify:smoke` or `verify:all`. It does not replace manual visual review, story-switching checks, or application persistence/navigation tests.
+
+Run it separately from other browser suites, and avoid file edits or builds that can hot-reload its development server during interactions. Its single-worker, 60-second per-flow budget accommodates full-sheet mount/edit/reset work. Canonical flows measured 1.5–1.7 seconds after separating on-demand Canvas scans from automatic test audits (previously roughly 21 seconds). This timeout is not an app performance threshold or a promise about cold-server startup.
 
 ```bash
 npm run test:e2e
 ```
 
 Runs the canonical Playwright smoke suite in Chromium. The config reuses a dev server already listening on `http://localhost:5173`; otherwise, Playwright starts the local Vite server for the run.
+
+Keep the workspace quiet during application browser suites as well as catalog suites: file edits, formatting, coverage generation or builds can trigger development-server reloads during an interaction. If a trace shows an unexpected navigation/Vite reconnect, inspect it and rerun with no concurrent writes or heavy checks before diagnosing an application regression. `npm run test:e2e -- --workers=1` provides a serialized diagnostic run without changing assertions, retries or timeouts; it does not erase a failed earlier run from the evidence record.
 
 ```bash
 npm run test:e2e:all
