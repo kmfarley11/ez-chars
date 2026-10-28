@@ -28,7 +28,7 @@ test.afterEach(({ page }) => {
 
 const openCharacter = async (page: Page) => {
 	await page.goto('/');
-	await page.getByRole('button', { name: `Open ${e2eCharacter.identity.name}` }).click();
+	await page.getByRole('button', { name: `Open ${e2eCharacter.systemData.identity.name}` }).click();
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-character/);
 	await expect(page.getByRole('main', { name: '2014 character sheet' })).toBeVisible();
 };

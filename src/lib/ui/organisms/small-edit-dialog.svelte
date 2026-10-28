@@ -4,6 +4,7 @@
 	import DialogShell from '$lib/ui/molecules/dialog-shell.svelte';
 	import IconButton from '$lib/ui/atoms/icon-button.svelte';
 	import Badge from '$lib/ui/atoms/badge.svelte';
+	import DetailSource from '$lib/ui/molecules/detail-source.svelte';
 	import ScalarEditInput from '$lib/ui/molecules/scalar-edit-input.svelte';
 	import GridContentAnnotationsEditor from '$lib/ui/molecules/grid-content-annotations-editor.svelte';
 	import GridContentAnnotationsDisplay from '$lib/ui/molecules/grid-content-annotations-display.svelte';
@@ -26,7 +27,8 @@
 		type ScalarValue,
 		type SmallDraft,
 		type SmallEditField,
-		type SmallEditAction
+		type SmallEditAction,
+		type SmallEditModel
 	} from '$lib/utils/smallEdit';
 	import type { Annotation } from '../../../schema/index';
 	import { createId } from '../../../schema/helpers';
@@ -44,6 +46,18 @@
 		invoker: HTMLElement;
 	};
 	let open = $state(true);
+	let relatedModel = $state.raw<SmallEditModel>();
+	const model = $derived(relatedModel ?? request.model);
+	let trail = $state.raw<
+		Array<{
+			model: SmallEditModel;
+			scrollTop: number;
+			notesKey?: string;
+			highlightedKey?: string;
+		}>
+	>([]);
+	let sourceError = $state('');
+	let sourceInvoker: HTMLElement | undefined;
 	let editor = $state.raw<Editor>();
 	let operation = $state.raw<{
 		action: SmallEditAction;
@@ -113,6 +127,68 @@
 				draft: changeSmallDraft(editor.draft, { ...editor.draft.value, ...value })
 			};
 	};
+	const viewSource = () =>
+		navigate(() => {
+			const next = model.source?.open();
+			if (!next) {
+				sourceError = 'This source is no longer available. Close and reopen this detail.';
+				return;
+			}
+			trail = [...trail, { model, scrollTop, notesKey, highlightedKey }];
+			relatedModel = next;
+			notesKey = undefined;
+			highlightedKey = undefined;
+			removingRecord = false;
+			sourceError = '';
+			void tick().then(() => {
+				shell.restoreScroll(0);
+				shell.focusHeading();
+			});
+		});
+	const back = () => {
+		if (reference) {
+			void leaveReference();
+			return;
+		}
+		if (!trail.length) {
+			navigate(close);
+			return;
+		}
+		navigate(() => {
+			const previous = trail[trail.length - 1];
+			trail = trail.slice(0, -1);
+			relatedModel = previous.model;
+			notesKey = previous.notesKey;
+			highlightedKey = previous.highlightedKey;
+			removingRecord = false;
+			sourceError = '';
+			void tick().then(() => {
+				shell.restoreScroll(previous.scrollTop);
+				sourceInvoker?.focus({ preventScroll: true });
+			});
+		});
+	};
+	const startOperation = (action: SmallEditAction, invoker: HTMLElement) =>
+		navigate(() => {
+			removingRecord = false;
+			operation = {
+				action,
+				invoker,
+				draft: beginSmallDraft(
+					Object.fromEntries(
+						(action.fields ?? []).map((field) => [
+							field.key,
+							field.kind === 'boolean' ? field.read() === true : String(field.read() ?? '')
+						])
+					)
+				)
+			};
+			void tick().then(() => {
+				const target = root?.querySelector<HTMLElement>('[data-small-editor]');
+				target?.scrollIntoView({ block: 'nearest' });
+				target?.focus();
+			});
+		});
 	const start = (
 		field: SmallEditField,
 		invoker: HTMLElement,
@@ -261,7 +337,7 @@
 	bind:this={shell}
 	bind:open
 	bind:scrollTop
-	title={reference?.resource.title ?? request.model.title}
+	title={reference?.resource.title ?? model.title}
 	fullHeightMobile
 	wide={!!reference}
 	scrollAffordance={!reference}
@@ -270,13 +346,33 @@
 	onOpened={opened}
 	onCancel={handleCancel}
 	showBack
-	onBack={handleCancel}
+	onBack={back}
 >
 	<div bind:this={root} class="space-y-3" hidden={!!reference} inert={!!reference}>
-		{#if request.model.badges}<div class="flex flex-wrap items-center gap-1">
-				{#each request.model.badges() as label, index (index)}<Badge {label} />{/each}
+		{#if model.badges}<div class="flex flex-wrap items-center gap-1">
+				{#each model.badges() as label, index (index)}<Badge {label} />{/each}
 			</div>{/if}
-		{#each request.model.fields as field (field.key)}
+		{#if model.source}
+			<div
+				{@attach (el) => {
+					sourceInvoker = el.querySelector<HTMLElement>('button') ?? undefined;
+					return () => {
+						sourceInvoker = undefined;
+					};
+				}}
+			>
+				<DetailSource
+					label={model.source.label()}
+					description={model.source.description}
+					onView={viewSource}
+					onRefresh={model.source.refresh
+						? (invoker) => startOperation(model.source!.refresh!, invoker)
+						: undefined}
+				/>
+			</div>
+		{/if}
+		{#if sourceError}<p role="alert">{sourceError}</p>{/if}
+		{#each model.fields as field (field.key)}
 			<section
 				class="small-edit-field border-b pb-3 last:border-0"
 				class:highlighted={highlightedKey === field.key}
@@ -314,6 +410,7 @@
 							/>{/if}
 					</div>
 				{/if}
+				{#if field.hint}<p class="theme-text-muted text-sm">{field.hint}</p>{/if}
 				{#if field.explanation}<details class="text-sm">
 						<summary class="touch-target cursor-pointer">About {field.label}</summary
 						>{field.explanation}
@@ -366,32 +463,9 @@
 				{/if}
 			</section>
 		{/each}
-		{#each request.model.actions ?? [] as action (action.key)}
-			<button
-				class={buttonClass}
-				onclick={(event) => {
-					const invoker = event.currentTarget;
-					navigate(() => {
-						removingRecord = false;
-						operation = {
-							action,
-							invoker,
-							draft: beginSmallDraft(
-								Object.fromEntries(
-									(action.fields ?? []).map((field) => [
-										field.key,
-										field.kind === 'boolean' ? field.read() === true : String(field.read() ?? '')
-									])
-								)
-							)
-						};
-						void tick().then(() => {
-							const target = root?.querySelector<HTMLElement>('[data-small-editor]');
-							target?.scrollIntoView({ block: 'nearest' });
-							target?.focus();
-						});
-					});
-				}}>{action.label}</button
+		{#each model.actions ?? [] as action (action.key)}
+			<button class={buttonClass} onclick={(event) => startOperation(action, event.currentTarget)}
+				>{action.label}</button
 			>
 		{/each}
 		{#if operation}
@@ -430,12 +504,14 @@
 					class={buttonClass}
 					onclick={() => {
 						if (save()) pending = undefined;
-					}}>{operation.action.confirmation ? 'Confirm removal' : operation.action.label}</button
+					}}
+					>{operation.action.confirmLabel ??
+						(operation.action.confirmation ? 'Confirm removal' : operation.action.label)}</button
 				>
 				<button class={buttonClass} onclick={cancel}>Cancel</button>
 			</div>
 		{/if}
-		{#if request.onRemove}
+		{#if request.onRemove && !trail.length}
 			{#if removingRecord}
 				<p>Remove this record? This cannot be undone.</p>
 				<button
@@ -519,7 +595,7 @@
 					onInspectReference={previewReference}
 					canInspectReference={(ref) => !!resolveAnnotationReference(ref)}
 					annotations={[editor.draft.value.note]}
-					referenceTemplates={request.model.annotationEditorConfig?.referenceTemplates}
+					referenceTemplates={model.annotationEditorConfig?.referenceTemplates}
 					onChange={(notes) => change({ note: notes[0] })}
 				/>
 			{:else}

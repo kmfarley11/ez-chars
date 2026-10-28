@@ -1,7 +1,12 @@
 import type { Dnd5e2014DenseCollectionRow } from '$lib/systems/dnd5e-2014/dense-collection-rows';
 import { getInventoryGroupForItem } from '$lib/systems/dnd5e-2014/inventory';
 import type { GridContentData, GridContentPatch } from '$lib/utils/gridContentTypes';
-import type { Annotation, CharacterDocument5e2014, Item, SpellRef } from '../../../../schema/index';
+import type {
+	Annotation,
+	CharacterDocument5e2014,
+	Item5e2014 as Item,
+	SpellRef
+} from '../../../../schema/index';
 import type { InventoryGroup, SpellListLevel } from '$lib/systems/dnd5e-2014/sheet-constants';
 import {
 	annotationEditorPayloadSchema,
@@ -15,7 +20,7 @@ const getItem = (
 	row: Dnd5e2014DenseCollectionRow
 ): Item | undefined =>
 	row.source.kind === 'item'
-		? character.inventory.find((item) => item.id === row.source.id)
+		? character.systemData.inventory.find((item) => item.id === row.source.id)
 		: undefined;
 
 const getSpell = (
@@ -190,7 +195,7 @@ export const decodeDenseCollectionAddIntent = (
 			type: 'replace-inventory-group',
 			group: collection.group,
 			items: [
-				...character.inventory
+				...character.systemData.inventory
 					.filter((item) => getInventoryGroupForItem(item) === collection.group)
 					.map(inventoryPayload),
 				{ name: name.trim(), notes: typeof detail === 'string' ? detail : '' }
@@ -221,7 +226,7 @@ export const decodeDenseCollectionRemoveIntent = (
 		? {
 				type: 'replace-inventory-group',
 				group: source.group,
-				items: character.inventory
+				items: character.systemData.inventory
 					.filter(
 						(item) => getInventoryGroupForItem(item) === source.group && item.id !== source.id
 					)

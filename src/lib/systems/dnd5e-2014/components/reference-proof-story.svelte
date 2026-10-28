@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { asset } from '$app/paths';
+	import { resolveAssetUrl } from '$lib/resources/asset-url';
 	import { tick } from 'svelte';
 	import BaseButton from '$lib/ui/atoms/base-button.svelte';
 	import PanelSurface from '$lib/ui/molecules/panel-surface.svelte';
@@ -24,7 +24,7 @@
 		browserHref: string;
 		staleLocator: boolean;
 	};
-	let { mode = 'viewer' } = $props<{ mode?: 'viewer' | 'mixed' }>();
+	let { mode = 'viewer' }: { mode?: 'viewer' | 'mixed' } = $props();
 	let activeViewerRequest = $state<ProofViewerRequest>();
 	let viewerReturnElement = $state<HTMLElement>();
 	let viewerHeadingEl = $state<HTMLHeadingElement>();
@@ -61,7 +61,7 @@
 			return { ...opened, document };
 		};
 	});
-	const resolveAssetHref = (path: string) => asset(path as Parameters<typeof asset>[0]);
+	const resolveAssetHref = (path: string) => resolveAssetUrl(path);
 	const viewerDisposition = resolveResourceLocator(
 		dnd5e2014ResourceCatalog,
 		DND5E_2014_CLASS_LOCATOR_ID,

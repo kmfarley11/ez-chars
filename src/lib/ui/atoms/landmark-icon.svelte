@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { Dnd5e2014SheetLandmarkIcon } from '$lib/systems/dnd5e-2014/sheet-landmarks';
+	import type { SheetLandmarkIcon } from '$lib/navigation/sheet-landmarks';
 
 	interface Props {
-		variant: Dnd5e2014SheetLandmarkIcon | 'outline';
+		variant: SheetLandmarkIcon | 'outline';
 		classes?: string;
 	}
 

@@ -407,9 +407,16 @@
 						/>
 					{:else}{fieldLabel}{/if}</span
 				>
+			</div>
+			<div
+				class={[
+					'mt-1 flex flex-wrap items-center gap-1.5',
+					displayAlign === 'center' && 'justify-center'
+				]}
+			>
+				<span class="min-w-0 truncate font-semibold">{displayValue}</span>
 				{#if annotations.length > 0}<Badge label={noteCountLabel} />{/if}
 			</div>
-			<span class="mt-1 block truncate font-semibold">{displayValue}</span>
 		</div>
 		{#if !labelEntry}<IconButton
 				bind:buttonEl={detailButtonEl}

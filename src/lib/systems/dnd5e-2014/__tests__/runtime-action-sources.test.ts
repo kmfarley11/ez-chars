@@ -19,8 +19,15 @@ const createMixedSourceCharacter = () =>
 			}
 		],
 		inventory: [
-			{ id: 'rope', name: 'Rope', notes: '50 feet', equipped: false },
-			{ id: 'shield-item', name: 'Shield', notes: 'Armor', quantity: 2, equipped: true }
+			{ category: 'other', id: 'rope', name: 'Rope', notes: '50 feet', equipped: false },
+			{
+				category: 'armorShields',
+				id: 'shield-item',
+				name: 'Shield',
+				notes: 'Armor',
+				quantity: 2,
+				equipped: true
+			}
 		],
 		systemData: {
 			race: {
@@ -184,7 +191,7 @@ describe('5e runtime action sources', () => {
 		expect(resolve5eRuntimeActionSource(character, { kind: 'item', id: 'rope' })?.kind).toBe(
 			'item'
 		);
-		character.inventory = [];
+		character.systemData.inventory = [];
 		expect(reconcile5eRuntimeActionSourceLinks(character).systemData.runtimeActions).toEqual([
 			{ id: 'rope-action', name: 'Use rope', notes: 'Snapshot' },
 			{ id: 'background-action', name: 'Researcher' }

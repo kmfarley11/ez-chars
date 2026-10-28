@@ -1,12 +1,12 @@
 import { z } from 'zod';
+import { annotationSchema, characterDocumentCoreSchema, metaSchema, systemRefSchema } from './core';
 import {
-	annotationSchema,
 	featureSchema,
 	identitySchema,
 	itemSchema,
-	metaSchema,
-	noteBlockSchema
-} from './core';
+	noteBlockSchema,
+	provenance5e2014Schema
+} from './records-5e2014';
 import { CHARACTER_DATA_VERSION_5E2014, SYSTEM_ID_5E2014 } from '../versions.5e2014';
 
 const abilityKeys = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const;
@@ -116,6 +116,7 @@ const movementNumberSchema = z.number().int().min(0);
 
 export const combatBlockSchema = z
 	.object({
+		inspiration: z.boolean().optional(),
 		armorClass: z.number().int().min(0),
 		initiative: z.number().int().optional(),
 		speed: movementNumberSchema.optional(),
@@ -421,6 +422,12 @@ const mirroredSystemDataAnnotationsSchema: z.ZodType<Record<string, unknown>> = 
 
 const dnd5e2014SystemDataBaseSchema = z
 	.object({
+		identity: identitySchema,
+		features: z.array(featureSchema),
+		inventory: z.array(itemSchema),
+		notes: z.array(noteBlockSchema),
+		characterAnnotations: z.array(annotationSchema).optional(),
+		provenance: provenance5e2014Schema.optional(),
 		level: z.number().int().min(0),
 		proficiencyBonus: z.number().int().min(0),
 		abilities: z
@@ -452,25 +459,11 @@ export const dnd5e2014SystemDataSchema = dnd5e2014SystemDataBaseSchema.extend({
 	runtimeActions: z.array(runtimeActionSchema)
 });
 
-const systemRefSchema = z
-	.object({
-		id: z.literal(SYSTEM_ID_5E2014),
-		version: z.string().optional(),
-		source: z.enum(['local', 'remote', 'import']).optional(),
-		annotations: z.array(annotationSchema).optional()
-	})
-	.strict();
-
-export const characterDocument5e2014Schema = z
-	.object({
+export const characterDocument5e2014Schema = characterDocumentCoreSchema
+	.extend({
 		meta: metaSchema.extend({ schemaVersion: z.literal(CHARACTER_DATA_VERSION_5E2014) }),
-		system: systemRefSchema,
-		identity: identitySchema,
-		features: z.array(featureSchema),
-		inventory: z.array(itemSchema),
-		notes: z.array(noteBlockSchema),
-		systemData: dnd5e2014SystemDataSchema,
-		annotations: z.array(annotationSchema).optional()
+		system: systemRefSchema.extend({ id: z.literal(SYSTEM_ID_5E2014) }),
+		systemData: dnd5e2014SystemDataSchema
 	})
 	.strict()
 	.superRefine((character, context) => {
@@ -496,9 +489,9 @@ export const characterDocument5e2014Schema = z
 				path: ['systemData', 'spellcasting', 'spells', index, 'spellId']
 			})
 		);
-		const itemIdentities = character.inventory.map((item, index) => ({
+		const itemIdentities = character.systemData.inventory.map((item, index) => ({
 			id: item.id,
-			path: ['inventory', index, 'id']
+			path: ['systemData', 'inventory', index, 'id']
 		}));
 		reportDuplicateIds(itemIdentities, 'Inventory item');
 		reportDuplicateIds(spellIdentities, 'Spell');
@@ -515,9 +508,9 @@ export const characterDocument5e2014Schema = z
 		reportDuplicateIds(languageIdentities, 'Language');
 		reportDuplicateIds(toolIdentities, 'Tool');
 
-		const generalFeatureIdentities = character.features.map((feature, index) => ({
+		const generalFeatureIdentities = character.systemData.features.map((feature, index) => ({
 			id: feature.id,
-			path: ['features', index, 'id']
+			path: ['systemData', 'features', index, 'id']
 		}));
 		const traitIdentities = (character.systemData.race?.traits ?? []).map((feature, index) => ({
 			id: feature.featureId,

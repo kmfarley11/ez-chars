@@ -13,15 +13,15 @@ describe('5e 2014 character schema', () => {
 		const character = create5e2014Character();
 
 		expect(character.system.id).toBe(SYSTEM_ID_5E2014);
-		expect(character.features).toEqual([]);
-		expect(character.inventory).toEqual([]);
-		expect(character.notes).toEqual([]);
+		expect(character.systemData.features).toEqual([]);
+		expect(character.systemData.inventory).toEqual([]);
+		expect(character.systemData.notes).toEqual([]);
 		expect(character.systemData.runtimeActions).toEqual([]);
 		expect(character.systemData.currency).toEqual({});
 		expect(character.systemData.roleplay).toEqual({});
 		expect(character.systemData.proficiencies).toEqual({ languages: [], tools: [] });
 		expect(character.systemData.spellcasting).toBeUndefined();
-		expect(character.identity.name).toBe('Ole No Name');
+		expect(character.systemData.identity.name).toBe('Ole No Name');
 		expect(character.systemData.combat.armorClass).toBe(10);
 		expect(character.systemData.combat.hitPoints.current).toBe(5);
 		expect(safeParse5e2014CharacterDocument(character).success).toBe(true);
@@ -46,7 +46,7 @@ describe('5e 2014 character schema', () => {
 		const parsed = parse5e2014CharacterDocument(character);
 
 		expect(parsed.meta.id).toBe('test-character');
-		expect(parsed.identity.name).toBe('Test Adventurer');
+		expect(parsed.systemData.identity.name).toBe('Test Adventurer');
 		expect(parsed.systemData.level).toBe(3);
 		expect(parsed.systemData.combat.armorClass).toBe(16);
 		expect(parsed.systemData.combat.hitPoints.max).toBe(12);
@@ -70,9 +70,9 @@ describe('5e 2014 character schema', () => {
 		expect(saturated).toBeDefined();
 		if (!saturated || saturated.system.id !== SYSTEM_ID_5E2014) return;
 		const parsed = parse5e2014CharacterDocument(saturated);
-		expect(parsed.inventory.length).toBeGreaterThanOrEqual(40);
+		expect(parsed.systemData.inventory.length).toBeGreaterThanOrEqual(40);
 		expect(parsed.systemData.spellcasting?.spells?.length).toBeGreaterThanOrEqual(20);
-		expect(parsed.notes.length).toBeGreaterThanOrEqual(10);
+		expect(parsed.systemData.notes.length).toBeGreaterThanOrEqual(10);
 	});
 
 	it('keeps linked and fully custom runtime actions in representative seed characters', () => {
@@ -91,7 +91,7 @@ describe('5e 2014 character schema', () => {
 			expect(linkedActions).toHaveLength(1);
 			expect(customActions).toHaveLength(1);
 			expect(linkedSourceId).toBeDefined();
-			expect(character.inventory.some((item) => item.id === linkedSourceId)).toBe(true);
+			expect(character.systemData.inventory.some((item) => item.id === linkedSourceId)).toBe(true);
 		}
 	});
 
@@ -183,8 +183,8 @@ describe('5e 2014 character schema', () => {
 		const valid = create5e2014Character({
 			features: [{ id: 'general-1', name: 'General' }],
 			inventory: [
-				{ id: 'item-1', name: 'Longsword' },
-				{ id: 'item-2', name: 'Shield' }
+				{ category: 'weapons', id: 'item-1', name: 'Longsword' },
+				{ category: 'armorShields', id: 'item-2', name: 'Shield' }
 			],
 			systemData: {
 				race: {
@@ -212,7 +212,7 @@ describe('5e 2014 character schema', () => {
 			}
 		});
 		const duplicateItem = structuredClone(valid);
-		duplicateItem.inventory[1].id = 'item-1';
+		duplicateItem.systemData.inventory[1].id = 'item-1';
 		const duplicateSpell = structuredClone(valid);
 		duplicateSpell.systemData.spellcasting!.spells![1].spellId = 'spell-1';
 		const duplicateFeature = structuredClone(valid);
@@ -226,7 +226,7 @@ describe('5e 2014 character schema', () => {
 	it('requires unique Language and Tool identities and validates namespaced Pin targets', () => {
 		const character = create5e2014Character({
 			features: [{ id: 'feature-1', name: 'Keen Mind' }],
-			inventory: [{ id: 'item-1', name: 'Longsword' }],
+			inventory: [{ category: 'weapons', id: 'item-1', name: 'Longsword' }],
 			systemData: {
 				race: {
 					name: 'Elf',
@@ -302,7 +302,7 @@ describe('5e 2014 character schema', () => {
 	it('accepts exactly resolved eligible links and rejects missing, ambiguous, or background links', () => {
 		const character = create5e2014Character({
 			features: [{ id: 'general-1', name: 'General' }],
-			inventory: [{ id: 'item-1', name: 'Longsword' }],
+			inventory: [{ category: 'weapons', id: 'item-1', name: 'Longsword' }],
 			systemData: {
 				race: {
 					name: 'Elf',
@@ -352,7 +352,11 @@ describe('5e 2014 character schema', () => {
 		}
 
 		const ambiguous = structuredClone(character);
-		ambiguous.inventory.push({ id: 'item-1', name: 'Duplicate Longsword' });
+		ambiguous.systemData.inventory.push({
+			category: 'weapons',
+			id: 'item-1',
+			name: 'Duplicate Longsword'
+		});
 		expect(safeParse5e2014CharacterDocument(ambiguous).success).toBe(false);
 	});
 });

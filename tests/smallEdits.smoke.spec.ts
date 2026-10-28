@@ -15,9 +15,14 @@ test.beforeEach(async ({ page }) => {
 			characters: [
 				{
 					...e2eCharacter,
-					identity: { ...e2eCharacter.identity, alignment: 'Neutral', appearance: 'Travel-worn' },
+
 					systemData: {
 						...e2eCharacter.systemData,
+						identity: {
+							...e2eCharacter.systemData.identity,
+							alignment: 'Neutral',
+							appearance: 'Travel-worn'
+						},
 						spellcasting: {
 							ability: 'int',
 							spells: [
@@ -49,6 +54,27 @@ test.beforeEach(async ({ page }) => {
 	await expect(page.getByRole('button', { name: 'Edit Current HP', exact: true })).toBeVisible();
 });
 test.afterEach(({ page }) => expectNoBrowserErrors(page));
+
+test('2014 coverage fields save independently and survive reload', async ({ page }) => {
+	const dialog = page.getByRole('dialog').filter({ visible: true });
+	await page.getByRole('button', { name: 'View Athletics', exact: true }).click();
+	await dialog.getByRole('button', { name: 'Edit Athletics: Bonus', exact: true }).click();
+	await dialog.getByRole('spinbutton', { name: 'Athletics: Bonus', exact: true }).fill('7');
+	await dialog.getByRole('button', { name: 'Save Athletics: Bonus', exact: true }).click();
+	await dialog.getByRole('button', { name: 'Edit Athletics: Expertise', exact: true }).click();
+	await dialog.getByRole('checkbox', { name: 'Athletics: Expertise', exact: true }).check();
+	await dialog.getByRole('button', { name: 'Save Athletics: Expertise', exact: true }).click();
+	await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+	await page.reload();
+	await page.getByRole('button', { name: 'View Athletics', exact: true }).click();
+	await expect(dialog.getByRole('region', { name: 'Athletics: Bonus', exact: true })).toContainText(
+		'7'
+	);
+	await dialog.getByRole('button', { name: 'Edit Athletics: Expertise', exact: true }).click();
+	await expect(
+		dialog.getByRole('checkbox', { name: 'Athletics: Expertise', exact: true })
+	).toBeChecked();
+});
 
 test('selective centered currency keeps its read and edit alignment without changing HP', async ({
 	page
@@ -108,11 +134,14 @@ test('name and class labels expose independent editing and coherent creation', a
 	await dialog.getByRole('textbox', { name: 'Name', exact: true }).fill('Renamed Hero');
 	await dialog.getByRole('button', { name: 'Save Name', exact: true }).click();
 	await dialog.getByRole('button', { name: 'Close', exact: true }).click();
-	await page.getByRole('button', { name: 'View Class Levels', exact: true }).click();
-	await dialog.getByRole('button', { name: 'Add Class', exact: true }).click();
-	const creation = dialog.getByRole('group', { name: 'Add Class', exact: true });
-	await creation.getByRole('textbox', { name: 'Name', exact: true }).fill('Wizard');
-	await creation.getByRole('button', { name: 'Add Class', exact: true }).click();
+	await page.getByRole('button', { name: 'Add Classes', exact: true }).click();
+	await dialog.getByRole('textbox', { name: 'Name', exact: true }).fill('Wizard');
+	await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+	await expect(dialog).toHaveCount(0);
+	await page
+		.getByRole('button', { name: 'Open Wizard', exact: true })
+		.filter({ visible: true })
+		.click();
 	await expect(
 		dialog.getByRole('button', { name: 'Edit Class 1 Level', exact: true })
 	).toBeVisible();
@@ -129,9 +158,15 @@ test('name and class labels expose independent editing and coherent creation', a
 test('pending class removal cannot retarget a shifted class after Save and continue', async ({
 	page
 }) => {
-	await page.getByRole('button', { name: 'View Class Levels', exact: true }).click();
+	await page.getByRole('button', { name: 'Add Classes', exact: true }).click();
 	const dialog = page.getByRole('dialog').filter({ visible: true });
-	for (const name of ['Fighter', 'Wizard', 'Rogue']) {
+	await dialog.getByRole('textbox', { name: 'Name', exact: true }).fill('Fighter');
+	await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+	await page
+		.getByRole('button', { name: 'Open Fighter', exact: true })
+		.filter({ visible: true })
+		.click();
+	for (const name of ['Wizard', 'Rogue']) {
 		await dialog.getByRole('button', { name: 'Add Class', exact: true }).click();
 		const creation = dialog.getByRole('group', { name: 'Add Class', exact: true });
 		await creation.getByRole('textbox', { name: 'Name', exact: true }).fill(name);
@@ -151,7 +186,10 @@ test('pending class removal cannot retarget a shifted class after Save and conti
 	);
 	await dialog.getByRole('button', { name: 'Close', exact: true }).click();
 	await page.reload();
-	await page.getByRole('button', { name: 'View Class Levels', exact: true }).click();
+	await page
+		.getByRole('button', { name: 'Open Wizard', exact: true })
+		.filter({ visible: true })
+		.click();
 	await expect(dialog.getByRole('region', { name: 'Class 1 Name', exact: true })).toContainText(
 		'Wizard'
 	);
@@ -220,7 +258,12 @@ test('read-first slots target Used and Max independently', async ({ page }, test
 	await dialog.getByRole('button', { name: 'Close', exact: true }).click();
 	await page.reload();
 	await expect(level).toContainText('1');
-	await level.getByRole('button', { name: 'View notes for Used', exact: true }).click();
+	await expect(level.getByText('1 note', { exact: true })).toBeVisible();
+	await level.getByRole('button', { name: 'View Used', exact: true }).click();
+	await dialog
+		.getByRole('region', { name: 'Used', exact: true })
+		.getByRole('button', { name: '1 note', exact: true })
+		.click();
 	await expect(dialog).toContainText('Track expended slots');
 	await dialog.getByRole('button', { name: 'Close', exact: true }).click();
 	await level.getByRole('button', { name: 'View Max', exact: true }).click();
@@ -244,7 +287,7 @@ test('label buttons consistently reveal and identify their field without startin
 	for (const [label, index, field] of [
 		['Score', 0, 'Score'],
 		['Modifier', 0, 'Modifier'],
-		['Save', 2, 'Save'],
+		['CON Save', 0, 'CON Save: Proficiency'],
 		['Prof. Bonus', 0, 'Prof. Bonus']
 	] as const) {
 		const trigger = page.getByRole('button', { name: `View ${label}`, exact: true }).nth(index);
@@ -261,7 +304,7 @@ test('label buttons consistently reveal and identify their field without startin
 			region.getByRole('button', { name: `Edit ${field}`, exact: true })
 		).toBeInViewport();
 		await expect(dialog.getByRole('spinbutton')).toHaveCount(0);
-		if (label === 'Save')
+		if (label === 'CON Save')
 			await testInfo.attach('targeted-field', {
 				body: await page.screenshot({ path: testInfo.outputPath('targeted-field.png') }),
 				contentType: 'image/png'
@@ -305,7 +348,9 @@ test('Tier 1 notes stay independent of HP and label entry retains complete group
 	await dialog.getByRole('button', { name: 'Close', exact: true }).click();
 	await expect(notes).toBeFocused();
 	await page.getByRole('button', { name: 'View Score', exact: true }).first().click();
-	await expect(dialog.getByRole('button', { name: 'Edit Athletics', exact: true })).toBeVisible();
+	await expect(
+		dialog.getByRole('button', { name: 'Edit Athletics: Proficiency', exact: true })
+	).toBeVisible();
 });
 
 test('scratchpad lifecycle and roleplay notes use independent edits without nested dialogs', async ({
@@ -342,7 +387,11 @@ test('scratchpad lifecycle and roleplay notes use independent edits without nest
 		.fill('Optional motivation context');
 	await dialog.getByRole('button', { name: 'Save note', exact: true }).click();
 	await dialog.getByRole('button', { name: 'Close', exact: true }).click();
-	await page.getByRole('button', { name: 'View notes for Motives', exact: true }).click();
+	await page.getByRole('button', { name: 'View Motives', exact: true }).click();
+	await dialog
+		.getByRole('region', { name: 'Motives', exact: true })
+		.getByRole('button', { name: '1 note', exact: true })
+		.click();
 	await expect(dialog).toContainText('Optional motivation context');
 	await expect(page.getByRole('dialog').filter({ visible: true })).toHaveCount(1);
 });
@@ -463,12 +512,14 @@ test('targeted skill entry and independent saves protect dirty Close, Back and E
 }) => {
 	await page.getByRole('button', { name: 'View Athletics', exact: true }).click();
 	const dialog = page.getByRole('dialog').filter({ visible: true });
-	await expect(dialog.getByRole('heading', { name: 'Athletics', exact: true })).toBeFocused();
+	await expect(
+		dialog.getByRole('heading', { name: 'Athletics: Proficiency', exact: true })
+	).toBeFocused();
 	await dialog.getByRole('button', { name: 'Edit Score', exact: true }).click();
 	await dialog.getByRole('spinbutton', { name: 'Score', exact: true }).fill('15');
 	await dialog.getByRole('button', { name: 'Save Score', exact: true }).click();
-	await dialog.getByRole('button', { name: 'Edit Athletics', exact: true }).click();
-	await dialog.getByRole('checkbox', { name: 'Athletics', exact: true }).check();
+	await dialog.getByRole('button', { name: 'Edit Athletics: Proficiency', exact: true }).click();
+	await dialog.getByRole('checkbox', { name: 'Athletics: Proficiency', exact: true }).check();
 	await dialog.getByRole('button', { name: 'Close', exact: true }).click();
 	await expect(dialog.getByRole('group', { name: 'Unsaved changes' })).toBeVisible();
 	await dialog.getByRole('button', { name: 'Keep editing', exact: true }).click();
@@ -481,14 +532,18 @@ test('targeted skill entry and independent saves protect dirty Close, Back and E
 	await page.reload();
 	await page.getByRole('button', { name: 'View Athletics', exact: true }).click();
 	await expect(dialog.getByRole('region', { name: 'Score', exact: true })).toContainText('15');
-	await expect(dialog.getByRole('region', { name: 'Athletics', exact: true })).toContainText('No');
+	await expect(
+		dialog.getByRole('region', { name: 'Athletics: Proficiency', exact: true })
+	).toContainText('No');
 });
 
 test('notes save separately and removal supports Undo before confirmation', async ({ page }) => {
 	await page.getByRole('button', { name: 'View Athletics', exact: true }).click();
 	const dialog = page.getByRole('dialog').filter({ visible: true });
-	const athletics = dialog.getByRole('region', { name: 'Athletics', exact: true });
-	await athletics.getByRole('button', { name: 'Add note for Athletics', exact: true }).click();
+	const athletics = dialog.getByRole('region', { name: 'Athletics: Proficiency', exact: true });
+	await athletics
+		.getByRole('button', { name: 'Add note for Athletics: Proficiency', exact: true })
+		.click();
 	await dialog
 		.getByRole('textbox', { name: 'Text (optional)', exact: true })
 		.fill('Keep this note');
@@ -506,7 +561,7 @@ test('notes save separately and removal supports Undo before confirmation', asyn
 	await dialog.getByRole('button', { name: 'Confirm note removal', exact: true }).click();
 	await expect(athletics).not.toContainText('Keep this note');
 	await expect(
-		athletics.getByRole('button', { name: 'Add note for Athletics', exact: true })
+		athletics.getByRole('button', { name: 'Add note for Athletics: Proficiency', exact: true })
 	).toBeVisible();
 });
 

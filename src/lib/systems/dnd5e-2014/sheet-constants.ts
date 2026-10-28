@@ -1,9 +1,5 @@
 import type { GridAnnotationEditorConfig, GridContentBindPath } from '$lib/utils/gridContentTypes';
-export {
-	getInventoryGroupForItem,
-	withInventoryGroupTags,
-	type InventoryGroup
-} from '$lib/systems/dnd5e-2014/inventory';
+export { getInventoryGroupForItem, type InventoryGroup } from '$lib/systems/dnd5e-2014/inventory';
 import {
 	DND_BEYOND_BASIC_RULES_REF_5E_2014,
 	SRD_REF_5E_2014,
@@ -125,14 +121,15 @@ export const toSystemDataAnnotationPath = (
 	bindPath: GridContentBindPath
 ): GridContentBindPath | undefined => {
 	if (bindPath.length === 0) return undefined;
+	if (
+		bindPath[0] === 'systemData' &&
+		bindPath[1] === 'inventory' &&
+		typeof bindPath[2] === 'number'
+	) {
+		return ['systemData', 'inventory', bindPath[2], 'annotations'];
+	}
 	if (bindPath[0] === 'systemData') {
 		return ['systemData', 'annotations', ...bindPath.slice(1), '_annotations'];
-	}
-	if (bindPath[0] === 'identity') {
-		return ['systemData', 'annotations', 'identity', ...bindPath.slice(1), '_annotations'];
-	}
-	if (bindPath[0] === 'inventory' && typeof bindPath[1] === 'number') {
-		return ['inventory', bindPath[1], 'annotations'];
 	}
 	return undefined;
 };

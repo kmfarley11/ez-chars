@@ -6,9 +6,8 @@
 		type Dnd5e2014DenseCollectionRow
 	} from '$lib/systems/dnd5e-2014/dense-collection-rows';
 	import { set5e2014CollectionPins } from '$lib/systems/dnd5e-2014/collection-priority';
-	import { withInventoryGroupTags } from '$lib/systems/dnd5e-2014/inventory';
 	import { create5e2014Character, type CharacterDocument5e2014 } from '../../../../schema/index';
-	import { createCanonicalSheetState } from '../pages/canonical-sheet-state';
+	import { createCanonicalSheetState } from '$lib/storybook/canonical-sheet-state';
 	import { create5eSheetEditSession } from '../editing/sheet-edit-session';
 	import type { SheetEditIntent } from '../editing/sheet-edit-intents';
 
@@ -91,7 +90,7 @@
 								id: row.source.id,
 								name: row.label,
 								notes: row.detail,
-								tags: withInventoryGroupTags(undefined, row.source.group)
+								category: row.source.group
 							}
 						]
 					: []
@@ -142,7 +141,7 @@
 					new Set(mockCharacter.systemData.collectionPins?.spells ?? [])
 				)
 			: projectPrioritizedInventoryDenseCollectionRows(
-					mockCharacter.inventory,
+					mockCharacter.systemData.inventory,
 					collection.group,
 					new Set(mockCharacter.systemData.collectionPins?.inventory ?? [])
 				)

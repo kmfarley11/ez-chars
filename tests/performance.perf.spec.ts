@@ -20,7 +20,7 @@ test('records a scroll-frame baseline for the character sheet', async ({ page },
 	await page.goto('/');
 	await page
 		.locator('tbody tr')
-		.filter({ hasText: e2eCharacter.identity.name })
+		.filter({ hasText: e2eCharacter.systemData.identity.name })
 		.locator('td')
 		.first()
 		.click();

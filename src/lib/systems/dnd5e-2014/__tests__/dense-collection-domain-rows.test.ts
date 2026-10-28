@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { getCollectionPriorityPreview } from '$lib/ui/molecules/collection-priority';
 import { filterGridContentListRows } from '$lib/ui/molecules/grid-content-list';
-import { create5e2014Character, type Item, type SpellRef } from '../../../../schema';
+import { create5e2014Character, type Item5e2014 as Item, type SpellRef } from '../../../../schema';
 import { merge5e2014InventoryGroupPins, set5e2014CollectionPins } from '../collection-priority';
 import {
 	projectPrioritizedInventoryDenseCollectionRows,
@@ -9,12 +9,17 @@ import {
 } from '../dense-collection-rows';
 
 const inventory: Array<Item> = [
-	{ id: 'weapon-z', name: 'Zweihander', tags: ['inventory:weapon'] },
-	{ id: 'weapon-a', name: 'Arbalest', tags: ['inventory:weapon'] },
-	{ id: 'armor-z', name: 'Scale mail', tags: ['inventory:armor-shield'] },
-	{ id: 'armor-a', name: 'Breastplate', tags: ['inventory:armor-shield'] },
-	{ id: 'gear-z', name: 'Waterskin' },
-	{ id: 'gear-a', name: 'Bedroll' }
+	{ category: 'weapons', id: 'weapon-z', name: 'Zweihander', tags: ['inventory:weapon'] },
+	{ category: 'weapons', id: 'weapon-a', name: 'Arbalest', tags: ['inventory:weapon'] },
+	{ category: 'armorShields', id: 'armor-z', name: 'Scale mail', tags: ['inventory:armor-shield'] },
+	{
+		category: 'armorShields',
+		id: 'armor-a',
+		name: 'Breastplate',
+		tags: ['inventory:armor-shield']
+	},
+	{ category: 'other', id: 'gear-z', name: 'Waterskin' },
+	{ category: 'other', id: 'gear-a', name: 'Bedroll' }
 ];
 
 describe('prioritized 5e inventory projection', () => {
@@ -49,6 +54,7 @@ describe('prioritized 5e inventory projection', () => {
 
 	it('uses stable identity to order duplicate names and leaves every unlimited Pin reachable', () => {
 		const duplicateRopes = Array.from({ length: 8 }, (_, index) => ({
+			category: 'other' as const,
 			id: `rope-${String.fromCharCode(104 - index)}`,
 			name: 'Rope'
 		}));

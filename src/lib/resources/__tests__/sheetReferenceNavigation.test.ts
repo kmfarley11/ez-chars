@@ -16,7 +16,8 @@ vi.mock('$app/paths', () => ({ resolve: (path: string) => `/ez-chars${path}` }))
 import {
 	closeSheetReference,
 	navigateSheetLandmark,
-	openSheetReference
+	openSheetReference,
+	selectSheetReference
 } from '../sheetReferenceNavigation';
 
 beforeEach(() => {
@@ -35,6 +36,19 @@ beforeEach(() => {
 });
 
 describe('sheet reference history ownership', () => {
+	it('retains the 2024 route, deployment base and character through all shared host operations', () => {
+		routePage.url = new URL('http://localhost/ez-chars/charsheets/5e2024?id=modern');
+		navigateSheetLandmark('sheet-origin-heading');
+		openSheetReference('2024-origins', 'origin-trigger');
+		selectSheetReference('2024-equipment');
+		navigateSheetLandmark('sheet-inventory-heading');
+		closeSheetReference();
+		expect(routePage.url.href).toBe(
+			'http://localhost/ez-chars/charsheets/5e2024?id=modern#sheet-inventory-heading'
+		);
+		expect(routePage.state).toEqual({ referenceDirectDismissed: true });
+		expect(pushState).toHaveBeenCalledTimes(2);
+	});
 	it('closes in place after a sheet jump without leaving open-reader state behind', () => {
 		navigateSheetLandmark('sheet-quick-reference-heading');
 		openSheetReference('classes', 'rules');
@@ -42,7 +56,7 @@ describe('sheet reference history ownership', () => {
 		const currentUrl = routePage.url.href;
 		closeSheetReference();
 		expect(replaceState).toHaveBeenLastCalledWith(
-			'/ez-chars/charsheets/5e?id=test#sheet-inventory-heading',
+			new URL('http://localhost/ez-chars/charsheets/5e?id=test#sheet-inventory-heading'),
 			{ referenceDirectDismissed: true }
 		);
 		expect(routePage.url.href).toBe(currentUrl);
@@ -84,7 +98,7 @@ describe('sheet reference history ownership', () => {
 		navigateSheetLandmark('sheet-spells-heading');
 		expect(pushState).toHaveBeenCalledTimes(2);
 		expect(replaceState).toHaveBeenLastCalledWith(
-			'/ez-chars/charsheets/5e?id=test#sheet-spells-heading',
+			new URL('http://localhost/ez-chars/charsheets/5e?id=test#sheet-spells-heading'),
 			expect.objectContaining({ referenceLocatorId: 'classes', referenceReturnFocusId: 'rules' })
 		);
 		routePage.state = {};

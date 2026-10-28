@@ -19,12 +19,12 @@ For current product scope, in/out-of-scope decisions, and success criteria, use 
 
 ## Current State
 
-- [src/schema/](src/schema/) contains typed Zod-backed data models; 5e 2014 is the only implemented system schema and validates one explicitly unstable pre-playtest `dnd5e-2014.schema.v0` shape while rejecting retired experimental and unknown future layouts
+- [src/schema/](src/schema/) contains strict edition-owned 2014 and 2024 schemas under a minimal `meta`/`system`/`systemData` envelope. Both pre-playtest v0 layouts are unstable; unsupported systems and old/future layouts are rejected, not cast or silently migrated.
 - [`src/routes/+page.svelte`](src/routes/+page.svelte) is the home/list view
-- [`src/routes/charsheets/5e/+page.svelte`](src/routes/charsheets/5e/+page.svelte) is the only real sheet page
-- [`src/data.ts`](src/data.ts) currently mixes seed data, store wiring, and localStorage persistence
+- [`src/routes/charsheets/5e/+page.svelte`](src/routes/charsheets/5e/+page.svelte) and [`src/routes/charsheets/5e2024/+page.svelte`](src/routes/charsheets/5e2024/+page.svelte) guard edition identity and mount system-owned production Pages.
+- [src/lib/storage/](src/lib/storage/) owns persistence and protected rejected-data recovery; [src/fixtures/](src/fixtures/) owns maintained examples. [store.ts](src/lib/storage/store.ts) is the application store entry point.
 - [src/lib/](src/lib/) contains the reusable grid display/editing primitives
-- The 5e UI currently exposes only part of the full schema
+- The 2024 authored sheet is completed under BL-070; it shares interaction primitives, not 2014 rules calculations or a universal sheet renderer.
 - Vitest covers schema migration, storage, import/export, and typed edit contracts; CI remains deferred
 - `immutable-json-patch` is the selected RFC 6902 patch library for the field-binding work; reuse the representative JSON Patch fixture in [src/test-utils/jsonPatchFixtures.ts](src/test-utils/jsonPatchFixtures.ts) for patch/binding tests
 
@@ -34,7 +34,7 @@ For current product scope, in/out-of-scope decisions, and success criteria, use 
 - **Path Portability:** All files committed to the repository (documentation, specifications, designs, proposals, task checklists) MUST use repo-relative paths (e.g., `docs/backlog.md` or relative links like `../../src/lib/`) rather than absolute file paths or machine-specific `file://` URIs. This guarantees documents are portable across developer environments, CI systems, and execution machines.
 - **Remote Model Disclosure:** Before directly inspecting nonpublic, paid, rights-restricted, or personally sensitive local source content when the agent cannot verify the client/provider's transmission, retention, or training controls, briefly warn the human that selected content or tool output may be sent to a remote model service and ask them to confirm their settings and authorization. Do not claim that provider processing necessarily makes the content public or trains a public model. Once the human accepts that risk for the scoped task, proceed without repeating the warning; sanitized bibliographic metadata does not require a new warning.
 - **Tooling Preference:** Coding agents MUST always prefer using built-in agent read/write file tooling (`view_file`, `write_to_file`, `replace_file_content`, `grep_search`, `find_by_name`, `list_dir`) rather than writing or executing one-off scripts (e.g., ad-hoc Python/Node one-liners or shell file manipulation via `run_command`). Reserve shell commands strictly for real environment execution such as running test suites, linters, compilers, builds, or git operations.
-- Prefer completing the current 5e 2014 MVP before expanding systems
+- Preserve the approved 2014 baseline while following the explicit multi-system scope and sequence in the active goals and backlog.
 - Keep current MVP docs up to date when scope or backlog changes
 - Before adding bespoke UI controls or new component patterns, scan [src/lib/](src/lib/) for existing primitives and reuse or extend them where practical; if a local primitive is not reused, call out why
 - For overflow/action menus, inspect and reuse `MenuButton`/`MenuItemButton` and their existing stories before composing local markup. Native `<details>` is for inline disclosure, not a replacement for a light-dismiss popover. Verify outside-click/tap dismissal, Escape/focus return, command handoff, and coarse-pointer sizing in the actual host; using a native element alone does not satisfy the shared interaction contract.
@@ -64,7 +64,7 @@ For current product scope, in/out-of-scope decisions, and success criteria, use 
 - [docs/component-maintenance.md](docs/component-maintenance.md): source/catalog navigation and contribution practices
 - [src/schema/](src/schema/): shared and system-specific data models
 - [src/test-utils/](src/test-utils/): shared Vitest scaffolding such as browser globals and memory-backed `localStorage`
-- [src/data.ts](src/data.ts): temporary character store, seed data, and localStorage baseline
+- [src/lib/storage/store.ts](src/lib/storage/store.ts): application character store and recovery-aware persistence wiring
 - [docs/active-goals.md](docs/active-goals.md): current active goals definition
 - [docs/backlog.md](docs/backlog.md): prioritized implementation backlog
 - [docs/verification.md](docs/verification.md): local verification command guide

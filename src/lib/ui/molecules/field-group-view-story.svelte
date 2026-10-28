@@ -8,11 +8,11 @@
 		displayMaxCols = 3,
 		displayAlign = 'left',
 		mode = 'mixed'
-	} = $props<{
+	}: {
 		displayMaxCols?: number;
 		displayAlign?: 'left' | 'center';
 		mode?: 'mixed' | 'readonly' | 'editable' | 'annotated' | 'multiline' | 'empty' | 'quiet';
-	}>();
+	} = $props();
 
 	let mockData: GridContentData = $derived(
 		(mode === 'empty'

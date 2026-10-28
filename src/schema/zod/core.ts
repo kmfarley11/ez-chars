@@ -49,62 +49,18 @@ export const metaSchema = z
 	})
 	.strict();
 
-export const identitySchema = z
-	.object({
-		name: z.string().min(1),
-		playerName: z.string().optional(),
-		pronouns: z.string().optional(),
-		ancestryLineage: z.string().optional(),
-		background: z.string().optional(),
-		alignment: z.string().optional(),
-		appearance: z.string().optional(),
-		description: z.string().optional(),
-		tags: z.array(z.string()).optional(),
-		annotations: z.array(annotationSchema).optional()
-	})
-	.strict();
-
-export const featureSchema = z
+// An opt-in identity primitive, not a universal inventory/mechanics contract.
+export const itemIdentitySchema = z
 	.object({
 		id: z.string().min(1),
-		name: z.string().min(1),
-		summary: z.string().optional(),
-		description: z.string().optional(),
-		tags: z.array(z.string()).optional(),
-		annotations: z.array(annotationSchema).optional()
-	})
-	.strict();
-
-export const itemSchema = z
-	.object({
-		id: z.string().min(1),
-		name: z.string().min(1),
-		quantity: z.number().optional(),
-		weight: z.number().optional(),
-		value: z.string().optional(),
-		equipped: z.boolean().optional(),
-		notes: z.string().optional(),
-		tags: z.array(z.string()).optional(),
-		annotations: z.array(annotationSchema).optional()
-	})
-	.strict();
-
-export const noteBlockSchema = z
-	.object({
-		id: z.string().min(1),
-		title: z.string().optional(),
-		body: z.string(),
-		kind: z.enum(['quick', 'session', 'lore', 'rules', 'other']).optional(),
-		annotations: z.array(annotationSchema).optional()
+		name: z.string().min(1)
 	})
 	.strict();
 
 export const systemRefSchema = z
 	.object({
 		id: z.string().min(1),
-		version: z.string().optional(),
-		source: z.enum(['local', 'remote', 'import']).optional(),
-		annotations: z.array(annotationSchema).optional()
+		version: z.string().min(1)
 	})
 	.strict();
 
@@ -112,11 +68,6 @@ export const characterDocumentCoreSchema = z
 	.object({
 		meta: metaSchema,
 		system: systemRefSchema,
-		identity: identitySchema,
-		features: z.array(featureSchema).optional(),
-		inventory: z.array(itemSchema).optional(),
-		notes: z.array(noteBlockSchema).optional(),
-		systemData: z.unknown(),
-		annotations: z.array(annotationSchema).optional()
+		systemData: z.unknown()
 	})
 	.strict();

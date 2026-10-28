@@ -1,15 +1,12 @@
-import type { CharacterDocument5e2014 } from '../../../../schema';
-import type { SheetEditOwner } from '../editing/sheet-edit-session';
-
 // Clones at both boundaries so Reset cannot restore a previously edited singleton.
 // Validation belongs to the shared domain commit seam, exactly as in the app host.
-export const createCanonicalSheetState = (fixture: CharacterDocument5e2014) => {
+export const createCanonicalSheetState = <T>(fixture: T) => {
 	const baseline = structuredClone(fixture);
 	let current = structuredClone(baseline);
 	let rejected = false;
-	const owner: SheetEditOwner = {
+	const owner = {
 		read: () => current,
-		write: (next) => {
+		write: (next: T) => {
 			current = next;
 		},
 		reject: () => rejected

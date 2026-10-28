@@ -17,7 +17,7 @@ export const projectSupportingRecordEditData = (
 ): GridContentData => {
 	if (!row) return {};
 	if (row.source.kind === 'general-feature') {
-		const feature = character.features.find((entry) => entry.id === row.source.id);
+		const feature = character.systemData.features.find((entry) => entry.id === row.source.id);
 		return feature
 			? {
 					name: { fieldName: 'Name', value: feature.name },
@@ -64,7 +64,7 @@ const featurePayload = (
 	removeSelected: boolean
 ): FeatureEditorPayload => {
 	const result: FeatureEditorPayload = [];
-	for (const feature of character.features) {
+	for (const feature of character.systemData.features) {
 		if (selected?.source.kind === 'general-feature' && feature.id === selected.source.id) {
 			if (!removeSelected) {
 				result.push({

@@ -28,7 +28,7 @@ test.afterEach(({ page }) => {
 
 async function openSeededCharacter(page: Page) {
 	await page.goto('/');
-	await page.getByRole('button', { name: `Open ${e2eCharacter.identity.name}` }).click();
+	await page.getByRole('button', { name: `Open ${e2eCharacter.systemData.identity.name}` }).click();
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-character/);
 	await expect(page.getByRole('button', { name: 'Edit Current HP' })).toBeVisible();
 }
@@ -62,7 +62,9 @@ test('representative phone controls expose non-overlapping 44 CSS-pixel targets'
 }) => {
 	const failures: string[] = [];
 	await page.goto('/');
-	const openCharacter = page.getByRole('button', { name: `Open ${e2eCharacter.identity.name}` });
+	const openCharacter = page.getByRole('button', {
+		name: `Open ${e2eCharacter.systemData.identity.name}`
+	});
 	await collectTargetFailures(
 		[
 			{ name: 'Create character', locator: page.getByRole('button', { name: 'Create Character' }) },
@@ -77,7 +79,9 @@ test('representative phone controls expose non-overlapping 44 CSS-pixel targets'
 			{ name: 'Open character', locator: openCharacter },
 			{
 				name: 'Delete character',
-				locator: page.getByRole('button', { name: `Delete ${e2eCharacter.identity.name}` })
+				locator: page.getByRole('button', {
+					name: `Delete ${e2eCharacter.systemData.identity.name}`
+				})
 			}
 		],
 		failures
@@ -157,7 +161,7 @@ test('representative phone controls expose non-overlapping 44 CSS-pixel targets'
 		failures
 	);
 	await focusedDetailTrigger.click();
-	const focusedDetail = page.getByRole('dialog', { name: 'Character identity and classes' });
+	const focusedDetail = page.getByRole('dialog', { name: 'Character identity', exact: true });
 	await collectTargetFailures(
 		[
 			{

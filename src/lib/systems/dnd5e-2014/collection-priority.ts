@@ -21,12 +21,12 @@ export const get5e2014PriorityIdentities = (
 		case 'runtimeActions':
 			return character.systemData.runtimeActions.map((action) => action.id);
 		case 'inventory':
-			return character.inventory.map((item) => item.id);
+			return character.systemData.inventory.map((item) => item.id);
 		case 'spells':
 			return (character.systemData.spellcasting?.spells ?? []).map((spell) => spell.spellId);
 		case 'features':
 			return [
-				...character.features.map((feature) => feature.id),
+				...character.systemData.features.map((feature) => feature.id),
 				...character.systemData.classes.flatMap((classLevel) =>
 					(classLevel.features ?? []).map((feature) => feature.featureId)
 				)
@@ -62,7 +62,7 @@ export const merge5e2014InventoryGroupPins = (
 	draft: ReadonlyArray<string>
 ): Array<string> => {
 	const groupIdentities = new Set(
-		character.inventory
+		character.systemData.inventory
 			.filter((item) => getInventoryGroupForItem(item) === group)
 			.map((item) => item.id)
 	);

@@ -9,6 +9,7 @@ import type {
 	GridContentField
 } from '$lib/utils/gridContentTypes';
 import type { AbilityKey, CharacterDocument5e2014 } from '../../../schema/index';
+import type { GridContentListRow } from '$lib/ui/molecules/grid-content-list';
 import {
 	abilityMetadata,
 	annotationEditorConfig,
@@ -25,6 +26,20 @@ import {
 } from '$lib/systems/dnd5e-2014/sheet-constants';
 
 type PrimitiveGridValue = string | number | boolean;
+
+// Positional keys are view-only. The existing class editor guards against external array changes.
+export const projectClassRows = (character: CharacterDocument5e2014): GridContentListRow[] =>
+	character.systemData.classes.map((entry, index) => ({
+		key: `class:${index}`,
+		label: entry.name,
+		badges: [`Level ${entry.level}`, ...(entry.subclass ? [entry.subclass] : [])],
+		annotations: ['name', 'level', 'subclass'].flatMap((property) =>
+			readGridAnnotationsAtPath(
+				character,
+				toSystemDataAnnotationPath(['systemData', 'classes', index, property])
+			)
+		)
+	}));
 
 export type AbilityRuntimeColumn = {
 	key: AbilityKey;
@@ -74,6 +89,43 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 			value
 		};
 	};
+	const checkField = (
+		label: string,
+		path: GridContentBindPath,
+		check: { proficient?: boolean; expertise?: boolean; bonus?: number } | undefined,
+		skill = false
+	): GridContentField => ({
+		fieldName: label,
+		bindPath: [...path, 'proficient'],
+		displayStatus: {
+			mark: skill && check?.expertise ? 'E' : check?.proficient ? 'P' : '',
+			label:
+				skill && check?.expertise
+					? 'Expertise'
+					: check?.proficient
+						? 'Proficient'
+						: 'Not proficient'
+		},
+		value: {
+			proficient: withFieldAnnotations(check?.proficient ?? false, [...path, 'proficient'], {
+				fieldName: `${label}: Proficiency`,
+				label: 'proficient'
+			}),
+			...(skill
+				? {
+						expertise: withFieldAnnotations(check?.expertise ?? false, [...path, 'expertise'], {
+							fieldName: `${label}: Expertise`,
+							label: 'expertise'
+						})
+					}
+				: {}),
+			bonus: withFieldAnnotations(check?.bonus ?? '', [...path, 'bonus'], {
+				fieldName: `${label}: Bonus`,
+				label: 'bonus',
+				inputKind: 'number'
+			})
+		}
+	});
 
 	const createRoleplayFieldData = (keys: Array<RoleplayFieldKey>): GridContentData =>
 		Object.fromEntries(
@@ -94,7 +146,12 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 		);
 
 	const metaPrimaryData: GridContentData = {
-		name: withFieldAnnotations(char.identity.name, ['identity', 'name']),
+		name: withFieldAnnotations(char.systemData.identity.name, ['systemData', 'identity', 'name']),
+		playerName: withFieldAnnotations(
+			char.systemData.identity.playerName ?? '',
+			['systemData', 'identity', 'playerName'],
+			{ fieldName: 'Player Name' }
+		),
 		classLevels: {
 			addItemLabel: 'Add Class',
 			addItemTemplate: {
@@ -113,7 +170,12 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 					}),
 					level: withFieldAnnotations(entry.level, ['systemData', 'classes', index, 'level'], {
 						fieldName: `Class ${index + 1} Level`
-					})
+					}),
+					subclass: withFieldAnnotations(
+						entry.subclass ?? '',
+						['systemData', 'classes', index, 'subclass'],
+						{ fieldName: `Class ${index + 1} Subclass` }
+					)
 				}
 			}))
 		}
@@ -121,17 +183,25 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 
 	const metaSecondaryData: GridContentData = {
 		ancestry: withFieldAnnotations(
-			char.identity.ancestryLineage ?? char.systemData.race?.name ?? '',
-			['identity', 'ancestryLineage']
+			char.systemData.identity.ancestryLineage ?? char.systemData.race?.name ?? '',
+			['systemData', 'identity', 'ancestryLineage']
 		),
 		background: withFieldAnnotations(
-			char.identity.background ?? char.systemData.background?.name ?? '',
-			['identity', 'background']
+			char.systemData.identity.background ?? char.systemData.background?.name ?? '',
+			['systemData', 'identity', 'background']
 		)
 	};
 	const metaTertiaryData: GridContentData = {
-		alignment: withFieldAnnotations(char.identity.alignment ?? '', ['identity', 'alignment']),
-		appearance: withFieldAnnotations(char.identity.appearance ?? '', ['identity', 'appearance'])
+		alignment: withFieldAnnotations(char.systemData.identity.alignment ?? '', [
+			'systemData',
+			'identity',
+			'alignment'
+		]),
+		appearance: withFieldAnnotations(char.systemData.identity.appearance ?? '', [
+			'systemData',
+			'identity',
+			'appearance'
+		])
 	};
 
 	const quickRefLiveDescriptors: Array<GridFieldDescriptor> = [
@@ -199,6 +269,16 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 		annotationPathForValuePath: toSystemDataAnnotationPath
 	});
 	const quickRefReferenceData: GridContentData = {
+		inspiration: withFieldAnnotations(
+			char.systemData.combat.inspiration ?? false,
+			['systemData', 'combat', 'inspiration'],
+			{ fieldName: 'Inspiration' }
+		),
+		passivePerception: withFieldAnnotations(
+			char.systemData.combat.senses?.passivePerception ?? '',
+			['systemData', 'combat', 'senses', 'passivePerception'],
+			{ fieldName: 'Passive Perception', inputKind: 'number' }
+		),
 		maxHp: withFieldAnnotations(
 			char.systemData.combat.hitPoints.max,
 			['systemData', 'combat', 'hitPoints', 'max'],
@@ -284,23 +364,12 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 							}
 						}
 					],
-					[
-						'save',
-						withFieldAnnotations(
-							saveData?.proficient ?? false,
-							['systemData', 'saves', key, 'proficient'],
-							{ fieldName: 'Save' }
-						)
-					],
+					['save', checkField(`${shortLabel} Save`, ['systemData', 'saves', key], saveData)],
 					...skillsForAbility.map(
 						({ name }) =>
 							[
 								name,
-								withFieldAnnotations(
-									char.systemData.skills[name]?.proficient ?? false,
-									['systemData', 'skills', name, 'proficient'],
-									{ fieldName: name }
-								) satisfies GridContentField
+								checkField(name, ['systemData', 'skills', name], char.systemData.skills[name], true)
 							] as const
 					)
 				])
@@ -337,17 +406,21 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 
 	const organizationalBackgroundData: GridContentData = {
 		background: withFieldAnnotations(
-			char.systemData.background?.name ?? char.identity.background ?? '',
+			char.systemData.background?.name ?? char.systemData.identity.background ?? '',
 			['systemData', 'background', 'name'],
 			{ fieldName: 'Background' }
 		),
-		appearance: withFieldAnnotations(char.identity.appearance ?? '', ['identity', 'appearance'], {
-			fieldName: 'Appearance',
-			multiline: true
-		}),
+		appearance: withFieldAnnotations(
+			char.systemData.identity.appearance ?? '',
+			['systemData', 'identity', 'appearance'],
+			{
+				fieldName: 'Appearance',
+				multiline: true
+			}
+		),
 		description: withFieldAnnotations(
-			char.identity.description ?? '',
-			['identity', 'description'],
+			char.systemData.identity.description ?? '',
+			['systemData', 'identity', 'description'],
 			{ fieldName: 'Description', multiline: true }
 		)
 	};
@@ -381,7 +454,7 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 				}
 			},
 			bindPath: [scratchpadNotesPathPrefix],
-			value: char.notes.map((note) => ({
+			value: char.systemData.notes.map((note) => ({
 				fieldName: 'Note',
 				value: {
 					title: { fieldName: 'Title', value: note.title ?? '' },

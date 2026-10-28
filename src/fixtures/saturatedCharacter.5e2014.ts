@@ -4,6 +4,7 @@ const longGearDetail =
 	'Wrapped in oilcloth with chalk marks from the flooded lower halls of the XYZ dungeon; the description is intentionally long enough to exercise compact truncation.';
 
 const otherGear = Array.from({ length: 32 }, (_, index) => ({
+	category: 'other' as const,
 	id: `saturated-gear-${index + 1}`,
 	name:
 		index === 0
@@ -31,6 +32,7 @@ const otherGear = Array.from({ length: 32 }, (_, index) => ({
 }));
 
 const weapons = Array.from({ length: 9 }, (_, index) => ({
+	category: 'weapons' as const,
 	id: `saturated-weapon-${index + 1}`,
 	name: index === 0 ? 'Longsword' : `Training sword ${index + 1}`,
 	notes: index === 0 ? '+7 to hit; 1d8 + 4 slashing.' : `Weapon loadout note ${index + 1}.`,
@@ -39,6 +41,7 @@ const weapons = Array.from({ length: 9 }, (_, index) => ({
 }));
 
 const armor = Array.from({ length: 7 }, (_, index) => ({
+	category: 'armorShields' as const,
 	id: `saturated-armor-${index + 1}`,
 	name: index === 0 ? 'Shield' : `Armor set ${index + 1}`,
 	notes: index === 0 ? '+2 AC while equipped.' : `Armor loadout note ${index + 1}.`,
@@ -80,30 +83,31 @@ export const saturatedCharacter5e2014: CharacterDocument5e2014 = {
 	},
 	system: {
 		id: 'dnd5e-2014',
-		version: 'SRD-5.1-2023',
-		source: 'local'
+		version: 'SRD-5.1-2023'
 	},
-	identity: {
-		name: 'Saturated Playtest Adventurer',
-		playerName: 'Owner rehearsal',
-		ancestryLineage: 'Elf',
-		background: 'Sage',
-		description:
-			'A deliberately saturated character for repeatable collection and navigation review.'
-	},
-	features: Array.from({ length: 8 }, (_, index) => ({
-		id: `saturated-feature-${index + 1}`,
-		name: `General feature ${index + 1}`,
-		summary: `Feature summary ${index + 1}.`
-	})),
-	inventory: [...weapons, ...armor, ...otherGear],
-	notes: Array.from({ length: 10 }, (_, index) => ({
-		id: `saturated-note-${index + 1}`,
-		title: `Session note ${index + 1}`,
-		body: `Campaign note body ${index + 1}.`,
-		kind: index % 2 === 0 ? ('quick' as const) : ('session' as const)
-	})),
+
 	systemData: {
+		identity: {
+			name: 'Saturated Playtest Adventurer',
+			playerName: 'Owner rehearsal',
+			ancestryLineage: 'Elf',
+			background: 'Sage',
+			description:
+				'A deliberately saturated character for repeatable collection and navigation review.'
+		},
+		features: Array.from({ length: 8 }, (_, index) => ({
+			id: `saturated-feature-${index + 1}`,
+			name: `General feature ${index + 1}`,
+			summary: `Feature summary ${index + 1}.`
+		})),
+		inventory: [...weapons, ...armor, ...otherGear],
+		notes: Array.from({ length: 10 }, (_, index) => ({
+			id: `saturated-note-${index + 1}`,
+			title: `Session note ${index + 1}`,
+			body: `Campaign note body ${index + 1}.`,
+			kind: index % 2 === 0 ? ('quick' as const) : ('session' as const)
+		})),
+		provenance: { source: 'local' },
 		level: 9,
 		proficiencyBonus: 4,
 		abilities: {

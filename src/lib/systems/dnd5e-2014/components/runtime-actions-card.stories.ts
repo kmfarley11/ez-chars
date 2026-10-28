@@ -8,9 +8,15 @@ const character = create5e2014Character({
 		{ id: 'shield-feature', name: 'Shield', summary: 'A general feature with a duplicate name.' }
 	],
 	inventory: [
-		{ id: 'sword-1', name: 'Longsword', equipped: true, notes: '1d8 slashing' },
-		{ id: 'rope-1', name: 'Rope', equipped: false, notes: '50 feet' },
-		{ id: 'shield-item', name: 'Shield', equipped: true, notes: '+2 AC' }
+		{
+			category: 'weapons',
+			id: 'sword-1',
+			name: 'Longsword',
+			equipped: true,
+			notes: '1d8 slashing'
+		},
+		{ category: 'other', id: 'rope-1', name: 'Rope', equipped: false, notes: '50 feet' },
+		{ category: 'armorShields', id: 'shield-item', name: 'Shield', equipped: true, notes: '+2 AC' }
 	],
 	systemData: {
 		race: {
@@ -58,17 +64,58 @@ const character = create5e2014Character({
 	}
 });
 
-const clutteredItems = [
-	{ id: 'clutter-longsword', name: 'Longsword', equipped: true, notes: '1d8 slashing damage' },
-	{ id: 'clutter-shield', name: 'Shield', equipped: true, notes: '+2 AC' },
-	{ id: 'clutter-rope', name: 'Rope', quantity: 2, notes: '50 feet of hempen rope' },
-	{ id: 'clutter-bucket', name: 'Bucket', notes: 'Wooden, slightly dented' },
-	{ id: 'clutter-rock', name: 'Random rock', notes: 'Found in the XYZ dungeon' },
-	{ id: 'clutter-potion', name: 'Potion of Healing', notes: 'Regain 2d4 + 2 hit points' },
-	{ id: 'clutter-chalk', name: 'Chalk', quantity: 10, notes: 'White sticks for markings' },
-	{ id: 'clutter-rations', name: 'Rations', quantity: 7, notes: 'One day of travel food' },
-	{ id: 'clutter-oil', name: 'Flask of oil', quantity: 4, notes: 'Burns for 6 hours' },
-	{ id: 'clutter-hook', name: 'Grappling hook', notes: 'Iron hook and rope' }
+const clutteredItems: import('../../../../schema').Item5e2014[] = [
+	{
+		category: 'weapons',
+		id: 'clutter-longsword',
+		name: 'Longsword',
+		equipped: true,
+		notes: '1d8 slashing damage'
+	},
+	{
+		category: 'armorShields',
+		id: 'clutter-shield',
+		name: 'Shield',
+		equipped: true,
+		notes: '+2 AC'
+	},
+	{
+		category: 'other',
+		id: 'clutter-rope',
+		name: 'Rope',
+		quantity: 2,
+		notes: '50 feet of hempen rope'
+	},
+	{ category: 'other', id: 'clutter-bucket', name: 'Bucket', notes: 'Wooden, slightly dented' },
+	{ category: 'other', id: 'clutter-rock', name: 'Random rock', notes: 'Found in the XYZ dungeon' },
+	{
+		category: 'other',
+		id: 'clutter-potion',
+		name: 'Potion of Healing',
+		notes: 'Regain 2d4 + 2 hit points'
+	},
+	{
+		category: 'other',
+		id: 'clutter-chalk',
+		name: 'Chalk',
+		quantity: 10,
+		notes: 'White sticks for markings'
+	},
+	{
+		category: 'other',
+		id: 'clutter-rations',
+		name: 'Rations',
+		quantity: 7,
+		notes: 'One day of travel food'
+	},
+	{
+		category: 'other',
+		id: 'clutter-oil',
+		name: 'Flask of oil',
+		quantity: 4,
+		notes: 'Burns for 6 hours'
+	},
+	{ category: 'other', id: 'clutter-hook', name: 'Grappling hook', notes: 'Iron hook and rope' }
 ];
 
 const meta = {

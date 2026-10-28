@@ -19,6 +19,7 @@
 		type GridContentListRowAction
 	} from '$lib/ui/molecules/grid-content-list';
 	import type { Dnd5e2014DenseCollectionRow } from '$lib/systems/dnd5e-2014/dense-collection-rows';
+	import { resolveDenseCollectionRow } from '$lib/systems/dnd5e-2014/dense-collection-rows';
 	import type { CollectionPrioritySave } from '$lib/ui/molecules/collection-priority';
 	import {
 		animateCollectionRowMovement,
@@ -111,7 +112,7 @@
 	let priorityActionError = $state('');
 	let pendingFocusedRestore = $state<'selected' | 'start' | undefined>();
 
-	const selectedRow = $derived(rows.find((row) => row.key === selectedKey));
+	const selectedRow = $derived(resolveDenseCollectionRow(character, selectedKey));
 	const selectedEditData = $derived(projectDenseCollectionEditData(character, selectedRow));
 	const selectedNotesData = $derived(projectDenseCollectionNotesData(character, selectedRow));
 	const selectedAnnotations = $derived<Array<GridContentAnnotation>>(
@@ -185,11 +186,11 @@
 		});
 	};
 
-	const requestTogglePin: GridContentListRowAction = async (row, restoreFocus) => {
+	const requestTogglePin: GridContentListRowAction = async (row, restoreFocus, trigger) => {
 		const ownedRow = rows.find((candidate) => candidate.key === row.key);
 		if (!ownedRow || !onSavePins) return;
 		priorityActionError = '';
-		const list = document.getElementById(`${row.key}-detail-action`)?.closest('ul') ?? null;
+		const list = trigger?.closest('ul') ?? null;
 		const positions = captureCollectionRowPositions(list);
 		const nextPinnedIdentities = rows
 			.filter((candidate) =>

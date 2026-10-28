@@ -2,11 +2,8 @@ import { z } from 'zod';
 import {
 	annotationSchema,
 	characterDocumentCoreSchema,
-	featureSchema,
-	identitySchema,
-	itemSchema,
+	itemIdentitySchema,
 	metaSchema,
-	noteBlockSchema,
 	referenceSchema,
 	systemRefSchema
 } from './zod/core';
@@ -19,10 +16,7 @@ export type Id = string;
 
 export type Meta = z.infer<typeof metaSchema>;
 export type SystemRef = z.infer<typeof systemRefSchema>;
-export type Identity = z.infer<typeof identitySchema>;
-export type NoteBlock = z.infer<typeof noteBlockSchema>;
-export type Feature = z.infer<typeof featureSchema>;
-export type Item = z.infer<typeof itemSchema>;
+export type ItemIdentity = z.infer<typeof itemIdentitySchema>;
 export type Annotation = z.infer<typeof annotationSchema>;
 export type Reference = z.infer<typeof referenceSchema>;
 export type CharacterDocument = z.infer<typeof characterDocumentCoreSchema>;

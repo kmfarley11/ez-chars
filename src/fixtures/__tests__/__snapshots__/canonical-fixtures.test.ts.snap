@@ -1,0 +1,11 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`canonical 2014 authored-content parity across the envelope rebase > preserves char-001 1`] = `"776df4cdbcd0471d2e0ea50149177752a4bbfd438facad40aca4453ed0f24ac2"`;
+
+exports[`canonical 2014 authored-content parity across the envelope rebase > preserves char-002 1`] = `"3ce14a2bb309188451844267586292066858e9e621f19019b7f705c58bb3374c"`;
+
+exports[`canonical 2014 authored-content parity across the envelope rebase > preserves char-5e-2014-saturated 1`] = `"ad941f77e512c06d92bd53cae05807edc7d6d5267aa48489926336b9ec8dfd01"`;
+
+exports[`canonical 2014 authored-content parity across the envelope rebase > preserves char-bryltin 1`] = `"5627d9a3b553d411a83e2cf0e1cef686a4b07eecee01c03ca5ce561dd32569e9"`;
+
+exports[`canonical 2014 authored-content parity across the envelope rebase > preserves char-zindra 1`] = `"4adfab9daa5679edffe27a30b95e8f0e87af2f07445de52a57ad2ea97518ec30"`;

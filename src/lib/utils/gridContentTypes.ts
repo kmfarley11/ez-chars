@@ -59,6 +59,14 @@ export type GridContentField = {
 	hidden?: boolean;
 	options?: string[];
 	inputKind?: 'text' | 'number';
+	// Display intent preserves an unset boolean without inventing a false value.
+	displayAs?: 'checkbox';
+	// Domain-owned meaning for read-only indicators; also disclose it in the focused editor.
+	displayExplanation?: string;
+	// Compact boolean indicators precede the group label; full leaf labels remain in Detail.
+	displayLayout?: 'indicators';
+	// One domain-projected status for a group of leaves; does not change their edit/note bindings.
+	displayStatus?: { mark: string; label: string };
 	addItemLabel?: string;
 	addItemTemplate?: GridContentField;
 	// Data-path contract:

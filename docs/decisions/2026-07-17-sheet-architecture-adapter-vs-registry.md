@@ -3,8 +3,8 @@
 - **Status:** Approved
 - **Author:** Codex with project owner direction
 - **Date:** 2026-07-17
-- **Last reviewed:** 2026-08-01
-- **Latest refinement:** `BL-067` made the second-system/core audit concrete and distinguished shared interaction primitives from a universal rendering schema; see the final refinement below.
+- **Last reviewed:** 2026-10-24
+- **Latest refinement:** `BL-070` adds explicit two-system dispatch and shared interaction/navigation contracts while retaining edition-owned projections and validated writes.
 
 ## Context & Problem Statement
 
@@ -33,6 +33,8 @@ This provides independently testable 5e boundaries now. A future system can comp
 
 ## Decision Outcome
 
+**Current refinement:** BL-070 now provides the second-system evidence. The feature-local boundary lives under `src/lib/systems`, not beside the route; neutral interaction/navigation seams are shared. A universal system registry remains deferred.
+
 Keep 5e sheet metadata, projections, and compatibility patch translation in feature-local modules near the 5e route. Do not introduce a registry, adapter class, dynamic route, generated layout, or mandatory cross-system TypeScript signature as part of this extraction.
 
 The desired long-term direction remains a system/schema registry working with dynamic Svelte rendering so new TTRPG systems can reuse loading, editing, annotation, persistence, and layout infrastructure with limited duplication. Future system proposals must evaluate the existing feature-local boundary, identify reusable seams, and document intentional deviations.
@@ -47,6 +49,12 @@ The registry location, registration mechanism, route shape, rendering model, and
 - Some short-term duplication between the first two systems may be acceptable as evidence for the correct shared contract.
 
 ## Refinements & Follow-Ups
+
+### 2026-10-24: BL-070 two-consumer boundary
+
+The 2014 and 2024 routes select and validate their own documents before mounting edition-owned Pages. Creation, summaries, sheet destinations and I/O dispatch explicitly over the supported union; there is no permissive unknown-system renderer. Shared UI owns fields, bounded collections, chips, source/Back/dirty dialog navigation, landmarks, reader hosting and Quick Reference panel layout. Schemas, grouping, stable identities, source eligibility/refresh ownership and full-candidate validation stay edition-owned.
+
+The 2024 session uses one field-definition source for new records and focused independent edits; its Page and isolated stories share that production session. It does not borrow 2014 class calculations or item/action heuristics. 2014 typed intents remain intact; forcing both into a generic reducer would hide meaningful semantic differences. Shared legacy structured forms are retained for explicit creation and other existing consumers, not as a parallel bulk-edit path for supported read-first groups. This narrows the registry direction to evidence-backed interfaces without mandating a new plugin architecture.
 
 ### 2026-07-17: `p1-045` implementation
 

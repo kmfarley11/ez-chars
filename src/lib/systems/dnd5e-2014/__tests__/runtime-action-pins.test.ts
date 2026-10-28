@@ -8,7 +8,7 @@ import { createSheetEditCharacter } from '$lib/systems/dnd5e-2014/__tests__/shee
 
 const fixture = () =>
 	create5e2014Character({
-		inventory: [{ id: 'sword', name: 'Sword' }],
+		inventory: [{ category: 'weapons', id: 'sword', name: 'Sword' }],
 		systemData: {
 			runtimeActions: [
 				{ id: 'strike', name: 'Strike', source: { kind: 'item', id: 'sword' } },

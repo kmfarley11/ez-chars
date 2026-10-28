@@ -5,7 +5,7 @@
 
 	import type { GridContentData } from '$lib/utils/gridContentTypes';
 
-	let { startsCollapsed = false } = $props<{ startsCollapsed?: boolean }>();
+	let { startsCollapsed = false }: { startsCollapsed?: boolean } = $props();
 
 	const mockData: GridContentData = {
 		hp: {

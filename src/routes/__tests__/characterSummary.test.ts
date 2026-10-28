@@ -6,7 +6,7 @@ import {
 	formatTimestamp,
 	toCharacterSummary
 } from '../characterSummary.js';
-import type { CharacterWithSystemData } from '../../schema/index.js';
+import { create5e2014Character, create5e2024Character } from '../../schema/index.js';
 import { SYSTEM_ID_5E2014 } from '../../schema/versions.5e2014.js';
 
 describe('characterSummary view-model projection', () => {
@@ -41,35 +41,45 @@ describe('characterSummary view-model projection', () => {
 	});
 
 	describe('formatClassSummary', () => {
+		it('shows authored 2024 classes without inventing an unknown level', () => {
+			const character = create5e2024Character({
+				systemData: {
+					classes: [
+						{ id: 'a', name: 'Wizard', level: 4 },
+						{ id: 'b', name: 'Fighter' }
+					]
+				}
+			});
+			expect(formatClassSummary(character)).toBe('Wizard 4, Fighter');
+		});
 		it('formats single class with level', () => {
-			const char = {
+			const char = create5e2014Character({
 				systemData: {
 					classes: [{ name: 'Fighter', level: 3 }]
 				}
-			} as unknown as CharacterWithSystemData;
+			});
 			expect(formatClassSummary(char)).toBe('Fighter 3');
 		});
 
 		it('formats multi-class with levels', () => {
-			const char = {
+			const char = create5e2014Character({
 				systemData: {
 					classes: [
 						{ name: 'Paladin', level: 5 },
 						{ name: 'Sorcerer', level: 2 }
 					]
 				}
-			} as unknown as CharacterWithSystemData;
+			});
 			expect(formatClassSummary(char)).toBe('Paladin 5, Sorcerer 2');
 		});
 
 		it('returns em-dash when classes array is empty or absent', () => {
-			const emptyChar = {
+			const emptyChar = create5e2014Character({
 				systemData: { classes: [] }
-			} as unknown as CharacterWithSystemData;
+			});
 			expect(formatClassSummary(emptyChar)).toBe('—');
 
-			const noSystemDataChar = {} as unknown as CharacterWithSystemData;
-			expect(formatClassSummary(noSystemDataChar)).toBe('—');
+			expect(formatClassSummary(create5e2024Character())).toBe('—');
 		});
 	});
 
@@ -90,22 +100,23 @@ describe('characterSummary view-model projection', () => {
 
 	describe('toCharacterSummary', () => {
 		it('derives a complete summary from character document', () => {
-			const character: CharacterWithSystemData = {
+			const character = create5e2014Character({
 				meta: {
 					id: 'char-abc-123',
 					createdAt: '2026-01-15T08:00:00.000Z',
 					updatedAt: '2026-03-30T14:30:00.000Z'
 				},
-				identity: {
-					name: 'Gimli'
-				},
+
 				system: {
 					id: SYSTEM_ID_5E2014
 				},
 				systemData: {
+					identity: {
+						name: 'Gimli'
+					},
 					classes: [{ name: 'Fighter', level: 5 }]
 				}
-			} as unknown as CharacterWithSystemData;
+			});
 
 			const summary = toCharacterSummary(character);
 			expect(summary).toEqual({
@@ -123,21 +134,19 @@ describe('characterSummary view-model projection', () => {
 		});
 
 		it('handles missing identity name by falling back to character id', () => {
-			const character: CharacterWithSystemData = {
+			const character = create5e2024Character({
 				meta: {
 					id: 'char-unnamed-456',
+					schemaVersion: 'dnd5e-2024.schema.v0',
 					createdAt: '2026-02-01T00:00:00.000Z',
 					updatedAt: '2026-02-01T00:00:00.000Z'
 				},
-				identity: {},
-				system: {
-					id: 'custom-system'
-				}
-			} as unknown as CharacterWithSystemData;
+				systemData: { identity: {}, inventory: [], runtimeActions: [], notes: [] }
+			});
 
 			const summary = toCharacterSummary(character);
 			expect(summary.name).toBe('char-unnamed-456');
-			expect(summary.systemLabel).toBe('custom-system');
+			expect(summary.systemLabel).toBe('D&D 5e (2024)');
 			expect(summary.classSummary).toBe('—');
 		});
 	});

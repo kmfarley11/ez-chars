@@ -6,14 +6,16 @@ This document defines the active delivery boundary and records what is actually 
 
 Prepare a local-first, mobile-friendly character-data companion for a first external playtest across D&D 5e 2014, D&D 5e 2024, and Shadowdark. A user should be able to create, open, edit, reopen, use at the table, annotate, export, and import system-native characters without needing an account.
 
-The current application is still a D&D 5e 2014-only pre-release baseline and has not begun real external playtesting. The approved PRD v1 schedules a target; it does not represent 2024 or Shadowdark behavior as shipped and does not freeze schemas.
+The current application preserves the D&D 5e 2014 baseline and includes the BL-070 authored 2024 sheet, owner-approved on 2026-10-26 and archived on 2026-10-28 with the explicitly accepted tooling-audit exception recorded below. It has not begun real external playtesting. Shadowdark remains planned, not implemented; the approved PRD v1 target does not freeze schemas.
+
+The backlog also tracks **preferred before playtest, time-permitting** improvements separately from P0 prerequisites. The owner may select or defer these as session scheduling becomes concrete; completing every preferred improvement is not a condition for invitations. Any selected changes belong in the final readiness rehearsal, and BL-081 remains the final required feedback-path gate. Contextual rules inside editing (BL-087) and reduced read-first editing friction (BL-088) are currently in that optional group, not additions to BL-070's approved scope.
 
 Character data created during this phase is experimental and is not guaranteed to survive schema changes. The 2014 pre-playtest schema uses an explicitly unstable v0 epoch. Immediately before external handoff, each supported system must receive an explicit durable schema decision; only then does the migration policy in the [character-data versioning decision](decisions/2026-07-18-version-and-normalize-5e-character-data.md) become a product compatibility promise.
 
 ## Active Delivery Scope
 
 - preserve and polish the implemented D&D 5e 2014 sheet as the first system proof;
-- add explicit D&D 5e 2024 support for the adopted SRD 5.2.1 release, with provenance rechecked before public handoff and any later-version upgrade requiring an explicit owner decision;
+- maintain explicit D&D 5e 2024 support for the adopted SRD 5.2.1 release, with provenance rechecked before public handoff and any later-version upgrade requiring an explicit owner decision;
 - add a system-native Shadowdark sheet using user-authored data and the conservative external-source locator baseline; separately gate any bundled, excerpted, ingested, transformed, branded, or official-form behavior;
 - maintain a local character list with authoritative system selection, creation, opening, deletion, and recovery;
 - keep scene-relevant runtime sections and flexible quick notes useful across exploration, roleplay, and combat for both representative player characters and intentionally sparse sidekick/NPC records;
@@ -51,7 +53,9 @@ Character data created during this phase is experimental and is not guaranteed t
 
 ### Done
 
-This is a capability summary for the completed 2014 baseline, not a chronological changelog. Recent implementation history remains in the backlog, archived OpenSpec changes, and Git history.
+This is a capability summary for the completed 2014/2024 baseline, not a chronological changelog. Recent implementation history remains in the backlog, archived OpenSpec changes, and Git history.
+
+- completed `BL-070` (2026-10-28): minimal system-owned lifecycle/dispatch, protected rejected-storage recovery, mixed-edition JSON workflows and the authored 2024 sheet now use shared interaction, navigation and source-detail controls. Both unstable v0 schemas support sparse and detailed characters; deliberate source refresh is not a rules engine. The [paired official-sheet coverage decision](decisions/2026-10-26-bound-2024-character-sheet-coverage.md) records intentional omissions and follow-ups.
 
 - completed `BL-086`: shared UI and system-owned composition now back both the application and isolated Bryltin/Zindra/Saturated catalog Pages. Generic Tier 1/2/3 sandboxes, evidence-preserving prototype retirement, and [component maintenance guidance](component-maintenance.md) establish reuse and navigation boundaries without a universal system renderer; final approval and archival recorded 2026-10-16.
 - completed `BL-078`: owner-approved collection quickfilters compose text with Runtime Action timings or Spell levels/Prepared-only through shared chips, independent resets, no-match recovery, and matching phone previews. Global action pins survive source resync/detachment and JSON round trips; filters remain session-local. Final integrated approval and archival recorded 2026-10-03.
@@ -80,14 +84,13 @@ This is a capability summary for the completed 2014 baseline, not a chronologica
 ### Missing
 
 - polished empty states
-- 2024 D&D and Shadowdark system schemas, creation choices, routes, sheets, and fixtures
-- a system-dispatch and computed-summary boundary that does not require the home list to inspect 5e fields
-- BL-072 follow-up on the owner-accepted development advisory exception (reassess by 2026-11-09 or before external playtest), monitored automated WebKit scroll reset, and unavailable physical Android coverage. Completed BL-082 preserves these limitations in archived verification; no clean full audit, scroll fix, or physical Android pass is claimed.
+- Shadowdark system schemas, creation choices, routes, sheets, and fixtures; the 2024 equivalents and explicit dispatch/computed-summary boundary are completed under BL-070
+- BL-072 follow-up on the owner-accepted development advisory exception (reassess by 2026-11-09 or before external playtest), monitored automated WebKit scroll reset/startup timeout, and unavailable physical Android coverage. BL-070 maintenance fixed its original advisories, but the October 28 full audit reports a new unpatched low-severity deepmerge advisory; the owner explicitly accepted its bounded tooling exception on October 28, with the same November 9/pre-playtest reassessment deadline. No clean current aggregate, scroll fix, or physical Android pass is claimed.
 - an owner-approved external-playtest question set and verified in-app feedback path; the final P0 `BL-081` gate owns delivery before invitations are sent
 - continued owner solo-play rehearsals and external evidence across the PRD matrix; saturated 2014 rehearsal validated the revised spell, inventory, Runtime Action, supporting-collection, and whole-sheet navigation surfaces, while completed `BL-084` and `BL-077` resolved core mobile viability and the read-first interaction baseline, completed `BL-085` resolved the compound-editor follow-up, and completed `BL-082` resolved the reviewed rules-reader issues with explicitly accepted follow-ups under `BL-072`.
 
 ### Deferred
 
-- durable character-data migration support begins when the first external playtest activates explicit system schema-v1 decisions; no general v0 migration is promised, and the final 2014 v0 receives a one-time transition only if a later approved change defines it before handoff
+- durable character-data migration support begins when the first external playtest activates explicit system schema-v1 decisions; no general v0 migration is promised, and BL-070 rebased the unstable 2014 v0 without promising migration of earlier experiments; rejected data stays protected and downloadable
 - CI; local verification in [docs/verification.md](verification.md) remains the current source of truth until contributor count, release cadence, or branch-protection needs justify GitHub Actions.
 - Broader Firefox-specific dense-sheet scroll optimization remains deferred. Final `BL-069` review supplied evidence against both the original translucent sticky row and compositor-forcing hints on its compact replacement; the bounded control now avoids blur, layout containment, and forced transforms, but rapid scrolling still produces black/unpainted regions in the owner's Firefox-on-macOS environment. The pre-release notice recommends another current browser when this disrupts play. `BL-072` owns headed Firefox comparison on macOS and a non-macOS environment, profiling, supported-platform classification, and the decision to retain, revise, or remove that notice.

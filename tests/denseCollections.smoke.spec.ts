@@ -127,10 +127,10 @@ test('Other Gear supports bounded search, focused editing, notes, and priority',
 			page.evaluate((key) => {
 				const character = JSON.parse(localStorage.getItem(key) ?? '{}').characters?.[0];
 				return {
-					first: character?.inventory?.find(
+					first: character?.systemData?.inventory?.find(
 						(item: { id: string }) => item.id === 'saturated-gear-1'
 					)?.notes,
-					second: character?.inventory?.find(
+					second: character?.systemData?.inventory?.find(
 						(item: { id: string }) => item.id === 'saturated-gear-9'
 					)?.notes,
 					linkedSource: character?.systemData?.runtimeActions?.find(
@@ -225,7 +225,9 @@ test('Weapons, Armor & Shields, and Spells share scoped discovery and focused id
 	const spellSlots = page.getByRole('region', { name: 'Spell slots', exact: true });
 	await expect(page.getByRole('heading', { name: 'Spellcasting', exact: true })).toHaveCount(0);
 	await expect(page.getByRole('heading', { name: 'Spell Slots', exact: true })).toHaveCount(0);
-	await expect(spellcasting).toContainText(/Ability\s+int.*Save DC\s+16.*Attack Bonus\s+8/i);
+	await expect(spellcasting).toContainText(
+		/Ability\s*:\s*int.*Save DC\s*:\s*16.*Attack Bonus\s*:\s*8/i
+	);
 	await expect(
 		spellSlots.getByRole('region', { name: '1st spell slots', exact: true })
 	).toBeVisible();

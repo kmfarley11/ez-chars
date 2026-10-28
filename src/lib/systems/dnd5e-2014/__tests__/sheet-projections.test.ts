@@ -6,26 +6,27 @@ const createProjectionCharacter = (): CharacterDocument5e2014 =>
 	create5e2014Character({
 		name: 'Projection Tester',
 		meta: { id: 'projection-tester' },
-		identity: {
-			ancestryLineage: 'Elf',
-			background: 'Sage',
-			appearance: 'Blue cloak',
-			description: 'A careful adventurer.'
-		},
-		features: [
-			{
-				id: 'general-feature',
-				name: 'Keen Mind',
-				summary: 'Recall details accurately.'
-			}
-		],
-		inventory: [
-			{ id: 'weapon-1', name: 'Longsword', equipped: true },
-			{ id: 'armor-1', name: 'Chain mail', equipped: true },
-			{ id: 'gear-1', name: 'Rope', quantity: 1 }
-		],
-		notes: [{ id: 'scratch-1', title: 'Reminder', body: 'Buy rations.', kind: 'quick' }],
+
 		systemData: {
+			identity: {
+				ancestryLineage: 'Elf',
+				background: 'Sage',
+				appearance: 'Blue cloak',
+				description: 'A careful adventurer.'
+			},
+			features: [
+				{
+					id: 'general-feature',
+					name: 'Keen Mind',
+					summary: 'Recall details accurately.'
+				}
+			],
+			inventory: [
+				{ category: 'weapons', id: 'weapon-1', name: 'Longsword', equipped: true },
+				{ category: 'armorShields', id: 'armor-1', name: 'Chain mail', equipped: true },
+				{ category: 'other', id: 'gear-1', name: 'Rope', quantity: 1 }
+			],
+			notes: [{ id: 'scratch-1', title: 'Reminder', body: 'Buy rations.', kind: 'quick' }],
 			level: 2,
 			proficiencyBonus: 2,
 			combat: {
@@ -105,7 +106,7 @@ describe('5e sheet projections', () => {
 	it('projects the active sheet card groups without retired collection-wide editor payloads', () => {
 		const projection = project5eSheet(createProjectionCharacter());
 
-		expect(Object.keys(projection.metaPrimaryData)).toEqual(['name', 'classLevels']);
+		expect(Object.keys(projection.metaPrimaryData)).toEqual(['name', 'playerName', 'classLevels']);
 		expect(Object.keys(projection.quickRefLiveData)).toEqual([
 			'currentHp',
 			'tempHp',

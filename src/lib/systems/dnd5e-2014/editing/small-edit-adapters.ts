@@ -37,7 +37,10 @@ import {
 } from '$lib/systems/dnd5e-2014/sheet-constants';
 import { project5eSheet } from '$lib/systems/dnd5e-2014/sheet-projections';
 import { reconcile5e2014CollectionPins } from '$lib/systems/dnd5e-2014/collection-priority';
-import { reconcile5eRuntimeActionSourceLinks } from '$lib/systems/dnd5e-2014/runtime-action-sources';
+import {
+	reconcile5eRuntimeActionSourceLinks,
+	resolve5eRuntimeActionSource
+} from '$lib/systems/dnd5e-2014/runtime-action-sources';
 import { projectSupportingCollectionRows } from '$lib/systems/dnd5e-2014/components/supporting-collection-rows';
 import { projectRuntimeActionRows } from '$lib/systems/dnd5e-2014/runtime-action-rows';
 import { commit5eCandidate } from '$lib/systems/dnd5e-2014/editing/sheet-edit-session';
@@ -68,7 +71,7 @@ export const shouldTarget5eSmallGrid = (data: GridContentData): boolean =>
 		return collectLeafInputs(field, [key]).every(
 			({ bindPath }) =>
 				bindPath &&
-				['identity', 'systemData', roleplayFieldPathPrefix, scratchpadNotesPathPrefix].includes(
+				['systemData', roleplayFieldPathPrefix, scratchpadNotesPathPrefix].includes(
 					String(bindPath[0])
 				) &&
 				(!bindPath.some((segment) => typeof segment === 'number') ||
@@ -151,7 +154,7 @@ const createCanonicalGridModel = (
 		leaves.some(
 			({ bindPath }) =>
 				!bindPath ||
-				!['identity', 'systemData'].includes(String(bindPath[0])) ||
+				bindPath[0] !== 'systemData' ||
 				(bindPath.some((segment) => typeof segment === 'number') && !allowClassIndices)
 		)
 	)
@@ -169,8 +172,14 @@ const createCanonicalGridModel = (
 			owner.read().meta.id === ownerId &&
 			(!parentExisted || getValueAtGridPath(owner.read(), parentPath) !== undefined);
 		const canClear =
-			path[0] === 'identity' &&
-			['alignment', 'appearance', 'background', 'ancestryLineage'].includes(String(path[1]));
+			path[0] === 'systemData' &&
+			((path[1] === 'identity' &&
+				['alignment', 'appearance', 'background', 'ancestryLineage', 'playerName'].includes(
+					String(path[2])
+				)) ||
+				(path[1] === 'classes' && path[3] === 'subclass') ||
+				(['saves', 'skills'].includes(String(path[1])) && path[3] === 'bonus') ||
+				(path[1] === 'combat' && path[2] === 'senses' && path[3] === 'passivePerception'));
 		return {
 			key: toGridJsonPointer(path),
 			label: field.fieldName ?? String(path.at(-1)),
@@ -185,6 +194,10 @@ const createCanonicalGridModel = (
 								? 'number'
 								: 'text',
 			options: field.options,
+			hint:
+				['saves', 'skills'].includes(String(path[1])) && path[3] === 'bonus'
+					? 'Manually entered; proficiency changes do not recalculate this bonus.'
+					: undefined,
 			read,
 			display: () => read() ?? (typeof field.value === 'boolean' ? false : undefined),
 			canClear,
@@ -524,6 +537,7 @@ export const create5eSmallRecordModel = (
 		label: string;
 		kind?: SmallEditField['kind'];
 		options?: string[];
+		choices?: Record<string, string>;
 		fallback?: ScalarValue;
 		canClear?: boolean;
 	};
@@ -537,9 +551,20 @@ export const create5eSmallRecordModel = (
 	const indexedPath = (root: GridContentBindPath, index: number | undefined) =>
 		index === undefined ? undefined : [...root, index];
 	if (kind === 'item') {
-		locate = () => indexedPath(['inventory'], uniqueIndex(owner.read().inventory));
+		locate = () =>
+			indexedPath(['systemData', 'inventory'], uniqueIndex(owner.read().systemData.inventory));
 		properties = [
 			name,
+			{
+				path: ['category'],
+				label: 'Category',
+				kind: 'select',
+				choices: {
+					weapons: 'Weapons',
+					armorShields: 'Armor & Shields',
+					other: 'Other Gear'
+				}
+			},
 			{ path: ['notes'], label: 'Detail', kind: 'multiline' },
 			{ path: ['quantity'], label: 'Quantity', kind: 'number', fallback: 1 },
 			{ path: ['weight'], label: 'Weight', kind: 'number', fallback: 0 },
@@ -547,8 +572,9 @@ export const create5eSmallRecordModel = (
 			{ path: ['equipped'], label: 'Equipped', kind: 'boolean', fallback: false }
 		];
 	} else if (kind === 'general-feature') {
-		locate = () => indexedPath(['features'], uniqueIndex(owner.read().features));
-		const initial = owner.read().features.find((feature) => feature.id === id);
+		locate = () =>
+			indexedPath(['systemData', 'features'], uniqueIndex(owner.read().systemData.features));
+		const initial = owner.read().systemData.features.find((feature) => feature.id === id);
 		// Edit the authored detail that is actually displayed, without copying a
 		// description into summary during an unrelated name/note save.
 		properties = [
@@ -631,6 +657,12 @@ export const create5eSmallRecordModel = (
 	const initialName = String(
 		getValueAtGridPath(owner.read(), [...initialPath, 'name']) ?? 'Record'
 	);
+	const resolveSource = () => {
+		if (kind !== 'runtime-action' || !resolve()) return undefined;
+		const current = owner.read();
+		const source = current.systemData.runtimeActions.find((action) => action.id === id)?.source;
+		return source ? resolve5eRuntimeActionSource(current, source) : undefined;
+	};
 	const readNotes = () => {
 		const path = resolve();
 		return path ? readGridAnnotationsAtPath(owner.read(), [...path, 'annotations']) : [];
@@ -685,18 +717,50 @@ export const create5eSmallRecordModel = (
 			return row?.context ? [row.context] : [];
 		},
 		annotationEditorConfig,
+		source: resolveSource()
+			? {
+					label: () => resolveSource()?.sourceLabel,
+					description: 'Editable snapshot. Source edits are applied only when you refresh.',
+					open: () => {
+						const source = resolveSource();
+						if (!source) return undefined;
+						const sourceKey =
+							source.kind === 'class-feature'
+								? `class-feature:${source.classIndex}:${source.source.id}`
+								: `${source.kind}:${source.source.id}`;
+						return create5eSmallRecordModel(owner, sourceKey, annotationEditorConfig);
+					},
+					refresh: {
+						key: 'refresh-source',
+						label: 'Refresh from source',
+						confirmLabel: 'Confirm refresh',
+						get confirmation() {
+							return resolveSource()?.ownedText.ownsNotes
+								? 'Replace Name and Detail with the current source text? Direct edits are overwritten, and Detail is cleared if the source has none. Timing, category, target, notes and pins are kept.'
+								: 'Replace Name with the current source name? Direct name edits are overwritten. Detail, timing, category, target, notes and pins are kept.';
+						},
+						commit: () =>
+							resolveSource()
+								? commitCandidate(owner, owner.read(), [
+										{ type: 'resync-runtime-action', actionId: id }
+									])
+								: stale()
+					}
+				}
+			: undefined,
 		fields: properties.map((property): SmallEditField => {
 			const read = () => {
 				const path = resolve();
-				return path
+				const raw = path
 					? scalar(getValueAtGridPath(owner.read(), [...path, ...property.path]))
 					: undefined;
+				return property.choices && typeof raw === 'string' ? property.choices[raw] : raw;
 			};
 			return {
 				key: toGridJsonPointer(property.path),
 				label: property.label,
 				kind: property.kind ?? 'text',
-				options: property.options,
+				options: property.choices ? Object.values(property.choices) : property.options,
 				canClear: property.canClear,
 				read,
 				display: () => read() ?? property.fallback,
@@ -708,9 +772,15 @@ export const create5eSmallRecordModel = (
 						return { ok: false, message: 'This field cannot be cleared.' };
 					if (property === name && (typeof after !== 'string' || !after.trim()))
 						return { ok: false, message: 'Name cannot be empty.' };
+					const value =
+						property.choices && after !== undefined
+							? Object.entries(property.choices).find(([, label]) => label === after)?.[0]
+							: after;
+					if (property.choices && after !== undefined && value === undefined)
+						return { ok: false, message: 'Choose an available option.' };
 					return commitCandidate(
 						owner,
-						applyGridPatches(owner.read(), [{ path: [...path, ...property.path], value: after }])
+						applyGridPatches(owner.read(), [{ path: [...path, ...property.path], value }])
 					);
 				}
 			};
@@ -726,28 +796,28 @@ const createScratchpadModel = (
 	const ownerId = owner.read().meta.id;
 	const validOwner = () => owner.read().meta.id === ownerId;
 	const find = (id: string) =>
-		validOwner() ? owner.read().notes.findIndex((note) => note.id === id) : -1;
+		validOwner() ? owner.read().systemData.notes.findIndex((note) => note.id === id) : -1;
 	const kinds = ['quick', 'session', 'lore', 'rules', 'other'];
 	return {
 		title,
 		annotationEditorConfig,
 		get fields() {
-			return owner.read().notes.flatMap((note, index) =>
+			return owner.read().systemData.notes.flatMap((note, index) =>
 				(['title', 'body', 'kind'] as const).map((property): SmallEditField => ({
 					key: `scratch:${note.id}:${property}`,
 					entryKey: toGridJsonPointer([scratchpadNotesPathPrefix, index, property]),
 					label: `Note ${index + 1} ${property === 'title' ? 'Title' : property === 'body' ? 'Body' : 'Kind'}`,
 					kind: property === 'body' ? 'multiline' : property === 'kind' ? 'select' : 'text',
 					options: property === 'kind' ? kinds : undefined,
-					read: () => owner.read().notes[find(note.id)]?.[property],
+					read: () => owner.read().systemData.notes[find(note.id)]?.[property],
 					display: () =>
-						owner.read().notes[find(note.id)]?.[property] ??
+						owner.read().systemData.notes[find(note.id)]?.[property] ??
 						(property === 'kind' ? 'other' : undefined),
 					commit: (before, after) => {
 						const currentIndex = find(note.id);
 						if (
 							currentIndex < 0 ||
-							!sameEditValue(owner.read().notes[currentIndex][property], before)
+							!sameEditValue(owner.read().systemData.notes[currentIndex][property], before)
 						)
 							return stale();
 						if (typeof after !== 'string')
@@ -755,7 +825,7 @@ const createScratchpadModel = (
 						return commitCandidate(
 							owner,
 							applyGridPatches(owner.read(), [
-								{ path: ['notes', currentIndex, property], value: after }
+								{ path: ['systemData', 'notes', currentIndex, property], value: after }
 							])
 						);
 					}
@@ -778,9 +848,9 @@ const createScratchpadModel = (
 							owner,
 							applyGridPatches(owner.read(), [
 								{
-									path: ['notes'],
+									path: ['systemData', 'notes'],
 									value: [
-										...owner.read().notes,
+										...owner.read().systemData.notes,
 										{ ...values, id: (owner.allocateId ?? createId)() }
 									]
 								}
@@ -788,19 +858,22 @@ const createScratchpadModel = (
 						);
 					}
 				},
-				...owner.read().notes.map((note, index): SmallEditAction => ({
+				...owner.read().systemData.notes.map((note, index): SmallEditAction => ({
 					key: `remove-scratch-${note.id}`,
 					label: `Remove Note ${index + 1}: ${note.title ?? 'Untitled'}`,
 					confirmation: 'Remove this scratchpad note? This cannot be undone.',
 					commit: () => {
-						if (find(note.id) < 0 || !sameEditValue(owner.read().notes[find(note.id)], note))
+						if (
+							find(note.id) < 0 ||
+							!sameEditValue(owner.read().systemData.notes[find(note.id)], note)
+						)
 							return stale();
 						return commitCandidate(
 							owner,
 							applyGridPatches(owner.read(), [
 								{
-									path: ['notes'],
-									value: owner.read().notes.filter((entry) => entry.id !== note.id)
+									path: ['systemData', 'notes'],
+									value: owner.read().systemData.notes.filter((entry) => entry.id !== note.id)
 								}
 							])
 						);

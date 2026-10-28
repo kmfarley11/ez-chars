@@ -5,8 +5,16 @@ import {
 	create5eSmallSpellModel,
 	create5eSmallRecordModel
 } from '$lib/systems/dnd5e-2014/editing/small-edit-adapters';
-import { project5eSheet } from '$lib/systems/dnd5e-2014/sheet-projections';
+import { project5eSheet, projectClassRows } from '$lib/systems/dnd5e-2014/sheet-projections';
 import type { GridContentData } from '$lib/utils/gridContentTypes';
+import { resolveDenseCollectionRow } from '../dense-collection-rows';
+import { resolve5eRuntimeActionSource } from '../runtime-action-sources';
+import { decodeDenseCollectionRemoveIntent } from '../editing/dense-collection-editing';
+import { reduce5eSheetEditIntents } from '../editing/sheet-edit-intents';
+import {
+	safeParseStoredCharacterDocument,
+	serializeStoredCharacterDocuments
+} from '../../../../schema/storedCharacters';
 
 const fixture = () => {
 	let character = createSheetEditCharacter();
@@ -19,6 +27,187 @@ const fixture = () => {
 };
 
 describe('small-edit proof domain adapters', () => {
+	it('edits 2014 coverage leaves independently without fabricating bonuses or losing notes', () => {
+		const owner = fixture();
+		delete owner.read().systemData.combat.senses;
+		const original = structuredClone(owner.read());
+		const projection = project5eSheet(owner.read());
+		expect(owner.read()).toEqual(original);
+		const reference = create5eSmallGridModel(owner, projection.quickRefReferenceData, 'Reference')!;
+		const passive = reference.fields.find((f) => f.label === 'Passive Perception')!;
+		expect(passive.read()).toBeUndefined();
+		expect(passive.commit!(undefined, 14)).toEqual({ ok: true });
+		expect(passive.commit!(14, 14.5).ok).toBe(false);
+		const inspiration = reference.fields.find((f) => f.label === 'Inspiration')!;
+		expect(inspiration.commit!(inspiration.read(), true).ok).toBe(true);
+		expect(inspiration.commit!(true, 'yes').ok).toBe(false);
+		const ability = create5eSmallGridModel(owner, projection.abilityRuntimeColumns[0].data, 'STR')!;
+		const bonus = ability.fields.find((f) => f.label === 'Athletics: Bonus')!;
+		const expertise = ability.fields.find((f) => f.label === 'Athletics: Expertise')!;
+		expect(bonus.commit!(bonus.read(), -1).ok).toBe(true);
+		const note = {
+			id: 'bonus-note',
+			kind: 'note' as const,
+			origin: 'user' as const,
+			text: 'Situational'
+		};
+		expect(bonus.notes!.commit({ before: undefined, after: note }).ok).toBe(true);
+		expect(expertise.commit!(expertise.read(), true).ok).toBe(true);
+		expect(bonus.read()).toBe(-1);
+		expect(
+			project5eSheet(owner.read()).abilityRuntimeColumns[0].data.Athletics.displayStatus?.mark
+		).toBe('E');
+		expect(bonus.commit!(-1, undefined).ok).toBe(true);
+		expect(bonus.notes!.read()).toEqual([note]);
+		const saveBonus = ability.fields.find((f) => f.label === 'STR Save: Bonus')!;
+		expect(saveBonus.commit!(saveBonus.read(), 3).ok).toBe(true);
+		const identity = create5eSmallGridModel(
+			owner,
+			project5eSheet(owner.read()).metaPrimaryData,
+			'Identity'
+		)!;
+		const subclass = identity.fields.find((f) => f.label === 'Class 1 Subclass')!;
+		const player = identity.fields.find((f) => f.label === 'Player Name')!;
+		expect(subclass.commit!(subclass.read(), 'Champion').ok).toBe(true);
+		expect(player.commit!(player.read(), 'Test Player').ok).toBe(true);
+		expect(projectClassRows(owner.read())[0].badges).toContain('Champion');
+		const saved = serializeStoredCharacterDocuments([owner.read()])[0];
+		expect(safeParseStoredCharacterDocument(saved)).toMatchObject({
+			success: true,
+			data: owner.read()
+		});
+		expect(owner.read().systemData.combat.hitPoints).toEqual(original.systemData.combat.hitPoints);
+		expect(subclass.commit!(subclass.read(), undefined).ok).toBe(true);
+		expect(passive.commit!(14, undefined).ok).toBe(true);
+	});
+	it('projects compact class badges/notes and reuses the guarded Add operation', () => {
+		const owner = fixture();
+		const model = create5eSmallGridModel(
+			owner,
+			{ classLevels: project5eSheet(owner.read()).metaPrimaryData.classLevels },
+			'Classes'
+		)!;
+		const name = model.fields.find((field) => field.key === '/systemData/classes/0/name')!;
+		expect(
+			name.notes!.commit({
+				before: undefined,
+				after: { id: 'class-note', kind: 'note', origin: 'user', text: 'Remember this class' }
+			}).ok
+		).toBe(true);
+		expect(projectClassRows(owner.read())[0]).toMatchObject({
+			key: 'class:0',
+			label: owner.read().systemData.classes[0].name,
+			badges: [`Level ${owner.read().systemData.classes[0].level}`],
+			annotations: [{ id: 'class-note' }]
+		});
+		const add = model.actions!.find((action) => action.key === 'add-class')!;
+		expect(add.commit({ name: 'Wizard', level: 2 }).ok).toBe(true);
+		expect(projectClassRows(owner.read()).at(-1)).toMatchObject({
+			label: 'Wizard',
+			badges: ['Level 2']
+		});
+		const staleAdd = model.actions!.find((action) => action.key === 'add-class')!;
+		owner.read().systemData.classes.unshift({ name: 'Rogue', level: 1 });
+		expect(staleAdd.commit({ name: 'Wrong target', level: 1 }).ok).toBe(false);
+	});
+	it.each([
+		['item', 'weapon-1'],
+		['spell', 'fire-bolt'],
+		['feature', 'general-feature'],
+		['feature', 'second-wind'],
+		['feature', 'darkvision']
+	] as const)('resolves %s source Detail and refreshes only domain-owned text', (kind, id) => {
+		const owner = fixture();
+		const action = owner.read().systemData.runtimeActions[0];
+		action.source = { kind, id };
+		action.name = 'Player snapshot';
+		action.notes = 'Player detail';
+		const resolved = resolve5eRuntimeActionSource(owner.read(), action.source)!;
+		expect(resolved).toBeDefined();
+		const model = create5eSmallRecordModel(owner, `runtime-action:${action.id}`)!;
+		const source = model.source!.open()!;
+		const name = source.fields.find((field) => field.label === 'Name')!;
+		expect(name.commit!(name.read(), 'Changed source')).toEqual({ ok: true });
+		expect(model.fields[0].read()).toBe('Player snapshot');
+		expect(model.source!.label()).toContain('Changed source');
+		const before = structuredClone(owner.read().systemData.runtimeActions[0]);
+		expect(model.source!.refresh!.commit({})).toEqual({ ok: true });
+		expect(owner.read().systemData.runtimeActions[0]).toEqual({
+			...before,
+			name: 'Changed source',
+			...(resolved.ownedText.ownsNotes ? { notes: resolved.ownedText.notes } : {})
+		});
+		owner.read().systemData.runtimeActions = [];
+		expect(model.source!.open()).toBeUndefined();
+		expect(model.source!.refresh!.commit({}).ok).toBe(false);
+	});
+	it.each([
+		['Weapons', 'weapons'],
+		['Armor & Shields', 'armorShields'],
+		['Other Gear', 'other']
+	])(
+		'saves readable inventory category %s as %s without changing item content or pins',
+		(label, key) => {
+			const owner = fixture();
+			owner.read().systemData.collectionPins = { inventory: ['weapon-1'] };
+			const before = structuredClone(owner.read().systemData.inventory[0]);
+			const model = create5eSmallRecordModel(owner, 'item:weapon-1')!;
+			const category = model.fields.find((field) => field.label === 'Category')!;
+			expect(category.read()).toBe('Weapons');
+			expect(category.display?.()).toBe('Weapons');
+			expect(category.options).toEqual(['Weapons', 'Armor & Shields', 'Other Gear']);
+			expect(category.commit!(category.read(), label)).toEqual({ ok: true });
+			expect(category.read()).toBe(label);
+			expect(category.display?.()).toBe(label);
+			expect(owner.read().systemData.inventory[0]).toEqual({ ...before, category: key });
+			expect(owner.read().systemData.collectionPins?.inventory).toEqual(['weapon-1']);
+		}
+	);
+	it('rejects unavailable inventory category labels without changing the character', () => {
+		const owner = fixture();
+		const before = structuredClone(owner.read());
+		const category = create5eSmallRecordModel(owner, 'item:weapon-1')!.fields.find(
+			(field) => field.label === 'Category'
+		)!;
+		expect(category.commit!(category.read(), 'armorShields')).toEqual({
+			ok: false,
+			message: 'Choose an available option.'
+		});
+		expect(owner.read()).toEqual(before);
+	});
+	it('keeps category independent of names/tags and retains identity, notes, pins and source navigation when reclassified', () => {
+		const owner = fixture();
+		owner.read().systemData.collectionPins = { inventory: ['weapon-1'] };
+		const before = structuredClone(owner.read().systemData.inventory[0]);
+		const model = create5eSmallRecordModel(owner, 'item:weapon-1')!;
+		const name = model.fields[0];
+		const category = model.fields.find((field) => field.label === 'Category')!;
+		expect(category.commit!(category.read(), 'Other Gear')).toEqual({ ok: true });
+		expect(name.commit!(name.read(), 'Sword shield armor')).toEqual({ ok: true });
+		expect(owner.read().systemData.inventory[0]).toEqual({
+			...before,
+			name: 'Sword shield armor',
+			category: 'other'
+		});
+		expect(owner.read().systemData.collectionPins?.inventory).toEqual(['weapon-1']);
+		const source = { kind: 'item' as const, id: 'weapon-1' };
+		expect(resolve5eRuntimeActionSource(owner.read(), source)?.destination).toEqual({
+			kind: 'inventory',
+			group: 'other'
+		});
+		const row = resolveDenseCollectionRow(owner.read(), 'item:weapon-1')!;
+		expect(row.source).toEqual({ kind: 'item', id: 'weapon-1', group: 'other' });
+		const removed = reduce5eSheetEditIntents(owner.read(), [
+			decodeDenseCollectionRemoveIntent(owner.read(), row)
+		]);
+		expect(removed.ok).toBe(true);
+		if (!removed.ok) throw new Error('Expected valid removal');
+		expect(removed.character.systemData.inventory.some((item) => item.id === before.id)).toBe(
+			false
+		);
+		expect(removed.character.systemData.collectionPins?.inventory ?? []).not.toContain(before.id);
+		expect(removed.character.systemData.runtimeActions[0].source).toBeUndefined();
+	});
 	it('leaves a missing runtime category unset until chosen and permits clearing it', () => {
 		const owner = fixture();
 		delete owner.read().systemData.runtimeActions[0].category;
@@ -65,19 +254,19 @@ describe('small-edit proof domain adapters', () => {
 		expect(name.notes!.commit({ before: note, after: undefined })).toEqual({ ok: true });
 		// Empty annotations are allowed to normalize absence; existing record values are exact.
 		expect(name.read()).toBe('Renamed');
-		expect(owner.read().inventory).toEqual(afterRename.inventory);
+		expect(owner.read().systemData.inventory).toEqual(afterRename.systemData.inventory);
 	});
 	it('resolves reordered records and preserves unexposed properties and optional absence', () => {
 		const owner = fixture();
 		const model = create5eSmallRecordModel(owner, 'item:weapon-1')!;
 		const name = model.fields[0];
-		owner.read().inventory.reverse();
-		owner.read().inventory[1].notes = 'Newer detail';
-		const before = structuredClone(owner.read().inventory[1]);
+		owner.read().systemData.inventory.reverse();
+		owner.read().systemData.inventory[1].notes = 'Newer detail';
+		const before = structuredClone(owner.read().systemData.inventory[1]);
 		expect(name.commit!(name.read(), 'Sword')).toEqual({ ok: true });
-		expect(owner.read().inventory[1]).toEqual({ ...before, name: 'Sword' });
-		expect(owner.read().inventory[1].quantity).toBeUndefined();
-		owner.read().inventory.splice(1, 1);
+		expect(owner.read().systemData.inventory[1]).toEqual({ ...before, name: 'Sword' });
+		expect(owner.read().systemData.inventory[1].quantity).toBeUndefined();
+		owner.read().systemData.inventory.splice(1, 1);
 		expect(name.commit!('Sword', 'Resurrect')).toMatchObject({ ok: false });
 	});
 	it('finds class features by stable feature identity after class reordering', () => {
@@ -96,9 +285,9 @@ describe('small-edit proof domain adapters', () => {
 			project5eSheet(owner.read()).metaPrimaryData,
 			'Identity'
 		)!;
-		expect(model.fields).toHaveLength(1);
+		expect(model.fields).toHaveLength(2);
 		expect(model.actions![0].commit({ name: 'Wizard', level: 1 })).toEqual({ ok: true });
-		expect(model.fields).toHaveLength(3);
+		expect(model.fields).toHaveLength(5);
 		const name = project5eSheet(owner.read()).metaPrimaryData.name;
 		expect(create5eSmallGridModel(owner, { name }, 'Name')!.fields).toHaveLength(1);
 	});
@@ -202,10 +391,10 @@ describe('small-edit proof domain adapters', () => {
 		expect(model.actions![0].commit({ title: 'New', body: 'One new note', kind: 'quick' })).toEqual(
 			{ ok: true }
 		);
-		expect(owner.read().notes[1].id).toBe('created-note');
-		owner.read().notes.reverse();
+		expect(owner.read().systemData.notes[1].id).toBe('created-note');
+		owner.read().systemData.notes.reverse();
 		expect(body.commit!('Edited', 'Still same note')).toEqual({ ok: true });
-		expect(owner.read().notes[1].body).toBe('Still same note');
+		expect(owner.read().systemData.notes[1].body).toBe('Still same note');
 		expect(
 			model.actions!.find((action) => action.key === 'remove-scratch-scratch-1')!.commit({})
 		).toEqual({ ok: true });
@@ -300,10 +489,13 @@ describe('small-edit proof domain adapters', () => {
 		const before = score.read();
 		owner.write({
 			...owner.read(),
-			identity: { ...owner.read().identity, name: 'Changed elsewhere' }
+			systemData: {
+				...owner.read().systemData,
+				identity: { ...owner.read().systemData.identity, name: 'Changed elsewhere' }
+			}
 		});
 		expect(score.commit!(before, 15)).toEqual({ ok: true });
-		expect(owner.read().identity.name).toBe('Changed elsewhere');
+		expect(owner.read().systemData.identity.name).toBe('Changed elsewhere');
 		expect(score.read()).toBe(15);
 		const saved = owner.read();
 		expect(score.commit!(15, 'invalid')).toMatchObject({ ok: false });
@@ -317,7 +509,7 @@ describe('small-edit proof domain adapters', () => {
 			project5eSheet(owner.read()).abilityRuntimeColumns[0].data,
 			'STR'
 		)!;
-		const save = model.fields.find((field) => field.label === 'Save')!;
+		const save = model.fields.find((field) => field.key === '/systemData/saves/str/proficient')!;
 		expect(save.commit!(save.read(), false)).toEqual({ ok: true });
 		expect(save.read()).toBe(false);
 		const score = model.fields.find((field) => field.label === 'Score')!;
@@ -328,19 +520,26 @@ describe('small-edit proof domain adapters', () => {
 		const owner = fixture();
 		owner.write({
 			...owner.read(),
-			identity: {
-				...owner.read().identity,
-				alignment: 'Neutral',
-				annotations: [{ id: 'identity-note', origin: 'user', kind: 'note', text: 'Keep' }]
+			systemData: {
+				...owner.read().systemData,
+				identity: {
+					...owner.read().systemData.identity,
+					alignment: 'Neutral',
+					annotations: [{ id: 'identity-note', origin: 'user', kind: 'note', text: 'Keep' }]
+				}
 			}
 		});
 		const data: GridContentData = {
-			alignment: { value: 'Neutral', fieldName: 'Alignment', bindPath: ['identity', 'alignment'] }
+			alignment: {
+				value: 'Neutral',
+				fieldName: 'Alignment',
+				bindPath: ['systemData', 'identity', 'alignment']
+			}
 		};
 		const field = create5eSmallGridModel(owner, data, 'Identity')!.fields[0];
 		expect(field.commit!('Neutral', undefined)).toEqual({ ok: true });
-		expect(owner.read().identity.alignment).toBeUndefined();
-		expect(owner.read().identity.annotations?.[0].text).toBe('Keep');
+		expect(owner.read().systemData.identity.alignment).toBeUndefined();
+		expect(owner.read().systemData.identity.annotations?.[0].text).toBe('Keep');
 		owner.write({ ...owner.read(), meta: { ...owner.read().meta, id: 'different' } });
 		expect(field.commit!(undefined, 'Other')).toMatchObject({ ok: false });
 	});

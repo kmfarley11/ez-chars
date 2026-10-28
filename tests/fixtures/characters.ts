@@ -7,23 +7,24 @@ export const e2eCharacter = {
 	},
 	system: {
 		id: 'dnd5e-2014',
-		version: 'SRD-5.1-2023',
-		source: 'local',
-		annotations: []
+		version: 'SRD-5.1-2023'
 	},
-	identity: { name: 'E2E Test Adventurer' },
-	features: [],
-	inventory: [
-		{
-			id: 'e2e-seed-longsword',
-			name: 'Longsword',
-			notes: 'Seeded item detail.',
-			tags: ['inventory:weapon'],
-			equipped: true
-		}
-	],
-	notes: [],
+
 	systemData: {
+		identity: { name: 'E2E Test Adventurer' },
+		features: [],
+		inventory: [
+			{
+				category: 'weapons',
+				id: 'e2e-seed-longsword',
+				name: 'Longsword',
+				notes: 'Seeded item detail.',
+				tags: ['inventory:weapon'],
+				equipped: true
+			}
+		],
+		notes: [],
+		provenance: { source: 'local', annotations: [] },
 		level: 0,
 		proficiencyBonus: 0,
 		abilities: {
@@ -77,32 +78,35 @@ export const e2eRuntimeActionLinkCharacter = {
 		...e2eCharacter.meta,
 		id: 'e2e-runtime-action-link'
 	},
-	identity: { name: 'E2E Runtime Action Link' },
-	features: [
-		{
-			id: 'e2e-general-shield',
-			name: 'Shield',
-			summary: 'A general feature with a duplicate name.'
-		}
-	],
-	inventory: [
-		{
-			id: 'e2e-longsword',
-			name: 'Longsword',
-			notes: 'Original item notes.',
-			tags: ['inventory:weapon'],
-			equipped: true
-		},
-		{
-			id: 'e2e-rope',
-			name: 'Rope',
-			notes: '50 feet of hempen rope.',
-			tags: ['inventory:gear'],
-			equipped: false
-		}
-	],
+
 	systemData: {
 		...e2eCharacter.systemData,
+		identity: { name: 'E2E Runtime Action Link' },
+		features: [
+			{
+				id: 'e2e-general-shield',
+				name: 'Shield',
+				summary: 'A general feature with a duplicate name.'
+			}
+		],
+		inventory: [
+			{
+				category: 'weapons',
+				id: 'e2e-longsword',
+				name: 'Longsword',
+				notes: 'Original item notes.',
+				tags: ['inventory:weapon'],
+				equipped: true
+			},
+			{
+				category: 'other',
+				id: 'e2e-rope',
+				name: 'Rope',
+				notes: '50 feet of hempen rope.',
+				tags: ['inventory:gear'],
+				equipped: false
+			}
+		],
 		race: {
 			name: 'Elf',
 			traits: [{ featureId: 'e2e-darkvision', name: 'Darkvision' }]

@@ -1,8 +1,8 @@
 import type {
 	CharacterDocument5e2014,
-	Feature,
+	Feature5e2014 as Feature,
 	FeatureRef,
-	Item,
+	Item5e2014 as Item,
 	RuntimeAction,
 	RuntimeActionSource,
 	SpellRef,
@@ -153,8 +153,8 @@ const projectInventorySources = (
 		};
 	};
 	return [
-		...character.inventory.filter((item) => item.equipped).map(project),
-		...character.inventory.filter((item) => !item.equipped).map(project)
+		...character.systemData.inventory.filter((item) => item.equipped).map(project),
+		...character.systemData.inventory.filter((item) => !item.equipped).map(project)
 	];
 };
 
@@ -186,24 +186,26 @@ const projectSpellSources = (
 const projectFeatureSources = (
 	character: CharacterDocument5e2014
 ): Array<ResolvedRuntimeActionSource> => {
-	const general: Array<ResolvedRuntimeActionSource> = character.features.map((feature) => {
-		const notes = nonEmptyText(feature.summary) ?? nonEmptyText(feature.description);
-		return {
-			kind: 'general-feature',
-			record: feature,
-			source: { kind: 'feature', id: feature.id },
-			category: 'feature',
-			destination: { kind: 'features' },
-			sourceLabel: `Feature · ${feature.name}`,
-			context: 'General feature',
-			badges: [get5eRuntimeActionSourceCategoryLabel('feature'), 'General'],
-			ownedText: {
-				name: feature.name,
-				ownsNotes: true,
-				...(notes ? { notes } : {})
-			}
-		};
-	});
+	const general: Array<ResolvedRuntimeActionSource> = character.systemData.features.map(
+		(feature) => {
+			const notes = nonEmptyText(feature.summary) ?? nonEmptyText(feature.description);
+			return {
+				kind: 'general-feature',
+				record: feature,
+				source: { kind: 'feature', id: feature.id },
+				category: 'feature',
+				destination: { kind: 'features' },
+				sourceLabel: `Feature · ${feature.name}`,
+				context: 'General feature',
+				badges: [get5eRuntimeActionSourceCategoryLabel('feature'), 'General'],
+				ownedText: {
+					name: feature.name,
+					ownsNotes: true,
+					...(notes ? { notes } : {})
+				}
+			};
+		}
+	);
 	const classOwned: Array<ResolvedRuntimeActionSource> = character.systemData.classes.flatMap(
 		(classLevel, classIndex) =>
 			(classLevel.features ?? []).map((feature) => {

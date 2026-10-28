@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { asset } from '$app/paths';
+	import { resolveAssetUrl } from '$lib/resources/asset-url';
 	import { create5eAnnotationReferenceProvider } from '$lib/systems/dnd5e-2014/annotation-reference';
 	import { setAnnotationReferenceProvider } from '$lib/resources/annotation-reference-context';
 	setAnnotationReferenceProvider(
-		create5eAnnotationReferenceProvider((path) => asset(path as Parameters<typeof asset>[0]))
+		create5eAnnotationReferenceProvider((path) => resolveAssetUrl(path))
 	);
 	import type { JSONPatchDocument } from 'immutable-json-patch';
 	import { create5eSheetEditSession } from '$lib/systems/dnd5e-2014/editing/sheet-edit-session';
@@ -25,7 +25,7 @@
 	import { project5eSheet } from '$lib/systems/dnd5e-2014/sheet-projections';
 	import type { SheetEditIntent } from '$lib/systems/dnd5e-2014/editing/sheet-edit-intents';
 	import AbilitiesAndProficiencies from '$lib/systems/dnd5e-2014/components/abilities-and-proficiencies.svelte';
-	import QuickReference from '$lib/systems/dnd5e-2014/components/quick-reference.svelte';
+	import QuickReference from '$lib/ui/organisms/quick-reference.svelte';
 	import Spellcasting from '$lib/systems/dnd5e-2014/components/spellcasting.svelte';
 	import { projectPrioritizedSupportingCollectionRows } from '$lib/systems/dnd5e-2014/components/supporting-collection-rows';
 

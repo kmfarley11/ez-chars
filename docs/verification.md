@@ -2,6 +2,8 @@
 
 Use these commands to verify changes before handing work back.
 
+Use Node 22.17 or newer for the SvelteKit 3/Vite 8 toolchain. After switching Node, use `npm ci` and restart any existing dev/Storybook servers before testing. Playwright and its test runner are version-aligned; install their browser binaries with `npx playwright install` when a test reports a missing executable.
+
 ## Related Decisions And Checklists
 
 - [Testing strategy decision](decisions/2026-07-17-testing-strategy.md) defines the Vitest and Playwright testing boundaries.
@@ -157,7 +159,7 @@ Runs Vitest in watch mode while developing tests.
 npm run test:coverage
 ```
 
-Runs Vitest with V8 coverage and writes an HTML report to `coverage/`. Use this when adding or reviewing contract tests and you want an at-a-glance view of covered schema, storage, and import/export surfaces.
+Runs Vitest with V8 coverage and writes an HTML report to `coverage/`. The runner-level configuration explicitly includes `src/schema/` and `src/lib/storage/`, excluding generated code and tests. This is boundary coverage, not whole-application UI coverage; do not compare its percentages with historical reports that accidentally included generated/application modules. Use it when adding or reviewing schema, storage, and import/export contracts.
 
 ## App Checks
 

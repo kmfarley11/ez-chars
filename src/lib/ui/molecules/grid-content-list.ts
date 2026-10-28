@@ -16,7 +16,8 @@ export type GridContentListRow = {
 export type GridContentListFocusRestore = () => boolean;
 export type GridContentListRowAction = (
 	row: GridContentListRow,
-	restoreFocus: GridContentListFocusRestore
+	restoreFocus: GridContentListFocusRestore,
+	trigger?: HTMLElement
 ) => void;
 
 export type GridContentListPreview<TRow extends GridContentListRow = GridContentListRow> = {

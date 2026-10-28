@@ -5,25 +5,28 @@ import { defineConfig, mergeConfig } from 'vitest/config';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import viteConfig from './vite.config';
+import viteConfig from './vite.config.ts';
+import kitConfig from './sveltekit.config.js';
 
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
 	test: {
+		// Coverage is runner-wide, not a per-project option. Keep this report
+		// focused on the schema/storage boundary documented in verification.md.
+		coverage: {
+			exclude: ['**/.svelte-kit/**', 'src/**/*.test.{ts,js}', 'src/**/__tests__/**'],
+			include: ['src/schema/**/*.{ts,js}', 'src/lib/storage/**/*.{ts,js}'],
+			provider: 'v8',
+			reporter: ['text', 'html'],
+			reportsDirectory: 'coverage'
+		},
 		projects: [
 			mergeConfig(
 				viteConfig,
 				defineConfig({
 					test: {
 						name: 'unit',
-						coverage: {
-							exclude: ['**/.svelte-kit/**', 'src/**/*.test.{ts,js}', 'src/**/__tests__/**'],
-							include: ['src/schema/**/*.{ts,js}', 'src/lib/characterStorage.ts'],
-							provider: 'v8',
-							reporter: ['text', 'html'],
-							reportsDirectory: 'coverage'
-						},
 						environment: 'node',
 						globals: false,
 						include: ['src/**/*.{test,spec}.{ts,js}'],
@@ -33,8 +36,9 @@ export default defineConfig({
 			),
 			{
 				extends: true,
+				resolve: viteConfig.resolve,
 				plugins: [
-					sveltekit(),
+					sveltekit(kitConfig),
 					storybookTest({
 						configDir: join(projectRoot, '.storybook')
 					})

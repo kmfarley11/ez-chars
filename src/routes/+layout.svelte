@@ -2,7 +2,8 @@
 	import NavBar from '$lib/components/NavBar.svelte';
 	import { onMount } from 'svelte';
 	import { initializeTheme } from '$utils/theme';
-	import { charsStorageIssue, clearRejectedStoredCharacters } from '$storage/store.js';
+	import StorageRecoveryNotice from './components/storage-recovery-notice.svelte';
+	import NoticeBanner from '$lib/ui/molecules/notice-banner.svelte';
 	import '../app.css';
 
 	let { children } = $props();
@@ -14,41 +15,17 @@
 
 <div class="theme-page">
 	<NavBar />
-	<div class="mx-4 mt-4 rounded-md border border-amber-500/50 p-4 theme-grid-layer" role="alert">
-		<div class="space-y-1">
-			<p class="text-sm font-semibold text-amber-600 dark:text-amber-400">
-				🚧 Pre-Release Playtest
-			</p>
-			<p class="theme-text-muted text-sm">
-				The app is in an active pre-release phase. Data preservation between exports and imports is
-				not guaranteed during ongoing updates.
-			</p>
-			<p class="theme-text-muted text-sm">
-				Known preview issue: Firefox on macOS may briefly show black areas during rapid
-				character-sheet scrolling. If this disrupts play, try another current browser such as Chrome
-				or Safari.
-			</p>
-		</div>
-	</div>
-	{#if $charsStorageIssue}
-		<div class="mx-4 mt-4 rounded-md border p-4 theme-grid-layer" role="alert" aria-live="polite">
-			<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-				<div class="space-y-1">
-					<p class="text-sm font-semibold">Stored character data could not be loaded.</p>
-					<p class="theme-text-muted text-sm">
-						The saved character data in this browser appears invalid or from an unsupported older
-						format, so the app loaded demo characters instead.
-					</p>
-				</div>
-				<button
-					type="button"
-					class="theme-btn-light touch-target btn shrink-0 rounded-md border px-3 py-1"
-					onclick={clearRejectedStoredCharacters}
-				>
-					Clear Stored Data
-				</button>
-			</div>
-		</div>
-	{/if}
+	<NoticeBanner title="Pre-Release Playtest" role="alert">
+		<p>
+			The app is in an active pre-release phase. Data preservation between exports and imports is
+			not guaranteed during ongoing updates.
+		</p>
+		<p>
+			Known preview issue: Firefox on macOS may briefly show black areas during rapid
+			character-sheet scrolling. If this disrupts play, try another current browser such as Chrome
+			or Safari.
+		</p>
+	</NoticeBanner>
+	<StorageRecoveryNotice />
 	{@render children()}
 </div>

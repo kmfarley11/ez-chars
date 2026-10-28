@@ -3,7 +3,7 @@
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { type Plugin, type ResolvedConfig, type ViteDevServer, defineConfig } from 'vite';
-import type { OutputOptions as RollupOutputOptions } from 'rollup';
+import kitConfig, { sourceAliases } from './sveltekit.config.js';
 import { createReadStream, existsSync, readFileSync } from 'node:fs';
 import { copyFile, mkdir, readdir, stat } from 'node:fs/promises';
 import { extname, isAbsolute, join, relative, resolve as pathResolve } from 'node:path';
@@ -198,26 +198,12 @@ const pdfJsAssetsPlugin = (): Plugin => {
 	};
 };
 
-// Rollup 4 errors if Kit passes `codeSplitting: undefined`; strip it
-const removeUndefinedCodeSplitting = (): Plugin => ({
-	name: 'remove-undefined-code-splitting',
-	configResolved(config) {
-		const output = config.build?.rollupOptions?.output;
-		const scrub = (target?: RollupOutputOptions | null) => {
-			if (target && 'codeSplitting' in target && target.codeSplitting === undefined) {
-				delete target.codeSplitting;
-			}
-		};
-
-		if (Array.isArray(output)) {
-			output.forEach(scrub);
-		} else {
-			scrub(output);
-		}
-	}
-});
-
 export default defineConfig({
+	resolve: {
+		alias: Object.fromEntries(
+			Object.entries(sourceAliases).map(([name, path]) => [name, pathResolve(path)])
+		)
+	},
 	define: {
 		__APP_VERSION__: JSON.stringify(packageVersion),
 		__GIT_SHA__: JSON.stringify(
@@ -232,11 +218,5 @@ export default defineConfig({
 			})()
 		)
 	},
-	plugins: [
-		tailwindcss(),
-		sveltekit(),
-		docsExtPlugin(),
-		pdfJsAssetsPlugin(),
-		removeUndefinedCodeSplitting()
-	]
+	plugins: [tailwindcss(), sveltekit(kitConfig), docsExtPlugin(), pdfJsAssetsPlugin()]
 });

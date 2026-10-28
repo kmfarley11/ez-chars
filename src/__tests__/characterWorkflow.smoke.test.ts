@@ -1,8 +1,9 @@
 import { get } from 'svelte/store';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { installMemoryLocalStorage } from '../test-utils/browser';
+import { is5e2014Character } from '../schema/storedCharacters';
 
-vi.mock('$app/environment', () => ({
+vi.mock('$app/env', () => ({
 	browser: true
 }));
 
@@ -14,17 +15,20 @@ describe('local-first character workflow smoke', () => {
 
 	it('creates, edits, persists, and reloads a 5e character', async () => {
 		const data = await import('$storage/store.js');
-		const createdCharacter = data.createNew5eCharacter();
+		const createdCharacter = data.createNewCharacter('dnd5e-2014');
 		const editedName = 'Smoke Test Adventurer';
 
 		data.charsArray.update((characters) =>
 			characters.map((character) =>
-				character.meta.id === createdCharacter.meta.id
+				character.meta.id === createdCharacter.meta.id && is5e2014Character(character)
 					? {
 							...character,
-							identity: {
-								...character.identity,
-								name: editedName
+							systemData: {
+								...character.systemData,
+								identity: {
+									...character.systemData.identity,
+									name: editedName
+								}
 							}
 						}
 					: character
@@ -37,6 +41,6 @@ describe('local-first character workflow smoke', () => {
 			(character) => character.meta.id === createdCharacter.meta.id
 		);
 
-		expect(reloadedCharacter?.identity.name).toBe(editedName);
+		expect(reloadedCharacter?.systemData.identity.name).toBe(editedName);
 	});
 });

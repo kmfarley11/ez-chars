@@ -3,7 +3,12 @@ import type { CollectionPriorityRow } from '$lib/ui/molecules/collection-priorit
 import { projectCollectionPriorityRows } from '$lib/ui/molecules/collection-priority';
 import { compare5e2014PriorityLabels } from '$lib/systems/dnd5e-2014/collection-priority';
 import { getInventoryGroupForItem, type InventoryGroup } from '$lib/systems/dnd5e-2014/inventory';
-import type { Item, SpellLevel, SpellRef } from '../../../schema/index';
+import type {
+	CharacterDocument5e2014,
+	Item5e2014 as Item,
+	SpellLevel,
+	SpellRef
+} from '../../../schema/index';
 
 export type Dnd5e2014DenseCollectionRow = GridContentListRow &
 	CollectionPriorityRow & {
@@ -22,6 +27,33 @@ const getSpellLevelGroupLabel = (level: SpellLevel): string => {
 	if (level === 0) return 'Cantrips';
 	const suffix = level === 1 ? 'st' : level === 2 ? 'nd' : level === 3 ? 'rd' : 'th';
 	return `${level}${suffix}-level spells`;
+};
+
+// An open Detail keeps its record when its category changes out of the originating card.
+export const resolveDenseCollectionRow = (
+	character: CharacterDocument5e2014,
+	key: string | undefined
+): Dnd5e2014DenseCollectionRow | undefined => {
+	if (!key) return undefined;
+	if (key.startsWith('item:')) {
+		const item = character.systemData.inventory.find((item) => `item:${item.id}` === key);
+		return item
+			? projectInventoryDenseCollectionRows(
+					[item],
+					item.category,
+					new Set(character.systemData.collectionPins?.inventory)
+				)[0]
+			: undefined;
+	}
+	const spell = character.systemData.spellcasting?.spells?.find(
+		(spell) => `spell:${spell.spellId}` === key
+	);
+	return spell
+		? projectSpellDenseCollectionRows(
+				[spell],
+				new Set(character.systemData.collectionPins?.spells)
+			)[0]
+		: undefined;
 };
 
 export const projectInventoryDenseCollectionRows = (

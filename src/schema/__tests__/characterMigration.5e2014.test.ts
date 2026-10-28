@@ -41,9 +41,10 @@ describe('5e 2014 character data hydration', () => {
 	it('hydrates current v0 data idempotently and serializes only validated current data', () => {
 		const character = create5e2014Character({
 			meta: { id: 'current-character' },
-			features: [{ id: 'general-feature', name: 'General Feature' }],
-			inventory: [{ id: 'item-1', name: 'Longsword' }],
+
 			systemData: {
+				features: [{ id: 'general-feature', name: 'General Feature' }],
+				inventory: [{ category: 'weapons', id: 'item-1', name: 'Longsword' }],
 				proficiencies: {
 					languages: [{ id: 'language-1', name: 'Common' }],
 					tools: [{ id: 'tool-1', name: 'Navigator tools' }]

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { asset } from '$app/paths';
-	import type { SheetNavigationHost } from '$lib/systems/dnd5e-2014/pages/sheet-navigation-host';
+	import { resolveAssetUrl } from '$lib/resources/asset-url';
+	import type { SheetNavigationHost } from '$lib/navigation/sheet-navigation-host';
 	import { tick } from 'svelte';
 	import BaseButton from '$lib/ui/atoms/base-button.svelte';
 	import HorizontalResizeHandle from '$lib/ui/molecules/horizontal-resize-handle.svelte';
@@ -11,9 +11,12 @@
 		type CuratedPdfSection
 	} from '$lib/ui/organisms/reference-pdf-viewer.svelte';
 	import { clampResizablePaneSize } from '$lib/ui/molecules/horizontal-resize';
-	import { dnd5e2014ResourceCatalog } from '$lib/resources/dnd5e2014ResourceCatalog';
-	import { resolveResourceLocator } from '$lib/resources/resourceCatalog';
-	const { navigation }: { navigation: SheetNavigationHost } = $props();
+	import { resolveResourceLocator, type ResourceCatalog } from '$lib/resources/resourceCatalog';
+	const {
+		navigation,
+		catalog,
+		systemId
+	}: { navigation: SheetNavigationHost; catalog: ResourceCatalog; systemId: string } = $props();
 
 	let headingEl = $state<HTMLHeadingElement>();
 	let librarySearchEl = $state<HTMLInputElement>();
@@ -44,8 +47,8 @@
 	const referenceSurfaceWidth = $derived(viewportWidth < 640 ? viewportWidth : panelWidth);
 	const disposition = $derived(
 		activeLocatorId
-			? resolveResourceLocator(dnd5e2014ResourceCatalog, activeLocatorId, {
-					resolveAssetHref: (path) => asset(path as Parameters<typeof asset>[0])
+			? resolveResourceLocator(catalog, activeLocatorId, {
+					resolveAssetHref: (path) => resolveAssetUrl(path)
 				})
 			: undefined
 	);
@@ -64,7 +67,7 @@
 	});
 	const curatedSections = $derived(
 		internalViewerConfig && disposition
-			? dnd5e2014ResourceCatalog.locators
+			? catalog.locators
 					.filter(
 						(entry) =>
 							entry.resourceId === disposition.resource.id &&
@@ -168,8 +171,8 @@
 
 			{#if isLibraryOpen}
 				<RulesResourceLibrary
-					catalog={dnd5e2014ResourceCatalog}
-					systemId="dnd5e-2014"
+					{catalog}
+					{systemId}
 					bind:query={resourceQuery}
 					bind:searchInputEl={librarySearchEl}
 					onOpenInternal={(locatorId) => void openLibraryReference(locatorId)}

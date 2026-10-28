@@ -26,6 +26,8 @@ export interface SmallEditField {
 	display?: () => ScalarValue;
 	commit?: (before: ScalarValue, after: ScalarValue) => SmallEditResult;
 	canClear?: boolean;
+	/** Brief always-visible guidance; longer context can use explanation. */
+	hint?: string;
 	explanation?: string;
 	notes?: SmallEditNotes;
 }
@@ -36,6 +38,15 @@ export interface SmallEditModel {
 	fields: Array<SmallEditField>;
 	annotationEditorConfig?: GridAnnotationEditorConfig;
 	actions?: Array<SmallEditAction>;
+	source?: SmallEditSource;
+}
+
+// Domain adapters resolve identity and ownership; shared Detail owns navigation and drafts.
+export interface SmallEditSource {
+	label: () => string | undefined;
+	description: string;
+	open: () => SmallEditModel | undefined;
+	refresh?: SmallEditAction;
 }
 
 // Collection lifecycle remains one explicit operation, not an outer value draft.
@@ -43,6 +54,7 @@ export interface SmallEditAction {
 	key: string;
 	label: string;
 	confirmation?: string;
+	confirmLabel?: string;
 	fields?: Array<Pick<SmallEditField, 'key' | 'label' | 'kind' | 'options' | 'read'>>;
 	commit: (values: Record<string, ScalarValue>) => SmallEditResult;
 }

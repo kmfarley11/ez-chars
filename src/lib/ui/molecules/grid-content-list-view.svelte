@@ -17,6 +17,7 @@
 		bounded?: boolean;
 		searchEnabled?: boolean;
 		emptyText?: string;
+		presentation?: 'cards' | 'compact';
 		onOpenRow?: GridContentListRowAction;
 		onTogglePinRow?: GridContentListRowAction;
 		controls?: Snippet;
@@ -30,6 +31,7 @@
 		bounded = false,
 		searchEnabled = true,
 		emptyText = 'No items yet.',
+		presentation = 'cards',
 		onOpenRow,
 		onTogglePinRow,
 		controls,
@@ -71,7 +73,9 @@
 		</div>
 	{/if}
 
-	<p class="theme-text-muted text-xs" role="status" aria-live="polite">{countLabel}</p>
+	{#if presentation !== 'compact' || searchEnabled || retrieval?.narrowed}
+		<p class="theme-text-muted text-xs" role="status" aria-live="polite">{countLabel}</p>
+	{/if}
 
 	{#if (retrieval?.total ?? rows.length) === 0}
 		<p class="theme-text-muted rounded-md border px-3 py-3 text-sm italic">{emptyText}</p>
@@ -96,7 +100,12 @@
 			viewportId="bounded-collection"
 			maxHeight="20rem"
 		>
-			<ul class="space-y-2" aria-label={`${title} results`}>
+			<ul
+				class={presentation === 'compact'
+					? 'flex flex-wrap items-center gap-x-4 gap-y-1'
+					: 'space-y-2'}
+				aria-label={`${title} results`}
+			>
 				{#each filteredRows as row, index (row.key)}
 					{#if row.groupLabel && row.groupLabel !== filteredRows[index - 1]?.groupLabel}
 						<li aria-hidden="true" class="px-1 pt-2 first:pt-0">
@@ -105,12 +114,17 @@
 							</h4>
 						</li>
 					{/if}
-					<GridContentListRow {row} {onOpenRow} {onTogglePinRow} />
+					<GridContentListRow {row} {presentation} {onOpenRow} {onTogglePinRow} />
 				{/each}
 			</ul>
 		</BoundedCollectionRegion>
 	{:else}
-		<ul class="space-y-2" aria-label={`${title} results`}>
+		<ul
+			class={presentation === 'compact'
+				? 'flex flex-wrap items-center gap-x-4 gap-y-1'
+				: 'space-y-2'}
+			aria-label={`${title} results`}
+		>
 			{#each filteredRows as row, index (row.key)}
 				{#if row.groupLabel && row.groupLabel !== filteredRows[index - 1]?.groupLabel}
 					<li aria-hidden="true" class="px-1 pt-2 first:pt-0">
@@ -119,7 +133,7 @@
 						</h4>
 					</li>
 				{/if}
-				<GridContentListRow {row} {onOpenRow} {onTogglePinRow} />
+				<GridContentListRow {row} {presentation} {onOpenRow} {onTogglePinRow} />
 			{/each}
 		</ul>
 	{/if}

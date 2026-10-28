@@ -20,7 +20,7 @@ import { reduce5eSheetEditIntents } from '$lib/systems/dnd5e-2014/editing/sheet-
 describe('focused 2014 editing adapters', () => {
 	it('commits one inventory record and its annotations without changing identity or siblings', () => {
 		const character = structuredClone(saturatedCharacter5e2014);
-		const row = projectInventoryDenseCollectionRows(character.inventory, 'other').find(
+		const row = projectInventoryDenseCollectionRows(character.systemData.inventory, 'other').find(
 			(candidate) => candidate.source.id === 'saturated-gear-3'
 		)!;
 		const data = projectDenseCollectionEditData(character, row);
@@ -32,10 +32,12 @@ describe('focused 2014 editing adapters', () => {
 		const result = reduce5eSheetEditIntents(character, intents!);
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
-		expect(result.character.inventory.map((item) => item.id)).toEqual(
-			character.inventory.map((item) => item.id)
+		expect(result.character.systemData.inventory.map((item) => item.id)).toEqual(
+			character.systemData.inventory.map((item) => item.id)
 		);
-		expect(result.character.inventory.find((item) => item.id === row.source.id)).toMatchObject({
+		expect(
+			result.character.systemData.inventory.find((item) => item.id === row.source.id)
+		).toMatchObject({
 			notes: 'Updated in one focused draft.',
 			annotations: [{ id: 'combined-note', text: 'Saved together.' }]
 		});
@@ -55,8 +57,8 @@ describe('focused 2014 editing adapters', () => {
 		const result = reduce5eSheetEditIntents(character, [intent!]);
 		expect(result.ok).toBe(true);
 		if (!result.ok || row.source.kind !== 'class-feature') return;
-		expect(result.character.features.map((feature) => feature.id)).toEqual(
-			character.features.map((feature) => feature.id)
+		expect(result.character.systemData.features.map((feature) => feature.id)).toEqual(
+			character.systemData.features.map((feature) => feature.id)
 		);
 		expect(
 			result.character.systemData.classes[row.source.classIndex].features?.find(

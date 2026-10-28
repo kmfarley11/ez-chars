@@ -30,13 +30,15 @@ const meta = {
 	component: GridContentListStoryHarness,
 	args: {
 		initialRows: exampleRows,
+		presentation: 'cards',
 		onRowSave: fn()
 	},
+	argTypes: { presentation: { control: 'inline-radio', options: ['cards', 'compact'] } },
 	parameters: {
 		docs: {
 			description: {
 				component:
-					'Dense collection sandbox for human review. Use the viewport toolbar to repeat the same interactions at desktop and phone widths; repeatable behavior belongs in Vitest or Playwright.'
+					'Use the presentation control on Sparse/Dense to compare bordered cards with compact wrapping entries. Compact summaries retain metadata, note counts, pin/open actions and bounded retrieval; full descriptions remain in Detail. Reuse the viewport toolbar for desktop/phone review; repeatable behavior belongs in Vitest or Playwright.'
 			}
 		}
 	}

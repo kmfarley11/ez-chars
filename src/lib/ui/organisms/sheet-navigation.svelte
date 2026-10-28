@@ -2,33 +2,33 @@
 	import { onMount, tick } from 'svelte';
 	import BaseButton from '$lib/ui/atoms/base-button.svelte';
 	import DialogShell from '$lib/ui/molecules/dialog-shell.svelte';
-	import { getDnd5e2014SheetLandmarkCoordinator } from '$lib/systems/dnd5e-2014/sheet-landmark-navigation';
+	import { getSheetLandmarkCoordinator } from '$lib/navigation/sheet-landmark-navigation';
 	import {
-		dnd5e2014SheetLandmarks,
-		getDnd5e2014SheetLandmarkChildren,
-		getDnd5e2014SheetLandmarkRegions,
-		type Dnd5e2014SheetLandmark
-	} from '$lib/systems/dnd5e-2014/sheet-landmarks';
-	import LandmarkIcon from '$lib/systems/dnd5e-2014/components/landmark-icon.svelte';
+		getSheetLandmarkChildren,
+		getSheetLandmarkRegions,
+		type SheetLandmark
+	} from '$lib/navigation/sheet-landmarks';
+	import LandmarkIcon from '$lib/ui/atoms/landmark-icon.svelte';
 
 	type CompactPresentation = 'rail' | 'drawer';
 
 	interface Props {
+		landmarks: ReadonlyArray<SheetLandmark>;
 		compactPresentation?: CompactPresentation;
 		wideBreakpoint?: number;
 	}
 
-	let { compactPresentation = 'rail', wideBreakpoint = 1280 }: Props = $props();
+	let { landmarks, compactPresentation = 'rail', wideBreakpoint = 1280 }: Props = $props();
 	let isWide = $state(false);
 	let userExpanded = $state<boolean>();
 	let isOutlineOpen = $state(false);
 	let outlineTriggerEl = $state<HTMLButtonElement>();
 	let dialogShell = $state<{ focusHeading: () => void }>();
 	let restoreOutlineFocusOnClose = true;
-	const coordinator = getDnd5e2014SheetLandmarkCoordinator();
-	const regions = getDnd5e2014SheetLandmarkRegions();
-	const destinationLandmarks = dnd5e2014SheetLandmarks.filter(
-		(landmark) => landmark.kind === 'section'
+	const coordinator = getSheetLandmarkCoordinator();
+	const regions = $derived(getSheetLandmarkRegions(landmarks));
+	const destinationLandmarks = $derived(
+		landmarks.filter((landmark) => landmark.kind === 'section')
 	);
 	const isExpanded = $derived(isWide && (userExpanded ?? true));
 	const showsDestinationRail = $derived(isWide ? !isExpanded : compactPresentation === 'rail');
@@ -65,7 +65,7 @@
 		restoreOutlineFocusOnClose = true;
 	};
 
-	const selectLandmark = async (landmark: Dnd5e2014SheetLandmark, fromDialog = false) => {
+	const selectLandmark = async (landmark: SheetLandmark, fromDialog = false) => {
 		if (fromDialog) {
 			restoreOutlineFocusOnClose = false;
 			isOutlineOpen = false;
@@ -103,7 +103,7 @@
 					{region.label}
 				</button>
 				<ul class="mt-0.5 flex flex-col gap-0.5 pl-2" aria-label={`${region.label} sections`}>
-					{#each getDnd5e2014SheetLandmarkChildren(region.fragmentId) as child (child.fragmentId)}
+					{#each getSheetLandmarkChildren(region.fragmentId, landmarks) as child (child.fragmentId)}
 						<li>
 							<button
 								type="button"

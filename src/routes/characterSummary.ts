@@ -1,5 +1,6 @@
-import type { CharacterWithSystemData } from '../schema/index.js';
+import { is5e2014Character, type CharacterWithSystemData } from '../schema/index.js';
 import { SYSTEM_ID_5E2014 } from '../schema/versions.5e2014.js';
+import { SYSTEM_ID_5E2024 } from '../schema/versions-5e2024';
 
 export interface CharacterSummary {
 	id: string;
@@ -20,6 +21,7 @@ export const formatCharacterName = (name?: string, fallbackId: string = ''): str
 };
 
 export const formatSystemLabel = (systemId?: string): string => {
+	if (systemId === SYSTEM_ID_5E2024) return 'D&D 5e (2024)';
 	if (systemId === SYSTEM_ID_5E2014) {
 		return 'D&D 5e (2014)';
 	}
@@ -27,22 +29,18 @@ export const formatSystemLabel = (systemId?: string): string => {
 };
 
 export const formatClassSummary = (character: CharacterWithSystemData): string => {
-	const systemData = character.systemData as Record<string, unknown> | undefined;
-	if (!systemData || !Array.isArray(systemData.classes) || systemData.classes.length === 0) {
-		return '—';
-	}
-	const parts = systemData.classes
-		.map((cls) => {
-			if (cls && typeof cls === 'object') {
-				const name = typeof cls.name === 'string' && cls.name.trim() ? cls.name.trim() : 'Class';
-				const level = typeof cls.level === 'number' ? cls.level : undefined;
-				return level !== undefined ? `${name} ${level}` : name;
-			}
-			return String(cls);
-		})
-		.filter(Boolean);
-
-	return parts.length > 0 ? parts.join(', ') : '—';
+	if (!is5e2014Character(character))
+		return (
+			character.systemData.classes
+				?.map(
+					(entry) => `${entry.name.trim()}${entry.level === undefined ? '' : ` ${entry.level}`}`
+				)
+				.join(', ') || '—'
+		);
+	return (
+		character.systemData.classes.map((entry) => `${entry.name.trim()} ${entry.level}`).join(', ') ||
+		'—'
+	);
 };
 
 export const formatTimestamp = (isoString?: string): string => {
@@ -60,7 +58,7 @@ export const formatTimestamp = (isoString?: string): string => {
 
 export const toCharacterSummary = (character: CharacterWithSystemData): CharacterSummary => {
 	const id = character.meta?.id ?? '';
-	const name = formatCharacterName(character.identity?.name, id);
+	const name = formatCharacterName(character.systemData.identity?.name, id);
 	const systemId = character.system?.id ?? '';
 	const systemLabel = formatSystemLabel(systemId);
 	const classSummary = formatClassSummary(character);

@@ -3,8 +3,8 @@
 - **Status:** Approved
 - **Author:** Codex with project owner direction
 - **Date:** 2026-07-18
-- **Last reviewed:** 2026-08-28
-- **Latest refinement:** `BL-075` extended the strict current pre-playtest v0 shape with stable Language and Tool record identities plus validated collection-priority identity sets, without promising a v0 migration.
+- **Last reviewed:** 2026-10-24
+- **Latest refinement:** `BL-070` rebases 2014 v0 into a minimal envelope and adds strict 2024 v0 parsing with protected rejected-storage recovery, without an automatic migration promise.
 
 ## Context & Problem Statement
 
@@ -35,6 +35,8 @@ This gives each model a narrow purpose, but requires a permanent bidirectional m
 This makes historical knowledge explicit and testable. Application features receive only the current shape, while persistence and export validate that same shape before writing.
 
 ## Decision Outcome
+
+**Current shape:** BL-070 supersedes the historical root-collection layout described below. Both supported editions use `meta`, `system` and edition-owned `systemData`. Their v0 layouts remain explicitly unstable; rejected stored bytes are preserved behind a write barrier until a confirmed reset succeeds.
 
 Use `meta.schemaVersion` as the data-layout discriminator for each character. This decision introduced D&D 5e 2014 layout `dnd5e-2014.v2`; at the time of this decision, the current layout became `dnd5e-2014.v3`, and repository-supported legacy values were `0.0.1`, `char.v1`, and `dnd5e-2014.v2`. The [2026-07-26 pre-playtest refinement](#2026-07-26-establish-a-pre-playtest-v0-epoch-and-future-migration-contract) supersedes that compatibility set. `system.id` continues to select the game system, and `system.version` continues to identify the rules/source release (`SRD-5.1-2023`). Storage-envelope and export-envelope versions remain unchanged.
 
@@ -70,6 +72,14 @@ Serialization accepts only the current validated model. Local storage, JSON impo
 - Required empty groups add a small amount of persisted JSON.
 
 ## Refinements & Follow-Ups
+
+### 2026-10-24: BL-070 minimal envelope and two strict v0 systems
+
+The shared document persists lifecycle identity/timestamps, rules identity and a system-owned payload. The shared inventory identity is only ID/name; equipment categories, annotations, action links and semantics are edition-owned. Both rules identity and schema identity must match an explicitly supported parser. Unknown systems, old incompatible experimental v0 shapes and future layouts are rejected; no generic cast or silent repair remains.
+
+The 2014 fixture rebase preserves values, source links, notes and priority while moving domain data under `systemData`. The new `dnd5e-2024.schema.v0` validates all authored rollout regions, optional scalar absence, stable collection identities, safe field-note targets, pins and local source references. Numeric validation protects representation, not character-build legality. Source deletion atomically detaches retained action snapshots. Optional 2024 structures are authored on demand rather than filled with invented zeros.
+
+Rejected browser storage is kept byte-for-byte for raw download. Temporary fallback characters cannot overwrite it through edits/imports; only explicit confirmed reset releases the barrier, and failed writes keep recovery active. Valid mixed-system backups use the existing versioned envelope and global character-ID merge policy. No frozen-v1 or migration promise is introduced; the pre-playtest schema decision remains required before external handoff.
 
 ### 2026-07-18: Preserve all current MVP roleplay fields
 

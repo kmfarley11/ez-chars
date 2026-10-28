@@ -51,7 +51,7 @@ export const projectSupportingCollectionRows = (
 		case 'features': {
 			const featurePins = new Set(character.systemData.collectionPins?.features ?? []);
 			return [
-				...character.features.map((feature) => ({
+				...character.systemData.features.map((feature) => ({
 					key: `general-feature:${feature.id}`,
 					identity: feature.id,
 					label: feature.name,

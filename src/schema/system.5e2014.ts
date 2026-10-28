@@ -1,5 +1,5 @@
 import type { Reference } from './core';
-import { nowIso, createId } from './helpers';
+import { defaultCharacterFactoryDependencies, type CharacterFactoryDependencies } from './helpers';
 import { FULL_2014_SRD_URL } from '$utils/urlHelpers.js';
 import { z } from 'zod';
 import {
@@ -125,6 +125,9 @@ export type SpellSlots = z.infer<typeof spellSlotsSchema>;
 export type SpellRef = z.infer<typeof spellRefSchema>;
 export type Dnd5e2014SystemData = z.infer<typeof dnd5e2014SystemDataSchema>;
 export type CharacterDocument5e2014 = z.infer<typeof characterDocument5e2014Schema>;
+export type Item5e2014 = z.infer<typeof itemSchema>;
+export type Feature5e2014 = z.infer<typeof featureSchema>;
+export type NoteBlock5e2014 = z.infer<typeof noteBlockSchema>;
 
 export const SRD_REF_5E_2014: Reference = {
 	kind: 'pdf',
@@ -229,14 +232,16 @@ export function create5e2014Character(
 	ac?: number
 ): CharacterDocument5e2014;
 export function create5e2014Character(
-	options: Create5e2014CharacterOptions
+	options: Create5e2014CharacterOptions,
+	dependencies?: CharacterFactoryDependencies
 ): CharacterDocument5e2014;
 export function create5e2014Character(
 	arg0?: string | Create5e2014CharacterOptions,
-	hp?: number,
+	hp?: number | CharacterFactoryDependencies,
 	ac?: number
 ): CharacterDocument5e2014 {
-	const normalized = normalizeCharacterOptions(arg0, hp, ac);
+	const dependencies = typeof hp === 'object' ? hp : defaultCharacterFactoryDependencies;
+	const normalized = normalizeCharacterOptions(arg0, typeof hp === 'number' ? hp : undefined, ac);
 	const basic = create5e2014FactoryInputSchema.parse({
 		name: normalized.name,
 		hp: normalized.hp,
@@ -245,31 +250,32 @@ export function create5e2014Character(
 	const options = create5e2014CharacterOptionsSchema.parse(normalized);
 	const hpValue = basic.hp ?? 5;
 	const acValue = basic.ac ?? 10;
+	const timestamp = options.meta?.createdAt ?? dependencies.nowIso();
 
 	const base: CharacterDocument5e2014 = {
 		meta: {
-			id: createId(),
+			id: options.meta?.id ?? dependencies.createId(),
 			schemaVersion: CHARACTER_DATA_VERSION_5E2014,
-			createdAt: nowIso(),
-			updatedAt: nowIso()
+			createdAt: timestamp,
+			updatedAt: timestamp
 		},
 		system: {
 			id: SYSTEM_ID_5E2014,
-			version: RULES_VERSION_5E2014,
-			source: 'local',
-			annotations: [
-				{ origin: 'source', kind: 'tag', text: '2014-5e' },
-				{ origin: 'source', kind: 'tag', text: '2014-5e-srd', ref: SRD_REF_5E_2014 },
-				{ origin: 'source', kind: 'tag', text: '2014-5e-ua-sidekick' }
-			]
+			version: RULES_VERSION_5E2014
 		},
-		identity: {
-			name: options.name ?? 'Ole No Name'
-		},
-		features: [],
-		inventory: [],
-		notes: [],
 		systemData: {
+			provenance: {
+				source: 'local',
+				annotations: [
+					{ origin: 'source', kind: 'tag', text: '2014-5e' },
+					{ origin: 'source', kind: 'tag', text: '2014-5e-srd', ref: SRD_REF_5E_2014 },
+					{ origin: 'source', kind: 'tag', text: '2014-5e-ua-sidekick' }
+				]
+			},
+			identity: { name: options.name ?? 'Ole No Name' },
+			features: [],
+			inventory: [],
+			notes: [],
 			level: 0,
 			proficiencyBonus: 0,
 			abilities: {
@@ -313,16 +319,27 @@ export function create5e2014Character(
 		},
 		system: {
 			...base.system,
-			...options.system
+			...(options.system?.version ? { version: options.system.version } : {})
 		},
-		identity: deepMerge(base.identity, options.identity),
-		features: options.features ?? base.features,
-		inventory: options.inventory ?? base.inventory,
-		notes: options.notes ?? base.notes,
-		systemData: deepMerge(base.systemData, options.systemData)
+		systemData: deepMerge(
+			{
+				...base.systemData,
+				identity: deepMerge(base.systemData.identity, options.identity),
+				features: options.features ?? base.systemData.features,
+				inventory: options.inventory ?? base.systemData.inventory,
+				notes: options.notes ?? base.systemData.notes,
+				provenance: {
+					...base.systemData.provenance,
+					...(options.system?.source !== undefined ? { source: options.system.source } : {}),
+					...(options.system?.annotations !== undefined
+						? { annotations: options.system.annotations }
+						: {})
+				},
+				...(options.annotations !== undefined ? { characterAnnotations: options.annotations } : {})
+			},
+			options.systemData
+		)
 	};
-
-	if (options.annotations !== undefined) withOverrides.annotations = options.annotations;
 
 	return serialize5e2014CharacterDocument(withOverrides);
 }

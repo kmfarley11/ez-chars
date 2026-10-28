@@ -1,7 +1,14 @@
 <script lang="ts">
-	import { asset, resolve } from '$app/paths';
+	import { resolve } from '$app/paths';
+	import { resolveAssetUrl } from '$lib/resources/asset-url';
 	import { tick } from 'svelte';
-	import { charsArray, createNew5eCharacter, deleteCharacterById } from '$storage/store.js';
+	import {
+		charsArray,
+		charsStorageIssue,
+		createNewCharacter,
+		deleteCharacterById,
+		importCharacters
+	} from '$storage/store.js';
 
 	import BaseButton from '$lib/ui/atoms/base-button.svelte';
 	import CharacterList from './components/CharacterList.svelte';
@@ -10,7 +17,6 @@
 	import CharacterImportDialog from './components/CharacterImportDialog.svelte';
 	import CharacterExportDialog from './components/CharacterExportDialog.svelte';
 	import {
-		applyCharacterImport,
 		createCharacterExportEnvelope,
 		safeParseCharacterExportEnvelope,
 		type CharacterExportEnvelope,
@@ -18,7 +24,11 @@
 	} from '../schema/index.js';
 	import { FULL_2014_SRD_PATH, OFFICIAL_2014_CHAR_SHEET_HREF } from '$utils/urlHelpers.js';
 
-	const charsheetHref = resolve('/charsheets/5e');
+	import {
+		characterCreationChoices,
+		characterSheetPath,
+		type SupportedSystemId
+	} from '$lib/characters/character-dispatch';
 	const jsonMimeType = 'application/json';
 	let importFileInput = $state<HTMLInputElement>();
 	let importButtonEl = $state<HTMLButtonElement>();
@@ -36,17 +46,13 @@
 	// Export State
 	let exportDialogOpen = $state(false);
 
-	const openCharacterSheet = (charId: string) => {
-		location.href = `${charsheetHref}?id=${encodeURIComponent(charId)}`;
-	};
-
 	const handleCharSelect = (char: CharacterWithSystemData) => {
-		openCharacterSheet(char.meta.id);
+		location.href = `${resolve(characterSheetPath(char))}?id=${encodeURIComponent(char.meta.id)}`;
 	};
 
-	const handleCreateNew5eCharacter = () => {
-		const nextCharacter = createNew5eCharacter();
-		openCharacterSheet(nextCharacter.meta.id);
+	const handleCreateNewCharacter = (systemId: SupportedSystemId) => {
+		if ($charsStorageIssue) return;
+		handleCharSelect(createNewCharacter(systemId));
 	};
 
 	const handleCharacterDelete = (char: CharacterWithSystemData) => {
@@ -86,13 +92,14 @@
 	};
 
 	const handleChooseImportFile = () => {
-		if (!importFileInput) return;
+		if (!importFileInput || $charsStorageIssue) return;
 		importFileInput.value = '';
 		pendingImportEnvelope = undefined;
 		importFileInput.click();
 	};
 
 	const handleImportFileSelect = async (event: Event) => {
+		if ($charsStorageIssue) return;
 		const input = event.currentTarget as HTMLInputElement;
 		const selectedFile = input.files?.[0];
 		pendingImportEnvelope = undefined;
@@ -134,8 +141,14 @@
 
 	const handleReplaceImportedCharacters = () => {
 		if (!pendingImportEnvelope) return;
-		const importResult = applyCharacterImport($charsArray, pendingImportEnvelope, 'replace');
-		charsArray.set(importResult.characters);
+		let importResult;
+		try {
+			importResult = importCharacters(pendingImportEnvelope, 'replace');
+		} catch (error) {
+			importErrorMessage = error instanceof Error ? error.message : 'Import could not be applied.';
+			return;
+		}
+		if (!importResult) return;
 		pendingImportEnvelope = undefined;
 
 		importState = 'success';
@@ -146,11 +159,8 @@
 		if (!pendingImportEnvelope) return;
 		const importEnvelope = pendingImportEnvelope;
 
-		let importResult: ReturnType<typeof applyCharacterImport> | undefined;
-		charsArray.update((currentCharacters) => {
-			importResult = applyCharacterImport(currentCharacters, importEnvelope, 'merge-new');
-			return importResult.characters;
-		});
+		const importResult = importCharacters(importEnvelope, 'merge-new');
+		if (!importResult) return;
 
 		pendingImportEnvelope = undefined;
 
@@ -186,19 +196,33 @@
 				Want the official 2014 5e SRD PDF?&nbsp;
 				<a
 					class="theme-link underline"
-					href={asset(FULL_2014_SRD_PATH)}
+					href={resolveAssetUrl(FULL_2014_SRD_PATH)}
 					target="_blank"
 					rel="noreferrer">View SRD 5.1</a
 				>.
 			</p>
 		</div>
 		<div class="flex flex-wrap items-start justify-between gap-2">
-			<div>
-				<MenuButton text="Create Character" iconVariant="chevron" align="left">
-					<MenuItemButton onclick={handleCreateNew5eCharacter}
-						>Create New 2014 5e Character</MenuItemButton
-					>
-				</MenuButton>
+			<div class="min-w-0 space-y-1">
+				<fieldset
+					disabled={$charsStorageIssue !== null}
+					aria-label="Character creation"
+					aria-describedby={$charsStorageIssue ? 'character-creation-recovery' : undefined}
+				>
+					<MenuButton text="Create Character" iconVariant="chevron" align="left">
+						{#each characterCreationChoices as choice (choice.id)}
+							<MenuItemButton onclick={() => handleCreateNewCharacter(choice.id)}
+								>{choice.label}</MenuItemButton
+							>
+						{/each}
+					</MenuButton>
+				</fieldset>
+				{#if $charsStorageIssue}
+					<p id="character-creation-recovery" class="theme-text-muted max-w-sm text-sm">
+						Character creation is unavailable during data recovery. Download your original data
+						before choosing Reset stored data; demo edits remain temporary.
+					</p>
+				{/if}
 			</div>
 			<div class="ml-auto flex min-w-0 flex-wrap items-start justify-end gap-2">
 				<div class="flex min-w-0 flex-col items-end gap-1">
@@ -210,8 +234,10 @@
 						aria-label="Choose character import JSON file"
 						onchange={handleImportFileSelect}
 					/>
-					<BaseButton bind:buttonEl={importButtonEl} onclick={handleChooseImportFile}
-						>Import Characters</BaseButton
+					<BaseButton
+						bind:buttonEl={importButtonEl}
+						onclick={handleChooseImportFile}
+						disabled={$charsStorageIssue !== null}>Import Characters</BaseButton
 					>
 				</div>
 				<BaseButton bind:buttonEl={exportButtonEl} onclick={() => (exportDialogOpen = true)}

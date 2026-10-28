@@ -4,17 +4,23 @@ import {
 	create5e2014Character
 } from '../schema';
 import { saturatedCharacter5e2014 } from './saturatedCharacter.5e2014';
+import {
+	representativeCharacter5e2024,
+	sparseCharacter5e2024,
+	saturatedCharacter5e2024
+} from './characters-5e2024';
 
 export const bryltin: CharacterDocument5e2014 = create5e2014Character({
 	name: 'Bryltin Brewhammer',
 	meta: {
 		id: 'char-bryltin'
 	},
-	identity: {
-		alignment: 'LG',
-		ancestryLineage: 'hill dwarf'
-	},
+
 	systemData: {
+		identity: {
+			alignment: 'LG',
+			ancestryLineage: 'hill dwarf'
+		},
 		level: 8,
 		proficiencyBonus: 2,
 		race: { name: 'hill dwarf' },
@@ -32,11 +38,12 @@ export const zindra: CharacterDocument5e2014 = create5e2014Character({
 	meta: {
 		id: 'char-zindra'
 	},
-	identity: {
-		alignment: 'NG',
-		ancestryLineage: 'wood elf'
-	},
+
 	systemData: {
+		identity: {
+			alignment: 'NG',
+			ancestryLineage: 'wood elf'
+		},
 		level: 8,
 		proficiencyBonus: 2,
 		race: { name: 'wood elf' },
@@ -58,35 +65,34 @@ export const seedChars: CharacterWithSystemData[] = [
 			createdAt: '2026-02-27T16:00:00Z',
 			updatedAt: '2026-02-27T16:00:00Z'
 		},
-		identity: {
-			name: 'Theren Vael',
-			playerName: 'Kevin',
-			ancestryLineage: 'Elf',
-			alignment: 'Chaotic Good',
-			description: 'Studious elven duelist blending steel and spell.'
-		},
-		features: [],
-		inventory: [
-			{
-				id: 'item-1',
-				name: 'Longsword',
-				notes: '+5 to hit; 1d8+2 slashing.',
-				equipped: true
-			},
-			{
-				id: 'item-2',
-				name: 'Spellbook'
-			}
-		],
-		notes: [
-			{
-				id: 'note-1',
-				title: 'Tactics',
-				body: 'Open with Shield if pressured. Stay midline.',
-				kind: 'quick'
-			}
-		],
+
 		systemData: {
+			identity: {
+				name: 'Theren Vael',
+				playerName: 'Kevin',
+				ancestryLineage: 'Elf',
+				alignment: 'Chaotic Good',
+				description: 'Studious elven duelist blending steel and spell.'
+			},
+			features: [],
+			inventory: [
+				{
+					category: 'weapons',
+					id: 'item-1',
+					name: 'Longsword',
+					notes: '+5 to hit; 1d8+2 slashing.',
+					equipped: true
+				},
+				{ category: 'other', id: 'item-2', name: 'Spellbook' }
+			],
+			notes: [
+				{
+					id: 'note-1',
+					title: 'Tactics',
+					body: 'Open with Shield if pressured. Stay midline.',
+					kind: 'quick'
+				}
+			],
 			level: 2,
 			proficiencyBonus: 2,
 
@@ -223,22 +229,24 @@ export const seedChars: CharacterWithSystemData[] = [
 			createdAt: '2026-02-27T16:10:00Z',
 			updatedAt: '2026-02-27T16:10:00Z'
 		},
-		identity: {
-			name: 'Bram',
-			playerName: 'DM',
-			ancestryLineage: 'Human',
-			description: 'Loyal caravan guard.'
-		},
-		features: [],
-		inventory: [
-			{
-				id: 'item-1',
-				name: 'Spear',
-				notes: '+4 to hit; 1d6+2 piercing.',
-				equipped: true
-			}
-		],
+
 		systemData: {
+			identity: {
+				name: 'Bram',
+				playerName: 'DM',
+				ancestryLineage: 'Human',
+				description: 'Loyal caravan guard.'
+			},
+			features: [],
+			inventory: [
+				{
+					category: 'weapons',
+					id: 'item-1',
+					name: 'Spear',
+					notes: '+4 to hit; 1d6+2 piercing.',
+					equipped: true
+				}
+			],
 			level: 1,
 			proficiencyBonus: 2,
 
@@ -314,5 +322,8 @@ export const seedChars: CharacterWithSystemData[] = [
 			]
 		}
 	}),
-	saturatedCharacter5e2014
+	saturatedCharacter5e2014,
+	representativeCharacter5e2024,
+	sparseCharacter5e2024,
+	saturatedCharacter5e2024
 ];

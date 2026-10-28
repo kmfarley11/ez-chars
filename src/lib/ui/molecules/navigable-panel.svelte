@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { onMount, type Snippet, untrack } from 'svelte';
 	import CollapsiblePanel from '$lib/ui/molecules/collapsible-panel.svelte';
-	import { getDnd5e2014SheetLandmarkCoordinator } from '$lib/systems/dnd5e-2014/sheet-landmark-navigation';
-	import type { Dnd5e2014SheetLandmark } from '$lib/systems/dnd5e-2014/sheet-landmarks';
-	import LandmarkIcon from '$lib/systems/dnd5e-2014/components/landmark-icon.svelte';
+	import { getSheetLandmarkCoordinator } from '$lib/navigation/sheet-landmark-navigation';
+	import type { SheetLandmark } from '$lib/navigation/sheet-landmarks';
+	import LandmarkIcon from '$lib/ui/atoms/landmark-icon.svelte';
 
 	interface Props {
-		landmark: Dnd5e2014SheetLandmark;
+		landmark: SheetLandmark;
 		children?: Snippet;
 		headerActions?: Snippet;
 		startsCollapsed?: boolean;
@@ -22,7 +22,7 @@
 	}: Props = $props();
 	let isCollapsed = $state(untrack(() => startsCollapsed));
 	let headingEl = $state<HTMLButtonElement>();
-	const coordinator = getDnd5e2014SheetLandmarkCoordinator();
+	const coordinator = getSheetLandmarkCoordinator();
 
 	onMount(() =>
 		coordinator.register(landmark.fragmentId, {

@@ -17,6 +17,7 @@
 		title: string;
 		rows: ReadonlyArray<GridContentListRowData>;
 		emptyText?: string;
+		presentation?: 'cards' | 'compact';
 		query?: string;
 		onOpenRow?: GridContentListRowAction;
 		onTogglePinRow?: GridContentListRowAction;
@@ -34,6 +35,7 @@
 		title,
 		rows,
 		emptyText = 'No items yet.',
+		presentation = 'cards',
 		query = $bindable(''),
 		onOpenRow,
 		onTogglePinRow,
@@ -68,7 +70,10 @@
 	};
 </script>
 
-<section class="space-y-3" aria-labelledby={`${uid}-heading`}>
+<section
+	class={presentation === 'compact' ? 'space-y-1' : 'space-y-3'}
+	aria-labelledby={`${uid}-heading`}
+>
 	<div class="flex flex-wrap items-center justify-between gap-2">
 		<h3 id={`${uid}-heading`} class="text-sm font-semibold">{title}</h3>
 		{#if onAdd || onManagePins}
@@ -94,6 +99,7 @@
 	<div class="hidden sm:block">
 		<GridContentListView
 			{title}
+			{presentation}
 			{rows}
 			{controls}
 			{retrieval}
@@ -116,6 +122,7 @@
 		{#if rows.length === 0 && retrieval}
 			<GridContentListView
 				{title}
+				{presentation}
 				{rows}
 				{retrieval}
 				controls={isDense ? undefined : controls}
@@ -136,7 +143,7 @@
 							</h4>
 						</li>
 					{/if}
-					<GridContentListRow {row} compact={true} {onOpenRow} {onTogglePinRow} />
+					<GridContentListRow {row} {presentation} compact={true} {onOpenRow} {onTogglePinRow} />
 				{/each}
 			</ul>
 			<BaseButton
@@ -150,6 +157,7 @@
 		{:else}
 			<GridContentListView
 				{title}
+				{presentation}
 				{rows}
 				{controls}
 				{retrieval}

@@ -21,7 +21,10 @@ import { reduce5eSheetEditIntents } from '$lib/systems/dnd5e-2014/editing/sheet-
 
 describe('2014 dense collection row identity', () => {
 	it('projects duplicate inventory names with distinct stable keys in authored group order', () => {
-		const rows = projectInventoryDenseCollectionRows(saturatedCharacter5e2014.inventory, 'other');
+		const rows = projectInventoryDenseCollectionRows(
+			saturatedCharacter5e2014.systemData.inventory,
+			'other'
+		);
 		const ropeRows = filterGridContentListRows(rows, 'rope');
 
 		expect(ropeRows).toHaveLength(2);
@@ -39,11 +42,11 @@ describe('2014 dense collection row identity', () => {
 
 	it('edits one filtered inventory identity without losing annotations, links, or sibling order', () => {
 		const character = structuredClone(saturatedCharacter5e2014);
-		const originalOther = character.inventory.filter(
+		const originalOther = character.systemData.inventory.filter(
 			(item) => getInventoryGroupForItem(item) === 'other'
 		);
 		const selected = filterGridContentListRows(
-			projectInventoryDenseCollectionRows(character.inventory, 'other'),
+			projectInventoryDenseCollectionRows(character.systemData.inventory, 'other'),
 			'xyz dungeon'
 		)[0];
 		if (!selected || selected.source.kind !== 'item') throw new Error('Expected one selected item');
@@ -56,7 +59,7 @@ describe('2014 dense collection row identity', () => {
 
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
-		const savedOther = result.character.inventory.filter(
+		const savedOther = result.character.systemData.inventory.filter(
 			(item) => getInventoryGroupForItem(item) === 'other'
 		);
 		expect(savedOther.map((item) => item.id)).toEqual(originalOther.map((item) => item.id));
@@ -83,7 +86,7 @@ describe('2014 dense collection row identity', () => {
 		expect(annotated.ok).toBe(true);
 		if (annotated.ok) {
 			expect(
-				annotated.character.inventory.find((item) => item.id === selected.source.id)
+				annotated.character.systemData.inventory.find((item) => item.id === selected.source.id)
 			).toMatchObject({
 				annotations: [
 					expect.objectContaining({ id: 'focused-item-note', text: 'Keep this one close.' })
@@ -186,10 +189,12 @@ describe('2014 dense collection row identity', () => {
 			applyCharacterImport([], parsed.data, 'replace').characters[0]
 		);
 
-		expect(restored.inventory.map((item) => item.id)).toEqual(
-			edited.character.inventory.map((item) => item.id)
+		expect(restored.systemData.inventory.map((item) => item.id)).toEqual(
+			edited.character.systemData.inventory.map((item) => item.id)
 		);
-		expect(restored.inventory.find((item) => item.id === 'saturated-gear-9')).toMatchObject({
+		expect(
+			restored.systemData.inventory.find((item) => item.id === 'saturated-gear-9')
+		).toMatchObject({
 			notes: 'Exported focused edit.'
 		});
 		expect(

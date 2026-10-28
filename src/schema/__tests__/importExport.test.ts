@@ -78,8 +78,9 @@ describe('character import/export envelope', () => {
 	it('round-trips current item-linked runtime actions', () => {
 		const linkedCharacter = create5e2014Character({
 			meta: { id: 'linked-character' },
-			inventory: [{ id: 'item-1', name: 'Longsword', equipped: true }],
+
 			systemData: {
+				inventory: [{ category: 'weapons', id: 'item-1', name: 'Longsword', equipped: true }],
 				runtimeActions: [
 					{
 						id: 'action-1',
@@ -113,9 +114,10 @@ describe('character import/export envelope', () => {
 	it('round-trips stable proficiency identities and collection priority state', () => {
 		const prioritized = create5e2014Character({
 			meta: { id: 'prioritized-character' },
-			features: [{ id: 'feature-alert', name: 'Alert' }],
-			inventory: [{ id: 'item-rope', name: 'Rope' }],
+
 			systemData: {
+				features: [{ id: 'feature-alert', name: 'Alert' }],
+				inventory: [{ category: 'other', id: 'item-rope', name: 'Rope' }],
 				race: {
 					name: 'Elf',
 					traits: [{ featureId: 'trait-darkvision', name: 'Darkvision' }]
@@ -216,11 +218,14 @@ describe('character import/export envelope', () => {
 				id: 'new-imported-character'
 			}
 		});
-		const envelope = createCharacterExportEnvelope([
-			duplicateExistingCharacter,
-			newImportedCharacter,
-			duplicateInsideImport
-		]);
+		const envelope = {
+			...createCharacterExportEnvelope([]),
+			characters: [duplicateExistingCharacter, newImportedCharacter, duplicateInsideImport]
+		};
+		expect(safeParseCharacterExportEnvelope(envelope).success).toBe(true);
+		expect(() => applyCharacterImport([currentCharacter], envelope, 'replace')).toThrow(
+			'Duplicate character IDs'
+		);
 
 		const result = applyCharacterImport([currentCharacter], envelope, 'merge-new');
 

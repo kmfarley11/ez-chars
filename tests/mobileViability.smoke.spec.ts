@@ -31,7 +31,7 @@ test.afterEach(({ page }) => {
 async function openSeededCharacter(page: Page) {
 	await page.goto('/');
 	const openButton = page
-		.getByRole('button', { name: `Open ${e2eCharacter.identity.name}` })
+		.getByRole('button', { name: `Open ${e2eCharacter.systemData.identity.name}` })
 		.first();
 	await expect(openButton).toBeVisible();
 	await openButton.click();
@@ -42,7 +42,7 @@ async function openSeededCharacter(page: Page) {
 async function openSaturatedCharacter(page: Page) {
 	await page.goto('/');
 	const openButton = page
-		.getByRole('button', { name: `Open ${saturatedCharacter5e2014.identity.name}` })
+		.getByRole('button', { name: `Open ${saturatedCharacter5e2014.systemData.identity.name}` })
 		.first();
 	await expect(openButton).toBeVisible();
 	await openButton.click();
@@ -61,15 +61,15 @@ test.describe('Responsive character list', () => {
 			await expect(desktopTable).toBeHidden();
 
 			const card = cardList.getByRole('article', {
-				name: `Character card for ${e2eCharacter.identity.name}`
+				name: `Character card for ${e2eCharacter.systemData.identity.name}`
 			});
 			await expect(card).toBeVisible();
-			await expect(card.getByText(e2eCharacter.identity.name)).toBeVisible();
+			await expect(card.getByText(e2eCharacter.systemData.identity.name)).toBeVisible();
 			await expect(card.getByText('D&D 5e (2014)')).toBeVisible();
 
 			// Test primary action navigates to sheet
 			const openButton = card.getByRole('button', {
-				name: `Open ${e2eCharacter.identity.name}`
+				name: `Open ${e2eCharacter.systemData.identity.name}`
 			});
 			await openButton.click();
 			await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-character/);
@@ -96,13 +96,13 @@ test.describe('Responsive character list', () => {
 			await expect(cardList).toBeVisible();
 
 			const card = cardList.getByRole('article', {
-				name: `Character card for ${e2eCharacter.identity.name}`
+				name: `Character card for ${e2eCharacter.systemData.identity.name}`
 			});
 			await expect(card).toBeVisible();
 
 			// Test delete confirmation dialog and focus restoration on mobile card
 			const deleteButton = card.getByRole('button', {
-				name: `Delete ${e2eCharacter.identity.name}`
+				name: `Delete ${e2eCharacter.systemData.identity.name}`
 			});
 			await deleteButton.click();
 
@@ -212,18 +212,17 @@ test.describe('Mobile typography and zoom', () => {
 	test('enforces >= 16px mobile typography, permits pinch zoom, and preserves the emulated inline-focus viewport', async ({
 		page
 	}, testInfo) => {
-		// Viewport meta verification
-		await page.goto('/');
-		const viewportMeta = await page.locator('meta[name="viewport"]').getAttribute('content');
-		expect(viewportMeta).toContain('width=device-width');
-		expect(viewportMeta).not.toMatch(/user-scalable\s*=\s*no/i);
-		expect(viewportMeta).not.toMatch(/maximum-scale\s*=\s*1(\.0)?\b/i);
-
 		if (testInfo.project.name !== 'Mobile Chrome') {
 			await page.setViewportSize({ width: 375, height: 667 });
 		}
 
 		await openSeededCharacter(page);
+
+		// Inspect the active sheet, without a redundant home reload that can abort hydration.
+		const viewportMeta = await page.locator('meta[name="viewport"]').getAttribute('content');
+		expect(viewportMeta).toContain('width=device-width');
+		expect(viewportMeta).not.toMatch(/user-scalable\s*=\s*no/i);
+		expect(viewportMeta).not.toMatch(/maximum-scale\s*=\s*1(\.0)?\b/i);
 
 		// 1. Primitive field input (Current HP)
 		const editCurrentHp = page.getByRole('button', { name: 'Edit Current HP' });
@@ -276,7 +275,7 @@ test.describe('Mobile typography and zoom', () => {
 		});
 		await identityDetail.click();
 		const editDialog = page.getByRole('dialog', {
-			name: 'Character identity and classes',
+			name: 'Character identity',
 			exact: true
 		});
 		await editDialog.getByRole('button', { name: 'Edit Name', exact: true }).click();

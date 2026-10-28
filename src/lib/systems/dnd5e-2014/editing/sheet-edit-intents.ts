@@ -9,11 +9,11 @@ import {
 	type Annotation,
 	type CharacterDocument5e2014,
 	type CollectionPriorityKind5e2014,
-	type Feature,
+	type Feature5e2014 as Feature,
 	type FeatureRef,
-	type Item,
+	type Item5e2014 as Item,
 	type NamedProficiency,
-	type NoteBlock,
+	type NoteBlock5e2014 as NoteBlock,
 	type ProficiencySourceKind,
 	type RuntimeAction,
 	type SpellRef
@@ -32,7 +32,6 @@ import {
 	getInventoryGroupForItem,
 	inventoryCurrencyMetadata,
 	roleplayFieldMetadata,
-	withInventoryGroupTags,
 	type CurrencyDenomination,
 	type InventoryGroup,
 	type RoleplayFieldKey,
@@ -569,7 +568,7 @@ export const reduce5eSheetEditIntents = (
 					};
 				}
 				const currentGeneralById = new Map(
-					candidate.features.map((feature) => [feature.id, feature])
+					candidate.systemData.features.map((feature) => [feature.id, feature])
 				);
 				const nextFeaturesByClass = new Map<number, Array<FeatureRef>>();
 				const nextGeneralFeatures: Array<Feature> = [];
@@ -608,7 +607,7 @@ export const reduce5eSheetEditIntents = (
 					});
 					nextFeaturesByClass.set(entry.classIndex, nextEntries);
 				}
-				candidate.features = nextGeneralFeatures;
+				candidate.systemData.features = nextGeneralFeatures;
 				candidate.systemData.classes = candidate.systemData.classes.map((entry, classIndex) => {
 					const nextFeatures = nextFeaturesByClass.get(classIndex) ?? [];
 					if (nextFeatures.length === 0 && entry.features === undefined) return entry;
@@ -644,7 +643,7 @@ export const reduce5eSheetEditIntents = (
 					};
 				} else if (nextTraits.length > 0) {
 					candidate.systemData.race = {
-						name: candidate.identity.ancestryLineage?.trim() || 'Ancestry',
+						name: candidate.systemData.identity.ancestryLineage?.trim() || 'Ancestry',
 						traits: nextTraits
 					};
 				}
@@ -654,8 +653,12 @@ export const reduce5eSheetEditIntents = (
 			}
 
 			case 'replace-inventory-group': {
-				const currentInventory = candidate.inventory;
-				const currentItemsById = new Map(currentInventory.map((item) => [item.id, item]));
+				const currentInventory = candidate.systemData.inventory;
+				// A paired remove/add can reclassify a record within this transaction.
+				// Retain its original metadata even after an earlier intent removed its old group.
+				const currentItemsById = new Map(
+					[...character.systemData.inventory, ...currentInventory].map((item) => [item.id, item])
+				);
 				const nextItems = intent.items.flatMap((entry) => {
 					const name = entry.name.trim();
 					if (!name) return [];
@@ -666,7 +669,7 @@ export const reduce5eSheetEditIntents = (
 							...currentItem,
 							id,
 							name,
-							tags: withInventoryGroupTags(currentItem?.tags, intent.group),
+							category: intent.group,
 							equipped: entry.equipped ?? intent.group !== 'other',
 							...(entry.quantity !== undefined ? { quantity: entry.quantity } : {}),
 							...(entry.weight !== undefined ? { weight: entry.weight } : {}),
@@ -682,7 +685,7 @@ export const reduce5eSheetEditIntents = (
 					),
 					other: currentInventory.filter((item) => getInventoryGroupForItem(item) === 'other')
 				};
-				candidate.inventory = [
+				candidate.systemData.inventory = [
 					...(intent.group === 'weapons' ? nextItems : stableGroups.weapons),
 					...(intent.group === 'armorShields' ? nextItems : stableGroups.armorShields),
 					...(intent.group === 'other' ? nextItems : stableGroups.other)
@@ -693,8 +696,10 @@ export const reduce5eSheetEditIntents = (
 			}
 
 			case 'update-inventory-item': {
-				const itemIndex = candidate.inventory.findIndex((item) => item.id === intent.itemId);
-				const currentItem = candidate.inventory[itemIndex];
+				const itemIndex = candidate.systemData.inventory.findIndex(
+					(item) => item.id === intent.itemId
+				);
+				const currentItem = candidate.systemData.inventory[itemIndex];
 				if (!currentItem || getInventoryGroupForItem(currentItem) !== intent.group) {
 					return {
 						ok: false,
@@ -718,10 +723,10 @@ export const reduce5eSheetEditIntents = (
 						]
 					};
 				}
-				candidate.inventory[itemIndex] = {
+				candidate.systemData.inventory[itemIndex] = {
 					...currentItem,
 					name,
-					tags: withInventoryGroupTags(currentItem.tags, intent.group),
+					category: intent.group,
 					...(intent.item.notes !== undefined ? { notes: intent.item.notes } : {}),
 					...(intent.item.quantity !== undefined ? { quantity: intent.item.quantity } : {}),
 					...(intent.item.weight !== undefined ? { weight: intent.item.weight } : {}),
@@ -732,8 +737,10 @@ export const reduce5eSheetEditIntents = (
 			}
 
 			case 'replace-inventory-item-annotations': {
-				const itemIndex = candidate.inventory.findIndex((item) => item.id === intent.itemId);
-				const currentItem = candidate.inventory[itemIndex];
+				const itemIndex = candidate.systemData.inventory.findIndex(
+					(item) => item.id === intent.itemId
+				);
+				const currentItem = candidate.systemData.inventory[itemIndex];
 				if (!currentItem || getInventoryGroupForItem(currentItem) !== intent.group) {
 					return {
 						ok: false,
@@ -746,7 +753,7 @@ export const reduce5eSheetEditIntents = (
 					};
 				}
 				const annotations = normalizeDirectAnnotations(intent.annotations, createId);
-				candidate.inventory[itemIndex] = {
+				candidate.systemData.inventory[itemIndex] = {
 					...currentItem,
 					...(annotations.length > 0 ? { annotations } : { annotations: undefined })
 				};
@@ -768,7 +775,7 @@ export const reduce5eSheetEditIntents = (
 			}
 
 			case 'replace-organizational-notes': {
-				const currentNotes = candidate.notes;
+				const currentNotes = candidate.systemData.notes;
 				const currentNotesById = new Map(currentNotes.map((note) => [note.id, note]));
 				const scratchpadNotes = intent.scratchpad
 					? intent.scratchpad.flatMap((entry) => {
@@ -795,7 +802,7 @@ export const reduce5eSheetEditIntents = (
 					if (!body.trim()) delete nextRoleplay[key];
 					else nextRoleplay[key] = { ...currentField, body };
 				}
-				candidate.notes = scratchpadNotes;
+				candidate.systemData.notes = scratchpadNotes;
 				candidate.systemData.roleplay = nextRoleplay;
 				break;
 			}

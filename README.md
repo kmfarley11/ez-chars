@@ -6,20 +6,20 @@
 
 This repository is intentionally scoped to a narrow MVP:
 
-- one system: D&D 5e 2014
+- D&D 5e 2014 and the owner-approved authored 2024 sheet (BL-070 completed)
 - editable, mobile-friendly character sheets
 - local-first persistence
 - JSON import/export for backup
 - optional annotations and source references
 
-Everything else is long-term vision, not the immediate build target. For roadmap and future-scope notes, see [docs/vision/index.md](docs/vision/index.md).
+Use [active goals](docs/active-goals.md) for the approved playtest boundary and [the backlog](docs/backlog.md) for sequencing; future-system intent is not a claim of implemented support.
 
 ## Current State
 
-- the versioned 5e 2014 schema hydrates supported legacy data into one canonical model, and reusable grid editing primitives exist
+- strict 2014/2024 v0 schemas validate edition-owned data in a common lifecycle envelope; earlier incompatible experiments and unknown versions are rejected rather than migrated
 - the home page lists locally stored or seeded characters
-- the 5e sheet route exists, but only part of the full sheet is surfaced in the UI
-- validated localStorage persistence, JSON import/export, migration/storage contract tests, and browser smoke coverage exist; CI remains deferred
+- `/charsheets/5e` and `/charsheets/5e2024` mount production compositions also used by isolated Storybook Pages; shared controls live in `src/lib/ui`
+- validated localStorage persistence, write-protected raw-data recovery, mixed-system JSON backup/restore, contract tests, and browser smoke coverage exist; CI remains deferred
 
 ## Docs
 
@@ -75,13 +75,15 @@ When executing complex architectural changes or creating new OpenSpec proposals,
 
 ## Development
 
-You will need Git LFS installed to fetch the PDF assets used by the repo.
+Use Node **22.17 or newer** (a supported LTS release is recommended). Node 20 cannot run the current SvelteKit 3 toolchain. You will also need Git LFS installed to fetch the PDF assets used by the repo.
 
 ```bash
-npm i  # prefer Node 20
+npm ci
 ```
 
 Run the dev server:
+
+SvelteKit configuration lives in `sveltekit.config.js`, passed to the Vite plugin by both application and test configs. Source aliases are explicit in Vite and `jsconfig.json`; there is no legacy `svelte.config.js`.
 
 ```bash
 npm run dev

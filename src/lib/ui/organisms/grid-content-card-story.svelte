@@ -3,10 +3,13 @@
 	import type { JSONPatchDocument } from 'immutable-json-patch';
 	import type { GridContentData } from '$lib/utils/gridContentTypes';
 
-	let { withData = true, hideActions = false } = $props<{
+	let {
+		withData = true,
+		hideActions = false
+	}: {
 		withData?: boolean;
 		hideActions?: boolean;
-	}>();
+	} = $props();
 
 	let mockData: GridContentData = $derived(
 		(withData

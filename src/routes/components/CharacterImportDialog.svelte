@@ -37,6 +37,7 @@
 	{:else if state === 'error'}
 		<p class="text-red-700 dark:text-red-300" role="alert">{errorMessage}</p>
 	{:else if state === 'ready'}
+		{#if errorMessage}<p role="alert" class="theme-error mb-4">{errorMessage}</p>{/if}
 		<p class="mb-4">
 			Ready to import {characterCount} character{characterCount === 1 ? '' : 's'}. Choose how to
 			apply it:

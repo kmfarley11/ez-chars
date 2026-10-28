@@ -6,6 +6,7 @@
 	interface Props {
 		children?: Snippet;
 		type?: 'button' | 'submit' | 'reset';
+		form?: string;
 		// eslint-disable-next-line no-unused-vars
 		onclick?: (event: MouseEvent) => void;
 		shadingVariant?: ButtonShadingVariant;
@@ -30,6 +31,7 @@
 	let {
 		children = undefined,
 		type = 'button',
+		form = undefined,
 		onclick = undefined,
 		shadingVariant = 'light',
 		size = 'md',
@@ -70,6 +72,7 @@
 	bind:this={buttonEl}
 	{id}
 	{type}
+	{form}
 	class={twMerge(
 		'touch-target btn inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border font-semibold leading-none shadow-sm ring-1 ring-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)] disabled:cursor-not-allowed disabled:opacity-60',
 		colors,

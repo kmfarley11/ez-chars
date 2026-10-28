@@ -10,6 +10,7 @@
 	let capacity = $state(8);
 	let range = $state(12);
 	let ready = $state(true);
+	let access = $state('Shared');
 	let notes = $state.raw<Array<Annotation>>([]);
 	let rejectSaves = $state(false);
 	const rejected = () => ({
@@ -19,6 +20,21 @@
 	const model: SmallEditModel = {
 		title: 'Supply details',
 		fields: [
+			{
+				key: 'access',
+				entryKey: '/access',
+				label: 'Access',
+				kind: 'select',
+				options: ['Shared', 'Reserved', 'Private'],
+				read: () => access,
+				commit: (_before, after) => {
+					if (rejectSaves) return rejected();
+					if (typeof after !== 'string' || !['Shared', 'Reserved', 'Private'].includes(after))
+						return { ok: false, message: 'Choose an access level.' };
+					access = after;
+					return { ok: true };
+				}
+			},
 			{
 				key: 'name',
 				entryKey: '/name',
@@ -118,6 +134,12 @@
 		]
 	};
 	const data: GridContentData = $derived({
+		access: {
+			fieldName: 'Access',
+			value: access,
+			bindPath: ['access'],
+			displayStatus: { mark: access.slice(0, 1), label: access }
+		},
 		name: {
 			fieldName: 'Name',
 			value: name,
@@ -151,8 +173,15 @@
 		},
 		ready: {
 			fieldName: 'Ready',
-			value: ready,
-			bindPath: ['ready']
+			value: {
+				status: { fieldName: 'Ready', label: 'Ready', value: ready, bindPath: ['ready'] },
+				quantity: {
+					fieldName: 'Quantity',
+					label: 'Quantity',
+					value: quantity,
+					bindPath: ['quantity']
+				}
+			}
 		},
 		remaining: {
 			fieldName: 'Remaining capacity',
@@ -177,6 +206,11 @@
 			</p>
 			<ul class="list-disc space-y-1 pl-5">
 				<li>
+					Access demonstrates a neutral compact status with a native select in Detail: S = Shared, R
+					= Reserved, P = Private. Open Access, change it, Save or Cancel; no tooltip is required to
+					interpret the status.
+				</li>
+				<li>
 					Open Name by its label. Save a new name, then edit Quantity and Cancel. Only the name
 					should change.
 				</li>
@@ -187,7 +221,8 @@
 				<li>
 					Load places Quantity and Capacity on one line, but each label targets an independently
 					saved field. Range demonstrates optional italicized context after a value. Ready shows a
-					read-only checkbox; click its label to edit the boolean in Detail.
+					read-only checkbox paired with a number; click either leaf label to edit it independently
+					in Detail.
 				</li>
 				<li>
 					Add a note to Name and cancel a different note edit. Start an edit, then switch fields or

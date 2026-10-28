@@ -7,9 +7,9 @@ describe('CharacterList component markup contract', () => {
 	it('renders both semantic desktop table and semantic mobile card list with human-readable text', () => {
 		const unnamedChar = {
 			meta: { id: 'char-unnamed-001', createdAt: '2026-01-01', updatedAt: '2026-01-01' },
-			identity: {},
+
 			system: { id: 'dnd5e-2014' },
-			systemData: { classes: [] }
+			systemData: { identity: {}, classes: [] }
 		} as any;
 
 		const { body } = render(CharacterList, {

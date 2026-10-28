@@ -7,9 +7,9 @@
 		dnd5e2014SheetLandmarks,
 		type Dnd5e2014SheetLandmark
 	} from '$lib/systems/dnd5e-2014/sheet-landmarks';
-	import NavigablePanel from '$lib/systems/dnd5e-2014/components/navigable-panel.svelte';
-	import NavigableRegion from '$lib/systems/dnd5e-2014/components/navigable-region.svelte';
-	import SheetNavigation from '$lib/systems/dnd5e-2014/components/sheet-navigation.svelte';
+	import NavigablePanel from '$lib/ui/molecules/navigable-panel.svelte';
+	import NavigableRegion from '$lib/ui/molecules/navigable-region.svelte';
+	import SheetNavigation from '$lib/ui/organisms/sheet-navigation.svelte';
 
 	interface Props {
 		compactPresentation?: 'rail' | 'drawer';
@@ -53,7 +53,7 @@
 		</span>
 	</header>
 	<div class="flex items-start gap-2 py-2 pr-2">
-		<SheetNavigation {compactPresentation} {wideBreakpoint} />
+		<SheetNavigation landmarks={dnd5e2014SheetLandmarks} {compactPresentation} {wideBreakpoint} />
 		<main
 			bind:clientWidth={sheetWorkspaceWidth}
 			class="flex min-w-0 flex-1 flex-col gap-3"

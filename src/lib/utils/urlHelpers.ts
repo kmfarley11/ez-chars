@@ -1,8 +1,8 @@
-import { browser } from '$app/environment';
-import { asset } from '$app/paths';
+import { browser } from '$app/env';
+import { resolveAssetUrl } from '$lib/resources/asset-url';
 
 export const FULL_2014_SRD_PATH = '/docs/ext/5e2014/SRD_CC_v5.1.pdf';
-export const FULL_2014_SRD_HREF = asset(FULL_2014_SRD_PATH);
+export const FULL_2014_SRD_HREF = resolveAssetUrl(FULL_2014_SRD_PATH);
 export const FULL_2014_SRD_URL = browser
 	? new URL(FULL_2014_SRD_HREF, window.location.origin).href
 	: FULL_2014_SRD_HREF;

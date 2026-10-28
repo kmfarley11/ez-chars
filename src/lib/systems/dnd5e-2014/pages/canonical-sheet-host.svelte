@@ -3,10 +3,12 @@
 	import StorySurface from '$lib/storybook/story-surface.svelte';
 	import BaseButton from '$lib/ui/atoms/base-button.svelte';
 	import type { CharacterDocument5e2014 } from '../../../../schema';
-	import type { SheetNavigationHost } from './sheet-navigation-host';
-	import { createCanonicalSheetState } from './canonical-sheet-state';
+	import type { SheetNavigationHost } from '$lib/navigation/sheet-navigation-host';
+	import { createCanonicalSheetState } from '$lib/storybook/canonical-sheet-state';
 	let { fixture }: { fixture: CharacterDocument5e2014 } = $props();
-	const sandbox = $derived(createCanonicalSheetState($state.snapshot(fixture)));
+	const sandbox = $derived(
+		createCanonicalSheetState<CharacterDocument5e2014>($state.snapshot(fixture))
+	);
 	let revision = $state(0);
 	let generation = $state(0);
 	let rejectSaves = $state(false);
@@ -66,9 +68,9 @@
 	>
 		<h1 class="font-bold">Production-backed 2014 character sheet</h1>
 		<p>
-			This is the app's actual sheet composition with an isolated copy of {fixture.identity.name}.
-			No saved characters or localStorage are used. App navigation chrome and storage recovery are
-			not included.
+			This is the app's actual sheet composition with an isolated copy of {fixture.systemData
+				.identity.name}. No saved characters or localStorage are used. App navigation chrome and
+			storage recovery are not included.
 		</p>
 		<p>
 			Section jumps and Rules work inside this preview. Browser Back/Forward and persistence must be

@@ -11,11 +11,11 @@
 		kind = 'number',
 		withAnnotation = false,
 		editAffordance = 'persistent'
-	} = $props<{
+	}: {
 		kind?: 'number' | 'text';
 		withAnnotation?: boolean;
 		editAffordance?: 'persistent' | 'hover';
-	}>();
+	} = $props();
 
 	let field = $state<GridContentField>({ fieldName: 'Score', value: 12 });
 	let lastPatch = $state<JSONPatchDocument | undefined>(undefined);

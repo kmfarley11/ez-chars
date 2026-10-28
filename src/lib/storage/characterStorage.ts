@@ -1,4 +1,4 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import { z } from 'zod';
 import {
 	safeParseStoredCharacterDocuments,
@@ -23,6 +23,9 @@ type StoredCharactersEnvelope = {
 
 export type StoredCharactersLoadIssue = {
 	kind: 'invalid_or_outdated';
+	// Retain the exact local bytes for recovery, never a parsed or normalized substitute.
+	// null means storage could not be read, not that it is safe to overwrite.
+	originalData: string | null;
 };
 
 export type LoadStoredCharactersResult = {
@@ -60,16 +63,17 @@ export const loadStoredCharacters = (
 ): LoadStoredCharactersResult => {
 	if (!browser) return { characters: fallback, issue: null };
 
+	let raw: string | null = null;
 	try {
-		const raw = localStorage.getItem(CHARS_STORAGE_KEY);
-		if (!raw) return { characters: fallback, issue: null };
+		raw = localStorage.getItem(CHARS_STORAGE_KEY);
+		if (raw === null) return { characters: fallback, issue: null };
 
 		const parsed = JSON.parse(raw);
 		const migratedEnvelope = migrateStoredCharactersEnvelope(parsed);
 		if (!migratedEnvelope) {
 			return {
 				characters: fallback,
-				issue: { kind: 'invalid_or_outdated' }
+				issue: { kind: 'invalid_or_outdated', originalData: raw }
 			};
 		}
 
@@ -77,7 +81,7 @@ export const loadStoredCharacters = (
 		if (!validated.success) {
 			return {
 				characters: fallback,
-				issue: { kind: 'invalid_or_outdated' }
+				issue: { kind: 'invalid_or_outdated', originalData: raw }
 			};
 		}
 
@@ -85,13 +89,13 @@ export const loadStoredCharacters = (
 	} catch {
 		return {
 			characters: fallback,
-			issue: { kind: 'invalid_or_outdated' }
+			issue: { kind: 'invalid_or_outdated', originalData: raw }
 		};
 	}
 };
 
-export const saveStoredCharacters = (characters: CharacterWithSystemData[]): void => {
-	if (!browser) return;
+export const saveStoredCharacters = (characters: CharacterWithSystemData[]): boolean => {
+	if (!browser) return false;
 
 	try {
 		const serializedCharacters = serializeStoredCharacterDocuments(characters);
@@ -101,17 +105,9 @@ export const saveStoredCharacters = (characters: CharacterWithSystemData[]): voi
 		};
 
 		localStorage.setItem(CHARS_STORAGE_KEY, JSON.stringify(envelope));
+		return true;
 	} catch {
-		// Intentionally ignore storage write failures.
-	}
-};
-
-export const clearStoredCharacters = (): void => {
-	if (!browser) return;
-
-	try {
-		localStorage.removeItem(CHARS_STORAGE_KEY);
-	} catch {
-		// Intentionally ignore storage removal failures.
+		// The caller must not claim that a recovery reset succeeded after a failed write.
+		return false;
 	}
 };

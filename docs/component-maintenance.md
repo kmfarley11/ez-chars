@@ -4,17 +4,17 @@ Use this map to find an existing component before creating another one. The [com
 
 ## Source and Catalog Map
 
-| Responsibility                                   | Source                                                                        | Storybook                                   |
-| ------------------------------------------------ | ----------------------------------------------------------------------------- | ------------------------------------------- |
-| Shared controls, focused groupings, workflows    | [ui](../src/lib/ui/README.md): `atoms/`, `molecules/`, `organisms/`           | Design System / Atoms, Molecules, Organisms |
-| Game-specific presentation, projection and edits | [systems](../src/lib/systems/README.md): `dnd5e-2014/components/`, `editing/` | Systems / D&D 2014                          |
-| Actual sheet composition with canonical data     | `src/lib/systems/dnd5e-2014/pages/`                                           | Systems / D&D 2014 / Character Sheet        |
-| App navigation, list, import/export              | `src/lib/components/`, `src/routes/components/`                               | Application                                 |
-| Explicitly deferred experiments                  | `src/lib/storybook/concepts/`                                                 | Concepts                                    |
+| Responsibility                                   | Source                                                                                                         | Storybook                                        |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Shared controls, focused groupings, workflows    | [ui](../src/lib/ui/README.md): `atoms/`, `molecules/`, `organisms/`                                            | Design System / Atoms, Molecules, Organisms      |
+| Game-specific presentation, projection and edits | [systems](../src/lib/systems/README.md): each edition's `components/`, `editing/`, projection/metadata modules | Systems / D&D 2014 or D&D 2024                   |
+| Actual sheet composition with canonical data     | `src/lib/systems/dnd5e-2014/pages/`, `src/lib/systems/dnd5e-2024/pages/`                                       | Systems / D&D 2014 or D&D 2024 / Character Sheet |
+| App navigation, list, import/export              | `src/lib/components/`, `src/routes/components/`                                                                | Application                                      |
+| Explicitly deferred experiments                  | `src/lib/storybook/concepts/`                                                                                  | Concepts                                         |
 
 Stories and wrappers live beside their component; contract tests live in nearby `__tests__/` directories. For example, start with `ui/atoms/icon-button.svelte` and `icon-button.stories.ts`, or `ui/organisms/read-first-detail.stories.ts` for a composed independent-edit workflow. The responsive CharacterList story exercises the shared table presentation in its actual application owner.
 
-Bryltin, Zindra and Saturated Pages mount the **same** `character-sheet.svelte` as the app route, with isolated cloned data, local navigation and reset. They are authoritative composition examples, not persistence or browser-history demonstrations. Their visible Canvas introduction explains rejected-write coverage and host limits. System section/error stories retain smaller useful boundaries. Generic organisms instead use small schema-light data to demonstrate reusable behavior, not a parallel 5e renderer.
+The 2014 Bryltin/Zindra/Saturated and 2024 Representative/Sparse/Saturated Pages mount their edition's **same** `character-sheet.svelte` as the app route, with isolated cloned data, local navigation and reset. They are authoritative composition examples, not persistence or browser-history demonstrations. Their visible Canvas introduction explains rejected-write coverage and host limits. System section/error stories retain smaller useful boundaries. Generic organisms instead use small schema-light data to demonstrate reusable behavior, not a parallel 5e renderer.
 
 ## Ownership and Dependencies
 
@@ -48,6 +48,9 @@ Shared semantic table, row and cell presentation does not own columns, responsiv
 - First inspect the closest shared component and its stories. Reuse it when its contract fits; extend a focused variant when the requirement is genuinely shared; create a component only for a distinct responsibility. Explain any deliberate bypass.
 - Classify by responsibility, not size: atoms are primitives, molecules perform one focused UI job, organisms coordinate a region/workflow. System-owned organisms need not become generic. Pages are concrete compositions; speculative templates remain deferred.
 - Keep optional value context, paired fields, independent saves, notes, pinning, density and error behavior in their existing shared boundaries rather than reproducing them in a page.
+- Use GridContentList's `presentation="compact"` for borderless wrapping summaries when full row descriptions belong in Detail; the default `cards` presentation remains available. Both retain the same retrieval and focus contracts; omit the pin callback for deliberately unpinnable summaries such as Classes. Compare them through the existing Collections story Controls rather than duplicating hosts. FieldGroupView supports boolean leaves through ReadonlyCheckbox and compact paired indicators through `displayLayout: 'indicators'`: checked means true; false and unset both look empty, without changing the underlying optional value. Tooltips/accessibility names and Detail retain full labels and distinguish unset data. Quick Reference's reference panel deliberately uses inline label/value presentation while its live panel retains edit-first controls.
+- For one condensed state, supply FieldGroupView's `displayStatus: { mark, label }`; the neutral StatusIndicator atom renders it without pretending to be a checkbox or cycling input. Keep rules/aggregation and multi-value writes in the domain adapter; reuse the existing select editor in Detail. The generic Tier 2 story's Access example covers this variant, while 2024 Pages cover its proficiency adapter. Provide a visible key or text explanation for abbreviated marks; native title attributes are supplementary and static render assertions do not prove hover behavior.
+- For linked records, reuse `SmallEditModel.source`, the `DetailSource` molecule and `SmallEditDialog`'s guarded source/Back navigation. Supply live labels, a resolved target model and an optional confirmed refresh from the system adapter. Do not put source-kind switches, game rules, identity resolution or field-ownership decisions in shared UI. The two edition Pages provide integrated source-flow sandboxes; do not duplicate their mutation logic in stories.
 
 ## Contribution Checklist
 

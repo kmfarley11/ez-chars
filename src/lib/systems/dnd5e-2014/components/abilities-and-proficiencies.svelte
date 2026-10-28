@@ -63,6 +63,7 @@
 				hideActions={true}
 				data={proficiencyBonusData}
 			/>
+			<p class="theme-text-muted text-center text-xs">P: Proficient · E: Expertise</p>
 		</PanelSurface>
 	</div>
 

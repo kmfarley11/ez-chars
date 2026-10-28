@@ -5,6 +5,8 @@
 - Status: Approved
 - Author: Antigravity, Codex, User
 - Date: 2026-07-19
+- Last reviewed: 2026-10-24
+- Latest refinement: BL-070 shares source Detail navigation/refresh and extends 2024 snapshots to authored items, spells and feature-family records; resolution and field ownership remain edition-owned.
 
 ## Context & Problem Statement
 
@@ -46,12 +48,20 @@ Leave core items as flat, generic text and tags. Instead of embedding templates 
 
 **Chosen Option: Option 3 (The Logic Transformer)**
 
+**Operative refinements:** The July 25–26 decisions replace inferred suggestions with explicit local source selection. BL-070 places gameplay records in system-owned payloads rather than a universal core item model; the snapshot/explicit-refresh contract remains. The historical options below are not instructions to infer actions from names or add external providers.
+
 We will implement the Logic Transformer approach. The `runtimeActionSchema` will be updated to include an atomic source reference, but the core items will remain untouched.
 
 **Rationale:**
 This approach balances the immediate need for a lightweight, text-first user experience with the long-term vision of multi-system architecture. It avoids building a complex, pre-authored database of items for the MVP, while leaving a clean architectural boundary where an external API can provide rich data later.
 
 ## Data Architecture Decisions
+
+### 2026-10-23 — BL-070 bounded 2024 source assistance
+
+The owner selected editable source snapshots rather than manual-only delivery or live derivation. The 2024 proof accepts inventory sources; authored spells and features/feats join when their regions land. Each system owns eligibility, validation and source projection. The common layer supplies only evidenced UI interactions, not a universal action API.
+
+An atomic kind/record-ID link resolves within the same character and is checked on creation, refresh and I/O. Copy name and description into a reviewable draft; timing and independent notes/pins are player-owned. Explicit refresh warns before replacing copied text (including player changes and clearing an absent source description). Source deletion detaches all affected actions in the same validated update and retains their snapshots. Multiple actions may share a source. There is no automatic propagation, rules inference, external lookup or override mask; 2014's existing ownership semantics remain unchanged. Richer override behavior is trigger-deferred in docs/backlog.md.
 
 **1. Snapshot vs. Bubbling (Chosen: Snapshot + Explicit Resync)**
 Instead of complex "live bubbling" where unedited fields stay synced to the source item (which requires override tracking and convoluted reducers), accepted actions will be **editable snapshots**. The action's source link supports navigation to the source item and provides an explicit "Resync from source" UI action to overwrite the snapshot.
@@ -121,3 +131,11 @@ To ensure the Logic Transformer does not become tangled with the UI, we will int
 - The Add action dialog now searches and filters all eligible local sources or starts a custom draft, then reviews one action before commit. Source switching reseeds the draft, while ordinary back/forward navigation preserves it.
 - Linked and custom rows use the shared source-category projection to pronounce Inventory, Spell, Feature, Trait, or Custom directly in runtime metadata. Linked rows use the shared resolver for source-card navigation; resync requires confirmation and replaces only source-owned text, while name-only class/subclass features and Traits preserve action-authored notes. Removing any eligible source unlinks affected actions atomically without changing their snapshots.
 - Inventory grouping moved into a reusable 5e domain module so source projection does not depend on route-owned presentation code. This is a feature-local extraction, not a new cross-system adapter.
+
+**2026-10-24: BL-070 Shared Source Detail**
+
+Both editions use the neutral `SmallEditModel.source` contract and shared `DetailSource`/`SmallEditDialog` presentation for source name, View source, Refresh and a guarded one-dialog return path. Adapters provide live source resolution, editable target models and refresh operations; they retain all identity, eligibility, field-ownership and validation rules. 2014 resync intents and row-menu shortcuts remain. This shares interaction mechanics, not a universal action/source schema; the initial 2024 proof still supports inventory only. Back preserves the action reading position, Close dismisses, and dirty edits require a decision. Existing saved records are never linked by matching names.
+
+**2026-10-24: Approved 2024 rollout**
+
+After source-proof approval, 2024 eligibility extends to character-owned spells and authored features, traits, feats and mastery entries. Feature-family IDs are unique across those collections. All 2024 source kinds own only Name/Description during explicit refresh; empty source description clears that owned action field. Timing, annotations, pins and the action ID remain independent. Removing a source atomically detaches linked snapshots rather than deleting actions. The 2014 source-specific ownership differences above remain unchanged. No automatic propagation, inferred mechanics or external acquisition is introduced.

@@ -174,7 +174,7 @@ describe('5e sheet edit intent reducer', () => {
 			},
 			{ id: 'tool-thieves', name: "Thieves' tools", source: { kind: 'class' } }
 		]);
-		expect(result.character.features).toEqual([
+		expect(result.character.systemData.features).toEqual([
 			expect.objectContaining({
 				id: 'general-feature',
 				name: 'Keen Mind+',
@@ -337,7 +337,7 @@ describe('5e sheet edit intent reducer', () => {
 
 	it('accepts an unequipped inventory suggestion', () => {
 		const character = createSheetEditCharacter();
-		character.inventory[0].equipped = false;
+		character.systemData.inventory[0].equipped = false;
 		const result = reduce5eSheetEditIntents(character, [
 			{
 				type: 'create-runtime-action',
@@ -373,7 +373,7 @@ describe('5e sheet edit intent reducer', () => {
 			annotations: [{ id: 'action-note', origin: 'user', kind: 'note', text: 'Reach 5 ft.' }]
 		});
 
-		delete resynced.character.inventory[0].notes;
+		delete resynced.character.systemData.inventory[0].notes;
 		const cleared = reduce5eSheetEditIntents(resynced.character, [
 			{ type: 'resync-runtime-action', actionId: 'action-1' }
 		]);
@@ -416,9 +416,9 @@ describe('5e sheet edit intent reducer', () => {
 			level: 1,
 			prepared: true
 		};
-		character.features[0].name = 'Keen Mind+';
-		character.features[0].summary = '';
-		character.features[0].description = 'Replacement description';
+		character.systemData.features[0].name = 'Keen Mind+';
+		character.systemData.features[0].summary = '';
+		character.systemData.features[0].description = 'Replacement description';
 		character.systemData.classes[0].features![0].name = 'Second Wind+';
 		character.systemData.race!.traits![0].name = 'Darkvision+';
 
@@ -506,7 +506,9 @@ describe('5e sheet edit intent reducer', () => {
 
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
-		expect(result.character.inventory).toEqual([expect.objectContaining({ id: 'gear-1' })]);
+		expect(result.character.systemData.inventory).toEqual([
+			expect.objectContaining({ id: 'gear-1' })
+		]);
 		expect(result.character.systemData.runtimeActions).toEqual(
 			originalSnapshots.map(({ source: _source, ...snapshot }) => snapshot)
 		);
@@ -514,7 +516,7 @@ describe('5e sheet edit intent reducer', () => {
 
 	it('routes duplicate-named general and class features by explicit owner and unlinks deletions', () => {
 		const character = createSheetEditCharacter();
-		character.features[0].name = 'Shared Name';
+		character.systemData.features[0].name = 'Shared Name';
 		character.systemData.classes[0].subclass = 'Champion';
 		character.systemData.classes[0].features![0].name = 'Shared Name';
 		character.systemData.runtimeActions.push(
@@ -548,7 +550,7 @@ describe('5e sheet edit intent reducer', () => {
 
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
-		expect(result.character.features).toEqual([]);
+		expect(result.character.systemData.features).toEqual([]);
 		expect(result.character.systemData.classes[0].features).toEqual([
 			expect.objectContaining({
 				featureId: 'second-wind',
@@ -624,7 +626,7 @@ describe('5e sheet edit intent reducer', () => {
 
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
-		expect(result.character.inventory).toEqual(
+		expect(result.character.systemData.inventory).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
 					id: 'weapon-1',
@@ -672,7 +674,12 @@ describe('5e sheet edit intent reducer', () => {
 		expect(moved.ok).toBe(true);
 		if (!moved.ok) return;
 		expect(moved.character.systemData.collectionPins?.inventory).toEqual(['weapon-1']);
-		expect(moved.character.inventory.find((item) => item.id === 'weapon-1')?.tags).toBeUndefined();
+		expect(
+			moved.character.systemData.inventory.find((item) => item.id === 'weapon-1')?.category
+		).toBe('other');
+		expect(
+			moved.character.systemData.inventory.find((item) => item.id === 'weapon-1')?.tags
+		).toEqual(character.systemData.inventory[0].tags);
 		expect(
 			moved.character.systemData.runtimeActions.find((action) => action.id === 'action-1')?.source
 		).toEqual({ kind: 'item', id: 'weapon-1' });
@@ -713,7 +720,7 @@ describe('5e sheet edit intent reducer', () => {
 
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
-		expect(result.character.notes).toEqual(
+		expect(result.character.systemData.notes).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({ id: 'scratch-1', body: 'New scratch' }),
 				expect.objectContaining({ id: 'new-note', body: 'Met a dragon' })
@@ -744,13 +751,13 @@ describe('5e sheet edit intent reducer', () => {
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
 		expect(result.character.systemData.runtimeActions).toEqual([]);
-		expect(result.character.inventory).toEqual([
+		expect(result.character.systemData.inventory).toEqual([
 			expect.objectContaining({ id: 'weapon-1' }),
 			expect.objectContaining({ id: 'gear-1' })
 		]);
 		expect(result.character.systemData.currency).toEqual({});
 		expect(result.character.systemData.roleplay).toEqual({});
-		expect(result.character.notes).toEqual([]);
+		expect(result.character.systemData.notes).toEqual([]);
 	});
 
 	it('updates proficiency provenance without creating ancestry source records', () => {
@@ -904,7 +911,10 @@ describe('5e sheet edit intent reducer', () => {
 		const character = createSheetEditCharacter();
 		const invalidCharacter = {
 			...character,
-			identity: { ...character.identity, name: '' }
+			systemData: {
+				...character.systemData,
+				identity: { ...character.systemData.identity, name: '' }
+			}
 		};
 		const result = reduce5eSheetEditIntents(invalidCharacter, []);
 

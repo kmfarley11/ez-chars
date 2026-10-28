@@ -5,7 +5,7 @@ import { projectRuntimeActionRows } from '$lib/systems/dnd5e-2014/runtime-action
 describe('runtime action row projection', () => {
 	it('projects playable summaries, authored notes, and resolved item sources', () => {
 		const character = create5e2014Character({
-			inventory: [{ id: 'longsword-item', name: 'Longsword' }]
+			inventory: [{ category: 'weapons', id: 'longsword-item', name: 'Longsword' }]
 		});
 		expect(
 			projectRuntimeActionRows(
@@ -69,7 +69,7 @@ describe('runtime action row projection', () => {
 	it('projects one durable source-category label for every linked source kind', () => {
 		const character = create5e2014Character({
 			features: [{ id: 'feature-1', name: 'Second Wind' }],
-			inventory: [{ id: 'item-1', name: 'Longsword' }],
+			inventory: [{ category: 'weapons', id: 'item-1', name: 'Longsword' }],
 			systemData: {
 				race: {
 					name: 'Elf',

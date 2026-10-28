@@ -415,7 +415,7 @@ export const getLabeledDisplayParts = (field: GridContentField): DisplayPart[] |
 			label: entry.label,
 			field: entry
 		}))
-		.filter((entry) => entry.value.length > 0);
+		.filter((entry) => entry.value.length > 0 || entry.field.displayAs === 'checkbox');
 
 	return parts.some((entry) => entry.label) ? parts : undefined;
 };

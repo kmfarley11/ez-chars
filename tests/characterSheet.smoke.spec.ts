@@ -32,7 +32,7 @@ test.afterEach(({ page }) => {
 async function openSeededCharacter(page: Page) {
 	await page.goto('/');
 	await page
-		.getByRole('button', { name: `Open ${e2eCharacter.identity.name}` })
+		.getByRole('button', { name: `Open ${e2eCharacter.systemData.identity.name}` })
 		.filter({ visible: true })
 		.click();
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-character/);
@@ -254,7 +254,7 @@ test('links an inventory suggestion through resync and source deletion fallback'
 	);
 	await page.goto('/');
 	await page
-		.getByRole('button', { name: `Open ${e2eRuntimeActionLinkCharacter.identity.name}` })
+		.getByRole('button', { name: `Open ${e2eRuntimeActionLinkCharacter.systemData.identity.name}` })
 		.filter({ visible: true })
 		.click();
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-runtime-action-link/);
@@ -332,7 +332,7 @@ test('links an inventory suggestion through resync and source deletion fallback'
 				if (!raw) return undefined;
 				const character = JSON.parse(raw).characters[0];
 				return {
-					itemNotes: character.inventory[0].notes,
+					itemNotes: character.systemData.inventory[0].notes,
 					actionNotes: character.systemData.runtimeActions[0].notes
 				};
 			}, storageKey)
@@ -389,7 +389,7 @@ test('links an inventory suggestion through resync and source deletion fallback'
 				if (!raw) return undefined;
 				const character = JSON.parse(raw).characters[0];
 				return {
-					inventoryCount: character.inventory.length,
+					inventoryCount: character.systemData.inventory.length,
 					action: character.systemData.runtimeActions[0]
 				};
 			}, storageKey)
@@ -419,7 +419,7 @@ test('creates and navigates spell, feature, trait, and custom runtime actions', 
 	});
 	await page.goto('/');
 	await page
-		.getByRole('button', { name: `Open ${e2eRuntimeActionLinkCharacter.identity.name}` })
+		.getByRole('button', { name: `Open ${e2eRuntimeActionLinkCharacter.systemData.identity.name}` })
 		.filter({ visible: true })
 		.click();
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-runtime-action-link/);
@@ -507,7 +507,7 @@ test('dialog interaction behavior: cancellation, filtered selection retention, a
 	);
 	await page.goto('/');
 	await page
-		.getByRole('button', { name: `Open ${e2eRuntimeActionLinkCharacter.identity.name}` })
+		.getByRole('button', { name: `Open ${e2eRuntimeActionLinkCharacter.systemData.identity.name}` })
 		.filter({ visible: true })
 		.click();
 	await expect(page).toHaveURL(/\/charsheets\/5e\?id=e2e-runtime-action-link/);
@@ -711,7 +711,9 @@ test('exports and imports the seeded character backup with dialogs', async ({ pa
 	await expect(importDialog).not.toBeVisible();
 	await expect(page.getByRole('button', { name: 'Import Characters' })).toBeFocused();
 
-	const seededRow = page.locator('tbody tr').filter({ hasText: e2eCharacter.identity.name });
+	const seededRow = page
+		.locator('tbody tr')
+		.filter({ hasText: e2eCharacter.systemData.identity.name });
 	await expect(seededRow).toHaveCount(1);
 	await expect
 		.poll(() =>

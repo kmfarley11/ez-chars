@@ -1,4 +1,4 @@
-// Only the environment effects of the current 2014 sheet, not a system registry.
+// Only the environment effects of the sheet host, not a system registry.
 export interface SheetNavigationHost {
 	readFragment: () => string;
 	pushFragment: (fragmentId: string) => void;

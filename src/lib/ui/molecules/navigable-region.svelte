@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount, type Snippet, untrack } from 'svelte';
-	import { getDnd5e2014SheetLandmarkCoordinator } from '$lib/systems/dnd5e-2014/sheet-landmark-navigation';
-	import type { Dnd5e2014SheetLandmark } from '$lib/systems/dnd5e-2014/sheet-landmarks';
+	import { getSheetLandmarkCoordinator } from '$lib/navigation/sheet-landmark-navigation';
+	import type { SheetLandmark } from '$lib/navigation/sheet-landmarks';
 
 	interface Props {
-		landmark: Dnd5e2014SheetLandmark;
+		landmark: SheetLandmark;
 		children?: Snippet;
 		startsCollapsed?: boolean;
 	}
@@ -12,7 +12,7 @@
 	let { landmark, children = undefined, startsCollapsed = false }: Props = $props();
 	let isCollapsed = $state(untrack(() => startsCollapsed));
 	let headingEl = $state<HTMLButtonElement>();
-	const coordinator = getDnd5e2014SheetLandmarkCoordinator();
+	const coordinator = getSheetLandmarkCoordinator();
 
 	onMount(() =>
 		coordinator.register(landmark.fragmentId, {

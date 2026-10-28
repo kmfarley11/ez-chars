@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { describe, expect, it } from 'vitest';
 import { DND5E_2014_SRD_RESOURCE_ID, dnd5e2014ResourceCatalog } from '../dnd5e2014ResourceCatalog';
+import { dnd5e2024ResourceCatalog } from '../dnd5e2024-resource-catalog';
 
 const getSrdNoticeInventory = async () => {
 	const notices = await readFile(resolve(process.cwd(), 'THIRD_PARTY_NOTICES.md'), 'utf8');
@@ -41,6 +42,29 @@ describe('adopted SRD 5.1 integrity', () => {
 				expect(locator.page).toBeGreaterThanOrEqual(1);
 				expect(locator.page).toBeLessThanOrEqual(document.numPages);
 				await expect(document.getPage(locator.page ?? 0)).resolves.toBeDefined();
+			}
+		} finally {
+			await document.destroy();
+		}
+	});
+});
+
+describe('adopted SRD 5.2.1 contextual destinations', () => {
+	it('opens the reviewed section headings in the actual hosted PDF', async () => {
+		const resource = dnd5e2024ResourceCatalog.resources[0];
+		const bytes = await readFile(
+			resolve(process.cwd(), resource.localAssetPath!.replace(/^\//, ''))
+		);
+		const document = await getDocument({ data: new Uint8Array(bytes) }).promise;
+		try {
+			for (const [page, heading] of [
+				[19, /Character\s*Creation/],
+				[28, /Classes/],
+				[104, /Spells/]
+			] as const) {
+				const content = await (await document.getPage(page)).getTextContent();
+				const text = content.items.map((item) => ('str' in item ? item.str : '')).join(' ');
+				expect(text).toMatch(heading);
 			}
 		} finally {
 			await document.destroy();

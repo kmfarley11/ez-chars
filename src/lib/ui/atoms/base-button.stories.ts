@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/sveltekit';
 import type { seedChars } from '../../../fixtures/characters';
-import type { emptyChar } from '$lib/storage/store';
+import type { createNewCharacter } from '$lib/storage/store';
 import type { ButtonSize } from '$lib/utils/buttonTypes';
 
 import BaseButtonStory from '$lib/ui/atoms/base-button-story.svelte';
 
 // Keep the catalog build's SvelteKit alias coverage explicit without loading app state.
-type StorybookAliasCoverage = [typeof seedChars, typeof emptyChar, ButtonSize];
+type StorybookAliasCoverage = [typeof seedChars, typeof createNewCharacter, ButtonSize];
 
 const meta = {
 	title: 'Design System/Atoms/BaseButton',

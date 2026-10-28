@@ -36,6 +36,7 @@ Use these docs for near-term implementation work:
 - [decisions/2026-07-25-classify-ui-component-composition.md](decisions/2026-07-25-classify-ui-component-composition.md): ADR defining atoms, molecules, and organisms for component composition and Storybook organization
 - [decisions/2026-07-31-require-coarse-pointer-touch-targets.md](decisions/2026-07-31-require-coarse-pointer-touch-targets.md): ADR requiring explicit coarse-pointer touch targets and bounded exceptions
 - [decisions/2026-07-31-classify-rules-resources-by-rights.md](decisions/2026-07-31-classify-rules-resources-by-rights.md): ADR selecting a hybrid self-hosted/link-only reference strategy based on verified permitted use
+- [decisions/2026-10-26-bound-2024-character-sheet-coverage.md](decisions/2026-10-26-bound-2024-character-sheet-coverage.md): accepted official-sheet coverage differences, XP/attunement triggers and the Hit Dice schema limitation
 
 ## Long-Term Vision
 

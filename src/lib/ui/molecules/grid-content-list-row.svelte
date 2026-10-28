@@ -13,11 +13,12 @@
 	interface Props {
 		row: GridContentListRow;
 		compact?: boolean;
+		presentation?: 'cards' | 'compact';
 		onOpenRow?: GridContentListRowAction;
 		onTogglePinRow?: GridContentListRowAction;
 	}
 
-	let { row, compact = false, onOpenRow, onTogglePinRow }: Props = $props();
+	let { row, compact = false, presentation = 'cards', onOpenRow, onTogglePinRow }: Props = $props();
 	const labelEntry = $derived(!!onOpenRow && usesDetailLabels(smallEdit));
 	let detailTriggerEl = $state<HTMLButtonElement>();
 	let pinTriggerEl = $state<HTMLButtonElement>();
@@ -32,20 +33,35 @@
 		command: GridContentListRowAction | undefined,
 		trigger: HTMLButtonElement | undefined
 	) => {
-		command?.(row, () => {
-			const stableTrigger = trigger?.isConnected
-				? trigger
-				: document.getElementById(`${row.key}-detail-action`);
-			if (!(stableTrigger instanceof HTMLElement)) return false;
-			stableTrigger.focus();
-			return document.activeElement === stableTrigger;
-		});
+		command?.(
+			row,
+			() => {
+				const stableTrigger = trigger?.isConnected
+					? trigger
+					: document.getElementById(`${row.key}-detail-action`);
+				if (!(stableTrigger instanceof HTMLElement)) return false;
+				stableTrigger.focus();
+				return document.activeElement === stableTrigger;
+			},
+			trigger
+		);
 	};
 </script>
 
-<li class="rounded-md border px-3 py-2" data-row-key={row.key}>
-	<div class="flex min-w-0 items-start justify-between gap-3">
-		<div class="min-w-0 flex-1">
+<li
+	class={presentation === 'compact' ? 'min-w-0 max-w-full' : 'rounded-md border px-3 py-2'}
+	data-row-key={row.key}
+>
+	<div
+		class={presentation === 'compact'
+			? 'flex min-w-0 items-center justify-between gap-2'
+			: 'flex min-w-0 items-start justify-between gap-3'}
+	>
+		<div
+			class={presentation === 'compact'
+				? 'flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1'
+				: 'min-w-0 flex-1'}
+		>
 			<p class={compact ? 'flex min-w-0 items-baseline gap-1 overflow-hidden text-sm' : 'text-sm'}>
 				<span
 					class={compact
@@ -68,7 +84,7 @@
 						/>
 					{:else}<span>{row.label}</span>{/if}
 				</span>
-				{#if row.detail}
+				{#if row.detail && presentation !== 'compact'}
 					<span aria-hidden="true" class="shrink-0">:</span>
 					<span
 						class={compact
@@ -78,7 +94,11 @@
 				{/if}
 			</p>
 			{#if row.context || (row.badges?.length ?? 0) > 0 || annotationCount > 0}
-				<div class="mt-1 flex flex-wrap items-center gap-1.5">
+				<div
+					class={presentation === 'compact'
+						? 'flex flex-wrap items-center gap-1.5'
+						: 'mt-1 flex flex-wrap items-center gap-1.5'}
+				>
 					{#each row.badges ?? [] as badge (`${row.key}-${badge}`)}
 						<Badge label={badge} />
 					{/each}

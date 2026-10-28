@@ -12,6 +12,7 @@
 	interface Props {
 		liveData: GridContentData;
 		referenceData: GridContentData;
+		sectionBreakBefore?: string;
 		annotationEditorConfig?: GridAnnotationEditorConfig;
 		// eslint-disable-next-line no-unused-vars
 		onFieldSavePatch?: (patch: JSONPatchDocument) => void;
@@ -22,6 +23,7 @@
 	let {
 		liveData,
 		referenceData,
+		sectionBreakBefore = 'speed',
 		annotationEditorConfig = undefined,
 		onFieldSavePatch = undefined,
 		onSavePatches = undefined
@@ -46,11 +48,12 @@
 			<h3 class="text-sm font-semibold">Reference stats</h3>
 			<GridContentCard
 				detailTitle="Reference stats"
+				inlineFieldControls={false}
 				handleFieldSavePatch={onFieldSavePatch}
 				handleEditSavePatches={onSavePatches}
 				{annotationEditorConfig}
 				displayMaxCols={2}
-				displaySectionBreakBefore="speed"
+				displaySectionBreakBefore={sectionBreakBefore}
 				displaySectionBreakLabel="Speeds"
 				data={referenceData}
 			/>

@@ -4,8 +4,11 @@
 	import GridRuntimeFieldGroup from '$lib/ui/molecules/grid-runtime-field-group.svelte';
 	import IconButton from '$lib/ui/atoms/icon-button.svelte';
 	import DetailLabelButton from '$lib/ui/atoms/detail-label-button.svelte';
+	import Badge from '$lib/ui/atoms/badge.svelte';
+	import ReadonlyCheckbox from '$lib/ui/atoms/readonly-checkbox.svelte';
+	import StatusIndicator from '$lib/ui/atoms/status-indicator.svelte';
 	import type { SmallEditEntryStyle } from '$lib/ui/organisms/small-edit-context';
-	import { getSmallEditAccess } from '$lib/ui/organisms/small-edit-context';
+	import { getSmallEditAccess, usesDetailLabels } from '$lib/ui/organisms/small-edit-context';
 	const smallEdit = getSmallEditAccess();
 	import {
 		formatFieldValue,
@@ -75,6 +78,8 @@
 
 	const normalizedData = $derived<GridContentData>(normalizeData(data));
 	const displayEntries = $derived(Object.entries(normalizedData));
+	const contextualLabel = (parent: string, child?: string) =>
+		child && child !== parent ? `${parent} ${child}` : parent;
 
 	const saveFieldAnnotations = (
 		field: GridContentField,
@@ -107,6 +112,11 @@
 		interactive && isInlineRuntimeFieldGroup(field) && isGridNestedFields(field.value)
 			? Object.entries(field.value)
 			: undefined;
+	const hasDetailNoteEntry = (field: GridContentField) =>
+		!!onTargetField &&
+		!!field.bindPath &&
+		usesDetailLabels(smallEdit) &&
+		!!smallEdit?.targeted({ field });
 </script>
 
 <div>
@@ -132,6 +142,11 @@
 					{@const labeledParts = getLabeledDisplayParts(field)}
 					{@const fieldLabel = field.fieldName ?? fieldKey}
 					{@const runtimeFields = inlineNestedFields(field)}
+					{@const primitiveField =
+						interactive &&
+						!field.displayStatus &&
+						field.displayAs !== 'checkbox' &&
+						isDirectEditablePrimitiveField(field)}
 					<div
 						class={displayAlign === 'center'
 							? 'flex w-full min-w-0 justify-center'
@@ -150,7 +165,7 @@
 										onSavePatches={onFocusedSavePatches}
 										onSaveAnnotations={savePrimitiveFieldAnnotations}
 									/>
-								{:else if interactive && isDirectEditablePrimitiveField(field)}
+								{:else if primitiveField}
 									<GridPrimitiveField
 										{fieldKey}
 										{field}
@@ -163,24 +178,53 @@
 										onSaveAnnotations={savePrimitiveFieldAnnotations}
 										onSaveFocusedPatches={onFocusedSavePatches}
 									/>
-								{:else if typeof field.value === 'boolean'}
+								{:else if typeof field.value === 'boolean' || field.displayAs === 'checkbox'}
 									<span class="inline-flex items-center gap-2 align-middle">
-										<input
-											class="theme-input theme-checkbox-readonly h-4 w-4 cursor-not-allowed rounded border"
-											type="checkbox"
-											checked={field.value}
-											aria-label={`${field.fieldName}: ${field.value ? 'enabled' : 'disabled'}`}
-											disabled
+										<ReadonlyCheckbox
+											value={typeof field.value === 'boolean' ? field.value : undefined}
+											label={fieldLabel}
+											explanation={field.displayExplanation}
 										/>
 										{@render fieldHeading(field)}
 									</span>
-								{:else if displayPrimitiveMode === 'stacked' && (typeof field.value === 'string' || typeof field.value === 'number')}
+								{:else if !field.displayStatus && displayPrimitiveMode === 'stacked' && (typeof field.value === 'string' || typeof field.value === 'number')}
 									<span class="block min-w-0">
 										<span
 											class="theme-text-muted block text-xs font-semibold tracking-wide uppercase"
 											>{@render fieldHeading(field, false)}</span
 										>
 										<span class="mt-1 block truncate font-semibold">{formatFieldValue(field)}</span>
+									</span>
+								{:else if field.displayStatus || (labeledParts && field.displayLayout === 'indicators')}
+									<span class="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
+										{#if field.displayStatus}
+											<StatusIndicator
+												mark={field.displayStatus.mark}
+												label={`${fieldLabel}: ${field.displayStatus.label}`}
+											/>
+										{:else}
+											{#each (labeledParts ?? []).filter((part) => typeof part.field.value === 'boolean' || part.field.displayAs === 'checkbox') as part, index (`${fieldKey}-indicator-${index}`)}
+												<ReadonlyCheckbox
+													value={typeof part.field.value === 'boolean'
+														? part.field.value
+														: undefined}
+													label={contextualLabel(fieldLabel, part.field.fieldName ?? part.label)}
+													explanation={part.field.displayExplanation}
+												/>
+											{/each}
+										{/if}
+										{@render fieldHeading(field, false)}
+										{#each (labeledParts ?? []).filter((part) => typeof part.field.value !== 'boolean' && part.field.displayAs !== 'checkbox') as part, index (`${fieldKey}-context-${index}`)}
+											<span class="theme-text-muted text-xs" title={part.field.fieldName}
+												>{part.value} {part.label}</span
+											>
+										{/each}
+										{#if smallEdit?.enabled}
+											{#each labeledParts ?? [] as part, index (`${fieldKey}-notes-${index}`)}{@render fieldNotes(
+													part.field,
+													part.field.fieldName ?? ''
+												)}{/each}
+										{/if}
 									</span>
 								{:else if labeledParts}
 									<span
@@ -194,8 +238,16 @@
 											{#if idx > 0}
 												<span aria-hidden="true">/</span>
 											{/if}
-											<span>
-												{part.value}
+											<span class="inline-flex flex-wrap items-center gap-1">
+												{#if typeof part.field.value === 'boolean' || part.field.displayAs === 'checkbox'}
+													<ReadonlyCheckbox
+														value={typeof part.field.value === 'boolean'
+															? part.field.value
+															: undefined}
+														label={contextualLabel(fieldLabel, part.label ?? part.field.fieldName)}
+														explanation={part.field.displayExplanation}
+													/>
+												{:else}{part.value}{/if}
 												{#if part.label}
 													<span class="theme-text-muted text-xs italic">
 														{#if onTargetField && part.field.bindPath}
@@ -226,12 +278,13 @@
 									</span>
 								{:else}
 									{@render fieldHeading(field)}
-									{formatFieldValue(field)}
+									<span>{formatFieldValue(field)}</span>
 								{/if}
 								{#if field.label}
 									<span class="theme-text-muted text-xs italic"> ({field.label}) </span>
 								{/if}
-								{@render fieldNotes(field, fieldLabel)}
+								<!-- Primitive fields own their in-box note badge/control and Detail entry. -->
+								{#if !primitiveField}{@render fieldNotes(field, fieldLabel)}{/if}
 							</div>
 						</div>
 					</div>
@@ -242,7 +295,15 @@
 </div>
 
 {#snippet fieldNotes(field: GridContentField, fieldLabel: string)}
-	{#if field.annotationBindPath}
+	{#if hasDetailNoteEntry(field)}
+		{#if field.annotations?.length}
+			<span class="ml-1 inline-flex align-middle"
+				><Badge
+					label={`${field.annotations.length} ${field.annotations.length === 1 ? 'note' : 'notes'}`}
+				/></span
+			>
+		{/if}
+	{:else if field.annotationBindPath}
 		<span class="ml-1 inline-flex align-middle">
 			<FieldAnnotationControl
 				{fieldLabel}
@@ -271,6 +332,9 @@
 				presentation={targetEntryStyle}
 				onclick={(event) => onTargetField?.(field, event.currentTarget as HTMLElement)}
 			/>
+			{#if colon && typeof field.value !== 'boolean' && field.displayAs !== 'checkbox'}<span
+					>:
+				</span>{/if}
 		{:else}
 			<span class="inline-flex items-center gap-1"
 				><span class="font-medium">{field.fieldName}</span><IconButton

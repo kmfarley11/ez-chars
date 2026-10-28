@@ -62,7 +62,10 @@ export function safeParseCharacterExportEnvelope(
 	const parsedEnvelope = characterExportEnvelopeSchema.safeParse(input);
 	if (!parsedEnvelope.success) return { success: false };
 
-	const parsedCharacters = safeParseStoredCharacterDocuments(parsedEnvelope.data.characters);
+	// Review may contain duplicates; Merge New skips them, while Replace rejects them.
+	const parsedCharacters = safeParseStoredCharacterDocuments(parsedEnvelope.data.characters, {
+		allowDuplicateIds: true
+	});
 	if (!parsedCharacters.success) return { success: false };
 
 	return {
@@ -81,7 +84,7 @@ export function applyCharacterImport(
 ): CharacterImportApplyResult {
 	if (mode === 'replace') {
 		return {
-			characters: importEnvelope.characters,
+			characters: serializeStoredCharacterDocuments(importEnvelope.characters),
 			addedCount: importEnvelope.characters.length,
 			skippedDuplicateCount: 0
 		};
@@ -101,8 +104,10 @@ export function applyCharacterImport(
 		newCharacters.push(character);
 	}
 
+	const characters = [...currentCharacters, ...newCharacters];
+	serializeStoredCharacterDocuments(characters); // Validate the result before exposing it to the store.
 	return {
-		characters: [...currentCharacters, ...newCharacters],
+		characters,
 		addedCount: newCharacters.length,
 		skippedDuplicateCount
 	};

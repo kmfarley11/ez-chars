@@ -2,9 +2,11 @@
 	import StructuredForm from '$lib/ui/molecules/structured-form.svelte';
 	import type { GridContentData, GridContentField } from '$lib/utils/gridContentTypes';
 
-	let { withArray = false } = $props<{
+	let {
+		withArray = false
+	}: {
 		withArray?: boolean;
-	}>();
+	} = $props();
 
 	let mockData: GridContentData = $derived(
 		(withArray

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { asset } from '$app/paths';
+	import { resolveAssetUrl } from '$lib/resources/asset-url';
 	import { create5eAnnotationReferenceProvider } from '$lib/systems/dnd5e-2014/annotation-reference';
 	import { setAnnotationReferenceProvider } from '$lib/resources/annotation-reference-context';
 	// This existing SRD-specific story remains system-owned until catalog rollout.
 	setAnnotationReferenceProvider(
-		create5eAnnotationReferenceProvider((path) => asset(path as Parameters<typeof asset>[0]))
+		create5eAnnotationReferenceProvider((path) => resolveAssetUrl(path))
 	);
 	import FieldAnnotationControl from '$lib/ui/molecules/field-annotation-control.svelte';
 	import { FULL_2014_SRD_PATH } from '$lib/utils/urlHelpers';
@@ -14,10 +14,13 @@
 		GridContentAnnotation
 	} from '$lib/utils/gridContentTypes';
 
-	let { withAnnotations = false, canEdit = true } = $props<{
+	let {
+		withAnnotations = false,
+		canEdit = true
+	}: {
 		withAnnotations?: boolean;
 		canEdit?: boolean;
-	}>();
+	} = $props();
 
 	// eslint-disable-next-line svelte/prefer-writable-derived
 	let mockAnnotations = $state<Array<GridContentAnnotation>>([]);

@@ -1,5 +1,15 @@
 import { type ClassLevel } from './system.5e2014';
 
+export interface CharacterFactoryDependencies {
+	createId: () => string;
+	nowIso: () => string;
+}
+
+export const defaultCharacterFactoryDependencies: CharacterFactoryDependencies = {
+	createId,
+	nowIso
+};
+
 export function nowIso() {
 	return new Date().toISOString();
 }

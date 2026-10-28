@@ -4,30 +4,32 @@ export const createSheetEditCharacter = (): CharacterDocument5e2014 =>
 	create5e2014Character({
 		name: 'Edit Tester',
 		meta: { id: 'edit-tester' },
-		identity: { ancestryLineage: 'Elf', background: 'Sage' },
-		features: [
-			{
-				id: 'general-feature',
-				name: 'Keen Mind',
-				summary: 'Recall details accurately.',
-				annotations: [
-					{ id: 'general-feature-note', origin: 'user', kind: 'note', text: 'Manual feature' }
-				]
-			}
-		],
-		inventory: [
-			{
-				id: 'weapon-1',
-				name: 'Longsword',
-				notes: 'Fresh item notes.',
-				tags: ['inventory:weapon'],
-				equipped: true,
-				annotations: [{ id: 'weapon-note', origin: 'user', kind: 'note', text: 'Silvered' }]
-			},
-			{ id: 'gear-1', name: 'Rope', quantity: 1 }
-		],
-		notes: [{ id: 'scratch-1', title: 'Scratch', body: 'Old scratch', kind: 'quick' }],
+
 		systemData: {
+			identity: { ancestryLineage: 'Elf', background: 'Sage' },
+			features: [
+				{
+					id: 'general-feature',
+					name: 'Keen Mind',
+					summary: 'Recall details accurately.',
+					annotations: [
+						{ id: 'general-feature-note', origin: 'user', kind: 'note', text: 'Manual feature' }
+					]
+				}
+			],
+			inventory: [
+				{
+					category: 'weapons',
+					id: 'weapon-1',
+					name: 'Longsword',
+					notes: 'Fresh item notes.',
+					tags: ['inventory:weapon'],
+					equipped: true,
+					annotations: [{ id: 'weapon-note', origin: 'user', kind: 'note', text: 'Silvered' }]
+				},
+				{ category: 'other', id: 'gear-1', name: 'Rope', quantity: 1 }
+			],
+			notes: [{ id: 'scratch-1', title: 'Scratch', body: 'Old scratch', kind: 'quick' }],
 			race: {
 				name: 'Elf',
 				traits: [

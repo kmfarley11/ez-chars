@@ -35,15 +35,15 @@ describe('shared 2014 sheet edit acceptance', () => {
 	});
 	it('commits grid changes and pins through validation while preserving unrelated data', () => {
 		const { owner, edits } = fixture();
-		const inventory = structuredClone(owner.read().inventory);
-		expect(edits.grid([{ path: ['identity', 'name'], value: 'New name' }])).toEqual({
+		const inventory = structuredClone(owner.read().systemData.inventory);
+		expect(edits.grid([{ path: ['systemData', 'identity', 'name'], value: 'New name' }])).toEqual({
 			ok: true
 		});
-		expect(owner.read().identity.name).toBe('New name');
+		expect(owner.read().systemData.identity.name).toBe('New name');
 		expect(edits.pins('inventory', ['weapon-1'])).toEqual({ ok: true });
 		expect(edits.inventoryPins('other', ['gear-1'])).toEqual({ ok: true });
 		expect(owner.read().systemData.collectionPins?.inventory).toEqual(['gear-1', 'weapon-1']);
-		expect(owner.read().inventory).toEqual(inventory);
+		expect(owner.read().systemData.inventory).toEqual(inventory);
 		expect(edits.pins('inventory', ['missing'])).toMatchObject({ ok: false });
 		expect(owner.read().systemData.collectionPins?.inventory).toEqual(['gear-1', 'weapon-1']);
 	});
@@ -68,10 +68,12 @@ describe('shared 2014 sheet edit acceptance', () => {
 		const original = structuredClone(owner.read());
 		const field = create5eSmallRecordModel(owner, 'item:weapon-1')!.fields[0];
 		reject();
-		expect(edits.patch([{ op: 'replace', path: '/identity/name', value: 'No' }])).toMatchObject({
+		expect(
+			edits.patch([{ op: 'replace', path: '/systemData/identity/name', value: 'No' }])
+		).toMatchObject({
 			ok: false
 		});
-		expect(edits.grid([{ path: ['identity', 'name'], value: 'No' }])).toMatchObject({
+		expect(edits.grid([{ path: ['systemData', 'identity', 'name'], value: 'No' }])).toMatchObject({
 			ok: false
 		});
 		expect(edits.intents([])).toMatchObject({ ok: false });

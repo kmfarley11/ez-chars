@@ -4,7 +4,7 @@
 	import { cloneFeatureDraft, type ProofFeatureRecord } from './collection-organizer-state';
 
 	const initialFeatures: Array<ProofFeatureRecord> = [
-		...(saturatedCharacter5e2014.features ?? []).map((feature) => ({
+		...(saturatedCharacter5e2014.systemData.features ?? []).map((feature) => ({
 			id: feature.id,
 			name: feature.name,
 			detail: feature.summary ?? feature.description ?? '',

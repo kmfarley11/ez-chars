@@ -14,10 +14,11 @@
 	interface Props {
 		initialRows: ReadonlyArray<GridContentListRow>;
 		initialQuery?: string;
+		presentation?: 'cards' | 'compact';
 		onRowSave?: RowUpdateCallback;
 	}
 
-	let { initialRows, initialQuery = '', onRowSave }: Props = $props();
+	let { initialRows, initialQuery = '', presentation = 'cards', onRowSave }: Props = $props();
 	let pins = $state<Array<string>>([]);
 
 	let rows = $state.raw<Array<GridContentListRow>>(
@@ -95,6 +96,7 @@
 		<div class="theme-grid-layer rounded-md border p-3">
 			<GridContentList
 				title="Supplies"
+				{presentation}
 				rows={priorityRows}
 				emptyText="No supplies yet."
 				bind:query

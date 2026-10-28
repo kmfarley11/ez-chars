@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { asset } from '$app/paths';
+	import { resolveAssetUrl } from '$lib/resources/asset-url';
 	import BaseButton from '$lib/ui/atoms/base-button.svelte';
 	import PanelSurface from '$lib/ui/molecules/panel-surface.svelte';
 	import {
@@ -29,7 +29,7 @@
 	const projection: ResourceLibraryProjection = $derived(
 		projectResourceLibrary(catalog, query, {
 			systemId,
-			resolveAssetHref: (path) => asset(path as Parameters<typeof asset>[0])
+			resolveAssetHref: (path) => resolveAssetUrl(path)
 		})
 	);
 	const resultCountLabel = $derived(

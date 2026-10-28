@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createCanonicalSheetState } from '../canonical-sheet-state';
+import { createCanonicalSheetState } from '$lib/storybook/canonical-sheet-state';
 import { create5eSheetEditSession } from '../../editing/sheet-edit-session';
 import { createSheetEditCharacter } from '$lib/systems/dnd5e-2014/__tests__/sheet-edit-fixtures';
 import { create5eSmallRecordModel } from '$lib/systems/dnd5e-2014/editing/small-edit-adapters';
@@ -14,7 +14,9 @@ beforeEach(() => {
 });
 afterEach(() => vi.useRealTimers());
 
-type Host = ReturnType<typeof createCanonicalSheetState>;
+type Host = ReturnType<
+	typeof createCanonicalSheetState<ReturnType<typeof createSheetEditCharacter>>
+>;
 const editName = (host: Host) => {
 	const field = create5eSmallRecordModel(host, 'item:weapon-1')!.fields[0];
 	return field.commit!(field.read(), 'New weapon name');
@@ -35,7 +37,7 @@ describe('isolated canonical sheet host', () => {
 		expect(first.reject?.()).toBe(false);
 		expect(first.read()).toEqual(original);
 		expect(first.read()).not.toBe(fixture);
-		first.read().inventory[0].name = 'Mutated disposable snapshot';
+		first.read().systemData.inventory[0].name = 'Mutated disposable snapshot';
 		first.reset();
 		expect(first.read()).toEqual(original);
 	});
@@ -45,13 +47,15 @@ describe('isolated canonical sheet host', () => {
 			'runtime patch',
 			(host) =>
 				create5eSheetEditSession(host).patch([
-					{ op: 'replace', path: '/identity/name', value: 'Changed' }
+					{ op: 'replace', path: '/systemData/identity/name', value: 'Changed' }
 				])
 		],
 		[
 			'grid edit',
 			(host) =>
-				create5eSheetEditSession(host).grid([{ path: ['identity', 'name'], value: 'Changed' }])
+				create5eSheetEditSession(host).grid([
+					{ path: ['systemData', 'identity', 'name'], value: 'Changed' }
+				])
 		],
 		['focused value', editName],
 		[

@@ -2,7 +2,7 @@
 	import GridContentActionMenu from '$lib/ui/molecules/grid-content-action-menu.svelte';
 	import DialogShell from '$lib/ui/molecules/dialog-shell.svelte';
 
-	let { canEdit = true } = $props<{ canEdit?: boolean }>();
+	let { canEdit = true }: { canEdit?: boolean } = $props();
 
 	let isEditDialogOpen = $state(false);
 	let isNotesDialogOpen = $state(false);

@@ -3,8 +3,8 @@
 - **Status:** Approved dependency maintenance and narrowly scoped temporary security exception; owner approval recorded 2026-10-10.
 - **Author:** Codex
 - **Date:** 2026-10-10
-- **Last reviewed:** 2026-10-10
-- **Latest refinement:** Owner accepted the BL-082 advisory exception on 2026-10-10 under the conditions below.
+- **Last reviewed:** 2026-10-28
+- **Latest refinement:** Kit 3 maintenance is complete; the owner approved the separate bounded deepmerge exception on 2026-10-28. Full audit remains failing; reassessment is due by November 9 or before external playtest.
 
 ## Context & Problem Statement
 
@@ -21,6 +21,8 @@ Keep the current toolchain, minimize lockfile churn, verify both consumers of th
 - Suppress development advisories: hides build/deployment-tool exposure and is not authorized.
 
 ## Decision Outcome
+
+**Current refinement:** the 2026-10-27 maintenance replaces the affected direct toolchain versions and removes the global cookie override for Kit 3's native cookie 2 dependency. Its initially clean audit was superseded on October 28 by six low package findings from the deepmerge advisory below. The historical braces exception does not cover it and is not used to suppress or pass any gate. Its original reassessment deadline remains a BL-072 check, not a newly extended exception.
 
 Pin the existing brace-expansion override to **5.0.12**, update source-map-js to **1.2.2** within its existing range, and override postcss-selector-parser to **7.1.6**. The selector override covers both typography (which pins 6.0.10) and Svelte's ESLint parser (which accepts 7.x); it removes the vulnerable nested parser copy. No application dependency or public behavior changes.
 
@@ -52,3 +54,32 @@ Accepted conditions:
 - Reassess sooner when a patched release appears, the consuming toolchain/input boundary changes, an exploit is observed, or another advisory appears. A fix requires normal dependency gates. This exception cannot cover other vulnerabilities, publicly exposed tooling, or newly introduced untrusted-pattern processing.
 
 The owner approval permits task 5.2 closure and BL-082 archival with an explicit exception, not a passing full audit. It accepts the recommendation and conditions above without authorizing audit suppression. The historical recommendation is retained as the rationale; no other advisory or future renewal is preapproved.
+
+### 2026-10-27 — Reviewed security maintenance and Kit 3 migration
+
+The owner authorized compatible fixes and then explicitly approved including the major upgrade after compatibility assessment. Same-major Storybook 10.6.4, Vitest 4.1.12 and Zod 4.6.6 fixes removed the critical/high/moderate findings. The remaining Kit advisories ([enhanced-form redirect](https://github.com/sveltejs/kit/security/advisories/GHSA-pfhg-q3qv-9q6r), [prerendered header injection](https://github.com/sveltejs/kit/security/advisories/GHSA-27mw-82g8-phjj)) require Kit 3; choose migration rather than a new exception or dependency patch.
+
+- Pin Kit 3.1.0, adapter-static 4.0.0, Vite 8.3.5, vite-plugin-svelte 7.3.1, Svelte 5.57.3, svelte-check 4.7.7 and TypeScript 6.0.3. Require Node >=22.17. Align Playwright and its test runner at 1.62.1.
+- Follow the [official migration guide](https://svelte.dev/docs/kit/migrating-to-sveltekit-3): pass shared configuration to the Vite plugin; migrate environment imports and TypeScript configuration; copy readonly page URLs by href. Keep the existing shallow-history API, which is still supported, to avoid changing approved Close/Back semantics during security maintenance.
+- Preserve existing source aliases through explicit Vite/TypeScript mappings rather than rewriting every component import. Do not use Kit's deprecated alias configuration. Preserve the former disabled version-poll interval. A future supported-API migration is warranted when a removal or concrete maintenance need requires it, not solely to rename imports now.
+- Remove the obsolete Rollup codeSplitting compatibility shim now that Vite uses Rolldown. Centralize plugin-served PDF asset path normalization at the Kit asset boundary; stored locators and catalog paths remain unchanged.
+- Keep existing brace-expansion and selector-parser overrides; remove the cookie 1 override instead of forcing it onto Kit's required cookie 2 API. No forced peer resolution, blanket audit suppression, framework fork, automatic deployment or character-data migration is introduced.
+
+Initial diagnostics, unit contracts and both production/catalog builds pass; the complete browser/performance gate evidence belongs in the [BL-070 verification record](../../openspec/changes/archive/2026-10-28-bl-070-add-2024-system-boundary/verification-record.md). Build success alone does not establish final compatibility or physical-device support.
+
+### 2026-10-28 — Deepmerge assessment and proposed exception
+
+**Status: explicitly approved by the owner on 2026-10-28 (“sounds reasonable to me, proceed”).** This is separate acceptance of the bounded recommendation below, not an inference from the major-upgrade or earlier braces approval. It permits BL-070 closure while retaining the audit failure and all stated constraints.
+
+The refreshed full audit reports six low affected packages from [GHSA-gcqx-w48m-w2h4 / CVE-2026-93753](https://github.com/advisories/GHSA-gcqx-w48m-w2h4), not six independent vulnerabilities. The advisory describes prototype poisoning of a returned merged object; it lists no patched release. Registry metadata reports installed deepmerge 4.3.1 as latest. The [upstream issue](https://github.com/TehShrike/deepmerge/issues/273) is closed without a published fix; closure alone is not remediation evidence.
+
+Inspected local exposure:
+
+- `npm ls deepmerge` places it under `@sveltejs/vite-plugin-svelte@7.3.1`; the audit propagates through Kit, adapter-static and the Storybook Svelte packages.
+- The plugin's `src/utils/options.js` invokes deepmerge only through `mergeConfigs` during configuration resolution: plugin defaults, repository Svelte/Vite options, inline options and generated build context. Those inputs are maintainer-controlled here.
+- No application source imports deepmerge. No path was found from character JSON, notes, PDF content or Find queries into these configuration merges. The static deployment has no running Vite/Kit configuration service. Production-only audit reports zero, but dependency classification alone is not the basis for this assessment.
+- This is a bounded source/reachability review, not an exploit reproduction or proof that the package is safe. Malicious configuration/plugins or a future untrusted configuration input would invalidate the assessment.
+
+**Recommendation:** accept a temporary exception for this advisory and current trusted build-configuration usage only, permitting completion of verification and archival with the audit failure explicitly recorded. Keep `npm audit` and `verify:all` unchanged and visibly failing; do not downgrade the framework, suppress low severity, patch node_modules or adopt an unreviewed fork just to obtain green output. Do not expose development servers publicly or introduce untrusted configuration inputs under this exception.
+
+BL-072 owns reassessment **by 2026-11-09 or before external playtest, whichever comes first**, and earlier on a patched release, upstream consumer removal, changed configuration inputs or a relevant observed failure. No automatic monitoring or renewal is implied. The owner selected the bounded exception rather than waiting for supported remediation; it does not declare the dependency safe or authorize broader exposure.
