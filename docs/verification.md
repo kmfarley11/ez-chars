@@ -4,6 +4,28 @@ Use these commands to verify changes before handing work back.
 
 Use Node 22.17 or newer for the SvelteKit 3/Vite 8 toolchain. After switching Node, use `npm ci` and restart any existing dev/Storybook servers before testing. Playwright and its test runner are version-aligned; install their browser binaries with `npx playwright install` when a test reports a missing executable.
 
+## Node Runtime Mismatch
+
+**Reported failure (2026-10-28):** running `npm run deploy` failed during SvelteKit prerendering with `TypeError: Promise.withResolvers is not a function`, originating in `@sveltejs/kit/src/core/postbuild/queue.js`. Local diagnosis found the shell selecting nvm's Node 20.19.5, where that API is undefined, despite a newer compatible Node also being installed. This is a build-time Node mismatch, not the earlier iPhone PDF-stream error.
+
+From the repository root, in the same terminal that will run deployment:
+
+```bash
+node --version
+command -v node
+nvm install # reads .nvmrc; installs the latest Node 22 patch
+nvm use
+node --version # must satisfy >=22.17
+npm ci
+npm run build # prerender and static output must complete; does not publish
+```
+
+Only then run `npm run deploy` when publishing is intended. With another version manager, select a compatible Node using its equivalent commands. `.nvmrc` is a selection hint, not automatic shell configuration; nvm users must run `nvm use` in new shells unless they have separately configured auto-switching. Neither `engines` nor the existing install-time `engine-strict` setting switches the runtime used by already-installed scripts. Do not patch SvelteKit's queue or add a Promise polyfill to support the obsolete build runtime.
+
+**Agent retest (2026-10-28):** the installed compatible Node 26.5.0 exposes `Promise.withResolvers`; `npm run build` completed prerendering and wrote the static site successfully under that runtime, with the existing fallback-page warning. The newly documented nvm Node 22 installation was not performed, and no deployment was published. Documentation formatting and whitespace checks passed. Dependencies and application code were unchanged.
+
+**Node 22 retest (2026-10-29):** after `nvm use`, Node 22.23.4 / npm 10.9.9 passed diagnostics, lint, 386 unit tests, production and Storybook builds, 349 cross-browser checks (27 expected project-specific skips), 115 Storybook checks, the Chromium performance gate, and 22 strict OpenSpec validations. Audit still reports the six low affected-package findings covered by the accepted deepmerge exception. No deployment was published. The install resolved svelte-check's picomatch peer mismatch; the lockfile retains that addition while restoring 39 unrelated Linux `libc` constraints omitted by npm 10's lockfile writer. Review lockfile diffs after changing npm versions; runtime selection alone does not prevent package-manager metadata churn.
+
 ## Related Decisions And Checklists
 
 - [Testing strategy decision](decisions/2026-07-17-testing-strategy.md) defines the Vitest and Playwright testing boundaries.

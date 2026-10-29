@@ -77,6 +77,16 @@ When executing complex architectural changes or creating new OpenSpec proposals,
 
 Use Node **22.17 or newer** (a supported LTS release is recommended). Node 20 cannot run the current SvelteKit 3 toolchain. You will also need Git LFS installed to fetch the PDF assets used by the repo.
 
+For nvm users, the repository's `.nvmrc` selects the Node 22 line. From the repository root, install its latest patch and select it before installing dependencies:
+
+```bash
+nvm install
+nvm use
+node --version
+```
+
+Run `nvm use` again in a new terminal before development or deployment; `.nvmrc` does not switch an already-open shell automatically. Other version managers are fine if the selected Node meets the minimum above.
+
 ```bash
 npm ci
 ```
@@ -124,8 +134,11 @@ npm run preview
 Deploy remains manual for now:
 
 ```bash
+nvm use # when using nvm; select the repository's Node before building
 npm run deploy
 ```
+
+If deployment fails with `Promise.withResolvers is not a function`, check `node --version` in that same terminal: it is likely still using Node 20. Follow the [runtime troubleshooting steps](docs/verification.md#node-runtime-mismatch) before retrying. `npm run build` verifies the build without publishing; `npm run deploy` also pushes the generated site.
 
 ## Optional: Svelte MCP setup for coding agents
 
