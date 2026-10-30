@@ -203,6 +203,37 @@ npm run build
 
 Builds the static production app. Use this before release-sensitive handoff or after config/dependency changes.
 
+### Static deployment routing
+
+The GitHub Pages fallback is `build/404.html`; `build/index.html` remains the prerendered home page. A build should emit both without `adapter_fallback_overwrites`.
+
+For a production-route check, build first, then run the existing browser suite in preview mode:
+
+```bash
+PLAYWRIGHT_PREVIEW=1 npx playwright test tests/navigation.smoke.spec.ts tests/multi-system.smoke.spec.ts tests/referenceReaderProof.smoke.spec.ts --grep 'direct sheet load and refresh|serves adopted SRDs|serves PDF.js|native popover|links third-party|compact reader keeps Find|2024 reader uses its source' --workers=1
+```
+
+Preview mode starts its own server on port 4173 and refuses to reuse another server, keeping these checks separate from development. This checks the production home page, static resources, and direct sheet loads/refreshes with character IDs. Preview does not reproduce GitHub Pages' custom-404 handling. After deployment, also open and refresh saved links to both `/ez-chars/charsheets/5e?id=<2014-character-id>` and `/ez-chars/charsheets/5e2024?id=<2024-character-id>` on a device containing those characters. Confirm the same character remains selected.
+
+Preview serves the pre-adapter client output. Also verify the final deployment directory, including unchanged PDF.js support files and exclusion of local-only documents:
+
+```bash
+diff -qr --exclude=local-only --exclude='.*' docs/ext build/docs/ext
+for asset_dir in cmaps iccs image_decoders standard_fonts wasm; do
+  diff -qr "node_modules/pdfjs-dist/$asset_dir" "build/pdfjs/$asset_dir" || exit 1
+done
+test ! -e build/docs/ext/local-only
+test -s build/index.html && test -s build/404.html
+```
+
+The asset plugins in `vite.config.ts` copy during the client bundle's `writeBundle`, using that bundle's actual output directory before SvelteKit prerendering/adaptation. Do not restore top-level `config.build.outDir` plus `closeBundle`: in the multi-environment build this targeted `dist/` rather than the output consumed by preview and the adapter. No extra post-build copy or manual staging of assets is required.
+
+**2026-10-29 evidence:** Node 22.23.4: diagnostics and lint passed; 51 unit files / 386 tests passed; production build emitted both HTML files without the fallback-overwrite warning. The focused preview run passed 15 checks (including both system deep links and refreshes across all four browser projects), skipped the existing desktop-only About check on Mobile Chrome, and failed all four SRD-serving checks. Reproduction: run the build and preview command above; requests to `/ez-chars/docs/ext/5e2014/SRD_CC_v5.1.pdf` fail. The generated `build/` also lacks `docs/ext/` and `pdfjs/`, while the asset plugins use the resolved Vite output directory and assets exist under `dist/`. This is an agent-observed production-asset packaging gap, not a routing-test failure or an accepted deployment exception. BL-072 tracks correction before the next deployment. Retest must verify both SRDs and PDF.js support assets in the deployed directory, retain the local-only exclusion, and rerun these browser checks. No deployment was performed.
+
+**2026-10-30 fix/retest:** Corrected both asset plugins' output/lifecycle handling. Production assets match their sources byte-for-byte; local-only documents remain absent and both HTML entry files exist without the overwrite warning. `verify:smoke` passed (386 unit tests, 92 Chromium checks with five existing project-specific skips, 115 Storybook checks). The expanded production-preview matrix passed 31 checks with one existing mobile About skip, including both SRDs, all five support-asset categories, reader/search behavior and both sheet routes. The earlier packaging gap is resolved, not waived. Audit remains at the previously accepted six low-severity affected-package findings; dependencies are unchanged. No deployment or physical-device verification was performed.
+
+The static Storybook build also passed with source-identical document/support assets and no local-only directory. Coverage passed (97.35% lines across the configured schema/storage boundary), as did the canonical Chromium scroll-performance gate. This was a focused cross-browser production check plus the full routine smoke gate, not a rerun of every cross-browser application test.
+
 ## Dev Server
 
 ```bash

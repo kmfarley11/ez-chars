@@ -45,8 +45,7 @@ const docsExtPlugin = (): Plugin => {
 	const sourceRelative = 'docs/ext';
 	const excludedDirectoryNames = new Set(['local-only']);
 	let rootDir = process.cwd();
-	let outDir = 'dist';
-	let shouldCopyOnCloseBundle = false;
+	let shouldCopyOnBuild = false;
 
 	const getContentType = (filePath: string): string => {
 		const extension = extname(filePath).toLowerCase();
@@ -59,8 +58,7 @@ const docsExtPlugin = (): Plugin => {
 		name: 'docs-ext-static-assets',
 		configResolved(config: ResolvedConfig) {
 			rootDir = config.root;
-			outDir = config.build.outDir;
-			shouldCopyOnCloseBundle = config.command === 'build' && config.mode !== 'test';
+			shouldCopyOnBuild = config.command === 'build' && config.mode !== 'test';
 		},
 		configureServer(server: ViteDevServer) {
 			const normalizedBase = (server.config.base || '/').replace(/\/$/, '');
@@ -105,11 +103,14 @@ const docsExtPlugin = (): Plugin => {
 
 			server.middlewares.use(handler);
 		},
-		async closeBundle() {
-			if (!shouldCopyOnCloseBundle) return;
+		async writeBundle(options) {
+			if (!shouldCopyOnBuild || this.environment.config.consumer !== 'client') return;
+			// Use this bundle's output, not Vite's top-level dist directory. Complete
+			// the copy before SvelteKit prerenders and the adapter assembles the site.
+			if (!options.dir) throw new Error('Document assets require a client output directory.');
 			const sourceDir = pathResolve(rootDir, sourceRelative);
 			if (!existsSync(sourceDir)) return;
-			const destination = pathResolve(rootDir, outDir, 'docs/ext');
+			const destination = pathResolve(rootDir, options.dir, 'docs/ext');
 			await copyDirectory(sourceDir, destination, excludedDirectoryNames);
 		}
 	};
@@ -127,8 +128,7 @@ const pdfJsAssetsPlugin = (): Plugin => {
 	const require = createRequire(import.meta.url);
 	const packageDir = pathResolve(require.resolve('pdfjs-dist/package.json'), '..');
 	let rootDir = process.cwd();
-	let outDir = 'dist';
-	let shouldCopyOnCloseBundle = false;
+	let shouldCopyOnBuild = false;
 
 	const getContentType = (filePath: string): string => {
 		const extension = extname(filePath).toLowerCase();
@@ -142,8 +142,7 @@ const pdfJsAssetsPlugin = (): Plugin => {
 		name: 'pdfjs-support-assets',
 		configResolved(config: ResolvedConfig) {
 			rootDir = config.root;
-			outDir = config.build.outDir;
-			shouldCopyOnCloseBundle = config.command === 'build' && config.mode !== 'test';
+			shouldCopyOnBuild = config.command === 'build' && config.mode !== 'test';
 		},
 		configureServer(server: ViteDevServer) {
 			const normalizedBase = (server.config.base || '/').replace(/\/$/, '');
@@ -184,8 +183,11 @@ const pdfJsAssetsPlugin = (): Plugin => {
 
 			server.middlewares.use(handler);
 		},
-		async closeBundle() {
-			if (!shouldCopyOnCloseBundle) return;
+		async writeBundle(options) {
+			if (!shouldCopyOnBuild || this.environment.config.consumer !== 'client') return;
+			// Match the document assets' client-build lifecycle, including Storybook.
+			const outDir = options.dir;
+			if (!outDir) throw new Error('PDF.js assets require a client output directory.');
 			await Promise.all(
 				supportDirectoryNames.map((directoryName) =>
 					copyDirectory(

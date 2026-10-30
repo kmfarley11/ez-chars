@@ -16,7 +16,8 @@ export const sourceAliases = {
 /** @type {import('@sveltejs/kit/vite').Config} */
 const config = {
 	preprocess: vitePreprocess(),
-	adapter: adapter({ fallback: 'index.html' }),
+	// GitHub Pages serves this for unmatched routes without overwriting the prerendered home page.
+	adapter: adapter({ fallback: '404.html' }),
 	paths: {
 		base: baseDir
 	},

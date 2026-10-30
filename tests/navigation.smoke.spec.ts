@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('serves adopted SRDs locally without exposing local-only sources', async ({ page }) => {
-	await page.goto('/');
+	await page.goto('/ez-chars/');
 	await expect(page.getByText('Known preview issue: Firefox on macOS')).toBeVisible();
 
 	const srdLink = page.getByRole('link', { name: 'View SRD 5.1' });
@@ -29,7 +29,7 @@ test('links third-party notices to the deployed Git revision', async ({ page }, 
 		testInfo.project.name === 'Mobile Chrome',
 		'The notices link currently belongs to the desktop About dialog.'
 	);
-	await page.goto('/');
+	await page.goto('/ez-chars/');
 
 	await page.getByRole('button', { name: 'About ez-chars' }).click();
 	await expect(page.getByRole('link', { name: 'THIRD_PARTY_NOTICES.md' })).toHaveAttribute(
@@ -38,8 +38,28 @@ test('links third-party notices to the deployed Git revision', async ({ page }, 
 	);
 });
 
+test('serves PDF.js support assets without returning an HTML fallback', async ({ request }) => {
+	for (const path of [
+		'cmaps/Adobe-Japan1-0.bcmap',
+		'iccs/CGATS001Compat-v2-micro.icc',
+		'image_decoders/pdf.image_decoders.min.mjs',
+		'standard_fonts/LiberationSans-Regular.ttf',
+		'wasm/openjpeg.wasm'
+	]) {
+		const response = await request.get(`/ez-chars/pdfjs/${path}`);
+		expect(response.ok(), path).toBe(true);
+		expect(response.headers()['content-type'], path).not.toContain('text/html');
+		const body = await response.body();
+		expect(body.byteLength, path).toBeGreaterThan(0);
+		if (path.endsWith('.wasm')) {
+			expect(response.headers()['content-type']).toContain('application/wasm');
+			expect([...body.subarray(0, 4)]).toEqual([0, 97, 115, 109]);
+		}
+	}
+});
+
 test('native popover escape dismissal and focus restoration', async ({ page }) => {
-	await page.goto('/');
+	await page.goto('/ez-chars/');
 
 	const createButton = page.getByRole('button', { name: 'Create Character' });
 	await expect(createButton).toHaveAttribute('aria-expanded', 'false');

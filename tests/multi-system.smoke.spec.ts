@@ -20,6 +20,33 @@ test.beforeEach(async ({ page }) => {
 });
 test.afterEach(({ page }) => expectNoBrowserErrors(page));
 
+for (const { route, character, sheetName, characterName } of [
+	{
+		route: '5e',
+		character: e2eCharacter,
+		sheetName: '2014 character sheet',
+		characterName: 'E2E Test Adventurer'
+	},
+	{
+		route: '5e2024',
+		character: representativeCharacter5e2024,
+		sheetName: '2024 character sheet',
+		characterName: 'Mira — 2024 Representative'
+	}
+]) {
+	test(`direct sheet load and refresh preserves ${route} character selection`, async ({ page }) => {
+		const path = `/ez-chars/charsheets/${route}?id=${character.meta.id}`;
+		await page.goto(path);
+		const sheet = page.getByRole('main', { name: sheetName, exact: true });
+		await expect(sheet).toBeVisible();
+		await expect(sheet.getByText(characterName, { exact: true })).toBeVisible();
+		await page.reload();
+		await expect(page).toHaveURL(new RegExp(`${path.replace('?', '\\?')}$`));
+		await expect(sheet).toBeVisible();
+		await expect(sheet.getByText(characterName, { exact: true })).toBeVisible();
+	});
+}
+
 test('2024 compact classes retain notes and combined feats retain their own records', async ({
 	page
 }) => {
