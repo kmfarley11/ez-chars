@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="/ez-chars/favicon.png" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script>
+			(() => {
+				try {
+					const key = 'ez-chars-theme';
+					const stored = localStorage.getItem(key);
+					// Runtime validation in src/lib/theme.ts is the theme source of truth.
+					if (typeof stored === 'string' && stored.length > 0) {
+						document.documentElement.dataset.theme = stored;
+					}
+				} catch {
+					// Fall back to the default :root theme variables.
+				}
+			})();
+		</script>
+		<link href="/ez-chars/_app/immutable/entry/start.DOvt-K8R.js" rel="modulepreload">
+		<link href="/ez-chars/_app/immutable/entry/payload.DSmR2FwN.js" rel="modulepreload">
+		<link href="/ez-chars/_app/immutable/chunks/CRzLMJPS.js" rel="modulepreload">
+		<link href="/ez-chars/_app/immutable/chunks/BToQX1Pf.js" rel="modulepreload">
+		<link href="/ez-chars/_app/immutable/chunks/Czjnyd8e.js" rel="modulepreload">
+		<link href="/ez-chars/_app/immutable/chunks/DZguD-72.js" rel="modulepreload">
+		<link href="/ez-chars/_app/immutable/chunks/aFgmJDKP.js" rel="modulepreload">
+		<link href="/ez-chars/_app/immutable/entry/app.BBY9LuHj.js" rel="modulepreload">
+		<link href="/ez-chars/_app/immutable/nodes/0.DazQPQNh.js" rel="modulepreload">
+		<link href="/ez-chars/_app/immutable/chunks/DK3Fl9T5.js" rel="modulepreload">
+		<link href="/ez-chars/_app/immutable/chunks/BwHk54M9.js" rel="modulepreload">
+		
+		<link href="/ez-chars/_app/immutable/assets/store.v0Tw5xHF.css" rel="stylesheet">
+		<link href="/ez-chars/_app/immutable/assets/app.D51ks1SJ.css" rel="stylesheet">
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">
+			<script>
+				{
+					__sveltekit_19nirmf = {
+						base: "/ez-chars",
+						version: "1793361144957",
+						assets: "/ez-chars"
+					};
+
+					const element = document.currentScript.parentElement;
+
+					import("/ez-chars/_app/immutable/entry/start.DOvt-K8R.js").then(async (kit) => {
+						kit.init(__sveltekit_19nirmf);
+						const app = await import("/ez-chars/_app/immutable/entry/app.BBY9LuHj.js");
+						kit.start(app, element);
+					});
+				}
+			</script>
+		</div>
+	</body>
+</html>
