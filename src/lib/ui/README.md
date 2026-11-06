@@ -6,7 +6,8 @@ Linked-record Detail uses [DetailSource](molecules/detail-source.svelte) and [Sm
 
 System-neutral components live in [atoms](atoms/), [molecules](molecules/) and [organisms](organisms/). Stories are colocated as `*.stories.ts`; tests use nearby `__tests__/` directories. Find these in Storybook under **Design System**.
 
-Looking for interaction tiers? **Molecules / Edit-first (Tier 1 Field)** covers inline editing;
+Looking for interaction tiers? **Molecules / Edit-first (Tier 1 Field)** covers number, boolean, short-text and multiline controls through the existing Default story's `kind` Control. Booleans commit on activation; number/text use explicit Save/Cancel. Opt in with `interaction.tier: 'runtime'`, set `inputKind` explicitly (especially absent booleans), and derive add/replace binding from source presence. Domain adapters own conflict/schema validation; read-first indicators remain non-interactive.
+
 **Organisms / Read-first Detail (Tier 2 Field)** covers focused detail; **Organisms / Collections (Tier 3 Field)** covers generic collection rendering, search, pinning and row edits.
 These are interaction patterns, not additional composition levels. Collection creation/removal and system-specific filters are demonstrated in Systems; the deferred organizer is not the collection baseline. **Molecules / Table**
 shows the shared row/cell/header primitives together.

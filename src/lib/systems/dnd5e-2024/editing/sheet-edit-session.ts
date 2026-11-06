@@ -72,6 +72,8 @@ export const createSheetEditSession = (
 	owner: SheetEditOwner,
 	dependencies: CharacterFactoryDependencies = defaultCharacterFactoryDependencies
 ) => {
+	const isRuntimeBooleanOrText = (definition: SheetFieldDefinition) =>
+		definition.runtime && ['boolean', 'text', 'multiline'].includes(definition.kind);
 	const commit = (candidate: CharacterDocument5e2024): SmallEditResult => {
 		if (owner.reject?.())
 			return failure(
@@ -376,8 +378,17 @@ export const createSheetEditSession = (
 							definition.key,
 							{
 								fieldName: definition.label,
-								value: model.read() ?? '',
-								inputKind: definition.kind === 'number' ? 'number' : 'text',
+								value:
+									model.read() ??
+									(isRuntimeBooleanOrText(definition) && definition.kind === 'boolean'
+										? false
+										: ''),
+								inputKind:
+									definition.kind === 'number'
+										? 'number'
+										: definition.kind === 'boolean'
+											? 'boolean'
+											: 'text',
 								displayAs: definition.kind === 'boolean' ? 'checkbox' : undefined,
 								multiline: definition.kind === 'multiline',
 								options: definition.choices ? Object.values(definition.choices) : undefined,
@@ -404,6 +415,19 @@ export const createSheetEditSession = (
 			);
 			if (!definition || (write.op !== 'add' && write.op !== 'replace'))
 				return failure('This runtime field is not editable.');
+			if (isRuntimeBooleanOrText(definition)) {
+				const current = getValueAtGridPath(owner.read(), definition.path);
+				if (typeof write.value !== (definition.kind === 'boolean' ? 'boolean' : 'string'))
+					return failure('Invalid runtime field value.');
+				if (
+					(write.op === 'add' && current !== undefined) ||
+					(write.op === 'replace' &&
+						!patch.some(
+							(op) => op.op === 'test' && op.path === write.path && sameEditValue(op.value, current)
+						))
+				)
+					return failure('This value changed. Cancel and reopen it.');
+			}
 			for (const operation of patch) {
 				if (
 					operation.op === 'test' &&

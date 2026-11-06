@@ -38,7 +38,8 @@ describe('small-edit proof domain adapters', () => {
 		expect(passive.read()).toBeUndefined();
 		expect(passive.commit!(undefined, 14)).toEqual({ ok: true });
 		expect(passive.commit!(14, 14.5).ok).toBe(false);
-		const inspiration = reference.fields.find((f) => f.label === 'Inspiration')!;
+		const live = create5eSmallGridModel(owner, projection.quickRefLiveData, 'Live state')!;
+		const inspiration = live.fields.find((f) => f.label === 'Inspiration')!;
 		expect(inspiration.commit!(inspiration.read(), true).ok).toBe(true);
 		expect(inspiration.commit!(true, 'yes').ok).toBe(false);
 		const ability = create5eSmallGridModel(owner, projection.abilityRuntimeColumns[0].data, 'STR')!;

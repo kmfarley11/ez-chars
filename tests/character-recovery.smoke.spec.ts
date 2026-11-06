@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }) => {
 
 test.afterEach(({ page }) => expectNoBrowserErrors(page));
 
-test('recovery protects repeated demo edits and offers exact download, cancel, and explicit reset', async ({
+test('recovery protects repeated demo edits and offers exact download and cancellation', async ({
 	page
 }) => {
 	await page.goto('/');
@@ -66,8 +66,17 @@ test('recovery protects repeated demo edits and offers exact download, cancel, a
 	if (!downloadPath) throw new Error('Recovery download is unavailable');
 	expect(await readFile(downloadPath, 'utf8')).toBe(original);
 	await expect(notice).toBeVisible();
+});
 
-	await resetButton.click();
+test('explicit reset on a sheet restores durable editing and status focus', async ({ page }) => {
+	await page.goto('/');
+	await page
+		.getByRole('button', { name: 'Open Theren Vael', exact: true })
+		.filter({ visible: true })
+		.click();
+	const notice = page.getByRole('region', { name: 'Character data recovery' });
+	await notice.getByRole('button', { name: 'Reset stored data', exact: true }).click();
+	const dialog = page.getByRole('dialog', { name: 'Reset stored character data?' });
 	await dialog.getByRole('button', { name: 'Confirm reset', exact: true }).click();
 	await expect(dialog).toBeHidden();
 	await expect(notice).toHaveCount(0);
@@ -80,8 +89,19 @@ test('recovery protects repeated demo edits and offers exact download, cancel, a
 	await page.reload();
 	await expect(page.getByText('Current HP', { exact: true }).locator('..')).toContainText('10');
 	await expect(notice).toHaveCount(0);
-	for (const edition of ['2024', '2014']) {
+});
+
+for (const edition of ['2024', '2014']) {
+	test(`reset restores ${edition} character creation`, async ({ page }) => {
 		await page.goto('/');
+		const createButton = page.getByRole('button', { name: 'Create Character', exact: true });
+		await expect(createButton).toBeDisabled();
+		const notice = page.getByRole('region', { name: 'Character data recovery' });
+		await notice.getByRole('button', { name: 'Reset stored data', exact: true }).click();
+		await page
+			.getByRole('dialog', { name: 'Reset stored character data?' })
+			.getByRole('button', { name: 'Confirm reset', exact: true })
+			.click();
 		await expect(createButton).toBeEnabled();
 		await createButton.click();
 		await page
@@ -90,8 +110,8 @@ test('recovery protects repeated demo edits and offers exact download, cancel, a
 		await expect(page.getByRole('main', { name: `${edition} character sheet` })).toBeVisible();
 		await expect(page).toHaveURL(edition === '2024' ? /\/5e2024\?id=/ : /\/5e\?id=/);
 		await expect(notice).toHaveCount(0);
-	}
-});
+	});
+}
 
 test('failed reset keeps recovery open and original storage downloadable', async ({ page }) => {
 	await page.goto('/');

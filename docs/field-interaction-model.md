@@ -25,15 +25,17 @@ Domain-owned exceptions, such as Runtime Action source commands, remain speciali
 
 ## Tier 1: Stable Inline Runtime Editing
 
-Tier 1 is reserved for values that change repeatedly during play, including current and temporary HP, death saves, remaining hit dice, and carried currency.
+Tier 1 is reserved for values that change repeatedly during play, including current and temporary HP, death saves, remaining hit dice, carried currency, both editions' Inspiration, and 2024 freeform Conditions. Numeric, single-line text and multiline text use inline drafts; explicitly runtime booleans use direct checkbox activation.
 
-- The read state stays compact and exposes a persistent Edit control.
+- Number/text read states stay compact and expose a persistent Edit control.
 - Editing replaces the value in the same stable geometry rather than opening another surface.
 - Confirm and Cancel are explicit, compact, keyboard-focusable, and touch accessible.
 - Enter may confirm a valid single-line edit; Escape cancels.
 - Cancel emits no mutation and restores the prior display value.
 - Saving uses the field's focused patch or typed intent and preserves unrelated character data.
 - Annotations remain available through the field's focused annotation/detail path; inline runtime controls do not grow into a general rich-record editor.
+
+Runtime booleans instead commit one validated change per pointer/Space activation without Save/Cancel or a dialog. Rejection restores the committed checkbox state, retains focus and announces feedback. Absent flags are accessible as “Not recorded”; rendering never writes false. Single-line Enter confirms only outside IME composition; multiline Enter inserts a newline and requires explicit Save. Multiline read/edit surfaces share content-sized geometry capped at 12rem, with all text reachable by scrolling. Unchanged empty drafts keep optional text absent; deliberately clearing authored text retains an empty string and its notes. Notes remain independent; finish/cancel a text draft before opening them.
 
 Tier 1 is an explicit opt-in. Slowly changing profile data, long prose, rich records, and collections do not become inline editors simply because they contain primitive values.
 

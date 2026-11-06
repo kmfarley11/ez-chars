@@ -128,9 +128,10 @@
 		if (handleFieldSavePatch) {
 			return handleFieldSavePatch(patch);
 		}
-		if (compatibilityPatches.length > 0) {
-			return handleEditSavePatches?.(compatibilityPatches);
+		if (compatibilityPatches.length > 0 && handleEditSavePatches) {
+			return handleEditSavePatches(compatibilityPatches);
 		}
+		throw new Error('This field has no save handler.');
 	};
 </script>
 

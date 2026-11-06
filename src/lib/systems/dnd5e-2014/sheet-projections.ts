@@ -268,12 +268,20 @@ export const project5eSheet = (char: CharacterDocument5e2014): Sheet5eProjection
 	const quickRefLiveData = resolveGridFieldDescriptors(char, quickRefLiveDescriptors, {
 		annotationPathForValuePath: toSystemDataAnnotationPath
 	});
-	const quickRefReferenceData: GridContentData = {
-		inspiration: withFieldAnnotations(
+	quickRefLiveData.inspiration = {
+		...withFieldAnnotations(
 			char.systemData.combat.inspiration ?? false,
 			['systemData', 'combat', 'inspiration'],
-			{ fieldName: 'Inspiration' }
+			{ fieldName: 'Inspiration', inputKind: 'boolean' }
 		),
+		binding: {
+			valuePatchPath: ['systemData', 'combat', 'inspiration'],
+			valuePatchOperation: char.systemData.combat.inspiration === undefined ? 'add' : 'replace'
+		},
+		capabilities: { canEditValue: true, canEditAnnotations: true },
+		interaction: { tier: 'runtime' }
+	};
+	const quickRefReferenceData: GridContentData = {
 		passivePerception: withFieldAnnotations(
 			char.systemData.combat.senses?.passivePerception ?? '',
 			['systemData', 'combat', 'senses', 'passivePerception'],

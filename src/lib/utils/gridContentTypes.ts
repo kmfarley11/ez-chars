@@ -58,7 +58,7 @@ export type GridContentField = {
 	label?: string;
 	hidden?: boolean;
 	options?: string[];
-	inputKind?: 'text' | 'number';
+	inputKind?: 'text' | 'number' | 'boolean';
 	// Display intent preserves an unset boolean without inventing a false value.
 	displayAs?: 'checkbox';
 	// Domain-owned meaning for read-only indicators; also disclose it in the focused editor.

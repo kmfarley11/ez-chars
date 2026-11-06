@@ -429,7 +429,7 @@ test('2024 sheet keeps read-first notes with their field without obsolete proof 
 	}
 });
 
-test('mixed list dispatches safely and both creation choices retain their edition', async ({
+test('mixed list dispatches safely and rejects mismatched or missing characters', async ({
 	page
 }) => {
 	await page.goto('/');
@@ -450,7 +450,10 @@ test('mixed list dispatches safely and both creation choices retain their editio
 	await expect(page.getByRole('main', { name: '2014 character sheet' })).toBeVisible();
 	await page.goto('/ez-chars/charsheets/5e2024?id=missing');
 	await expect(page.getByRole('heading', { name: 'Character not found.' })).toBeVisible();
-	for (const edition of ['2024', '2014']) {
+});
+
+for (const edition of ['2024', '2014']) {
+	test(`character creation retains the selected ${edition} edition`, async ({ page }) => {
 		await page.goto('/');
 		await page.getByRole('button', { name: 'Create Character', exact: true }).click();
 		await page
@@ -458,8 +461,8 @@ test('mixed list dispatches safely and both creation choices retain their editio
 			.click();
 		await expect(page.getByRole('main', { name: `${edition} character sheet` })).toBeVisible();
 		await expect(page).toHaveURL(edition === '2024' ? /\/5e2024\?id=/ : /\/5e\?id=/);
-	}
-});
+	});
+}
 
 test('2024 fields save independently and survive reload without changing a 2014 character', async ({
 	page

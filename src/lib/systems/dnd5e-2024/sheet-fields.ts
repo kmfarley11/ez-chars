@@ -58,8 +58,14 @@ export const sheetFields: readonly SheetFieldDefinition[] = [
 	field('armorClass', 'Armor Class', 'number', ['combat', 'armorClass']),
 	field('initiative', 'Initiative', 'number', ['combat', 'initiative']),
 	field('hitDice', 'Hit Dice', 'text', ['combat', 'hitDice']),
-	field('heroicInspiration', 'Heroic Inspiration', 'boolean', ['combat', 'heroicInspiration']),
-	field('conditions', 'Conditions', 'multiline', ['combat', 'conditions']),
+	field(
+		'heroicInspiration',
+		'Heroic Inspiration',
+		'boolean',
+		['combat', 'heroicInspiration'],
+		true
+	),
+	field('conditions', 'Conditions', 'multiline', ['combat', 'conditions'], true),
 	field('size', 'Size', 'text', ['combat', 'size']),
 	field('passivePerception', 'Passive Perception', 'number', ['combat', 'passivePerception']),
 	...['successes', 'failures'].map((key) =>

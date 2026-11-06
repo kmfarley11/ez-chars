@@ -184,7 +184,7 @@ const createCanonicalGridModel = (
 			key: toGridJsonPointer(path),
 			label: field.fieldName ?? String(path.at(-1)),
 			kind:
-				typeof field.value === 'boolean'
+				field.inputKind === 'boolean' || typeof field.value === 'boolean'
 					? 'boolean'
 					: field.options
 						? 'select'

@@ -69,6 +69,24 @@ export const create5eSheetEditSession = (owner: SheetEditOwner) => {
 		intents,
 		patch(patch: JSONPatchDocument): SheetCommitResult {
 			if (!patch.length) return { ok: true };
+			const writes = patch.filter((op) => op.op !== 'test');
+			if (writes.some((op) => op.path === '/systemData/combat/inspiration')) {
+				const write = writes[0];
+				const current = owner.read().systemData.combat.inspiration;
+				if (
+					writes.length !== 1 ||
+					!['add', 'replace'].includes(write.op) ||
+					!('value' in write) ||
+					typeof write.value !== 'boolean'
+				)
+					return { ok: false, message: 'Edit one boolean runtime field at a time.' };
+				if (
+					(write.op === 'add' && current !== undefined) ||
+					(write.op === 'replace' &&
+						!patch.some((op) => op.op === 'test' && op.path === write.path && op.value === current))
+				)
+					return { ok: false, message: 'This value changed. Cancel and reopen it.' };
+			}
 			return commit5eCandidate(owner, apply5eCharacterJsonPatch(owner.read(), patch));
 		},
 		grid(patches: Array<GridContentPatch>): SheetCommitResult {

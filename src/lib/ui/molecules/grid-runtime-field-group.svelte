@@ -1,6 +1,7 @@
 <script lang="ts">
 	import GridPrimitiveField from '$lib/ui/molecules/grid-primitive-field.svelte';
 	import { isInlineRuntimeField } from '$lib/utils/gridContentHelpers';
+	import { commitRuntimeGroupField } from '$lib/utils/fieldDraftHelpers';
 	import type { JSONPatchDocument } from 'immutable-json-patch';
 	import type {
 		GridAnnotationEditorConfig,
@@ -15,6 +16,12 @@
 		fields: Array<[string, GridContentField]>;
 		displayAlign?: 'left' | 'center';
 		annotationEditorConfig?: GridAnnotationEditorConfig;
+		onFieldSavePatch?: (
+			// eslint-disable-next-line no-unused-vars
+			_patch: JSONPatchDocument,
+			// eslint-disable-next-line no-unused-vars
+			_compatibility: Array<GridContentPatch>
+		) => boolean | void;
 		// eslint-disable-next-line no-unused-vars
 		onSavePatches?: (_patches: Array<GridContentPatch>) => boolean | void;
 		onSaveAnnotations?: (
@@ -30,6 +37,7 @@
 		fields,
 		displayAlign = 'left',
 		annotationEditorConfig = undefined,
+		onFieldSavePatch = undefined,
 		onSavePatches = undefined,
 		onSaveAnnotations = undefined
 	}: Props = $props();
@@ -38,20 +46,17 @@
 
 	const saveField = (
 		activeKey: string,
-		_jsonPatch: JSONPatchDocument,
+		jsonPatch: JSONPatchDocument,
 		compatibilityPatches: Array<GridContentPatch>
-	): boolean | void => {
-		const activePatch = compatibilityPatches[0];
-		if (!activePatch) return false;
-
-		const patches = runtimeFields.flatMap(([key, field]) => {
-			const path = field.binding?.valuePatchPath ?? field.bindPath;
-			if (!path) return [];
-			return [{ path, value: key === activeKey ? activePatch.value : field.value }];
-		});
-		if (patches.length !== runtimeFields.length) return false;
-		return onSavePatches?.(patches);
-	};
+	): boolean | void =>
+		commitRuntimeGroupField(
+			runtimeFields,
+			activeKey,
+			jsonPatch,
+			compatibilityPatches,
+			onFieldSavePatch,
+			onSavePatches
+		);
 </script>
 
 <section

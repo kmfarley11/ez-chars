@@ -5,6 +5,17 @@ const meta = {
 	id: 'design-system-molecules-edit-first-fields-tier-1',
 	title: 'Design System/Molecules/Edit-first (Tier 1 Field)',
 	component: GridPrimitiveFieldStory,
+	argTypes: {
+		// Explicit scalar type keeps URL-selected Controls from being discarded as a TS union.
+		kind: {
+			type: 'string',
+			control: 'select',
+			options: ['number', 'boolean', 'text', 'multiline']
+		},
+		absent: { control: 'boolean' },
+		rejectSaves: { control: 'boolean' },
+		initialText: { control: 'text' }
+	},
 	args: {
 		kind: 'number',
 		withAnnotation: false,

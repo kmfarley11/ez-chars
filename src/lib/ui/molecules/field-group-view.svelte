@@ -101,7 +101,8 @@
 		patch: JSONPatchDocument,
 		compatibilityPatches: Array<GridContentPatch>
 	) => {
-		return onFieldSavePatch?.(patch, compatibilityPatches);
+		if (!onFieldSavePatch) throw new Error('This field has no save handler.');
+		return onFieldSavePatch(patch, compatibilityPatches);
 	};
 
 	const displayItemClass = $derived(
@@ -145,7 +146,8 @@
 					{@const primitiveField =
 						interactive &&
 						!field.displayStatus &&
-						field.displayAs !== 'checkbox' &&
+						(field.displayAs !== 'checkbox' ||
+							(field.inputKind === 'boolean' && field.interaction?.tier === 'runtime')) &&
 						isDirectEditablePrimitiveField(field)}
 					<div
 						class={displayAlign === 'center'
@@ -163,6 +165,7 @@
 										{displayAlign}
 										{annotationEditorConfig}
 										onSavePatches={onFocusedSavePatches}
+										onFieldSavePatch={savePrimitiveFieldPatch}
 										onSaveAnnotations={savePrimitiveFieldAnnotations}
 									/>
 								{:else if primitiveField}

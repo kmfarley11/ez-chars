@@ -30,7 +30,7 @@ export type HelpAnnotationGroup = {
 
 type DisplayPart = { value: string; label?: string; field: GridContentField };
 type PrimitiveGridFieldValue = string | number | boolean;
-type PrimitiveInputKind = 'text' | 'number';
+type PrimitiveInputKind = 'text' | 'number' | 'boolean';
 
 export type GridFieldDescriptor = {
 	key: string;
@@ -43,7 +43,7 @@ export type GridFieldDescriptor = {
 	annotationPatchPath?: GridContentBindPath;
 	valuePatchOperation?: GridFieldPatchOperation;
 	defaultValue?: PrimitiveGridFieldValue;
-	inputKind?: 'text' | 'number';
+	inputKind?: PrimitiveInputKind;
 	multiline?: boolean;
 	options?: string[];
 	hidden?: boolean;
@@ -173,6 +173,7 @@ const inferDefaultPrimitiveValue = (
 	explicitDefaultValue: PrimitiveGridFieldValue | undefined
 ): PrimitiveGridFieldValue => {
 	if (typeof explicitDefaultValue !== 'undefined') return explicitDefaultValue;
+	if (inputKind === 'boolean') return false;
 	if (typeof readValue === 'boolean') return false;
 	return inputKind === 'number' ? 0 : '';
 };
@@ -291,7 +292,9 @@ export const resolveGridFieldDescriptors = (
 export const isDirectEditablePrimitiveField = (field: GridContentField): boolean =>
 	!isGridFieldArray(field.value) &&
 	!isGridNestedFields(field.value) &&
-	(typeof field.value === 'string' || typeof field.value === 'number') &&
+	(typeof field.value === 'string' ||
+		typeof field.value === 'number' ||
+		(field.inputKind === 'boolean' && field.interaction?.tier === 'runtime')) &&
 	field.capabilities?.canEditValue === true &&
 	field.interaction?.tier !== undefined &&
 	(field.binding?.valuePatchPath ?? field.bindPath) !== undefined;

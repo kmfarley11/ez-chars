@@ -112,7 +112,8 @@ describe('5e sheet projections', () => {
 			'tempHp',
 			'deathSavesOk',
 			'deathSavesRip',
-			'hitDiceRemaining'
+			'hitDiceRemaining',
+			'inspiration'
 		]);
 		expect(projection.quickRefReferenceData).toMatchObject({
 			maxHp: { value: 18 },
@@ -122,6 +123,7 @@ describe('5e sheet projections', () => {
 			speed: { value: 30 }
 		});
 		expect(projection.quickRefReferenceData).not.toHaveProperty('hitDiceRemaining');
+		expect(projection.quickRefReferenceData).not.toHaveProperty('inspiration');
 		expect(projection.abilityRuntimeColumns).toHaveLength(6);
 		expect(projection.proficiencyBonusRuntimeData.proficiencyBonus).toMatchObject({
 			value: 2,

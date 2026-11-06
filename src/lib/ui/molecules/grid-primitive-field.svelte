@@ -4,7 +4,7 @@
 	const smallEdit = getSmallEditAccess();
 	import Badge from '$lib/ui/atoms/badge.svelte';
 	import DetailLabelButton from '$lib/ui/atoms/detail-label-button.svelte';
-	import { FieldDraft } from '$lib/utils/fieldDraftHelpers';
+	import { FieldDraft, commitFieldDraft } from '$lib/utils/fieldDraftHelpers';
 	import FieldAnnotationControl from '$lib/ui/molecules/field-annotation-control.svelte';
 	import FocusedDetailWorkflow, {
 		type FocusedDetailMode
@@ -30,7 +30,7 @@
 		GridFieldPatchOperation
 	} from '$lib/utils/gridContentTypes';
 
-	type PrimitiveFieldValue = string | number;
+	type PrimitiveFieldValue = string | number | boolean;
 
 	interface Props {
 		fieldKey: string;
@@ -77,7 +77,8 @@
 	let draft = $state<FieldDraft<PrimitiveFieldValue> | undefined>(undefined);
 	let draftValue = $state('');
 	let error = $state<string | undefined>(undefined);
-	let inputEl = $state<HTMLInputElement>();
+	let inputEl = $state<HTMLInputElement | HTMLTextAreaElement>();
+	const controlId = $props.id();
 	let editButtonEl = $state<HTMLButtonElement>();
 	let detailButtonEl = $state<HTMLButtonElement>();
 	let focusedOpen = $state(false);
@@ -116,7 +117,11 @@
 			(annotationAffordance !== 'badge' && onSaveAnnotations !== undefined)
 	);
 	const currentValue = $derived<PrimitiveFieldValue>(
-		typeof field.value === 'number' ? field.value : String(field.value)
+		inputKind === 'boolean'
+			? field.value === true
+			: typeof field.value === 'number'
+				? field.value
+				: String(field.value)
 	);
 	const displayValue = $derived(currentValue === '' ? '___' : String(currentValue));
 	const noteCountLabel = $derived(
@@ -172,32 +177,44 @@
 
 		try {
 			const nextDraft = draft.update(readDraftValue());
-			const patch = nextDraft.prepareAsPatch();
-			if (patch.length > 0) {
-				const result = onSavePatch?.(
-					patch,
-					valuePatchPath ? [{ path: valuePatchPath, value: nextDraft.value }] : []
-				);
-				if (result === false) {
-					error = 'Could not save this field.';
-					return;
-				}
-			}
+			commitFieldDraft(nextDraft, onSavePatch, valuePatchPath);
 			await cancelEdit();
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Could not save this field.';
 		}
 	};
 
+	const toggleBoolean = async (event: Event) => {
+		const target = event.currentTarget as HTMLInputElement;
+		error = undefined;
+		try {
+			if (!effectiveJsonPatchPath || !onSavePatch)
+				throw new Error('This field has no save handler.');
+			const next = FieldDraft.begin({
+				kind: 'value' as const,
+				path: effectiveJsonPatchPath,
+				value: field.value === true,
+				operation: patchOperation
+			}).update(target.checked);
+			commitFieldDraft(next, onSavePatch, valuePatchPath);
+		} catch (err) {
+			error = err instanceof Error ? err.message : 'Could not save this field.';
+		}
+		await tick();
+		// Native activation changes the DOM even when rejected without a reactive value change.
+		target.checked = field.value === true;
+	};
+
 	const onInput = (event: Event) => {
 		const target = event.currentTarget;
-		if (target instanceof HTMLInputElement) {
+		if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
 			draftValue = target.value;
 		}
 	};
 
 	const onKeydown = (event: KeyboardEvent) => {
-		if (event.key === 'Enter') {
+		if (event.isComposing) return;
+		if (event.key === 'Enter' && !field.multiline) {
 			event.preventDefault();
 			saveEdit();
 		}
@@ -300,28 +317,72 @@
 			? 'grid min-h-12 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 py-1'
 			: 'theme-panel grid min-h-16 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg border p-2'}
 	>
-		{#if draft}
+		{#if inputKind === 'boolean'}
+			<label class="touch-target flex min-w-0 cursor-pointer items-center gap-2 py-1">
+				<input
+					type="checkbox"
+					class="theme-input h-5 w-5 shrink-0 rounded border"
+					checked={field.value === true}
+					aria-label={actionLabel}
+					aria-describedby={patchOperation === 'add' ? `${controlId}-presence` : undefined}
+					onchange={toggleBoolean}
+				/>
+				<span class="text-sm font-semibold">{fieldLabel}</span>
+			</label>
+			{#if patchOperation === 'add'}<span id={`${controlId}-presence`} class="sr-only"
+					>Not recorded</span
+				>{/if}
+			{#if shouldRenderAnnotationControl}
+				<FieldAnnotationControl
+					{annotations}
+					{annotationAffordance}
+					{annotationEditorConfig}
+					fieldLabel={actionLabel}
+					compact={true}
+					onOpen={(invoker) => openSmallDetail(true, invoker)}
+					onSaveAnnotations={(next) => onSaveAnnotations?.(next, annotationPatchPath)}
+				/>
+			{/if}
+		{:else if draft}
 			<label class={['min-w-0', displayAlign === 'center' ? 'text-center' : 'text-left']}>
 				<span class="theme-text-muted block text-xs font-semibold tracking-wide uppercase"
 					>{fieldLabel}</span
 				>
-				<input
-					{@attach (element) => {
-						inputEl = element;
-						return () => {
-							if (inputEl === element) inputEl = undefined;
-						};
-					}}
-					class={[
-						'theme-input touch-target mt-1 h-8 w-full max-w-24 rounded-md border px-2 py-1 text-base font-bold',
-						displayAlign === 'center' ? 'text-center' : 'text-left'
-					]}
-					type={inputKind}
-					value={draftValue}
-					aria-label={actionLabel}
-					oninput={onInput}
-					onkeydown={onKeydown}
-				/>
+				{#if inputKind === 'text' && field.multiline}
+					<div class="runtime-multiline-editor mt-1">
+						<!-- Same geometry as reading; the hidden mirror sizes wrapped/trailing
+						     lines without per-keystroke DOM measurement or resize observers. -->
+						<span class="runtime-multiline-content runtime-multiline-mirror" aria-hidden="true"
+							>{draftValue}&#8203;</span
+						>
+						<textarea
+							bind:this={inputEl}
+							class="theme-input runtime-multiline-content"
+							rows="1"
+							value={draftValue}
+							aria-label={actionLabel}
+							oninput={onInput}
+							onkeydown={onKeydown}
+						></textarea>
+					</div>
+				{:else}<input
+						{@attach (element) => {
+							inputEl = element;
+							return () => {
+								if (inputEl === element) inputEl = undefined;
+							};
+						}}
+						class={[
+							'theme-input touch-target mt-1 h-8 w-full rounded-md border px-2 py-1 text-base',
+							inputKind === 'number' && 'max-w-24 font-bold',
+							displayAlign === 'center' ? 'text-center' : 'text-left'
+						]}
+						type={inputKind}
+						value={draftValue}
+						aria-label={actionLabel}
+						oninput={onInput}
+						onkeydown={onKeydown}
+					/>{/if}
 				{#if field.label}
 					<span class="theme-text-muted text-xs italic">({field.label})</span>
 				{/if}
@@ -345,11 +406,20 @@
 				<span class="theme-text-muted block text-xs font-semibold tracking-wide uppercase"
 					>{fieldLabel}</span
 				>
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex (bounded multiline text needs a named keyboard-scrollable region, as in BoundedCollectionRegion) -->
 				<span
 					class={[
-						'runtime-field-value mt-1 flex h-8 items-center text-2xl font-bold tabular-nums',
+						inputKind === 'number'
+							? 'runtime-field-value mt-1 flex h-8 items-center text-2xl font-bold tabular-nums'
+							: field.multiline
+								? 'runtime-multiline-content mt-1 block'
+								: 'runtime-field-value mt-1 block min-h-8 whitespace-pre-wrap break-words text-base [overflow-wrap:anywhere]',
 						displayAlign === 'center' && 'justify-center'
-					]}>{displayValue}</span
+					]}
+					role={inputKind === 'text' && field.multiline ? 'region' : undefined}
+					aria-label={inputKind === 'text' && field.multiline ? actionLabel + ' text' : undefined}
+					tabindex={inputKind === 'text' && field.multiline ? 0 : undefined}
+					>{displayValue}{field.multiline ? '\u200b' : ''}</span
 				>
 				{#if field.label}
 					<span class="theme-text-muted text-xs italic">({field.label})</span>
@@ -497,13 +567,47 @@
 {/if}
 
 <style>
+	.runtime-multiline-content {
+		box-sizing: border-box;
+		inline-size: 100%;
+		min-inline-size: 0;
+		min-block-size: 2rem;
+		max-block-size: 12rem;
+		border: 1px solid transparent;
+		border-radius: 0.375rem;
+		padding: 0.25rem 0.5rem;
+		font-size: 1rem;
+		line-height: 1.5rem;
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+		overflow-y: auto;
+		/* Keep the text width identical when either state starts scrolling. */
+		scrollbar-gutter: stable;
+	}
+	.runtime-multiline-editor {
+		display: grid;
+		min-inline-size: 0;
+	}
+	.runtime-multiline-editor > * {
+		grid-area: 1 / 1;
+	}
+	.runtime-multiline-mirror {
+		visibility: hidden;
+	}
+	.runtime-multiline-editor textarea {
+		block-size: 100%;
+		resize: none;
+		border-color: var(--color-surface-border);
+	}
+
 	@media (pointer: coarse), (max-width: 767px) {
 		.runtime-field-actions {
 			/* Reserve two 44px controls plus their gap in both read and edit states. */
 			min-inline-size: 92px;
 		}
 
-		.runtime-field-value {
+		.runtime-field-value,
+		.runtime-multiline-content {
 			min-block-size: 44px;
 		}
 	}
